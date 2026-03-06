@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MageCharacter from "@/components/MageCharacter";
 import mageBattle from "@/assets/mage-battle.png";
 
 const gameData: Record<string, {
@@ -228,18 +229,7 @@ const GameDetail = () => {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="hidden lg:block w-[320px] xl:w-[380px] flex-shrink-0 relative"
             >
-              <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] rounded-full bg-primary/20 blur-[80px]" />
-              {/* Animated staff glow */}
-              <div className="absolute top-[5%] right-[25%] w-[70px] h-[70px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)]/50 blur-[30px]" />
-              <div className="absolute top-[3%] right-[22%] w-[45px] h-[45px] rounded-full animate-pulse-glow bg-[hsl(200,90%,60%)]/60 blur-[18px]" style={{ animationDelay: "0.5s" }} />
-              {/* Eye glow */}
-              <div className="absolute top-[18%] left-[42%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)] blur-[3px]" />
-              <div className="absolute top-[18%] left-[48%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)] blur-[3px]" />
-              <img
-                src={mageBattle}
-                alt="Mage"
-                className="w-full animate-float drop-shadow-[0_0_80px_hsl(270_70%_55%/0.5)] transform -scale-x-100"
-              />
+              <MageCharacter src={mageBattle} alt="Mage" flip showMask={false} glowColor="blue" />
             </motion.div>
           </div>
         </div>

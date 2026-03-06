@@ -4,6 +4,7 @@ import { useState } from "react";
 import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MageCharacter from "@/components/MageCharacter";
 import mageBattle from "@/assets/mage-battle.png";
 
 const events = [
@@ -105,21 +106,9 @@ const Events = () => {
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden pointer-events-none"
-              style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)' }}
+              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden"
             >
-              {/* Animated staff glow */}
-              <div className="absolute top-[2%] left-[20%] w-[70px] h-[70px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)]/50 blur-[30px]" />
-              <div className="absolute top-[0%] left-[18%] w-[45px] h-[45px] rounded-full animate-pulse-glow bg-[hsl(200,90%,60%)]/60 blur-[18px]" style={{ animationDelay: "0.5s" }} />
-              {/* Eye glow */}
-              <div className="absolute top-[18%] left-[48%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)] blur-[3px]" />
-              <div className="absolute top-[18%] left-[54%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-[hsl(210,80%,55%)] blur-[3px]" />
-              <img
-                src={mageBattle}
-                alt="Battle Mage"
-                className="w-full h-auto animate-float drop-shadow-[0_0_80px_hsl(210_80%_55%/0.5)]"
-              />
-              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] rounded-full bg-primary/25 blur-[80px]" />
+              <MageCharacter src={mageBattle} alt="Battle Mage" glowColor="blue" />
             </motion.div>
           </div>
 

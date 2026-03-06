@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { ChevronLeft, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import kultLogo from "@/assets/kult-logo.png";
 
 const navItems = [
   { label: "Store", path: "/store" },
@@ -23,14 +24,8 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-border/30"
     >
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-1">
-          <ChevronLeft className="w-6 h-6 text-primary" strokeWidth={3} />
-          <span className="font-display text-xl font-black tracking-wider text-foreground">
-            KULT
-          </span>
-          <span className="text-[10px] font-mono text-muted-foreground tracking-widest ml-1 mt-1">
-            GAMES
-          </span>
+        <Link to="/" className="flex items-center">
+          <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" />
         </Link>
 
         {/* Desktop nav */}

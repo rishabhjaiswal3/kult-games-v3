@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MageCharacter from "@/components/MageCharacter";
 import mageThrone from "@/assets/mage-throne.png";
 
 const storeItems = [
@@ -105,21 +106,9 @@ const Store = () => {
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden pointer-events-none"
-              style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)' }}
+              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden"
             >
-              {/* Animated wand glow */}
-              <div className="absolute top-[5%] left-[25%] w-[80px] h-[80px] rounded-full animate-pulse-glow bg-primary/50 blur-[35px]" />
-              <div className="absolute top-[3%] left-[22%] w-[50px] h-[50px] rounded-full animate-pulse-glow bg-secondary/60 blur-[20px]" style={{ animationDelay: "0.5s" }} />
-              {/* Eye glow */}
-              <div className="absolute top-[18%] left-[45%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-primary blur-[3px]" />
-              <div className="absolute top-[18%] left-[50%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-primary blur-[3px]" />
-              <img
-                src={mageThrone}
-                alt="Mage"
-                className="w-full h-auto animate-float drop-shadow-[0_0_80px_hsl(270_70%_55%/0.5)]"
-              />
-              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full bg-primary/20 blur-[80px]" />
+              <MageCharacter src={mageThrone} alt="Throne Mage" glowColor="secondary" />
             </motion.div>
           </div>
 
