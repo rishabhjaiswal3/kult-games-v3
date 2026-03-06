@@ -1,107 +1,99 @@
 import { motion } from "framer-motion";
-import { Bot, Gamepad2, Zap, ArrowRight } from "lucide-react";
+import { ArrowRight, Swords } from "lucide-react";
+import mageCharacter from "@/assets/mage-character.png";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-      {/* Background video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-30"
-      >
-        <source src="/videos/SC_1.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-background/60" />
-
-      {/* Neural grid overlay */}
-      <div className="absolute inset-0 neural-grid animate-neural-flow opacity-30" />
-      
-      {/* Radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-[120px]" />
-      <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[100px]" />
-
-      <div className="container mx-auto px-6 relative z-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel gradient-border mb-8"
+    <>
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        {/* Background video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
         >
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
-          <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">
-            Powered by 0G Chain • AI-Native Gaming
-          </span>
-        </motion.div>
+          <source src="/videos/SC_1.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-background/70" />
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6"
-        >
-          <span className="text-foreground">PLAY </span>
-          <span className="gradient-text">SMARTER</span>
-          <br />
-          <span className="text-foreground">WITH </span>
-          <span className="gradient-text">AI</span>
-        </motion.h1>
+        {/* Purple nebula glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
-        >
-          The AI-native gateway to 0G games. Discover, compare, and play — 
-          powered by decentralized intelligence.
-        </motion.p>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            {/* Left content */}
+            <div className="text-center lg:text-left max-w-2xl">
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[0.95]"
+              >
+                <span className="text-foreground">SHAPING THE</span>
+                <br />
+                <span className="text-foreground">FUTURE OF</span>
+                <br />
+                <span className="gradient-text glow-text">ON-CHAIN</span>
+                <br />
+                <span className="gradient-text glow-text">GAMING</span>
+              </motion.h1>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
-        >
-          <button className="group px-8 py-3.5 rounded-xl font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(185_85%_55%/0.4)] transition-all duration-300 flex items-center gap-2">
-            EXPLORE GAMES
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-          <button className="px-8 py-3.5 rounded-xl font-display text-sm font-semibold tracking-wider glass-panel text-foreground hover:bg-muted/60 transition-all duration-300 gradient-border flex items-center gap-2">
-            <Bot className="w-4 h-4 text-primary" />
-            ASK KULT AI
-          </button>
-        </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-8"
+              >
+                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-foreground/30 text-foreground hover:bg-foreground/10 transition-all duration-300 flex items-center gap-2">
+                  EXPLORE MORE
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(270_70%_55%/0.4)] transition-all duration-300 flex items-center gap-2">
+                  <Swords className="w-4 h-4" />
+                  STAKE & BATTLE
+                </button>
+              </motion.div>
+            </div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1 }}
-          className="flex items-center justify-center gap-8 md:gap-16"
-        >
-          {[
-            { icon: Gamepad2, label: "GAMES", value: "5+" },
-            { icon: Zap, label: "ON-CHAIN", value: "0G" },
-            { icon: Bot, label: "AI MODELS", value: "GLM-5" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <stat.icon className="w-4 h-4 text-primary" />
-                <span className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  {stat.value}
-                </span>
-              </div>
-              <span className="text-xs font-mono text-muted-foreground tracking-widest">
-                {stat.label}
-              </span>
+            {/* Right - Mage character */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full" />
+              <img
+                src={mageCharacter}
+                alt="Kult Mage"
+                className="relative w-[300px] md:w-[400px] lg:w-[500px] animate-float drop-shadow-[0_0_40px_hsl(270_70%_55%/0.3)]"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Marquee banner */}
+      <div className="relative z-10 py-4 border-y border-border/30 bg-muted/30 overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex items-center gap-8 mr-8">
+              {["AAA QUALITY", "ACTION-PACKED", "MIND-BENDING", "COLLECTION 0G GAMES", "AAA QUALITY", "ACTION-PACKED", "MIND-BENDING", "COLLECTION 0G GAMES"].map((text, j) => (
+                <div key={j} className="flex items-center gap-8">
+                  <span className="text-primary text-lg">✕</span>
+                  <span className="font-display text-sm md:text-base font-bold tracking-widest text-foreground uppercase">
+                    {text}
+                  </span>
+                </div>
+              ))}
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
-    </section>
+    </>
   );
 };
 

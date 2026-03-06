@@ -52,7 +52,7 @@ const ParticleField = () => {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(185, 85%, 55%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(270, 70%, 55%, ${p.opacity})`;
         ctx.fill();
       });
 
@@ -66,7 +66,7 @@ const ParticleField = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(185, 85%, 55%, ${opacity})`;
+            ctx.strokeStyle = `hsla(270, 70%, 55%, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

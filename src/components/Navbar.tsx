@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Sparkles } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 const Navbar = () => {
   return (
@@ -10,38 +10,33 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-border/30"
     >
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center glow-border">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-display text-lg font-bold tracking-wider text-foreground">
+        <div className="flex items-center gap-1">
+          <ChevronLeft className="w-6 h-6 text-primary" strokeWidth={3} />
+          <span className="font-display text-xl font-black tracking-wider text-foreground">
             KULT
           </span>
-          <span className="text-xs font-mono text-muted-foreground tracking-widest">
-            AI-NATIVE
+          <span className="text-[10px] font-mono text-muted-foreground tracking-widest ml-1 mt-1">
+            GAMES
           </span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          {["Games", "Discover", "Leaderboard"].map((item) => (
+          {["Store", "Games", "Leaderboard", "Events", "Battle"].map((item, i) => (
             <a
               key={item}
               href="#"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300"
+              className={`text-sm font-medium transition-colors duration-300 ${
+                i === 1 ? "text-primary" : "text-muted-foreground hover:text-primary"
+              }`}
             >
               {item}
             </a>
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300">
-            <Search className="w-4 h-4" />
-          </button>
-          <button className="px-4 py-2 rounded-lg font-display text-xs font-semibold tracking-wider bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 hover:border-primary/50 transition-all duration-300 glow-border">
-            CONNECT
-          </button>
-        </div>
+        <button className="px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 hover:shadow-[0_0_20px_hsl(270_70%_55%/0.4)] transition-all duration-300 btn-angular">
+          LOGIN
+        </button>
       </div>
     </motion.nav>
   );

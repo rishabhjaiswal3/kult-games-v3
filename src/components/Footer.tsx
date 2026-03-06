@@ -1,22 +1,40 @@
-import { Sparkles } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 border-t border-border/30 py-12">
+    <footer className="relative z-10 border-t border-border/30 py-8">
       <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
+        <div className="text-center mb-6">
+          <p className="text-xs text-muted-foreground font-mono">
+            Copyright 2026 all rights reserved. All Rights Reserved.
+          </p>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <ChevronLeft className="w-5 h-5 text-primary" strokeWidth={3} />
             <span className="font-display text-sm font-bold tracking-wider text-foreground">
               KULT
             </span>
-            <span className="text-xs text-muted-foreground">× 0G Chain</span>
+            <span className="text-[10px] font-mono text-muted-foreground tracking-widest">
+              GAMES
+            </span>
+            <span className="text-muted-foreground mx-2">|</span>
+            <span className="font-display text-sm font-bold text-muted-foreground">0G</span>
           </div>
-          <p className="text-xs text-muted-foreground font-mono">
-            © 2026 Kult Games. AI-Native Gaming on 0G.
-          </p>
+
+          {/* Social icons */}
+          <div className="flex items-center gap-4">
+            {["Facebook", "X", "Reddit", "Discord"].map((social) => (
+              <a
+                key={social}
+                href="#"
+                className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 transition-all"
+                aria-label={social}
+              >
+                <span className="text-xs font-bold">{social[0]}</span>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
