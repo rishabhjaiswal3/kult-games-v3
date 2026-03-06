@@ -26,7 +26,7 @@ const Leaderboard = () => {
   const [timeFilter, setTimeFilter] = useState("All Time");
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-[hsl(40,80%,55%)]" />;
+    if (rank === 1) return <Crown className="w-5 h-5 text-[hsl(var(--gold))]" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-[hsl(0,0%,75%)]" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-[hsl(25,70%,50%)]" />;
     return <span className="text-sm font-display font-bold text-muted-foreground">{rank}</span>;
@@ -38,15 +38,14 @@ const Leaderboard = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10">
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-10">
-          <source src="/videos/SC_7.mp4" type="video/mp4" />
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-12">
+          <source src="/videos/SC_12-2.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/85" />
+        <div className="absolute inset-0 bg-background/80" />
 
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header with large mage rising behind content */}
           <div className="relative mb-12">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="relative z-[1]">
               <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase mb-2 block">
                 <Trophy className="w-3 h-3 inline mr-1" /> Rankings
               </span>
@@ -56,46 +55,31 @@ const Leaderboard = () => {
               <p className="text-muted-foreground mt-3 max-w-md text-sm">Climb the ranks. Prove your dominance. Earn eternal glory on-chain.</p>
             </motion.div>
 
-            {/* Large mage - upper body visible, lower body fades behind content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden"
+              className="hidden lg:block absolute -right-4 xl:right-4 -top-12 w-[360px] xl:w-[450px] h-[550px] xl:h-[650px] overflow-hidden z-[2]"
             >
               <MageCharacter src={mageVictory} alt="Victory Mage" />
             </motion.div>
           </div>
 
           {/* Time filters */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3 mb-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3 mb-8 relative z-[3]">
             {timeFilters.map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeFilter(tf)}
-                className={`px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider transition-all ${
-                  timeFilter === tf
-                    ? "bg-primary text-primary-foreground"
-                    : "glass-panel text-muted-foreground hover:text-foreground"
-                }`}
-              >
+              <button key={tf} onClick={() => setTimeFilter(tf)} className={`px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider transition-all ${timeFilter === tf ? "bg-primary text-primary-foreground" : "glass-panel text-muted-foreground hover:text-foreground"}`}>
                 {tf.toUpperCase()}
               </button>
             ))}
           </motion.div>
 
           {/* Top 3 podium */}
-          <div className="grid grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto">
+          <div className="grid grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto relative z-[3]">
             {[players[1], players[0], players[2]].map((p, i) => (
-              <motion.div
-                key={p.rank}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className={`glass-panel rounded-xl p-4 text-center ${i === 1 ? "ornate-border -mt-4" : ""}`}
-              >
+              <motion.div key={p.rank} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} className={`glass-panel rounded-xl p-4 text-center ${i === 1 ? "ornate-border -mt-4" : ""}`}>
                 <div className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center font-display font-bold text-lg ${
-                  p.rank === 1 ? "bg-[hsl(40,80%,55%)]/20 text-[hsl(40,80%,55%)]" :
+                  p.rank === 1 ? "bg-[hsl(var(--gold))]/20 text-[hsl(var(--gold))]" :
                   p.rank === 2 ? "bg-foreground/10 text-foreground" :
                   "bg-[hsl(25,70%,50%)]/20 text-[hsl(25,70%,50%)]"
                 }`}>
@@ -110,12 +94,7 @@ const Leaderboard = () => {
           </div>
 
           {/* Full table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="glass-panel rounded-xl overflow-hidden"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass-panel rounded-xl overflow-hidden relative z-[3]">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -130,19 +109,11 @@ const Leaderboard = () => {
                 </thead>
                 <tbody>
                   {players.map((p, i) => (
-                    <motion.tr
-                      key={p.rank}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + i * 0.05 }}
-                      className="border-b border-border/10 hover:bg-muted/30 transition-colors"
-                    >
+                    <motion.tr key={p.rank} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.05 }} className="border-b border-border/10 hover:bg-muted/30 transition-colors">
                       <td className="p-4">{getRankIcon(p.rank)}</td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-display font-bold text-primary">
-                            {p.avatar}
-                          </div>
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-display font-bold text-primary">{p.avatar}</div>
                           <span className="font-display text-sm font-semibold text-foreground">{p.name}</span>
                         </div>
                       </td>
