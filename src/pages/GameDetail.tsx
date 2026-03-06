@@ -221,17 +221,18 @@ const GameDetail = () => {
               </motion.div>
             </div>
 
-            {/* Sidebar mage */}
+            {/* Sidebar mage - flipped to face toward content */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
-              className="hidden lg:block w-[280px] flex-shrink-0"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="hidden lg:block w-[320px] xl:w-[380px] flex-shrink-0 relative"
             >
+              <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] rounded-full bg-primary/15 blur-[80px]" />
               <img
                 src={mageBattle}
                 alt="Mage"
-                className="w-full animate-float drop-shadow-[0_0_40px_hsl(270_70%_55%/0.3)]"
+                className="w-full animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)] transform -scale-x-100"
               />
             </motion.div>
           </div>

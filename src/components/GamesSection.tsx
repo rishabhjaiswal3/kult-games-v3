@@ -178,15 +178,21 @@ const GamesSection = () => {
               ))}
             </div>
 
-            {/* Mage character in bottom right */}
-            <motion.img
+            {/* Mage character - large, fading into section */}
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              src={mageMediate}
-              alt="Mage"
-              className="hidden xl:block absolute -bottom-10 -right-10 w-[250px] animate-float drop-shadow-[0_0_30px_hsl(270_70%_55%/0.3)] pointer-events-none"
-            />
+              className="hidden xl:block absolute -bottom-20 -right-16 w-[350px] h-[500px] overflow-hidden pointer-events-none"
+              style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 90%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 90%)' }}
+            >
+              <img
+                src={mageMediate}
+                alt="Mage"
+                className="w-full h-auto animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
+              />
+              <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full bg-primary/15 blur-[80px]" />
+            </motion.div>
           </div>
         </div>
       </div>
