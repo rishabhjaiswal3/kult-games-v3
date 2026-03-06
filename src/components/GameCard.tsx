@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Play, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface GameCardProps {
   title: string;
@@ -11,6 +12,7 @@ interface GameCardProps {
   sessionLength: string;
   skillLevel: string;
   index: number;
+  id?: string;
 }
 
 const GameCard = ({
@@ -21,7 +23,11 @@ const GameCard = ({
   sessionLength,
   skillLevel,
   index,
+  id,
 }: GameCardProps) => {
+  const navigate = useNavigate();
+  const gameId = id || title.toLowerCase().replace(/\s+/g, "-");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -29,6 +35,7 @@ const GameCard = ({
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={{ y: -6, transition: { duration: 0.3 } }}
+      onClick={() => navigate(`/game/${gameId}`)}
       className="group relative rounded-xl overflow-hidden ornate-border cursor-pointer bg-card"
     >
       {/* Image with play button */}
@@ -49,7 +56,7 @@ const GameCard = ({
 
         {/* Rating */}
         <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-card/80 backdrop-blur-sm">
-          <Star className="w-3 h-3 text-[hsl(40,80%,55%)] fill-[hsl(40,80%,55%)]" />
+          <Star className="w-3 h-3 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]" />
           <span className="text-xs font-semibold text-foreground">{rating}</span>
         </div>
       </div>
