@@ -1,22 +1,25 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Swords } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import mageCharacter from "@/assets/mage-character.png";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-        {/* Background video */}
+        {/* Background video - more visible */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
         >
           <source src="/videos/SC_1.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/70" />
+        <div className="absolute inset-0 bg-background/50" />
 
         {/* Purple nebula glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
@@ -47,24 +50,38 @@ const HeroSection = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-8"
               >
-                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-foreground/30 text-foreground hover:bg-foreground/10 transition-all duration-300 flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/store")}
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-foreground/30 text-foreground hover:bg-foreground/10 transition-all duration-300 flex items-center gap-2"
+                >
                   EXPLORE MORE
                   <ArrowRight className="w-4 h-4" />
                 </button>
-                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(270_70%_55%/0.4)] transition-all duration-300 flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/events")}
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(270_70%_55%/0.4)] transition-all duration-300 flex items-center gap-2"
+                >
                   <Swords className="w-4 h-4" />
                   STAKE & BATTLE
                 </button>
               </motion.div>
             </div>
 
-            {/* Right - Mage character */}
+            {/* Right - Mage character with wand glow animation */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.4 }}
               className="relative"
             >
+              {/* Animated wand glow */}
+              <div className="absolute top-[10%] right-[15%] w-[100px] h-[100px] rounded-full animate-pulse-glow bg-primary/40 blur-[40px]" />
+              <div className="absolute top-[8%] right-[12%] w-[60px] h-[60px] rounded-full animate-pulse-glow bg-secondary/60 blur-[25px]" style={{ animationDelay: "0.5s" }} />
+              
+              {/* Eye glow effect */}
+              <div className="absolute top-[22%] left-[42%] w-[8px] h-[8px] rounded-full animate-pulse-glow bg-primary blur-[4px]" />
+              <div className="absolute top-[22%] left-[48%] w-[8px] h-[8px] rounded-full animate-pulse-glow bg-primary blur-[4px]" />
+
               <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full" />
               <img
                 src={mageCharacter}
