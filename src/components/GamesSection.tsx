@@ -4,68 +4,15 @@ import GameCard from "./GameCard";
 import { MessageCircle } from "lucide-react";
 import MageCharacter from "@/components/MageCharacter";
 import mageMediate from "@/assets/mage-meditate.png";
+import AIScanLine from "@/components/AIScanLine";
 
 const games = [
-  {
-    id: "guess-the-ai",
-    title: "Guess The AI",
-    description: "Challenge your mind. Beat the AI.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png",
-    category: "PUZZLE",
-    rating: 4.8,
-    sessionLength: "5-10 min",
-    skillLevel: "Beginner",
-  },
-  {
-    id: "zero-g-pool",
-    title: "Zero G Pool",
-    description: "Your favourite 8-ball, now with a cosmic twist.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png",
-    category: "SPORTS",
-    rating: 4.8,
-    sessionLength: "10-15 min",
-    skillLevel: "Intermediate",
-  },
-  {
-    id: "zero-dash",
-    title: "Zero Dash",
-    description: "Run. Escape. Don't look back.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png",
-    category: "ACTION",
-    rating: 4.8,
-    sessionLength: "3-5 min",
-    skillLevel: "All levels",
-  },
-  {
-    id: "robo-wars",
-    title: "Robo Wars",
-    description: "Enter the arena where metal meets mayhem.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png",
-    category: "FIGHTING",
-    rating: 4.8,
-    sessionLength: "10-20 min",
-    skillLevel: "Intermediate",
-  },
-  {
-    id: "highway-hustle",
-    title: "Highway Hustle",
-    description: "Fast lanes. Fierce rivals. Full throttle.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png",
-    category: "RACING",
-    rating: 4.8,
-    sessionLength: "5-10 min",
-    skillLevel: "Beginner",
-  },
-  {
-    id: "warzone-warriors",
-    title: "Warzone Warriors",
-    description: "Epic battles in a decentralized warzone.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png",
-    category: "BATTLE",
-    rating: 4.9,
-    sessionLength: "15-30 min",
-    skillLevel: "Advanced",
-  },
+  { id: "guess-the-ai", title: "Guess The AI", description: "Challenge your mind. Beat the AI.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "PUZZLE", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
+  { id: "zero-g-pool", title: "Zero G Pool", description: "Your favourite 8-ball, now with a cosmic twist.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png", category: "SPORTS", rating: 4.8, sessionLength: "10-15 min", skillLevel: "Intermediate" },
+  { id: "zero-dash", title: "Zero Dash", description: "Run. Escape. Don't look back.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png", category: "ACTION", rating: 4.8, sessionLength: "3-5 min", skillLevel: "All levels" },
+  { id: "robo-wars", title: "Robo Wars", description: "Enter the arena where metal meets mayhem.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", category: "FIGHTING", rating: 4.8, sessionLength: "10-20 min", skillLevel: "Intermediate" },
+  { id: "highway-hustle", title: "Highway Hustle", description: "Fast lanes. Fierce rivals. Full throttle.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png", category: "RACING", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
+  { id: "warzone-warriors", title: "Warzone Warriors", description: "Epic battles in a decentralized warzone.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "BATTLE", rating: 4.9, sessionLength: "15-30 min", skillLevel: "Advanced" },
 ];
 
 const allCategories = ["All Games", "Puzzle", "Sports", "Action", "Fighting", "Racing", "Battle"];
@@ -87,22 +34,34 @@ const GamesSection = () => {
 
   return (
     <section className="relative py-20 z-10">
-      <div className="container mx-auto px-6">
-        {/* Section header */}
+      {/* AI grid background for this section */}
+      <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
+      <AIScanLine />
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Section header with AI flair */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="mb-12"
         >
-          <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase mb-2 block">
-            ★ Games Hub
-          </span>
+          <div className="flex items-center gap-2 mb-2">
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full bg-primary"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase">
+              ★ Games Hub
+            </span>
+            <div className="h-[1px] w-16 bg-gradient-to-r from-primary/50 to-transparent" />
+          </div>
           <div className="flex items-center justify-between">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
               Play Matches To Rise On The Leaderboard
             </h2>
-            <button className="hidden md:flex px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider border border-primary/30 text-primary hover:bg-primary/10 transition-all">
+            <button className="hidden md:flex px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider border border-primary/30 text-primary hover:bg-primary/10 transition-all ai-border-glow">
               0G GAMES →
             </button>
           </div>
@@ -116,29 +75,21 @@ const GamesSection = () => {
             viewport={{ once: true }}
             className="lg:w-64 flex-shrink-0 space-y-6"
           >
-            {/* Categories */}
-            <div className="glass-panel rounded-xl p-5">
+            <div className="glass-panel-ai rounded-xl p-5">
               <h3 className="font-display text-sm font-bold text-foreground tracking-wider mb-4">Categories</h3>
               <div className="space-y-3">
                 {allCategories.map((cat) => (
-                  <label
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className="flex items-center justify-between cursor-pointer group"
-                  >
-                    <span className={`text-sm transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>
-                      {cat}
-                    </span>
+                  <label key={cat} onClick={() => setSelectedCategory(cat)} className="flex items-center justify-between cursor-pointer group">
+                    <span className={`text-sm transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>{cat}</span>
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedCategory === cat ? "border-primary bg-primary/20" : "border-border/50 group-hover:border-primary/50"}`}>
-                      {selectedCategory === cat && <div className="w-2 h-2 rounded-sm bg-primary" />}
+                      {selectedCategory === cat && <motion.div layoutId="cat-check" className="w-2 h-2 rounded-sm bg-primary" />}
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Recent Posts */}
-            <div className="glass-panel rounded-xl p-5">
+            <div className="glass-panel-ai rounded-xl p-5">
               <h3 className="font-display text-sm font-bold text-foreground tracking-wider mb-4">Recent Post</h3>
               <div className="space-y-4">
                 {recentPosts.map((post, i) => (
@@ -158,8 +109,7 @@ const GamesSection = () => {
               </div>
             </div>
 
-            {/* Tags */}
-            <div className="glass-panel rounded-xl p-5">
+            <div className="glass-panel-ai rounded-xl p-5">
               <h3 className="font-display text-sm font-bold text-foreground tracking-wider mb-4">Popular Tag</h3>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
@@ -179,7 +129,6 @@ const GamesSection = () => {
               ))}
             </div>
 
-            {/* Mage character - large, fading into section */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
