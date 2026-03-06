@@ -86,7 +86,7 @@ const HeroSection = () => {
               <img
                 src={mageCharacter}
                 alt="Kult Mage"
-                className="relative w-[300px] md:w-[400px] lg:w-[500px] animate-float drop-shadow-[0_0_40px_hsl(270_70%_55%/0.3)]"
+                className="relative w-[350px] md:w-[450px] lg:w-[550px] animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
               />
             </motion.div>
           </div>

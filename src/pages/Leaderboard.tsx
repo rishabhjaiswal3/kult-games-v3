@@ -43,24 +43,34 @@ const Leaderboard = () => {
         <div className="absolute inset-0 bg-background/85" />
 
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-12">
+          {/* Header with large mage rising behind content */}
+          <div className="relative mb-12">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase mb-2 block">
                 <Trophy className="w-3 h-3 inline mr-1" /> Rankings
               </span>
-              <h1 className="font-display text-4xl md:text-5xl font-black text-foreground tracking-tight">
+              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
                 LEADER<span className="gradient-text">BOARD</span>
               </h1>
+              <p className="text-muted-foreground mt-3 max-w-md text-sm">Climb the ranks. Prove your dominance. Earn eternal glory on-chain.</p>
             </motion.div>
-            <motion.img
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              src={mageVictory}
-              alt="Victory Mage"
-              className="hidden lg:block w-[180px] animate-float drop-shadow-[0_0_30px_hsl(270_70%_55%/0.3)]"
-            />
+
+            {/* Large mage - upper body visible, lower body fades behind content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden pointer-events-none"
+              style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)' }}
+            >
+              <img
+                src={mageVictory}
+                alt="Victory Mage"
+                className="w-full h-auto animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
+              />
+              {/* Glow behind mage */}
+              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full bg-primary/20 blur-[80px]" />
+            </motion.div>
           </div>
 
           {/* Time filters */}
