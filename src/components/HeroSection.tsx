@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Swords } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import MageCharacter from "@/components/MageCharacter";
 import mageCharacter from "@/assets/mage-character.png";
 
 const HeroSection = () => {
@@ -72,22 +73,9 @@ const HeroSection = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.4 }}
-              className="relative"
+              className="relative w-[350px] md:w-[450px] lg:w-[550px]"
             >
-              {/* Animated wand glow */}
-              <div className="absolute top-[10%] right-[15%] w-[100px] h-[100px] rounded-full animate-pulse-glow bg-primary/40 blur-[40px]" />
-              <div className="absolute top-[8%] right-[12%] w-[60px] h-[60px] rounded-full animate-pulse-glow bg-secondary/60 blur-[25px]" style={{ animationDelay: "0.5s" }} />
-              
-              {/* Eye glow effect */}
-              <div className="absolute top-[22%] left-[42%] w-[8px] h-[8px] rounded-full animate-pulse-glow bg-primary blur-[4px]" />
-              <div className="absolute top-[22%] left-[48%] w-[8px] h-[8px] rounded-full animate-pulse-glow bg-primary blur-[4px]" />
-
-              <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full" />
-              <img
-                src={mageCharacter}
-                alt="Kult Mage"
-                className="relative w-[350px] md:w-[450px] lg:w-[550px] animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
-              />
+              <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
             </motion.div>
           </div>
         </div>

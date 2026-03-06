@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import GameCard from "./GameCard";
 import { MessageCircle } from "lucide-react";
+import MageCharacter from "@/components/MageCharacter";
 import mageMediate from "@/assets/mage-meditate.png";
 
 const games = [
@@ -183,15 +184,9 @@ const GamesSection = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="hidden xl:block absolute -bottom-20 -right-16 w-[350px] h-[500px] overflow-hidden pointer-events-none"
-              style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 90%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 90%)' }}
+              className="hidden xl:block absolute -bottom-20 -right-16 w-[350px] h-[500px] overflow-hidden"
             >
-              <img
-                src={mageMediate}
-                alt="Mage"
-                className="w-full h-auto animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
-              />
-              <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full bg-primary/15 blur-[80px]" />
+              <MageCharacter src={mageMediate} alt="Meditating Mage" glowColor="secondary" />
             </motion.div>
           </div>
         </div>
