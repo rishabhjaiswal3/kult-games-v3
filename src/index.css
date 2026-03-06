@@ -69,6 +69,60 @@
       inset 0 1px 0 hsl(220 20% 92% / 0.03);
   }
 
+  .glass-panel-ai {
+    @apply backdrop-blur-xl border border-border/50 relative overflow-hidden;
+    background: hsl(240 15% 8% / 0.7);
+    box-shadow: 
+      0 0 20px hsl(270 70% 55% / 0.05),
+      inset 0 1px 0 hsl(220 20% 92% / 0.03);
+  }
+  .glass-panel-ai::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      hsl(270 70% 55% / 0) 0%,
+      hsl(270 70% 55% / 0.03) 50%,
+      hsl(270 70% 55% / 0) 100%
+    );
+    background-size: 200% 200%;
+    animation: holographic-shimmer 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .ai-grid-overlay {
+    background-image: 
+      linear-gradient(hsl(270 70% 55% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(270 70% 55% / 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: ai-grid-pulse 4s ease-in-out infinite;
+  }
+
+  .ai-border-glow {
+    position: relative;
+  }
+  .ai-border-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      var(--ai-glow-angle, 135deg),
+      hsl(270 70% 55% / 0.5),
+      hsl(280 80% 65% / 0.3),
+      hsl(210 80% 55% / 0.3),
+      hsl(270 70% 55% / 0.5)
+    );
+    background-size: 300% 300%;
+    animation: ai-border-flow 4s linear infinite;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+  }
+
   .glow-text {
     text-shadow: 0 0 20px hsl(270 70% 55% / 0.5), 0 0 40px hsl(270 70% 55% / 0.2);
   }
@@ -143,6 +197,12 @@
   .animate-marquee {
     animation: marquee 20s linear infinite;
   }
+  .animate-ai-shimmer {
+    animation: holographic-shimmer 6s ease-in-out infinite;
+  }
+  .animate-ai-grid {
+    animation: ai-grid-pulse 4s ease-in-out infinite;
+  }
 }
 
 @keyframes float {
@@ -163,4 +223,20 @@
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+@keyframes holographic-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes ai-border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes ai-grid-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
