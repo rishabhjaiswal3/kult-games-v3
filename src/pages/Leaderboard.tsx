@@ -63,13 +63,19 @@ const Leaderboard = () => {
               className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden pointer-events-none"
               style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)' }}
             >
+              {/* Animated wand/staff glow */}
+              <div className="absolute top-[2%] right-[30%] w-[80px] h-[80px] rounded-full animate-pulse-glow bg-primary/50 blur-[35px]" />
+              <div className="absolute top-[0%] right-[27%] w-[50px] h-[50px] rounded-full animate-pulse-glow bg-secondary/60 blur-[20px]" style={{ animationDelay: "0.5s" }} />
+              {/* Eye glow */}
+              <div className="absolute top-[20%] left-[42%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-primary blur-[3px]" />
+              <div className="absolute top-[20%] left-[48%] w-[6px] h-[6px] rounded-full animate-pulse-glow bg-primary blur-[3px]" />
               <img
                 src={mageVictory}
                 alt="Victory Mage"
-                className="w-full h-auto animate-float drop-shadow-[0_0_60px_hsl(270_70%_55%/0.4)]"
+                className="w-full h-auto animate-float drop-shadow-[0_0_80px_hsl(270_70%_55%/0.5)]"
               />
               {/* Glow behind mage */}
-              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[200px] h-[200px] rounded-full bg-primary/20 blur-[80px]" />
+              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] rounded-full bg-primary/25 blur-[80px]" />
             </motion.div>
           </div>
 
