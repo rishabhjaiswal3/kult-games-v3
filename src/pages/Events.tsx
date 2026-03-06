@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, Users, Swords, Trophy, Zap, MapPin } from "lucide-react";
+import { Calendar, Clock, Users, Swords, Trophy, Zap } from "lucide-react";
 import { useState } from "react";
 import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
@@ -8,73 +8,17 @@ import MageCharacter from "@/components/MageCharacter";
 import mageBattle from "@/assets/mage-battle.png";
 
 const events = [
-  {
-    id: 1,
-    title: "Zero Dash Championship",
-    game: "Zero Dash",
-    date: "Mar 15, 2026",
-    time: "8:00 PM UTC",
-    prize: "5 ETH",
-    players: "128/256",
-    status: "Registering",
-    type: "Tournament",
-    description: "The ultimate speed run showdown. Top 3 runners take home massive rewards.",
-  },
-  {
-    id: 2,
-    title: "Robo Wars Arena Season 3",
-    game: "Robo Wars",
-    date: "Mar 20, 2026",
-    time: "6:00 PM UTC",
-    prize: "10 ETH",
-    players: "64/64",
-    status: "Full",
-    type: "Season",
-    description: "Season 3 of the most intense robot fighting league. Prepare your mechs.",
-  },
-  {
-    id: 3,
-    title: "Highway Hustle Grand Prix",
-    game: "Highway Hustle",
-    date: "Mar 25, 2026",
-    time: "9:00 PM UTC",
-    prize: "3 ETH",
-    players: "45/100",
-    status: "Registering",
-    type: "Tournament",
-    description: "Race through neon highways in this high-stakes grand prix event.",
-  },
-  {
-    id: 4,
-    title: "AI Mind Games Open",
-    game: "Guess The AI",
-    date: "Apr 1, 2026",
-    time: "4:00 PM UTC",
-    prize: "2 ETH",
-    players: "200/500",
-    status: "Registering",
-    type: "Open",
-    description: "Can you outsmart the AI? Open tournament for all skill levels.",
-  },
-  {
-    id: 5,
-    title: "Zero G Pool Masters",
-    game: "Zero G Pool",
-    date: "Apr 5, 2026",
-    time: "7:00 PM UTC",
-    prize: "4 ETH",
-    players: "32/32",
-    status: "Full",
-    type: "Invitational",
-    description: "Invitation-only pool championship in zero gravity. The best of the best.",
-  },
+  { id: 1, title: "Zero Dash Championship", game: "Zero Dash", date: "Mar 15, 2026", time: "8:00 PM UTC", prize: "5 ETH", players: "128/256", status: "Registering", type: "Tournament", description: "The ultimate speed run showdown. Top 3 runners take home massive rewards." },
+  { id: 2, title: "Robo Wars Arena Season 3", game: "Robo Wars", date: "Mar 20, 2026", time: "6:00 PM UTC", prize: "10 ETH", players: "64/64", status: "Full", type: "Season", description: "Season 3 of the most intense robot fighting league. Prepare your mechs." },
+  { id: 3, title: "Highway Hustle Grand Prix", game: "Highway Hustle", date: "Mar 25, 2026", time: "9:00 PM UTC", prize: "3 ETH", players: "45/100", status: "Registering", type: "Tournament", description: "Race through neon highways in this high-stakes grand prix event." },
+  { id: 4, title: "AI Mind Games Open", game: "Guess The AI", date: "Apr 1, 2026", time: "4:00 PM UTC", prize: "2 ETH", players: "200/500", status: "Registering", type: "Open", description: "Can you outsmart the AI? Open tournament for all skill levels." },
+  { id: 5, title: "Zero G Pool Masters", game: "Zero G Pool", date: "Apr 5, 2026", time: "7:00 PM UTC", prize: "4 ETH", players: "32/32", status: "Full", type: "Invitational", description: "Invitation-only pool championship in zero gravity. The best of the best." },
 ];
 
 const statusFilters = ["All", "Registering", "Full", "Upcoming"];
 
 const Events = () => {
   const [filter, setFilter] = useState("All");
-
   const filtered = events.filter((e) => filter === "All" || e.status === filter);
 
   return (
@@ -83,15 +27,16 @@ const Events = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10">
+        {/* Dual background videos for depth */}
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-15">
-          <source src="/videos/SC_1.mp4" type="video/mp4" />
+          <source src="/videos/SC_2.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/80" />
+        <div className="absolute inset-0 bg-background/75" />
 
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header with large mage rising behind content */}
+          {/* Header with mage ON TOP of content */}
           <div className="relative mb-12">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="relative z-[1]">
               <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase mb-2 block">
                 <Swords className="w-3 h-3 inline mr-1" /> Battles & Events
               </span>
@@ -101,27 +46,25 @@ const Events = () => {
               <p className="text-muted-foreground mt-3 max-w-md text-sm">Compete in epic tournaments, earn rewards, and rise to glory.</p>
             </motion.div>
 
-            {/* Large mage - upper body visible, lower fades */}
+            {/* Mage character - ON TOP, large, with solid backdrop */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="hidden lg:block absolute -right-4 xl:right-8 -top-8 w-[320px] xl:w-[400px] h-[500px] xl:h-[600px] overflow-hidden"
+              className="hidden lg:block absolute -right-4 xl:right-4 -top-12 w-[360px] xl:w-[450px] h-[550px] xl:h-[650px] overflow-hidden z-[2]"
             >
               <MageCharacter src={mageBattle} alt="Battle Mage" glowColor="blue" />
             </motion.div>
           </div>
 
           {/* Filters */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3 mb-8 overflow-x-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3 mb-8 overflow-x-auto relative z-[3]">
             {statusFilters.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider whitespace-nowrap transition-all ${
-                  filter === f
-                    ? "bg-primary text-primary-foreground"
-                    : "glass-panel text-muted-foreground hover:text-foreground"
+                  filter === f ? "bg-primary text-primary-foreground" : "glass-panel text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {f.toUpperCase()}
@@ -134,7 +77,7 @@ const Events = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="ornate-border rounded-xl p-6 md:p-8 mb-8 relative overflow-hidden"
+            className="ornate-border rounded-xl p-6 md:p-8 mb-8 relative overflow-hidden z-[3]"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5" />
             <div className="relative z-10">
@@ -147,7 +90,7 @@ const Events = () => {
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1"><Calendar className="w-4 h-4 text-primary" />{events[0].date}</span>
                 <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-primary" />{events[0].time}</span>
-                <span className="flex items-center gap-1"><Trophy className="w-4 h-4 text-[hsl(40,80%,55%)]" />{events[0].prize}</span>
+                <span className="flex items-center gap-1"><Trophy className="w-4 h-4 text-[hsl(var(--gold))]" />{events[0].prize}</span>
                 <span className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{events[0].players}</span>
               </div>
               <button className="mt-6 px-8 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(270_70%_55%/0.4)] transition-all">
@@ -157,7 +100,7 @@ const Events = () => {
           </motion.div>
 
           {/* Events list */}
-          <div className="space-y-4">
+          <div className="space-y-4 relative z-[3]">
             {filtered.map((event, i) => (
               <motion.div
                 key={event.id}
@@ -182,7 +125,7 @@ const Events = () => {
                 </div>
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.date}</span>
-                  <span className="flex items-center gap-1"><Trophy className="w-3 h-3 text-[hsl(40,80%,55%)]" />{event.prize}</span>
+                  <span className="flex items-center gap-1"><Trophy className="w-3 h-3 text-[hsl(var(--gold))]" />{event.prize}</span>
                   <span className="flex items-center gap-1"><Users className="w-3 h-3" />{event.players}</span>
                   <button
                     disabled={event.status === "Full"}
