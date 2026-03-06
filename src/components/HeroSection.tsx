@@ -4,6 +4,18 @@ import { Bot, Gamepad2, Zap, ArrowRight } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+      {/* Background video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+      >
+        <source src="/videos/SC_1.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-background/60" />
+
       {/* Neural grid overlay */}
       <div className="absolute inset-0 neural-grid animate-neural-flow opacity-30" />
       
