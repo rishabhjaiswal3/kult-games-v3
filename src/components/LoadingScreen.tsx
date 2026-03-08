@@ -56,7 +56,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
                 className="h-full bg-gradient-to-r from-primary to-secondary"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 4.5, ease: "easeInOut" }}
+                transition={{ duration: 5.5, ease: "easeInOut" }}
               />
             </div>
           </motion.div>
