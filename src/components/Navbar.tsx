@@ -18,6 +18,8 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
+  // Keep LoginModal here but it renders via fixed positioning (z-[101]) so it covers the full screen
+
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
