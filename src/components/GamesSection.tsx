@@ -15,7 +15,7 @@ const games = [
   { id: "warzone-warriors", title: "Warzone Warriors", description: "Epic battles in a decentralized warzone.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "BATTLE", rating: 4.9, sessionLength: "15-30 min", skillLevel: "Advanced" },
 ];
 
-const allCategories = ["All Games", "Puzzle", "Sports", "Action", "Fighting", "Racing", "Battle"];
+const allCategories = ["All Games", "Sports", "Action", "Fighting", "Racing", "Battle"];
 
 const recentPosts = [
   { icon: "telegram", text: "Fell in 0G. Entertainment Network!", date: "27.Feb.2025" },
@@ -58,7 +58,7 @@ const GamesSection = () => {
             <div className="h-[1px] w-16 bg-gradient-to-r from-primary/50 to-transparent" />
           </div>
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground tracking-tight">
               Play Matches To Rise On The Leaderboard
             </h2>
             <button className="hidden md:flex px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider border border-primary/30 text-primary hover:bg-primary/10 transition-all ai-border-glow">
@@ -80,7 +80,7 @@ const GamesSection = () => {
               <div className="space-y-3">
                 {allCategories.map((cat) => (
                   <label key={cat} onClick={() => setSelectedCategory(cat)} className="flex items-center justify-between cursor-pointer group">
-                    <span className={`text-sm transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>{cat}</span>
+                    <span className={`text-sm font-medium transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>{cat}</span>
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedCategory === cat ? "border-primary bg-primary/20" : "border-border/50 group-hover:border-primary/50"}`}>
                       {selectedCategory === cat && <motion.div layoutId="cat-check" className="w-2 h-2 rounded-sm bg-primary" />}
                     </div>
@@ -101,24 +101,14 @@ const GamesSection = () => {
                       <MessageCircle className="w-3.5 h-3.5 text-foreground/70" />
                     </div>
                     <div>
-                      <p className="text-xs text-foreground/80 leading-snug">{post.text}</p>
-                      <span className="text-[10px] text-muted-foreground">{post.date}</span>
+                      <p className="text-sm text-foreground/80 leading-snug font-medium">{post.text}</p>
+                      <span className="text-xs text-muted-foreground">{post.date}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="glass-panel-ai rounded-xl p-5">
-              <h3 className="font-display text-sm font-bold text-foreground tracking-wider mb-4">Popular Tag</h3>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <span key={tag} className="px-3 py-1.5 rounded-full text-[11px] text-muted-foreground border border-border/50 hover:border-primary/30 hover:text-primary cursor-pointer transition-all">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
           </motion.aside>
 
           {/* Game grid + mage */}
@@ -129,14 +119,6 @@ const GamesSection = () => {
               ))}
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="hidden xl:block absolute -bottom-20 -right-16 w-[350px] h-[500px] overflow-hidden"
-            >
-              <MageCharacter src={mageMediate} alt="Meditating Mage" glowColor="secondary" />
-            </motion.div>
           </div>
         </div>
       </div>
