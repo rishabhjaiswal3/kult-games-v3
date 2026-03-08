@@ -26,6 +26,7 @@ const HeroSection = () => {
         <AIDataStream />
         <AIScanLine />
         <NeuralPulse />
+        <KalthWelcome />
 
         {/* AI Grid overlay */}
         <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
