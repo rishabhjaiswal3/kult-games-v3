@@ -109,16 +109,6 @@ const GamesSection = () => {
               </div>
             </div>
 
-            <div className="glass-panel-ai rounded-xl p-5">
-              <h3 className="font-display text-sm font-bold text-foreground tracking-wider mb-4">Popular Tag</h3>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <span key={tag} className="px-3 py-1.5 rounded-full text-[11px] text-muted-foreground border border-border/50 hover:border-primary/30 hover:text-primary cursor-pointer transition-all">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
           </motion.aside>
 
           {/* Game grid + mage */}
