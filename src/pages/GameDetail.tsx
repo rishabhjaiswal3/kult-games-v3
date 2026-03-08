@@ -55,13 +55,14 @@ const GameDetail = () => {
 
       <section className="relative pt-24 pb-20 z-10">
         {/* Hero banner */}
-        <div className="relative h-[400px] overflow-hidden">
-          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-30">
-            <source src="/videos/SC_12-2.mp4" type="video/mp4" />
-          </video>
-          <img src={game.image} alt={game.title} className="absolute inset-0 w-full h-full object-cover mix-blend-overlay" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent" />
+        <div className="relative h-[450px] md:h-[500px] overflow-hidden">
+          <img src={game.image} alt={game.title} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
+          {/* Glow overlay */}
+          <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(270 70% 55% / 0.15)' }} />
+          {/* Bottom edge glow line */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
           <motion.button initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} onClick={() => navigate(-1)} className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 rounded-lg glass-panel text-sm text-foreground hover:text-primary transition-colors z-10">
             <ArrowLeft className="w-4 h-4" /> BACK
