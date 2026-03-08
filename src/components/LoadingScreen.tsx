@@ -4,11 +4,17 @@ import { useState, useEffect } from "react";
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   useEffect(() => {
+    // Skip first 2 seconds of video
+    if (videoRef.current) {
+      videoRef.current.currentTime = 2;
+    }
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 600);
-    }, 3500);
+    }, 4500);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
