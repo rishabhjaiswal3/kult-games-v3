@@ -9,12 +9,12 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     // Skip first 2 seconds of video
     if (videoRef.current) {
-      videoRef.current.currentTime = 2;
+      videoRef.current.currentTime = 3;
     }
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 600);
-    }, 4500);
+    }, 5500);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
