@@ -119,14 +119,6 @@ const GamesSection = () => {
               ))}
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="hidden xl:block absolute -bottom-20 -right-16 w-[350px] h-[500px] overflow-hidden"
-            >
-              <MageCharacter src={mageMediate} alt="Meditating Mage" glowColor="secondary" />
-            </motion.div>
           </div>
         </div>
       </div>
