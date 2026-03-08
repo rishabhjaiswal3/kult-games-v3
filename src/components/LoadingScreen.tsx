@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
