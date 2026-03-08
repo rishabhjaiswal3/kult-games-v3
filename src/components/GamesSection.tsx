@@ -80,7 +80,7 @@ const GamesSection = () => {
               <div className="space-y-3">
                 {allCategories.map((cat) => (
                   <label key={cat} onClick={() => setSelectedCategory(cat)} className="flex items-center justify-between cursor-pointer group">
-                    <span className={`text-sm transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>{cat}</span>
+                    <span className={`text-sm font-medium transition-colors ${selectedCategory === cat ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>{cat}</span>
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedCategory === cat ? "border-primary bg-primary/20" : "border-border/50 group-hover:border-primary/50"}`}>
                       {selectedCategory === cat && <motion.div layoutId="cat-check" className="w-2 h-2 rounded-sm bg-primary" />}
                     </div>
