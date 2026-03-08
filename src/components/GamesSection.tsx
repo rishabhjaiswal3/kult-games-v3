@@ -101,8 +101,8 @@ const GamesSection = () => {
                       <MessageCircle className="w-3.5 h-3.5 text-foreground/70" />
                     </div>
                     <div>
-                      <p className="text-xs text-foreground/80 leading-snug">{post.text}</p>
-                      <span className="text-[10px] text-muted-foreground">{post.date}</span>
+                      <p className="text-sm text-foreground/80 leading-snug font-medium">{post.text}</p>
+                      <span className="text-xs text-muted-foreground">{post.date}</span>
                     </div>
                   </div>
                 ))}

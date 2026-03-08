@@ -61,20 +61,20 @@ const HeroSection = () => {
                 </span>
               </motion.div>
 
-              <motion.h1
+              <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[0.95]"
+                className="mb-6"
               >
-                <span className="text-foreground">SHAPING THE</span>
-                <br />
-                <span className="text-foreground">FUTURE OF</span>
-                <br />
-                <GlitchText className="gradient-text glow-text">ON-CHAIN</GlitchText>
-                <br />
-                <GlitchText className="gradient-text glow-text">GAMING</GlitchText>
-              </motion.h1>
+                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]">
+                  <span className="text-foreground block">THE FUTURE OF</span>
+                  <GlitchText className="gradient-text glow-text block mt-2">ON-CHAIN GAMING</GlitchText>
+                </h1>
+                <p className="mt-4 text-lg md:text-xl text-muted-foreground font-body font-medium max-w-lg leading-relaxed">
+                  Play. Compete. Earn. The next generation of decentralized gaming starts here.
+                </p>
+              </motion.div>
 
               {/* AI processing bar */}
               <motion.div
