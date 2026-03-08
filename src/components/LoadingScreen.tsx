@@ -3,35 +3,40 @@ import { useState, useEffect, useRef } from "react";
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
-
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Skip first 2 seconds of video
-    if (videoRef.current) {
-      videoRef.current.currentTime = 3;
-    }
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 600);
+      setTimeout(onComplete, 1000);
     }, 5500);
     return () => clearTimeout(timer);
   }, [onComplete]);
+
+  const handleVideoLoaded = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 3;
+      videoRef.current.play().catch(() => {});
+    }
+    setVideoLoaded(true);
+  };
 
   return (
     <AnimatePresence>
       {show && (
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
         >
           <video
             ref={videoRef}
-            autoPlay
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            preload="auto"
+            onCanPlayThrough={handleVideoLoaded}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-60' : 'opacity-0'}`}
           >
             <source src="/videos/SC_2-2.mp4" type="video/mp4" />
           </video>
@@ -41,6 +46,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
             className="relative z-10 flex flex-col items-center gap-6"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: -30 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <motion.p
