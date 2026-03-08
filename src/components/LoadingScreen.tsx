@@ -13,22 +13,21 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     }
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 1000);
     }, 5500);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
 
   const handleVideoReady = () => {
     setVideoLoaded(true);
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onComplete}>
       {show && (
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 1, ease: "easeInOut" }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
           <video
             ref={videoRef}
@@ -47,8 +46,8 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
             className="relative z-10 flex flex-col items-center gap-6"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.6 }}
           >
             <motion.p
               className="font-display text-sm sm:text-lg md:text-2xl lg:text-3xl font-bold tracking-[0.25em] uppercase gradient-text glow-text"
