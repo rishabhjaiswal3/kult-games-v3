@@ -1,14 +1,20 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   useEffect(() => {
+    // Skip first 2 seconds of video
+    if (videoRef.current) {
+      videoRef.current.currentTime = 2;
+    }
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 600);
-    }, 3500);
+    }, 4500);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -21,6 +27,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
           transition={{ duration: 0.6 }}
         >
           <video
+            ref={videoRef}
             autoPlay
             muted
             playsInline
@@ -49,7 +56,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
                 className="h-full bg-gradient-to-r from-primary to-secondary"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 3, ease: "easeInOut" }}
+                transition={{ duration: 4.5, ease: "easeInOut" }}
               />
             </div>
           </motion.div>
