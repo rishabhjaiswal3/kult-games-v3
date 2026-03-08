@@ -15,7 +15,7 @@ const games = [
   { id: "warzone-warriors", title: "Warzone Warriors", description: "Epic battles in a decentralized warzone.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "BATTLE", rating: 4.9, sessionLength: "15-30 min", skillLevel: "Advanced" },
 ];
 
-const allCategories = ["All Games", "Puzzle", "Sports", "Action", "Fighting", "Racing", "Battle"];
+const allCategories = ["All Games", "Sports", "Action", "Fighting", "Racing", "Battle"];
 
 const recentPosts = [
   { icon: "telegram", text: "Fell in 0G. Entertainment Network!", date: "27.Feb.2025" },
