@@ -58,7 +58,7 @@ const GamesSection = () => {
             <div className="h-[1px] w-16 bg-gradient-to-r from-primary/50 to-transparent" />
           </div>
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground tracking-tight">
               Play Matches To Rise On The Leaderboard
             </h2>
             <button className="hidden md:flex px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider border border-primary/30 text-primary hover:bg-primary/10 transition-all ai-border-glow">
