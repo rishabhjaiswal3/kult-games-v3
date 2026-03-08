@@ -64,7 +64,7 @@ const Navbar = () => {
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
 
-        <button className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 hover:shadow-[0_0_20px_hsl(270_70%_55%/0.4)] transition-all duration-300 btn-angular relative overflow-hidden">
+        <button onClick={() => setLoginOpen(true)} className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 hover:shadow-[0_0_20px_hsl(270_70%_55%/0.4)] transition-all duration-300 btn-angular relative overflow-hidden">
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
             animate={{ x: ["-200%", "200%"] }}
