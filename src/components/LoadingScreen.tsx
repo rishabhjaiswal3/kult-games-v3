@@ -44,7 +44,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <motion.p
-              className="font-display text-xl md:text-3xl font-bold tracking-[0.25em] uppercase gradient-text glow-text"
+              className="font-display text-sm sm:text-lg md:text-2xl lg:text-3xl font-bold tracking-[0.25em] uppercase gradient-text glow-text"
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
