@@ -86,11 +86,13 @@ const Navbar = () => {
               {item.label}
             </Link>
           ))}
-          <button className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 btn-angular mt-2">
+          <button onClick={() => { setLoginOpen(true); setMobileOpen(false); }} className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 btn-angular mt-2">
             LOGIN
           </button>
         </motion.div>
       )}
+
+      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
     </motion.nav>
   );
 };
