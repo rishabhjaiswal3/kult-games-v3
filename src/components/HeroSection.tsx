@@ -8,7 +8,7 @@ import AIScanLine from "@/components/AIScanLine";
 import GlitchText from "@/components/GlitchText";
 import AITypingText from "@/components/AITypingText";
 import NeuralPulse from "@/components/NeuralPulse";
-import KalthWelcome from "@/components/KalthWelcome";
+
 
 const HeroSection = () => {
   const navigate = useNavigate();
