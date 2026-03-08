@@ -27,6 +27,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
           transition={{ duration: 0.6 }}
         >
           <video
+            ref={videoRef}
             autoPlay
             muted
             playsInline
