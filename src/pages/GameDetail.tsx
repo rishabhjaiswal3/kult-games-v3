@@ -71,6 +71,15 @@ const GameDetail = () => {
 
         <div className="container mx-auto px-6 -mt-32 relative z-10">
           <div className="flex flex-col lg:flex-row gap-10">
+            {/* Game thumbnail */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-[200px] h-[150px] md:w-[260px] md:h-[180px] rounded-xl overflow-hidden flex-shrink-0 ai-border-glow glow-border"
+            >
+              <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
+            </motion.div>
+
             <div className="flex-1">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <span className="text-xs font-mono text-primary tracking-[0.2em]">{game.category}</span>
