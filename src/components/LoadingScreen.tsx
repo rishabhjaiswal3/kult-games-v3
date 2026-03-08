@@ -7,6 +7,10 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 3;
+    }
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 1000);
@@ -14,11 +18,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  const handleVideoLoaded = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 3;
-      videoRef.current.play().catch(() => {});
-    }
+  const handleVideoReady = () => {
     setVideoLoaded(true);
   };
 
@@ -32,10 +32,11 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         >
           <video
             ref={videoRef}
+            autoPlay
             muted
             playsInline
             preload="auto"
-            onCanPlayThrough={handleVideoLoaded}
+            onLoadedData={handleVideoReady}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-60' : 'opacity-0'}`}
           >
             <source src="/videos/SC_2-2.mp4" type="video/mp4" />
