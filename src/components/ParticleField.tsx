@@ -117,7 +117,7 @@ const ParticleField = () => {
         } else {
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(269, 44%, 40%, ${currentOpacity})`;
+          ctx.fillStyle = `hsla(269, 62%, 52%, ${currentOpacity})`;
           ctx.fill();
         }
       });
