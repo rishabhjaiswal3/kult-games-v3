@@ -98,9 +98,9 @@ const ParticleField = () => {
         if (p.isNode) {
           // AI Node - glowing hub
           const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentSize * 4);
-          glow.addColorStop(0, `hsla(270, 70%, 65%, ${currentOpacity})`);
-          glow.addColorStop(0.5, `hsla(270, 70%, 55%, ${currentOpacity * 0.3})`);
-          glow.addColorStop(1, `hsla(270, 70%, 55%, 0)`);
+          glow.addColorStop(0, `hsla(272, 85%, 65%, ${currentOpacity})`);
+          glow.addColorStop(0.5, `hsla(272, 85%, 58%, ${currentOpacity * 0.3})`);
+          glow.addColorStop(1, `hsla(272, 85%, 58%, 0)`);
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize * 4, 0, Math.PI * 2);
           ctx.fillStyle = glow;
