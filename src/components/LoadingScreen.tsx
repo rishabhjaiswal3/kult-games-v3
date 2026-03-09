@@ -1,82 +1,124 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+
+const VIDEO_START_TIME = 1;
+const VIDEO_FALLBACK_HIDE_DELAY = 9800;
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const veilRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasExitedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
       const seekToStart = () => {
-        video.currentTime = 3;
-        video.removeEventListener('loadedmetadata', seekToStart);
+        video.currentTime = VIDEO_START_TIME;
+        video.removeEventListener("loadedmetadata", seekToStart);
       };
       if (video.readyState >= 1) {
-        video.currentTime = 3;
+        video.currentTime = VIDEO_START_TIME;
       } else {
-        video.addEventListener('loadedmetadata', seekToStart);
+        video.addEventListener("loadedmetadata", seekToStart);
       }
     }
-    const timer = setTimeout(() => {
-      setShow(false);
-    }, 5500);
-    return () => clearTimeout(timer);
+    const videoTimer = setTimeout(() => {
+      startExit();
+    }, VIDEO_FALLBACK_HIDE_DELAY);
+
+    return () => {
+      clearTimeout(videoTimer);
+    };
   }, []);
 
   const handleVideoReady = () => {
+    const video = videoRef.current;
+    if (video && Math.abs(video.currentTime - VIDEO_START_TIME) > 0.15) {
+      video.currentTime = VIDEO_START_TIME;
+    }
     setVideoLoaded(true);
   };
 
+  const startExit = () => {
+    if (hasExitedRef.current) {
+      return;
+    }
+
+    hasExitedRef.current = true;
+    onComplete();
+
+    const container = containerRef.current;
+    const veil = veilRef.current;
+    const video = videoRef.current;
+
+    if (!container || !veil || !video) {
+      setShow(false);
+      return;
+    }
+
+    const timeline = gsap.timeline({
+      onComplete: () => {
+        setShow(false);
+      },
+    });
+
+    timeline.to(veil, {
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+    timeline.to(
+      video,
+      {
+        opacity: 0,
+        scale: 1.045,
+        filter: "blur(10px)",
+        duration: 0.65,
+        ease: "power3.out",
+      },
+      0
+    );
+    timeline.to(
+      container,
+      {
+        opacity: 0,
+        duration: 0.65,
+        ease: "power3.out",
+      },
+      0.05
+    );
+  };
+
+  const handleVideoEnded = () => {
+    startExit();
+  };
+
+  if (!show) {
+    return null;
+  }
+
   return (
-    <AnimatePresence onExitComplete={onComplete}>
-      {show && (
-        <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            onLoadedData={handleVideoReady}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-60' : 'opacity-0'}`}
-          >
-            <source src="/videos/SC_2-2.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-background/40" />
-
-          <motion.div
-            className="relative z-10 flex flex-col items-center gap-6"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.6 }}
-          >
-            <motion.p
-              className="font-display text-sm sm:text-lg md:text-2xl lg:text-3xl font-bold tracking-[0.25em] uppercase gradient-text glow-text"
-              animate={{ opacity: [0.6, 1, 0.6] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              Entering the Kultverse
-            </motion.p>
-
-            <div className="w-48 h-[2px] bg-muted rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-primary to-secondary"
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 5.5, ease: "easeInOut" }}
-              />
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+    >
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onLoadedData={handleVideoReady}
+        onEnded={handleVideoEnded}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoLoaded ? "opacity-70" : "opacity-0"}`}
+      >
+        <source src="/videos/SC_2-2.mp4" type="video/mp4" />
+      </video>
+      <div ref={veilRef} className="absolute inset-0 bg-background/28" />
+    </div>
   );
 };
 

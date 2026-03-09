@@ -118,7 +118,7 @@ const GameDetail = () => {
 
             {/* Sidebar mage */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.8 }} className="hidden lg:block w-[340px] xl:w-[400px] flex-shrink-0 relative">
-              <MageCharacter src={mageBattle} alt="Mage" flip showMask={false} glowColor="blue" />
+              <MageCharacter src={mageBattle} alt="Mage" flip showMask={false} glowColor="blue" loading="eager" />
             </motion.div>
           </div>
         </div>

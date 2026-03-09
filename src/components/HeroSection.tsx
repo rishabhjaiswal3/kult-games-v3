@@ -17,7 +17,7 @@ const HeroSection = () => {
     <>
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
         {/* Background video */}
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-40">
+        <video autoPlay loop muted playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover opacity-40">
           <source src="/videos/SC_1.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/50" />
@@ -43,6 +43,7 @@ const HeroSection = () => {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25 }}
                 className="flex items-center gap-2 mb-6"
               >
                 <motion.div
@@ -66,7 +67,7 @@ const HeroSection = () => {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                transition={{ duration: 0.25 }}
                 className="mb-6"
               >
                 <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]">
@@ -82,7 +83,7 @@ const HeroSection = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ duration: 0.2 }}
                 className="flex items-center gap-3 mb-6"
               >
                 <div className="h-[1px] flex-1 max-w-[200px] bg-border/30 relative overflow-hidden">
@@ -98,7 +99,7 @@ const HeroSection = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
+                transition={{ duration: 0.25 }}
                 className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-8"
               >
                 <button
@@ -127,7 +128,7 @@ const HeroSection = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.4 }}
+              transition={{ duration: 0.3 }}
               className="hidden md:block relative w-[350px] md:w-[450px] lg:w-[550px]"
             >
               <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
