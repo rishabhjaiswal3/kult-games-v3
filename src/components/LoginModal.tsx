@@ -101,7 +101,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-accent/30 bg-gradient-to-r from-[hsl(180_60%_40%)] to-[hsl(160_70%_45%)] hover:shadow-[0_0_25px_hsl(170_60%_45%/0.3)] transition-all duration-300 flex items-center justify-center gap-2 mb-3"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 hover:shadow-[0_0_25px_hsl(272_85%_58%/0.3)] transition-all duration-300 flex items-center justify-center gap-2 mb-3"
                 >
                   <Wallet className="w-4 h-4" />
                   Connect Wallet

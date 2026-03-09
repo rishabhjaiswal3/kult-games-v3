@@ -129,9 +129,9 @@ const ParticleField = () => {
       // Scanning line effect
       const scanY = (Math.sin(time * 0.5) * 0.5 + 0.5) * canvas.height;
       const scanGradient = ctx.createLinearGradient(0, scanY - 40, 0, scanY + 40);
-      scanGradient.addColorStop(0, `hsla(270, 70%, 55%, 0)`);
-      scanGradient.addColorStop(0.5, `hsla(270, 70%, 55%, 0.03)`);
-      scanGradient.addColorStop(1, `hsla(270, 70%, 55%, 0)`);
+      scanGradient.addColorStop(0, `hsla(272, 85%, 58%, 0)`);
+      scanGradient.addColorStop(0.5, `hsla(272, 85%, 58%, 0.03)`);
+      scanGradient.addColorStop(1, `hsla(272, 85%, 58%, 0)`);
       ctx.fillStyle = scanGradient;
       ctx.fillRect(0, scanY - 40, canvas.width, 80);
 
