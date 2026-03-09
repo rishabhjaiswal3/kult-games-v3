@@ -38,7 +38,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.img
                   src={mageCharacter}
                   alt="Character"
-                  className="h-24 md:h-32 w-auto drop-shadow-[0_0_20px_hsl(270_70%_55%/0.6)]"
+                  className="h-24 md:h-32 w-auto drop-shadow-[0_0_20px_hsl(272_85%_58%/0.6)]"
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
