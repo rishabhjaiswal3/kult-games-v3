@@ -23,9 +23,9 @@ const NeuralPulse = ({ className = "" }: NeuralPulseProps) => {
             scale: [1, 1.5, 1],
             opacity: [0.1, 0.3, 0.1],
             borderColor: [
-              "hsl(269 44% 40% / 0.1)",
-              "hsl(269 44% 40% / 0.25)",
-              "hsl(269 44% 40% / 0.1)",
+              "hsl(269 62% 52% / 0.1)",
+              "hsl(269 62% 52% / 0.3)",
+              "hsl(269 62% 52% / 0.1)",
             ],
           }}
           transition={{
@@ -45,7 +45,7 @@ const NeuralPulse = ({ className = "" }: NeuralPulseProps) => {
           style={{
             left: "50%",
             top: "50%",
-            boxShadow: "0 0 8px hsl(269 44% 40% / 0.6)",
+            boxShadow: "0 0 8px hsl(269 62% 52% / 0.6)",
           }}
           animate={{
             x: [0, 150, 0, -150, 0],

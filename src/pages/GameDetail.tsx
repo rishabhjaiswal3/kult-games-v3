@@ -59,7 +59,7 @@ const GameDetail = () => {
           <img src={game.image} alt={game.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
-          <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(269 44% 40% / 0.15)' }} />
+          <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(269 62% 52% / 0.15)' }} />
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
           <motion.button initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} onClick={() => navigate(-1)} className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 rounded-lg glass-panel text-sm text-foreground hover:text-primary transition-colors z-10">
@@ -92,7 +92,7 @@ const GameDetail = () => {
                 </div>
 
                 <div className="flex items-center gap-4 mt-8">
-                  <button className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_44%_40%/0.4)] transition-all duration-300 flex items-center gap-3">
+                  <button className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_62%_52%/0.4)] transition-all duration-300 flex items-center gap-3">
                     <Play className="w-5 h-5 fill-current" /> PLAY NOW
                   </button>
                   <button className="w-12 h-12 rounded-lg glass-panel flex items-center justify-center hover:border-primary/50 transition-colors">

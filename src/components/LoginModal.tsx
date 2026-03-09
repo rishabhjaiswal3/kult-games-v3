@@ -35,7 +35,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.img
                   src={mageCharacter}
                   alt="Character"
-                  className="h-24 md:h-32 w-auto drop-shadow-[0_0_20px_hsl(269_44%_40%/0.6)]"
+                  className="h-24 md:h-32 w-auto drop-shadow-[0_0_20px_hsl(269_62%_52%/0.6)]"
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
@@ -75,7 +75,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary hover:shadow-[0_0_25px_hsl(269_44%_40%/0.4)] transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary hover:shadow-[0_0_25px_hsl(269_62%_52%/0.4)] transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
                   Send Code
@@ -90,7 +90,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 hover:shadow-[0_0_25px_hsl(269_44%_40%/0.3)] transition-all duration-300 flex items-center justify-center gap-2 mb-3"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 hover:shadow-[0_0_25px_hsl(269_62%_52%/0.3)] transition-all duration-300 flex items-center justify-center gap-2 mb-3"
                 >
                   <Wallet className="w-4 h-4" />
                   Connect Wallet
