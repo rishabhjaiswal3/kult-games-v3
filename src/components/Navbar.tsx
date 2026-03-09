@@ -29,8 +29,8 @@ const Navbar = () => {
         className="fixed top-0 left-0 right-0 z-50 glass-panel-ai border-b border-border/30"
       >
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" />
+          <Link to="/" className="flex items-center gap-2 min-w-[100px] md:min-w-[130px]">
+            <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" width={120} height={40} loading="eager" decoding="async" />
             <motion.div
               className="w-1.5 h-1.5 rounded-full bg-primary"
               animate={{
