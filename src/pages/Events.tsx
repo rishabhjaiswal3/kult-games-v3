@@ -88,7 +88,7 @@ const Events = () => {
                 <span className="flex items-center gap-1"><Trophy className="w-4 h-4 text-[hsl(var(--gold))]" />{events[0].prize}</span>
                 <span className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{events[0].players}</span>
               </div>
-              <button className="mt-6 px-8 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_44%_40%/0.4)] transition-all">
+              <button className="mt-6 px-8 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_62%_52%/0.4)] transition-all">
                 REGISTER NOW
               </button>
             </div>
