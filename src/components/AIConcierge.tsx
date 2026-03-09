@@ -1,5 +1,7 @@
-import { motion } from "framer-motion";
-import { Bot, ArrowRight, Sparkles, MessageSquare, GitCompare, Gamepad2, Brain } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bot, ArrowRight, Sparkles, MessageSquare, GitCompare, Gamepad2, Brain, Send, X, User, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const prompts = [
   { icon: Sparkles, text: "Find my first game", description: "AI picks the best starting point for you" },
@@ -8,10 +10,91 @@ const prompts = [
   { icon: Gamepad2, text: "What's trending on 0G?", description: "See what the community is playing now" },
 ];
 
+interface ChatMessage {
+  id: string;
+  role: "user" | "ai";
+  text: string;
+}
+
+const mockResponses: Record<string, string> = {
+  "find my first game": "🎮 Based on new player data, I'd recommend **Spell Conquest** — it's our most beginner-friendly title with a 94% retention rate among first-time players. The tutorial is seamless, and you'll be casting spells within 2 minutes. Want me to launch it for you?",
+  "pick based on my vibe": "🎭 Tell me more about your mood! Are you feeling:\n\n• **Competitive** → Try Arena Clash\n• **Chill & exploratory** → Mystic Realms is perfect\n• **Strategic & cerebral** → Hex Dominion awaits\n• **Social & party** → Guild Wars Lite\n\nJust type your vibe and I'll narrow it down!",
+  "compare games for me": "⚔️ Sure! Here's a quick comparison of our top 2 titles:\n\n**Spell Conquest** vs **Arena Clash**\n\n| Feature | Spell Conquest | Arena Clash |\n|---------|---------------|-------------|\n| Genre | RPG/Strategy | PvP Fighter |\n| Avg Session | 25 min | 10 min |\n| Difficulty | Medium | Hard |\n| Rating | 4.8⭐ | 4.6⭐ |\n\nSpell Conquest is better for story lovers, Arena Clash for quick competitive rounds.",
+  "what's trending on 0g?": "🔥 **Trending on 0G right now:**\n\n1. **Hex Dominion** — 12.4K active players (+34% this week)\n2. **Spell Conquest** — 9.8K active (new expansion dropped!)\n3. **Arena Clash** — 8.2K active (tournament season)\n4. **Mystic Realms** — 6.1K active\n5. **Shadow Protocol** — 5.7K active (just launched!)\n\nHex Dominion is surging thanks to the new ranked mode. Want details on any of these?",
+};
+
+const fallbackResponses = [
+  "🤔 Interesting question! Based on our game catalog, I'd suggest checking out **Spell Conquest** for an immersive RPG experience or **Arena Clash** if you prefer fast-paced PvP action. Want more specific recommendations?",
+  "🎯 Great question! Our AI analysis suggests you might enjoy **Mystic Realms** — it's got a unique blend of exploration and puzzle-solving that 87% of players rated as 'addictive'. Shall I tell you more?",
+  "⚡ I've analyzed your query against our game database. Here's what I found:\n\n• **Best for solo play**: Spell Conquest\n• **Best multiplayer**: Guild Wars Lite\n• **Most innovative**: Shadow Protocol\n\nWant me to dive deeper into any of these?",
+  "🧠 Processing your request through 0G Compute... Based on community sentiment analysis, **Hex Dominion** has the highest satisfaction score this month (4.9/5). It combines strategy with real-time elements. Would you like a gameplay preview?",
+  "🌟 Here's what I think: The KULT ecosystem has 12 titles right now, and based on what you're asking, I'd narrow it down to 3 strong picks:\n\n1. **Shadow Protocol** — stealth + strategy\n2. **Hex Dominion** — pure tactical depth\n3. **Arena Clash** — adrenaline-fueled battles\n\nTell me more about what you like and I'll pick THE one for you!",
+  "🎮 That's a fantastic question! Let me pull up some data...\n\nOur players who ask similar things tend to love **Mystic Realms** (78% match rate). It's an open-world adventure with 200+ hours of content. The community is super welcoming too — perfect if you're looking for something deep.",
+  "💡 Based on 0G network analytics:\n\n• Most played this week: Hex Dominion\n• Highest rated: Spell Conquest (4.8⭐)\n• Fastest growing: Shadow Protocol (+156% players)\n• Best for beginners: Mystic Realms\n\nI can create a personalized recommendation if you tell me your preferred genre!",
+  "🔮 Interesting! Our AI model predicts you'd enjoy games with **high narrative depth**. Here are my top picks:\n\n1. **Spell Conquest** — Epic fantasy storyline\n2. **Mystic Realms** — Mystery-driven exploration\n3. **Shadow Protocol** — Cyberpunk thriller\n\nEach has 50+ hours of story content. Want a detailed breakdown?",
+  "⚔️ Let me think about that... After analyzing player patterns on the 0G network, here's my take:\n\nIf you have **10 min** → Arena Clash (quick matches)\nIf you have **30 min** → Hex Dominion (ranked games)\nIf you have **1 hour+** → Spell Conquest (quests & raids)\n\nTime is the best filter for game selection!",
+  "🏆 Great timing! We just updated our leaderboards. Here's what's hot:\n\n• **Tournament of the Week**: Arena Clash Championship (prize pool: 5000 $KULT)\n• **New Release**: Shadow Protocol v2.0 just dropped\n• **Community Pick**: Hex Dominion voted #1 strategy game\n\nWant to join any tournaments or need help getting started?",
+  "🎲 Random fun fact from 0G Compute: The average KULT player tries 3.2 games before finding their main. Our AI can cut that to 1 with the right questions! Tell me:\n\n1. Solo or multiplayer?\n2. Competitive or casual?\n3. Story-rich or gameplay-focused?\n\nAnswer these and I'll find your perfect match!",
+  "🌌 Exploring the KULT universe... I found something perfect for you! **Mystic Realms** just launched a new zone called 'The Ethereal Depths' — it's getting rave reviews (4.9⭐ from 2.3K players). Features include:\n\n• New boss encounters\n• Rare loot drops\n• Co-op puzzles\n\nWant me to set you up?",
+  "🛡️ Here's a pro tip from KULT AI: New players often overlook **Guild Wars Lite** — but it's actually the best way to learn game mechanics across multiple genres. It combines:\n\n• RPG elements from Spell Conquest\n• PvP from Arena Clash\n• Strategy from Hex Dominion\n\nThink of it as a 'sampler platter' of KULT games!",
+  "📊 Running sentiment analysis on your question... The data says you're looking for something engaging! Here are games sorted by 'engagement score':\n\n1. Spell Conquest — 94/100\n2. Hex Dominion — 91/100\n3. Shadow Protocol — 89/100\n4. Arena Clash — 87/100\n5. Mystic Realms — 85/100\n\nAll scores are based on real player data from the 0G network.",
+  "🎪 Welcome to the KULT recommendation engine! I've processed millions of player interactions to help you. Based on current trends:\n\n**If you like Fortnite** → Try Arena Clash\n**If you like Civilization** → Try Hex Dominion\n**If you like Skyrim** → Try Spell Conquest\n**If you like Myst** → Try Mystic Realms\n\nAny of these click with you?",
+  "⚡ Quick answer powered by 0G Compute: Yes, all KULT games support cross-platform play! You can start on desktop and continue on mobile. Your progress syncs via the 0G network in real-time. Want me to help you set up cross-play?",
+];
+
+let fallbackIndex = 0;
+
+const getAIResponse = (input: string): string => {
+  const lower = input.toLowerCase().trim();
+  for (const [key, value] of Object.entries(mockResponses)) {
+    if (lower.includes(key) || key.includes(lower)) {
+      return value;
+    }
+  }
+  const response = fallbackResponses[fallbackIndex % fallbackResponses.length];
+  fallbackIndex++;
+  return response;
+};
+
 const AIConcierge = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  const sendMessage = (text: string) => {
+    if (!text.trim()) return;
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", text: text.trim() };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const aiText = getAIResponse(text);
+      const aiMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: "ai", text: aiText };
+      setMessages((prev) => [...prev, aiMsg]);
+      setIsTyping(false);
+    }, 800 + Math.random() * 1200);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
+  };
+
+  const handlePromptClick = (text: string) => {
+    if (!chatOpen) setChatOpen(true);
+    setTimeout(() => sendMessage(text), 100);
+  };
+
   return (
     <section className="relative py-24 z-10">
-      {/* Ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-6">
@@ -42,6 +125,86 @@ const AIConcierge = () => {
             </p>
           </motion.div>
 
+          {/* Chat Area */}
+          <AnimatePresence>
+            {chatOpen && messages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="glass-panel rounded-2xl border border-primary/20 overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-xs font-display text-muted-foreground tracking-wider">KULT AI — ONLINE</span>
+                    </div>
+                    <button
+                      onClick={() => { setChatOpen(false); setMessages([]); }}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <ScrollArea className="h-[400px]">
+                    <div className="p-5 space-y-4">
+                      {messages.map((msg) => (
+                        <motion.div
+                          key={msg.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          {msg.role === "ai" && (
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center flex-shrink-0 mt-1">
+                              <Bot className="w-4 h-4 text-primary" />
+                            </div>
+                          )}
+                          <div
+                            className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+                              msg.role === "user"
+                                ? "bg-primary text-primary-foreground rounded-br-md"
+                                : "bg-muted/50 text-foreground border border-border/30 rounded-bl-md"
+                            }`}
+                          >
+                            {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
+                              part.startsWith("**") && part.endsWith("**") ? (
+                                <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+                              ) : (
+                                <span key={i}>{part}</span>
+                              )
+                            )}
+                          </div>
+                          {msg.role === "user" && (
+                            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 mt-1 border border-border/30">
+                              <User className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+
+                      {isTyping && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center flex-shrink-0">
+                            <Bot className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="bg-muted/50 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+                            <motion.div className="w-2 h-2 rounded-full bg-primary/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} />
+                            <motion.div className="w-2 h-2 rounded-full bg-primary/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} />
+                            <motion.div className="w-2 h-2 rounded-full bg-primary/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} />
+                          </div>
+                        </motion.div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </ScrollArea>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Search bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -50,29 +213,39 @@ const AIConcierge = () => {
             transition={{ delay: 0.2 }}
             className="relative mb-10"
           >
-            <div className="glass-panel rounded-2xl p-1.5 gradient-border relative overflow-hidden">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
-                animate={{ x: ["-100%", "200%"] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-              />
-              <div className="flex items-center gap-3 px-5 py-4 rounded-xl bg-muted/30 relative">
-                <Bot className="w-5 h-5 text-primary flex-shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Ask anything — &quot;Which game fits a 10-minute break?&quot;"
-                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/60 text-sm focus:outline-none font-body"
+            <form onSubmit={handleSubmit}>
+              <div className="glass-panel rounded-2xl p-1.5 gradient-border relative overflow-hidden">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                 />
-                <button className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)] transition-all relative overflow-hidden">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
-                    animate={{ x: ["-200%", "200%"] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                <div className="flex items-center gap-3 px-5 py-4 rounded-xl bg-muted/30 relative">
+                  <Bot className="w-5 h-5 text-primary flex-shrink-0" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onFocus={() => !chatOpen && setChatOpen(true)}
+                    placeholder='Ask anything — "Which game fits a 10-minute break?"'
+                    className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/60 text-sm focus:outline-none font-body"
                   />
-                  <span className="relative z-10">ASK KULT AI</span>
-                </button>
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || isTyping}
+                    className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)] transition-all relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isTyping ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    <span className="relative z-10">ASK KULT AI</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            </form>
           </motion.div>
 
           {/* Prompt suggestions */}
@@ -85,6 +258,7 @@ const AIConcierge = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 + i * 0.1 }}
                 whileHover={{ scale: 1.02, y: -2 }}
+                onClick={() => handlePromptClick(prompt.text)}
                 className="group flex items-center gap-4 p-4 rounded-xl glass-panel hover:bg-muted/40 hover:border-primary/20 transition-all duration-300 text-left"
               >
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/25 group-hover:to-secondary/15 transition-all">
