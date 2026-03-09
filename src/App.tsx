@@ -85,12 +85,12 @@ const App = () => {
         <Toaster />
         <Sonner />
         {!loaded && <LoadingScreen onComplete={handleComplete} />}
-        <div
-          ref={contentRef}
-          className={loaded ? "" : "pointer-events-none"}
-          style={{ opacity: 0, filter: "blur(18px)", transform: "translateY(18px) scale(1.02)" }}
-        >
-          <BrowserRouter>
+        <BrowserRouter>
+          <div
+            ref={contentRef}
+            className={loaded ? "" : "pointer-events-none"}
+            style={{ opacity: 0, filter: "blur(18px)", transform: "translateY(18px) scale(1.02)" }}
+          >
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/store" element={<Store />} />
@@ -99,9 +99,9 @@ const App = () => {
               <Route path="/game/:id" element={<GameDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <KultAIFloating />
-          </BrowserRouter>
-        </div>
+          </div>
+          {loaded && <KultAIFloating />}
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
