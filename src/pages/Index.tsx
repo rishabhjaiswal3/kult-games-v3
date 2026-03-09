@@ -2,6 +2,7 @@ import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import GamesSection from "@/components/GamesSection";
+import AIConcierge from "@/components/AIConcierge";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -11,6 +12,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <GamesSection />
+      <AIConcierge />
       <Footer />
     </div>
   );
