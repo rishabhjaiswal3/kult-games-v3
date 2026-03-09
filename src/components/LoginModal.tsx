@@ -84,7 +84,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary hover:shadow-[0_0_25px_hsl(270_70%_55%/0.4)] transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary hover:shadow-[0_0_25px_hsl(272_85%_58%/0.4)] transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
                   Send Code
