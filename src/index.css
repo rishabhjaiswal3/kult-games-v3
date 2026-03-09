@@ -6,45 +6,45 @@
 
 @layer base {
   :root {
-    --background: 236 43% 9%;
-    --foreground: 260 15% 92%;
+    --background: 236 50% 8%;
+    --foreground: 260 20% 93%;
 
-    --card: 236 40% 12%;
-    --card-foreground: 260 15% 92%;
+    --card: 236 45% 11%;
+    --card-foreground: 260 20% 93%;
 
-    --popover: 236 40% 12%;
-    --popover-foreground: 260 15% 92%;
+    --popover: 236 45% 11%;
+    --popover-foreground: 260 20% 93%;
 
-    --primary: 269 44% 40%;
+    --primary: 269 62% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 281 16% 67%;
+    --secondary: 281 35% 72%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 236 30% 16%;
-    --muted-foreground: 255 12% 50%;
+    --muted: 236 35% 15%;
+    --muted-foreground: 260 15% 55%;
 
-    --accent: 269 44% 40%;
+    --accent: 269 62% 52%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 255 25% 22%;
-    --input: 236 30% 18%;
-    --ring: 269 44% 40%;
+    --border: 260 30% 24%;
+    --input: 236 35% 16%;
+    --ring: 269 62% 52%;
 
     --radius: 0.75rem;
 
-    /* Custom tokens — extracted from loader video */
-    --glow-primary: 269 44% 40%;
-    --glow-secondary: 281 16% 67%;
-    --glow-core: 281 20% 78%;
-    --neural: 236 35% 18%;
-    --glass: 236 40% 12%;
-    --surface-elevated: 236 35% 14%;
-    --gold: 40 80% 55%;
-    --smoke: 220 12% 28%;
+    /* Custom tokens — extracted from loader video, vibrancy-boosted */
+    --glow-primary: 269 62% 52%;
+    --glow-secondary: 281 35% 72%;
+    --glow-core: 281 40% 82%;
+    --neural: 236 40% 16%;
+    --glass: 236 45% 11%;
+    --surface-elevated: 236 40% 13%;
+    --gold: 40 85% 58%;
+    --smoke: 220 15% 30%;
   }
 }
 
