@@ -30,7 +30,6 @@ const AIConcierge = () => {
             </p>
           </motion.div>
 
-          {/* Search bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -46,14 +45,13 @@ const AIConcierge = () => {
                   placeholder="Ask anything — &quot;Which game fits a 10-minute break?&quot;"
                   className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/60 text-sm focus:outline-none font-body"
                 />
-                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(272_85%_58%/0.3)] transition-all">
+                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(269_44%_40%/0.3)] transition-all">
                   ASK
                 </button>
               </div>
             </div>
           </motion.div>
 
-          {/* Prompt suggestions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prompts.map((prompt, i) => (
               <motion.button

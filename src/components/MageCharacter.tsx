@@ -21,7 +21,7 @@ const MageCharacter = ({
   loading = "lazy",
 }: MageCharacterProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const glowHsl = glowColor === "primary" ? "272 85% 58%" : glowColor === "secondary" ? "285 75% 62%" : "275 60% 85%";
+  const glowHsl = glowColor === "primary" ? "269 44% 40%" : glowColor === "secondary" ? "281 16% 67%" : "281 20% 78%";
 
   return (
     <div
@@ -35,7 +35,7 @@ const MageCharacter = ({
       <div
         className="absolute inset-0 z-[1]"
         style={{
-          background: `radial-gradient(ellipse at center 30%, hsl(240 15% 5% / 0.95) 0%, hsl(240 15% 5% / 0.7) 40%, transparent 70%)`,
+          background: `radial-gradient(ellipse at center 30%, hsl(236 43% 9% / 0.95) 0%, hsl(236 43% 9% / 0.7) 40%, transparent 70%)`,
         }}
       />
 

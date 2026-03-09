@@ -6,43 +6,43 @@
 
 @layer base {
   :root {
-    --background: 252 22% 5%;
+    --background: 236 43% 9%;
     --foreground: 260 15% 92%;
 
-    --card: 252 22% 8%;
+    --card: 236 40% 12%;
     --card-foreground: 260 15% 92%;
 
-    --popover: 252 22% 8%;
+    --popover: 236 40% 12%;
     --popover-foreground: 260 15% 92%;
 
-    --primary: 272 85% 58%;
+    --primary: 269 44% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 285 75% 62%;
+    --secondary: 281 16% 67%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 252 18% 12%;
+    --muted: 236 30% 16%;
     --muted-foreground: 255 12% 50%;
 
-    --accent: 272 85% 58%;
+    --accent: 269 44% 40%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 268 20% 18%;
-    --input: 252 18% 15%;
-    --ring: 272 85% 58%;
+    --border: 255 25% 22%;
+    --input: 236 30% 18%;
+    --ring: 269 44% 40%;
 
     --radius: 0.75rem;
 
     /* Custom tokens — extracted from loader video */
-    --glow-primary: 272 85% 58%;
-    --glow-secondary: 285 75% 62%;
-    --glow-core: 275 60% 85%;
-    --neural: 252 22% 12%;
-    --glass: 252 22% 8%;
-    --surface-elevated: 252 18% 10%;
+    --glow-primary: 269 44% 40%;
+    --glow-secondary: 281 16% 67%;
+    --glow-core: 281 20% 78%;
+    --neural: 236 35% 18%;
+    --glass: 236 40% 12%;
+    --surface-elevated: 236 35% 14%;
     --gold: 40 80% 55%;
     --smoke: 220 12% 28%;
   }
@@ -56,26 +56,26 @@
   body {
     @apply bg-background text-foreground font-body antialiased text-base font-medium;
     background-image: 
-      radial-gradient(ellipse at 20% 50%, hsl(272 85% 58% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(285 75% 62% / 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, hsl(272 85% 58% / 0.03) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, hsl(269 44% 40% / 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(281 16% 67% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, hsl(269 44% 40% / 0.03) 0%, transparent 50%);
   }
 }
 
 @layer components {
   .glass-panel {
     @apply backdrop-blur-xl border border-border/50;
-    background: hsl(252 22% 8% / 0.7);
+    background: hsl(236 40% 12% / 0.7);
     box-shadow: 
-      0 0 20px hsl(272 85% 58% / 0.06),
+      0 0 20px hsl(269 44% 40% / 0.06),
       inset 0 1px 0 hsl(260 15% 92% / 0.03);
   }
 
   .glass-panel-ai {
     @apply backdrop-blur-xl border border-border/50 relative overflow-hidden;
-    background: hsl(252 22% 8% / 0.7);
+    background: hsl(236 40% 12% / 0.7);
     box-shadow: 
-      0 0 20px hsl(272 85% 58% / 0.06),
+      0 0 20px hsl(269 44% 40% / 0.06),
       inset 0 1px 0 hsl(260 15% 92% / 0.03);
   }
   .glass-panel-ai::after {
@@ -84,9 +84,9 @@
     inset: 0;
     background: linear-gradient(
       135deg,
-      hsl(272 85% 58% / 0) 0%,
-      hsl(272 85% 58% / 0.03) 50%,
-      hsl(272 85% 58% / 0) 100%
+      hsl(269 44% 40% / 0) 0%,
+      hsl(269 44% 40% / 0.03) 50%,
+      hsl(269 44% 40% / 0) 100%
     );
     background-size: 200% 200%;
     animation: holographic-shimmer 6s ease-in-out infinite;
@@ -95,8 +95,8 @@
 
   .ai-grid-overlay {
     background-image: 
-      linear-gradient(hsl(272 85% 58% / 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(272 85% 58% / 0.04) 1px, transparent 1px);
+      linear-gradient(hsl(269 44% 40% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(269 44% 40% / 0.04) 1px, transparent 1px);
     background-size: 40px 40px;
     animation: ai-grid-pulse 4s ease-in-out infinite;
   }
@@ -112,10 +112,10 @@
     padding: 1px;
     background: linear-gradient(
       var(--ai-glow-angle, 135deg),
-      hsl(272 85% 58% / 0.5),
-      hsl(285 75% 62% / 0.3),
-      hsl(275 60% 85% / 0.2),
-      hsl(272 85% 58% / 0.5)
+      hsl(269 44% 40% / 0.5),
+      hsl(281 16% 67% / 0.3),
+      hsl(281 20% 78% / 0.2),
+      hsl(269 44% 40% / 0.5)
     );
     background-size: 300% 300%;
     animation: ai-border-flow 4s linear infinite;
@@ -126,23 +126,23 @@
   }
 
   .glow-text {
-    text-shadow: 0 0 20px hsl(272 85% 58% / 0.5), 0 0 40px hsl(272 85% 58% / 0.2);
+    text-shadow: 0 0 20px hsl(269 44% 40% / 0.5), 0 0 40px hsl(269 44% 40% / 0.2);
   }
 
   .glow-border {
-    box-shadow: 0 0 15px hsl(272 85% 58% / 0.2), 0 0 30px hsl(272 85% 58% / 0.08);
+    box-shadow: 0 0 15px hsl(269 44% 40% / 0.2), 0 0 30px hsl(269 44% 40% / 0.08);
   }
 
   .neural-grid {
     background-image: 
-      linear-gradient(hsl(272 85% 58% / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(272 85% 58% / 0.03) 1px, transparent 1px);
+      linear-gradient(hsl(269 44% 40% / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(269 44% 40% / 0.03) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(272 85% 58%), hsl(285 75% 62%));
+    background-image: linear-gradient(135deg, hsl(269 44% 40%), hsl(281 16% 67%));
   }
 
   .gradient-border {
@@ -154,7 +154,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, hsl(272 85% 58% / 0.6), hsl(285 75% 62% / 0.3), transparent);
+    background: linear-gradient(135deg, hsl(269 44% 40% / 0.6), hsl(281 16% 67% / 0.3), transparent);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     -webkit-mask-composite: xor;
@@ -162,10 +162,10 @@
   }
 
   .ornate-border {
-    border: 1px solid hsl(272 85% 58% / 0.3);
+    border: 1px solid hsl(269 44% 40% / 0.3);
     box-shadow: 
-      inset 0 0 20px hsl(272 85% 58% / 0.05),
-      0 0 15px hsl(272 85% 58% / 0.1);
+      inset 0 0 20px hsl(269 44% 40% / 0.05),
+      0 0 15px hsl(269 44% 40% / 0.1);
     position: relative;
   }
   .ornate-border::before {
@@ -174,7 +174,7 @@
     inset: -1px;
     border-radius: inherit;
     padding: 2px;
-    background: linear-gradient(135deg, hsl(272 85% 58% / 0.5), hsl(275 60% 85% / 0.3), hsl(272 85% 58% / 0.5));
+    background: linear-gradient(135deg, hsl(269 44% 40% / 0.5), hsl(281 20% 78% / 0.3), hsl(269 44% 40% / 0.5));
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     -webkit-mask-composite: xor;
