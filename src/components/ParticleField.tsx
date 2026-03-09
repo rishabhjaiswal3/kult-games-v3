@@ -70,9 +70,9 @@ const ParticleField = () => {
             );
             
             const flowOpacity = opacity * 2;
-            gradient.addColorStop(Math.max(0, flowPos - 0.1), `hsla(270, 70%, 55%, ${opacity})`);
-            gradient.addColorStop(flowPos, `hsla(270, 70%, 75%, ${flowOpacity})`);
-            gradient.addColorStop(Math.min(1, flowPos + 0.1), `hsla(270, 70%, 55%, ${opacity})`);
+            gradient.addColorStop(Math.max(0, flowPos - 0.1), `hsla(272, 85%, 58%, ${opacity})`);
+            gradient.addColorStop(flowPos, `hsla(272, 85%, 75%, ${flowOpacity})`);
+            gradient.addColorStop(Math.min(1, flowPos + 0.1), `hsla(272, 85%, 58%, ${opacity})`);
 
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
