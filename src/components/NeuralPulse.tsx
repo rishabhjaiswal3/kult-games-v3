@@ -45,7 +45,7 @@ const NeuralPulse = ({ className = "" }: NeuralPulseProps) => {
           style={{
             left: "50%",
             top: "50%",
-            boxShadow: "0 0 8px hsl(270 70% 55% / 0.6)",
+            boxShadow: "0 0 8px hsl(272 85% 58% / 0.6)",
           }}
           animate={{
             x: [0, 150, 0, -150, 0],

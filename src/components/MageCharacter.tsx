@@ -21,7 +21,7 @@ const MageCharacter = ({
   loading = "lazy",
 }: MageCharacterProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const glowHsl = glowColor === "primary" ? "270 70% 55%" : glowColor === "secondary" ? "280 80% 65%" : "210 80% 55%";
+  const glowHsl = glowColor === "primary" ? "272 85% 58%" : glowColor === "secondary" ? "285 75% 62%" : "275 60% 85%";
 
   return (
     <div
