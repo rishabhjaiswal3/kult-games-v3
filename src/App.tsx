@@ -12,6 +12,7 @@ import Events from "./pages/Events";
 import GameDetail from "./pages/GameDetail";
 import NotFound from "./pages/NotFound";
 import LoadingScreen from "./components/LoadingScreen";
+import KultAIFloating from "./components/KultAIFloating";
 
 const queryClient = new QueryClient();
 const FADED_CONTENT_DELAY = 1800;
