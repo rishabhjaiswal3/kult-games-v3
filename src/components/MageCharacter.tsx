@@ -35,7 +35,7 @@ const MageCharacter = ({
       <div
         className="absolute inset-0 z-[1]"
         style={{
-          background: `radial-gradient(ellipse at center 30%, hsl(236 43% 9% / 0.95) 0%, hsl(236 43% 9% / 0.7) 40%, transparent 70%)`,
+          background: `radial-gradient(ellipse at center 30%, hsl(236 50% 8% / 0.95) 0%, hsl(236 50% 8% / 0.7) 40%, transparent 70%)`,
         }}
       />
 

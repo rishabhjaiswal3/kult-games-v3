@@ -111,7 +111,7 @@ const HeroSection = () => {
                 </button>
                 <button
                   onClick={() => navigate("/events")}
-                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_44%_40%/0.4)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_62%_52%/0.4)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"

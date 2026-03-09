@@ -126,7 +126,7 @@ const Events = () => {
                     className={`px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider transition-all ${
                       event.status === "Full"
                         ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_hsl(269_44%_40%/0.3)]"
+                        : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)]"
                     }`}
                   >
                     {event.status === "Full" ? "FULL" : "JOIN"}
