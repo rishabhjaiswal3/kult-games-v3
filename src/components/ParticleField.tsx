@@ -109,7 +109,7 @@ const ParticleField = () => {
           // Inner bright core
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(270, 80%, 75%, ${currentOpacity})`;
+          ctx.fillStyle = `hsla(272, 85%, 75%, ${currentOpacity})`;
           ctx.fill();
 
           // Pulsing ring
