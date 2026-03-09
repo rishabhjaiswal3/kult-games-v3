@@ -112,10 +112,10 @@
     padding: 1px;
     background: linear-gradient(
       var(--ai-glow-angle, 135deg),
-      hsl(270 70% 55% / 0.5),
-      hsl(280 80% 65% / 0.3),
-      hsl(210 80% 55% / 0.3),
-      hsl(270 70% 55% / 0.5)
+      hsl(272 85% 58% / 0.5),
+      hsl(285 75% 62% / 0.3),
+      hsl(275 60% 85% / 0.2),
+      hsl(272 85% 58% / 0.5)
     );
     background-size: 300% 300%;
     animation: ai-border-flow 4s linear infinite;
