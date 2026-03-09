@@ -9,7 +9,15 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      video.currentTime = 3;
+      const seekToStart = () => {
+        video.currentTime = 3;
+        video.removeEventListener('loadedmetadata', seekToStart);
+      };
+      if (video.readyState >= 1) {
+        video.currentTime = 3;
+      } else {
+        video.addEventListener('loadedmetadata', seekToStart);
+      }
     }
     const timer = setTimeout(() => {
       setShow(false);
