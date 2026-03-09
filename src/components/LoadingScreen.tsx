@@ -103,7 +103,8 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background overflow-hidden"
+      style={{ maxHeight: '100vh', maxWidth: '100vw' }}
     >
       <video
         ref={videoRef}
@@ -113,7 +114,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         preload="auto"
         onLoadedData={handleVideoReady}
         onEnded={handleVideoEnded}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoLoaded ? "opacity-70" : "opacity-0"}`}
+        className={`max-h-screen max-w-full object-contain transition-opacity duration-700 ${videoLoaded ? "opacity-70" : "opacity-0"}`}
       >
         <source src="/videos/SC_2-2.mp4" type="video/mp4" />
       </video>
