@@ -31,7 +31,7 @@ const KalthWelcome = () => {
               }}
               transition={{ duration: 1.5, ease: "easeOut" }}
               style={{
-                boxShadow: "0 0 40px hsl(269 44% 40%), 0 0 80px hsl(269 44% 40% / 0.5)",
+                boxShadow: "0 0 40px hsl(269 62% 52%), 0 0 80px hsl(269 62% 52% / 0.5)",
               }}
             />
 
