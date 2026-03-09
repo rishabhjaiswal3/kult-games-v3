@@ -60,7 +60,7 @@ const GameDetail = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
           {/* Glow overlay */}
-          <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(270 70% 55% / 0.15)' }} />
+          <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(272 85% 58% / 0.15)' }} />
           {/* Bottom edge glow line */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
