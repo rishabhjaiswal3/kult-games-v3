@@ -111,7 +111,7 @@ const ParticleField = () => {
 
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize * 2.5 * pulse, 0, Math.PI * 2);
-          ctx.strokeStyle = `hsla(269, 44%, 40%, ${currentOpacity * 0.2})`;
+          ctx.strokeStyle = `hsla(269, 62%, 52%, ${currentOpacity * 0.2})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         } else {
