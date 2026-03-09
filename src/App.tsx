@@ -99,6 +99,7 @@ const App = () => {
               <Route path="/game/:id" element={<GameDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <KultAIFloating />
           </BrowserRouter>
         </div>
       </TooltipProvider>
