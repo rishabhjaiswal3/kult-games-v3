@@ -10,8 +10,8 @@ const AIScanLine = ({ className = "" }: AIScanLineProps) => {
       <motion.div
         className="absolute left-0 right-0 h-[1px]"
         style={{
-          background: "linear-gradient(90deg, transparent, hsl(272 85% 58% / 0.5), hsl(285 75% 62% / 0.3), transparent)",
-          boxShadow: "0 0 20px 4px hsl(272 85% 58% / 0.15)",
+          background: "linear-gradient(90deg, transparent, hsl(269 44% 40% / 0.5), hsl(281 16% 67% / 0.3), transparent)",
+          boxShadow: "0 0 20px 4px hsl(269 44% 40% / 0.15)",
         }}
         animate={{ top: ["0%", "100%", "0%"] }}
         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}

@@ -27,14 +27,12 @@ const Events = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10">
-        {/* Dual background videos for depth */}
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-15">
           <source src="/videos/SC_2.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/75" />
 
         <div className="container mx-auto px-6 relative z-10">
-          {/* Header with mage ON TOP of content */}
           <div className="relative mb-12">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="relative z-[1]">
               <span className="text-xs font-mono text-primary tracking-[0.2em] uppercase mb-2 block">
@@ -46,7 +44,6 @@ const Events = () => {
               <p className="text-muted-foreground mt-3 max-w-md text-sm">Compete in epic tournaments, earn rewards, and rise to glory.</p>
             </motion.div>
 
-            {/* Mage character - ON TOP, large, with solid backdrop */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -57,7 +54,6 @@ const Events = () => {
             </motion.div>
           </div>
 
-          {/* Filters */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3 mb-8 overflow-x-auto relative z-[3]">
             {statusFilters.map((f) => (
               <button
@@ -72,7 +68,6 @@ const Events = () => {
             ))}
           </motion.div>
 
-          {/* Featured event */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -93,13 +88,12 @@ const Events = () => {
                 <span className="flex items-center gap-1"><Trophy className="w-4 h-4 text-[hsl(var(--gold))]" />{events[0].prize}</span>
                 <span className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{events[0].players}</span>
               </div>
-              <button className="mt-6 px-8 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(272_85%_58%/0.4)] transition-all">
+              <button className="mt-6 px-8 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_44%_40%/0.4)] transition-all">
                 REGISTER NOW
               </button>
             </div>
           </motion.div>
 
-          {/* Events list */}
           <div className="space-y-4 relative z-[3]">
             {filtered.map((event, i) => (
               <motion.div
@@ -132,7 +126,7 @@ const Events = () => {
                     className={`px-5 py-2 rounded-lg font-display text-xs font-semibold tracking-wider transition-all ${
                       event.status === "Full"
                         ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_hsl(272_85%_58%/0.3)]"
+                        : "bg-primary text-primary-foreground hover:shadow-[0_0_20px_hsl(269_44%_40%/0.3)]"
                     }`}
                   >
                     {event.status === "Full" ? "FULL" : "JOIN"}

@@ -13,9 +13,9 @@ const GlitchText = ({ children, className = "" }: GlitchTextProps) => {
       animate={{
         textShadow: [
           "0 0 0 transparent",
-            "2px 0 hsl(272 85% 58% / 0.3), -2px 0 hsl(285 75% 62% / 0.3)",
+            "2px 0 hsl(269 44% 40% / 0.3), -2px 0 hsl(281 16% 67% / 0.3)",
             "0 0 0 transparent",
-            "-1px 0 hsl(272 85% 58% / 0.2), 1px 0 hsl(285 75% 62% / 0.2)",
+            "-1px 0 hsl(269 44% 40% / 0.2), 1px 0 hsl(281 16% 67% / 0.2)",
           "0 0 0 transparent",
         ],
       }}

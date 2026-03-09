@@ -4,11 +4,9 @@ import kultLogo from "@/assets/kult-logo.png";
 const Footer = () => {
   return (
     <footer className="relative z-10 border-t border-border/30 py-8">
-      {/* AI grid subtle background */}
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-30" />
 
       <div className="container mx-auto px-6 relative">
-        {/* AI processing line */}
         <div className="h-[1px] w-full bg-border/20 mb-6 relative overflow-hidden">
           <motion.div
             className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-primary/40 to-transparent"
@@ -34,13 +32,12 @@ const Footer = () => {
             />
           </div>
 
-          {/* Social icons */}
           <div className="flex items-center gap-4">
             {["Facebook", "X", "Reddit", "Discord"].map((social) => (
               <a
                 key={social}
                 href="#"
-                className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 hover:shadow-[0_0_10px_hsl(272_85%_58%/0.2)] transition-all"
+                className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 hover:shadow-[0_0_10px_hsl(269_44%_40%/0.2)] transition-all"
                 aria-label={social}
               >
                 <span className="text-xs font-bold">{social[0]}</span>
