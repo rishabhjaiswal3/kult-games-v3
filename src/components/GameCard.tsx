@@ -58,7 +58,7 @@ const GameCard = ({
         
         {/* Play button */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center border border-border/50 group-hover:bg-primary/20 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(272_85%_58%/0.3)] transition-all duration-300">
+          <div className="w-14 h-14 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center border border-border/50 group-hover:bg-primary/20 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)] transition-all duration-300">
             <Play className="w-6 h-6 text-foreground fill-foreground ml-0.5" />
           </div>
         </div>
