@@ -28,9 +28,11 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed inset-0 z-[101] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+            style={{ maxHeight: "100vh" }}
           >
-            <div className="relative w-full max-w-md">
+            <div className="relative w-full max-w-md pointer-events-auto">
+            
               <div className="flex justify-center -mb-8 relative z-10">
                 <motion.img
                   src={mageCharacter}
