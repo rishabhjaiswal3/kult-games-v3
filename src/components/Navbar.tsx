@@ -10,7 +10,6 @@ const navItems = [
   { label: "Games", path: "/" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Events", path: "/events" },
-  { label: "Battle", path: "/events" },
 ];
 
 const Navbar = () => {
