@@ -63,7 +63,7 @@ const KalthWelcome = () => {
                   key={`spark-${i}`}
                   className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full"
                   style={{
-                    background: i % 3 === 0 ? "hsl(40 90% 60%)" : "hsl(270 70% 65%)",
+                    background: i % 3 === 0 ? "hsl(40 90% 60%)" : "hsl(272 85% 65%)",
                   }}
                   initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
                   animate={{

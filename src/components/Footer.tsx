@@ -40,7 +40,7 @@ const Footer = () => {
               <a
                 key={social}
                 href="#"
-                className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 hover:shadow-[0_0_10px_hsl(270_70%_55%/0.2)] transition-all"
+                className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 hover:shadow-[0_0_10px_hsl(272_85%_58%/0.2)] transition-all"
                 aria-label={social}
               >
                 <span className="text-xs font-bold">{social[0]}</span>

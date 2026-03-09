@@ -46,7 +46,7 @@ const AIConcierge = () => {
                   placeholder="Ask anything — &quot;Which game fits a 10-minute break?&quot;"
                   className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/60 text-sm focus:outline-none font-body"
                 />
-                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(185_85%_55%/0.3)] transition-all">
+                <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(272_85%_58%/0.3)] transition-all">
                   ASK
                 </button>
               </div>

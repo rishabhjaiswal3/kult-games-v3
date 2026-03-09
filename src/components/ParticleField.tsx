@@ -70,9 +70,9 @@ const ParticleField = () => {
             );
             
             const flowOpacity = opacity * 2;
-            gradient.addColorStop(Math.max(0, flowPos - 0.1), `hsla(270, 70%, 55%, ${opacity})`);
-            gradient.addColorStop(flowPos, `hsla(270, 70%, 75%, ${flowOpacity})`);
-            gradient.addColorStop(Math.min(1, flowPos + 0.1), `hsla(270, 70%, 55%, ${opacity})`);
+            gradient.addColorStop(Math.max(0, flowPos - 0.1), `hsla(272, 85%, 58%, ${opacity})`);
+            gradient.addColorStop(flowPos, `hsla(272, 85%, 75%, ${flowOpacity})`);
+            gradient.addColorStop(Math.min(1, flowPos + 0.1), `hsla(272, 85%, 58%, ${opacity})`);
 
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -98,9 +98,9 @@ const ParticleField = () => {
         if (p.isNode) {
           // AI Node - glowing hub
           const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentSize * 4);
-          glow.addColorStop(0, `hsla(270, 70%, 65%, ${currentOpacity})`);
-          glow.addColorStop(0.5, `hsla(270, 70%, 55%, ${currentOpacity * 0.3})`);
-          glow.addColorStop(1, `hsla(270, 70%, 55%, 0)`);
+          glow.addColorStop(0, `hsla(272, 85%, 65%, ${currentOpacity})`);
+          glow.addColorStop(0.5, `hsla(272, 85%, 58%, ${currentOpacity * 0.3})`);
+          glow.addColorStop(1, `hsla(272, 85%, 58%, 0)`);
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize * 4, 0, Math.PI * 2);
           ctx.fillStyle = glow;
@@ -109,19 +109,19 @@ const ParticleField = () => {
           // Inner bright core
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(270, 80%, 75%, ${currentOpacity})`;
+          ctx.fillStyle = `hsla(272, 85%, 75%, ${currentOpacity})`;
           ctx.fill();
 
           // Pulsing ring
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize * 2.5 * pulse, 0, Math.PI * 2);
-          ctx.strokeStyle = `hsla(270, 70%, 55%, ${currentOpacity * 0.2})`;
+          ctx.strokeStyle = `hsla(272, 85%, 58%, ${currentOpacity * 0.2})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         } else {
           ctx.beginPath();
           ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(270, 70%, 55%, ${currentOpacity})`;
+          ctx.fillStyle = `hsla(272, 85%, 58%, ${currentOpacity})`;
           ctx.fill();
         }
       });
@@ -129,9 +129,9 @@ const ParticleField = () => {
       // Scanning line effect
       const scanY = (Math.sin(time * 0.5) * 0.5 + 0.5) * canvas.height;
       const scanGradient = ctx.createLinearGradient(0, scanY - 40, 0, scanY + 40);
-      scanGradient.addColorStop(0, `hsla(270, 70%, 55%, 0)`);
-      scanGradient.addColorStop(0.5, `hsla(270, 70%, 55%, 0.03)`);
-      scanGradient.addColorStop(1, `hsla(270, 70%, 55%, 0)`);
+      scanGradient.addColorStop(0, `hsla(272, 85%, 58%, 0)`);
+      scanGradient.addColorStop(0.5, `hsla(272, 85%, 58%, 0.03)`);
+      scanGradient.addColorStop(1, `hsla(272, 85%, 58%, 0)`);
       ctx.fillStyle = scanGradient;
       ctx.fillRect(0, scanY - 40, canvas.width, 80);
 

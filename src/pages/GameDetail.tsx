@@ -94,7 +94,7 @@ const GameDetail = () => {
                 </div>
 
                 <div className="flex items-center gap-4 mt-8">
-                  <button className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(270_70%_55%/0.4)] transition-all duration-300 flex items-center gap-3">
+                  <button className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(272_85%_58%/0.4)] transition-all duration-300 flex items-center gap-3">
                     <Play className="w-5 h-5 fill-current" /> PLAY NOW
                   </button>
                   <button className="w-12 h-12 rounded-lg glass-panel flex items-center justify-center hover:border-primary/50 transition-colors">
