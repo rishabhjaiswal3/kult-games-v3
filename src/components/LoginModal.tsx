@@ -32,7 +32,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             style={{ maxHeight: "100vh" }}
           >
             <div className="relative w-full max-w-md pointer-events-auto">
-            <div className="relative w-full max-w-md">
+            
               <div className="flex justify-center -mb-8 relative z-10">
                 <motion.img
                   src={mageCharacter}
