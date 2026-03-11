@@ -49,7 +49,7 @@ const HeroSection = () => {
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-0 lg:gap-0">
             {/* Left content */}
             <div className="text-center lg:text-left max-w-2xl">
               {/* AI status indicator */}
@@ -126,7 +126,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="hidden md:block relative w-[260px] md:w-[320px] lg:w-[380px] self-center"
+              className="hidden md:block relative w-[320px] md:w-[420px] lg:w-[500px] self-center -mr-8 lg:-mr-16"
             >
               <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
             </motion.div>
