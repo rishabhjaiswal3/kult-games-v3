@@ -45,8 +45,8 @@ const HeroSection = () => {
         <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
 
         {/* Purple nebula glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/6 blur-[150px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[120px]" />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-0 lg:gap-0">
