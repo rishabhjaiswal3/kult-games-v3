@@ -113,7 +113,7 @@ const HeroSection = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-8"
+                className="flex flex-col sm:flex-row items-center lg:items-start gap-3 md:gap-4 mt-6 md:mt-8"
               >
                 <button
                   onClick={() => navigate("/store")}
