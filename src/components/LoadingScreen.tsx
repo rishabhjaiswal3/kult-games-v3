@@ -34,7 +34,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     const video = videoRef.current;
     if (!video) return;
     const handleTimeUpdate = () => {
-      if (video.currentTime >= 4) {
+      if (video.currentTime >= 5) {
         video.pause();
         startExit();
       }
