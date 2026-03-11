@@ -21,9 +21,17 @@ const HeroSection = () => {
 
   return (
     <>
-      <section className="relative min-h-screen flex items-center justify-center pt-20 pb-8 overflow-hidden">
+      <section className="relative min-h-[100dvh] flex items-center justify-center pt-16 pb-6 md:pt-20 md:pb-8 overflow-hidden">
         {/* Background video */}
-        <video autoPlay loop muted playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover opacity-40">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          style={{ objectPosition: 'center center' }}
+        >
           <source src="/videos/SC_1.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/50" />
@@ -40,8 +48,8 @@ const HeroSection = () => {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
 
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-8">
             {/* Left content */}
             <div className="text-center lg:text-left max-w-2xl">
               {/* AI status indicator */}
@@ -75,11 +83,11 @@ const HeroSection = () => {
                 transition={{ duration: 0.25 }}
                 className="mb-6"
               >
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]" style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}>
+                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]" style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}>
                   <span className="text-foreground block font-display tracking-[0.04em]">THE FUTURE OF</span>
-                  <GlitchText className="gradient-text glow-text block mt-2 font-display">ON-CHAIN GAMING</GlitchText>
+                  <GlitchText className="gradient-text glow-text block mt-1 md:mt-2 font-display">ON-CHAIN GAMING</GlitchText>
                 </h1>
-                <p className="mt-4 text-lg md:text-xl text-muted-foreground font-body font-medium max-w-lg leading-relaxed">
+                <p className="mt-3 md:mt-4 text-base md:text-xl text-muted-foreground font-body font-medium max-w-lg leading-relaxed">
                   Play. Compete. Earn. The next generation of decentralized gaming starts here.
                 </p>
               </motion.div>
@@ -105,7 +113,7 @@ const HeroSection = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-8"
+                className="flex flex-col sm:flex-row items-center lg:items-start gap-3 md:gap-4 mt-6 md:mt-8"
               >
                 <button
                   onClick={() => navigate("/store")}
