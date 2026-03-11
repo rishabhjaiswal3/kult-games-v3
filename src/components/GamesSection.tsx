@@ -24,10 +24,10 @@ const GamesSection = () => {
   return (
     <section className="relative py-20 z-10 overflow-hidden">
       {/* Background video like leaderboard */}
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.10]">
+      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.18]">
         <source src="/videos/SC_2-3.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-background/85" />
+      <div className="absolute inset-0 bg-background/75" />
 
       <AIScanLine />
 

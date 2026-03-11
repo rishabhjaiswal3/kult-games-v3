@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const VIDEO_DURATION = 10000; // 10 seconds
+const VIDEO_DURATION = 8000; // 8 seconds
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
@@ -13,7 +13,6 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const hasExitedRef = useRef(false);
 
   useEffect(() => {
-    // Progress bar animation
     if (progressRef.current) {
       gsap.to(progressRef.current, {
         width: "100%",
@@ -29,12 +28,12 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Stop video at 4 seconds
+  // Stop video at 8 seconds (cutting last ~2s)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     const handleTimeUpdate = () => {
-      if (video.currentTime >= 10) {
+      if (video.currentTime >= 8) {
         video.pause();
         startExit();
       }
@@ -89,7 +88,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         playsInline
         preload="auto"
         onLoadedData={handleVideoReady}
-        className={`max-h-screen max-w-full object-contain transition-opacity duration-700 ${videoLoaded ? "opacity-80" : "opacity-0"}`}
+        className={`max-h-[70vh] max-w-[80vw] object-contain transition-opacity duration-700 ${videoLoaded ? "opacity-80" : "opacity-0"}`}
         style={{ filter: "hue-rotate(-10deg) saturate(1.3) brightness(0.9)" }}
       >
         <source src="/videos/loader.mp4" type="video/mp4" />
