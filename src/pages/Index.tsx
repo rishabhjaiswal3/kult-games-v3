@@ -1,4 +1,3 @@
-import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import GamesSection from "@/components/GamesSection";
@@ -12,7 +11,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <ParticleField />
       <Navbar />
       <HeroSection />
 
@@ -28,7 +26,7 @@ const Index = () => {
       >
         <button
           onClick={() => navigate("/events")}
-          className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan hover:text-background transition-all duration-300"
+          className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye"
         >
           JOIN TOURNAMENTS
         </button>
@@ -47,13 +45,13 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
             onClick={() => navigate("/store")}
-            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_30px_hsl(195_100%_60%/0.4)] transition-all duration-300 relative overflow-hidden"
+            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye relative overflow-hidden"
           >
             EXPLORE GAMES
           </button>
           <button
             onClick={() => navigate("/leaderboard")}
-            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-neon-cyan/30 text-foreground hover:bg-neon-cyan/10 transition-all duration-300"
+            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
           >
             VIEW LEADERBOARD
           </button>

@@ -54,17 +54,6 @@ const VideoShowcase = ({
         style={{ background: `linear-gradient(to bottom, hsl(220 50% 6% / ${overlayOpacity}), hsl(220 50% 6% / ${overlayOpacity * 0.6}), hsl(220 50% 6% / ${overlayOpacity}))` }}
       />
 
-      {/* Scan line */}
-      <motion.div
-        className="absolute left-0 right-0 h-[2px] pointer-events-none z-20"
-        style={{
-          background: "linear-gradient(90deg, transparent, hsl(195 100% 60% / 0.6), hsl(195 100% 80% / 0.8), hsl(195 100% 60% / 0.6), transparent)",
-          boxShadow: "0 0 20px hsl(195 100% 60% / 0.4)",
-        }}
-        animate={{ top: ["-2px", "100%"] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-      />
-
       {/* Top/bottom borders */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />

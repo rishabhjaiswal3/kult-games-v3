@@ -172,7 +172,7 @@ const GameDetail = () => {
             animate={{ opacity: 1, y: 0 }}
             className="absolute top-24 right-6 z-10"
           >
-            <span className="px-3 py-1.5 rounded-full text-[10px] font-display font-bold tracking-[0.2em] bg-primary/80 text-primary-foreground border border-primary/50" style={{ boxShadow: "0 0 12px hsl(195 100% 50% / 0.3)" }}>
+            <span className="px-3 py-1.5 rounded-full text-[10px] font-display font-bold tracking-[0.2em] btn-eye border-0" style={{ boxShadow: "0 0 14px hsl(270 82% 55% / 0.4)" }}>
               {game.category}
             </span>
           </motion.div>
@@ -226,7 +226,7 @@ const GameDetail = () => {
                     href={game.playUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_30px_hsl(195_100%_60%/0.4)] transition-all duration-300 flex items-center gap-3 relative overflow-hidden"
+                    className="px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-3 relative overflow-hidden"
                   >
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
@@ -375,7 +375,7 @@ const GameDetail = () => {
                         href={game.playUrl || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_20px_hsl(195_100%_60%/0.3)] transition-all duration-300 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center justify-center gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
                         PLAY GAME

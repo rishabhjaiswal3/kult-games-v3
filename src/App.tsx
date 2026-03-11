@@ -55,6 +55,7 @@ const App = () => {
         y: 0,
         duration: 0.9,
         ease: "power3.out",
+        clearProps: "transform,filter",
       });
       return;
     }
@@ -89,7 +90,7 @@ const App = () => {
           <div
             ref={contentRef}
             className={loaded ? "" : "pointer-events-none"}
-            style={{ opacity: 0, filter: "blur(18px)", transform: "translateY(18px) scale(1.02)" }}
+            style={loaded ? { opacity: 1 } : { opacity: 0, filter: "blur(18px)", transform: "translateY(18px) scale(1.02)" }}
           >
             <Routes>
               <Route path="/" element={<Index />} />

@@ -232,7 +232,7 @@ const AIConcierge = () => {
                   <button
                     type="submit"
                     disabled={!input.trim() || isTyping}
-                    className="px-5 py-2.5 rounded-lg bg-neon-cyan text-background font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(195_100%_60%/0.3)] transition-all relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-5 py-2.5 font-display text-xs font-semibold tracking-wider btn-eye transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isTyping ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -257,16 +257,16 @@ const AIConcierge = () => {
                 transition={{ delay: 0.3 + i * 0.06 }}
                 whileHover={{ scale: 1.02, y: -2 }}
                 onClick={() => handlePromptClick(prompt.text)}
-                className="group flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-neon-cyan/30 hover:bg-neon-cyan/3 transition-all duration-300 text-left"
+                className="group flex items-center gap-4 p-4 rounded-[16px] border border-border/50 bg-card/50 backdrop-blur-sm hover:border-[hsl(278_100%_70%/0.3)] hover:bg-[hsl(278_100%_70%/0.05)] transition-all duration-300 text-left"
               >
-                <div className="w-10 h-10 rounded-lg bg-neon-cyan/10 flex items-center justify-center flex-shrink-0 group-hover:bg-neon-cyan/20 transition-all">
-                  <prompt.icon className="w-4 h-4 text-neon-cyan" />
+                <div className="w-10 h-10 rounded-[16px] bg-[hsl(278_100%_70%/0.12)] flex items-center justify-center flex-shrink-0 group-hover:bg-[hsl(278_100%_70%/0.18)] transition-all">
+                  <prompt.icon className="w-4 h-4 text-[hsl(278_100%_82%)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-foreground block group-hover:text-neon-cyan transition-colors">{prompt.text}</span>
+                  <span className="text-sm font-semibold text-foreground block group-hover:text-[hsl(278_100%_82%)] transition-colors">{prompt.text}</span>
                   <span className="text-xs text-muted-foreground">{prompt.description}</span>
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-neon-cyan group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[hsl(278_100%_82%)] group-hover:translate-x-1 transition-all" />
               </motion.button>
             ))}
           </div>

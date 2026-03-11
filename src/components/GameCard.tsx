@@ -15,6 +15,14 @@ interface GameCardProps {
   id?: string;
 }
 
+const categoryGlow: Record<string, { border: string; shadow: string; bar: string }> = {
+  Sports:    { border: "hover:border-[hsl(150_100%_50%/0.5)]", shadow: "hover:shadow-[0_0_30px_hsl(150_100%_50%/0.2)]", bar: "from-[hsl(150_100%_50%)] to-[hsl(150_80%_60%)]" },
+  Action:    { border: "hover:border-neon-cyan/50",             shadow: "hover:shadow-[0_0_30px_hsl(195_100%_60%/0.2)]", bar: "from-primary to-secondary" },
+  Fighting:  { border: "hover:border-[hsl(310_100%_60%/0.5)]", shadow: "hover:shadow-[0_0_30px_hsl(310_100%_60%/0.2)]", bar: "from-[hsl(310_100%_60%)] to-[hsl(270_80%_65%)]" },
+  Racing:    { border: "hover:border-[hsl(40_85%_58%/0.5)]",   shadow: "hover:shadow-[0_0_30px_hsl(40_85%_58%/0.2)]",   bar: "from-[hsl(40_85%_58%)] to-[hsl(30_90%_55%)]" },
+  Default:   { border: "hover:border-neon-cyan/50",             shadow: "hover:shadow-[0_0_30px_hsl(195_100%_60%/0.2)]", bar: "from-primary to-secondary" },
+};
+
 const GameCard = ({
   title,
   image,
@@ -27,6 +35,7 @@ const GameCard = ({
 }: GameCardProps) => {
   const navigate = useNavigate();
   const gameId = id || title.toLowerCase().replace(/\s+/g, "-");
+  const glow = categoryGlow[category] ?? categoryGlow.Default;
 
   return (
     <motion.div
@@ -36,7 +45,7 @@ const GameCard = ({
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={{ y: -6, transition: { duration: 0.3 } }}
       onClick={() => navigate(`/game/${gameId}`)}
-      className="group relative rounded-xl overflow-hidden cursor-pointer bg-card ai-border-glow"
+      className={`group relative rounded-xl overflow-hidden cursor-pointer bg-card border border-border/50 transition-all duration-300 ${glow.border} ${glow.shadow}`}
     >
       {/* Holographic shimmer on hover */}
       <motion.div
@@ -85,7 +94,7 @@ const GameCard = ({
           <span className="text-[10px] text-muted-foreground font-mono">SKILL</span>
           <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden relative">
             <motion.div 
-              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full relative"
+              className={`h-full bg-gradient-to-r ${glow.bar} rounded-full relative`}
               style={{ 
                 width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%",
                 boxShadow: "0 0 8px hsl(195 100% 50% / 0.5)",

@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import GameCard from "./GameCard";
-import { Zap, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import AIScanLine from "@/components/AIScanLine";
 import mageVictory from "@/assets/mage-victory.png";
 
@@ -14,10 +14,19 @@ const games = [
 ];
 
 const GamesSection = () => {
+  const [videoOpacity, setVideoOpacity] = useState(0.12);
+
   return (
-    <section className="relative py-16 md:py-24 z-10 overflow-hidden">
-      {/* Background video */}
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.12]">
+    <section className="relative py-16 md:py-24 z-10 overflow-hidden" >
+      {/* Background video — plays once then fades out */}
+      <video
+        autoPlay
+        muted
+        playsInline
+        onEnded={() => setVideoOpacity(0)}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: videoOpacity, transition: "opacity 1s ease" }}
+      >
         <source src="/videos/SC_2-3.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-background/80" />
@@ -53,15 +62,6 @@ const GamesSection = () => {
             </h2>
           </div>
 
-          {/* Mage character accent - floating on the right */}
-          <div className="hidden lg:block relative w-32 h-32 flex-shrink-0">
-            <div className="absolute inset-0 rounded-full bg-neon-purple/10 blur-[30px]" />
-            <img
-              src={mageVictory}
-              alt="AI Mage"
-              className="relative z-10 w-full h-full object-contain drop-shadow-[0_0_20px_hsl(270_80%_60%/0.3)]"
-            />
-          </div>
         </motion.div>
 
         {/* Horizontal scrolling game cards - matching reference layout */}
@@ -72,7 +72,10 @@ const GamesSection = () => {
           transition={{ delay: 0.2 }}
           className="relative"
         >
-          <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory">
+          <div
+            className="flex gap-5 overflow-x-auto overflow-y-hidden pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {games.map((game, i) => (
               <motion.div
                 key={game.id}
@@ -101,7 +104,7 @@ const GamesSection = () => {
         >
           <button
             onClick={() => window.location.href = "/store"}
-            className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan hover:text-background hover:shadow-[0_0_20px_hsl(195_100%_60%/0.3)] transition-all duration-300 flex items-center gap-2"
+            className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
           >
             VIEW ALL GAMES
             <ChevronRight className="w-3.5 h-3.5" />

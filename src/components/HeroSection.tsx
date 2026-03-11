@@ -1,10 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Swords, Flame, Users, Gamepad2, Trophy, ChevronDown } from "lucide-react";
+import { Swords, Flame, Users, Gamepad2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
-import AIScanLine from "@/components/AIScanLine";
-import NeuralPulse from "@/components/NeuralPulse";
-import mageCharacter from "@/assets/kalth-mage.png";
 
 const liveStats = [
   { icon: Users, label: "PLAYERS ONLINE", value: "12,847", accent: true },
@@ -22,6 +19,22 @@ const marqueeItems = [
   "AI POWERED",
 ];
 
+const particles = [
+  { left: "8%",  top: "22%", size: 2,   delay: 0,    dur: 4.2 },
+  { left: "85%", top: "16%", size: 1.5, delay: 0.8,  dur: 5.5 },
+  { left: "22%", top: "68%", size: 2.5, delay: 1.2,  dur: 3.8 },
+  { left: "72%", top: "62%", size: 1,   delay: 0.3,  dur: 6.0 },
+  { left: "48%", top: "28%", size: 2,   delay: 1.8,  dur: 4.6 },
+  { left: "92%", top: "45%", size: 1.5, delay: 0.6,  dur: 5.2 },
+  { left: "5%",  top: "52%", size: 1,   delay: 1.4,  dur: 4.0 },
+  { left: "58%", top: "78%", size: 2,   delay: 2.0,  dur: 3.6 },
+  { left: "38%", top: "42%", size: 1,   delay: 0.5,  dur: 7.0 },
+  { left: "65%", top: "85%", size: 1.5, delay: 1.7,  dur: 4.8 },
+];
+
+const line1Words = ["SHAPING", "THE", "FUTURE", "OF"];
+const line2Words = ["ON-CHAIN", "GAMING"];
+
 const HeroSection = () => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -38,9 +51,8 @@ const HeroSection = () => {
     <>
       <section
         ref={heroRef}
-        className="relative min-h-[100dvh] flex flex-col items-center justify-start overflow-hidden pt-28 md:pt-32"
+        className="relative min-h-[82dvh] md:min-h-[90dvh] flex flex-col items-center justify-start md:justify-end overflow-hidden pt-24 md:pt-0 md:pb-24"
       >
-        {/* Full-screen cinematic video with parallax */}
         <motion.div className="absolute inset-0" style={{ scale: videoScale }}>
           <video
             autoPlay
@@ -55,84 +67,154 @@ const HeroSection = () => {
           </video>
         </motion.div>
 
-        {/* Multi-layer overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-transparent to-background/50" />
+        {/* Mobile overlay: dark at top for text readability */}
+        <div className="absolute inset-0 md:hidden bg-gradient-to-b from-background/70 via-background/20 to-background/90" />
 
-        {/* AI Effects */}
-        <AIScanLine />
-        <NeuralPulse />
+        {/* Desktop overlay: transparent at top (show character eyes), dark at bottom for text */}
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-b from-background/15 via-background/5 to-background/88" />
+
+        {/* Side vignette */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/45 via-transparent to-background/45" />
 
         {/* Ambient glows */}
         <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/6 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
         <div className="absolute top-1/2 right-0 w-[300px] h-[300px] rounded-full bg-neon-purple/5 blur-[120px] pointer-events-none" />
 
+        {/* Floating particles */}
+        {particles.map((p, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-neon-cyan pointer-events-none"
+            style={{
+              left: p.left,
+              top: p.top,
+              width: p.size,
+              height: p.size,
+              boxShadow: `0 0 ${p.size * 4}px hsl(195 100% 60% / 0.8)`,
+            }}
+            animate={{
+              y: [0, -18, 0],
+              opacity: [0.25, 0.75, 0.25],
+            }}
+            transition={{
+              duration: p.dur,
+              delay: p.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+
         {/* Main content with parallax */}
         <motion.div
-          className="w-full relative z-10 flex flex-col items-center"
+          className="w-full relative z-10 flex flex-col items-center md:-translate-y-10"
           style={{ y: contentY, opacity: contentOpacity }}
         >
           {/* Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-6 md:mb-8 px-4"
-          >
+          <div className="text-center mb-6 md:mb-8 px-4">
+            {/* Pre-heading label */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="flex items-center justify-center gap-3 mb-5"
+            >
+              <motion.div
+                className="h-[1px] w-10 rounded-full bg-gradient-to-r from-transparent to-neon-cyan/60"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              />
+              <span className="text-[9px] font-mono text-neon-cyan/65 tracking-[0.45em] uppercase">
+                Next Generation
+              </span>
+              <motion.div
+                className="h-[1px] w-10 rounded-full bg-gradient-to-l from-transparent to-neon-cyan/60"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              />
+            </motion.div>
+
             <h1
-              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] uppercase"
+              className="font-black tracking-tight leading-[0.95] uppercase"
               style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
             >
-              <span className="text-foreground block font-display tracking-[0.04em]">
-                SHAPING THE FUTURE OF
+              {/* Line 1 — word stagger */}
+              <span className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl text-foreground block font-display tracking-[0.04em]">
+                {line1Words.map((word, i) => (
+                  <motion.span
+                    key={word}
+                    initial={{ opacity: 0, y: 55, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{
+                      duration: 0.65,
+                      delay: 0.15 + i * 0.1,
+                      ease: [0.25, 0.4, 0.25, 1],
+                    }}
+                    className="inline-block mr-[0.26em] last:mr-0"
+                  >
+                    {word}
+                  </motion.span>
+                ))}
               </span>
-              <span className="gradient-text glow-text block mt-1 md:mt-2 font-display">
-                ON-CHAIN GAMING
+
+              {/* Line 2 — gradient + stagger */}
+              <span
+                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl block mt-1 md:mt-2 font-display"
+                style={{
+                  color: "hsl(278 100% 80%)",
+                  textShadow: "0 0 18px hsl(270 82% 58% / 0.75), 0 0 42px hsl(270 82% 58% / 0.4), 0 0 72px hsl(278 100% 70% / 0.22)",
+                }}
+              >
+                {line2Words.map((word, i) => (
+                  <motion.span
+                    key={word}
+                    initial={{ opacity: 0, y: 55, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{
+                      duration: 0.7,
+                      delay: 0.55 + i * 0.18,
+                      ease: [0.25, 0.4, 0.25, 1],
+                    }}
+                    className="inline-block mr-[0.26em] last:mr-0"
+                  >
+                    {word}
+                  </motion.span>
+                ))}
               </span>
             </h1>
-          </motion.div>
 
-          {/* Mage character - full width cinematic banner */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative w-screen -mx-[50vw] left-1/2 right-1/2"
-          >
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[70%] h-[80%] rounded-full bg-neon-purple/25 blur-[120px]" />
-            </div>
-            <img
-              src={mageCharacter}
-              alt="Kalth Mage"
-              className="relative z-10 w-full h-auto object-cover"
+            {/* Decorative accent line */}
+            <motion.div
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.95, ease: [0.25, 0.4, 0.25, 1] }}
+              className="mt-5 mx-auto w-20 h-[2px] rounded-full origin-left"
               style={{
-                filter: 'drop-shadow(0 0 40px hsl(270 80% 65% / 0.6)) drop-shadow(0 0 80px hsl(270 80% 65% / 0.3))',
-                maskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, black 70%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, black 70%, transparent 100%)',
-                maskComposite: 'intersect',
-                WebkitMaskComposite: 'destination-in',
+                background: "linear-gradient(90deg, hsl(195 100% 60%), hsl(195 60% 80%), transparent)",
+                boxShadow: "0 0 14px hsl(195 100% 60% / 0.55)",
               }}
             />
-          </motion.div>
+          </div>
 
-          {/* CTA buttons below character */}
+          {/* CTA buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.75 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 md:mt-8 px-4"
           >
             <button
               onClick={() => navigate("/store")}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider border border-neon-cyan/30 text-foreground hover:bg-neon-cyan/10 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_hsl(195_100%_60%/0.2)] transition-all duration-300 backdrop-blur-sm"
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline backdrop-blur-sm"
             >
               EXPLORE GAMES
             </button>
             <button
               onClick={() => navigate("/events")}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_40px_hsl(195_100%_60%/0.5)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
@@ -145,18 +227,11 @@ const HeroSection = () => {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
-          animate={{ y: [0, 8, 0], opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <span className="text-[9px] font-mono text-neon-cyan/50 tracking-[0.3em]">SCROLL</span>
-          <ChevronDown className="w-4 h-4 text-neon-cyan/50" />
-        </motion.div>
-
         {/* Bottom neon line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent" style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.3)" }} />
+        <div
+          className="absolute bottom-4 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"
+          style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.3)" }}
+        />
       </section>
 
       {/* Marquee strip */}
@@ -210,9 +285,7 @@ const HeroSection = () => {
                   </p>
                   <p
                     className={`font-display text-sm font-bold tracking-wide ${
-                      stat.accent
-                        ? "text-neon-cyan text-glow-cyan"
-                        : "text-foreground"
+                      stat.accent ? "text-neon-cyan text-glow-cyan" : "text-foreground"
                     }`}
                   >
                     {stat.value}

@@ -4,8 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 
 const footerLinks = [
   { heading: "Platform", links: ["Games", "Store", "Leaderboard", "Events"] },
-  { heading: "Resources", links: ["Documentation", "API", "Community", "Blog"] },
-  { heading: "Legal", links: ["Terms", "Privacy", "Cookies"] },
+  { heading: "Follow", links: ["X (Twitter)", "Discord", "Telegram"] },
 ];
 
 const Footer = () => {
@@ -14,11 +13,11 @@ const Footer = () => {
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-10" />
 
       {/* Ambient glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-neon-cyan/3 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-[hsl(278_100%_70%/0.08)] blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative">
         {/* Main footer content */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 py-12">
           {/* Brand column */}
           <div className="md:col-span-1">
             <img src={kultLogo} alt="Kult Games" className="h-8 w-auto mb-4" />
@@ -26,11 +25,11 @@ const Footer = () => {
               The next generation of AI-powered, on-chain gaming.
             </p>
             <div className="flex items-center gap-3">
-              {["X", "Discord", "Telegram"].map((social) => (
+              {["X", "D", "T"].map((social) => (
                 <a
                   key={social}
                   href="#"
-                  className="w-9 h-9 rounded-lg border border-border/50 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all group"
+                  className="w-9 h-9 rounded-[16px] border border-[hsl(278_100%_70%/0.18)] bg-[hsl(278_100%_70%/0.08)] flex items-center justify-center text-muted-foreground hover:text-[hsl(278_100%_82%)] hover:border-[hsl(278_100%_70%/0.32)] hover:bg-[hsl(278_100%_70%/0.14)] transition-all group"
                   aria-label={social}
                 >
                   <span className="text-xs font-bold group-hover:scale-110 transition-transform">{social[0]}</span>
@@ -54,7 +53,7 @@ const Footer = () => {
               <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors flex items-center gap-1 group">
+                    <a href="#" className="text-sm text-muted-foreground hover:text-[hsl(278_100%_82%)] transition-colors flex items-center gap-1 group">
                       {link}
                       <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
@@ -68,7 +67,7 @@ const Footer = () => {
         {/* Bottom bar — leaderboard scan line style */}
         <div className="border-t border-border/20 py-6 relative overflow-hidden">
           <motion.div
-            className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-neon-cyan/15 to-transparent"
+            className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-[hsl(278_100%_70%/0.18)] to-transparent"
             animate={{ x: ["-96px", "calc(100vw + 96px)"] }}
             transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
           />
@@ -78,7 +77,7 @@ const Footer = () => {
               <span className="text-muted-foreground/30">|</span>
               <span className="text-xs text-muted-foreground font-mono">Powered by 0G</span>
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-neon-cyan/60"
+                className="w-1.5 h-1.5 rounded-full bg-[hsl(278_100%_82%/0.7)]"
                 animate={{ opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />

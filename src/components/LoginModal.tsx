@@ -44,7 +44,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 />
               </div>
 
-              <div className="glass-panel-ai rounded-xl border border-primary/30 p-6 pt-12 relative overflow-hidden">
+              <div className="glass-panel-ai rounded-xl border border-primary/30 p-6 pt-12 relative overflow-hidden" >
                 <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-tl-xl" />
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-secondary/20 to-transparent rounded-tr-xl" />
                 <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-primary/10 to-transparent rounded-bl-xl" />
