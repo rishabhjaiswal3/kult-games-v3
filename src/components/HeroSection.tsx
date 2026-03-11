@@ -135,7 +135,7 @@ const HeroSection = () => {
       </section>
 
       {/* Live Stats Strip */}
-      <div className="relative z-10 border-y border-border/30 bg-card/50 backdrop-blur-sm overflow-hidden">
+      <div className="relative z-10 border-y border-border/30 bg-background backdrop-blur-sm overflow-hidden">
         <motion.div
           className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-primary/5 to-transparent z-10"
           animate={{ x: ["-128px", "calc(100vw + 128px)"] }}
