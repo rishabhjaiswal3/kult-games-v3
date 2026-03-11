@@ -123,7 +123,7 @@ const GameDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       <ParticleField />
       <Navbar />
 
@@ -179,7 +179,7 @@ const GameDetail = () => {
 
           {/* Hero content overlay */}
           <div className="relative w-full p-6 md:p-12 pb-10">
-            <div className="container mx-auto">
+            <div className="w-full max-w-[100vw] px-0 md:px-2 xl:px-6">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
                 {/* AI status */}
                 <div className="flex items-center gap-2 mb-4">
@@ -261,7 +261,7 @@ const GameDetail = () => {
           <div className="absolute top-0 left-1/4 w-[500px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
           <div className="absolute top-20 right-1/4 w-[400px] h-[250px] rounded-full bg-neon-cyan/4 blur-[100px] pointer-events-none" />
 
-          <div className="container mx-auto px-6 py-12 md:py-16 relative z-10">
+          <div className="w-full max-w-[100vw] px-6 md:px-8 xl:px-12 py-12 md:py-16 relative z-10 overflow-x-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
               {/* Main content */}
               <div className="lg:col-span-2">

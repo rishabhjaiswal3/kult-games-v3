@@ -55,7 +55,7 @@ const Leaderboard = () => {
         <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/4 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
-        <div className="container mx-auto px-6 relative z-10">
+        <div className="w-full px-6 md:px-8 xl:px-12 relative z-10">
           <div className="mb-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -94,7 +94,7 @@ const Leaderboard = () => {
           </div>
 
           {/* Top 3 podium */}
-          <div className="grid grid-cols-3 gap-3 md:gap-6 mb-12 max-w-3xl mx-auto">
+          <div className="grid grid-cols-3 gap-3 md:gap-6 mb-12 w-full">
             {[players[1], players[0], players[2]].map((p, i) => {
               const isFirst = i === 1;
               const colors = p.rank === 1

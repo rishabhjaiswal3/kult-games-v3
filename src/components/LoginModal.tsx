@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Chrome } from "lucide-react";
 import { useState } from "react";
-import mageCharacter from "@/assets/mage-character.png";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -19,7 +18,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-[hsl(220_50%_4%/0.82)] backdrop-blur-md"
             onClick={onClose}
           />
 
@@ -32,81 +31,72 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             style={{ maxHeight: "100vh" }}
           >
             <div className="relative w-full max-w-md pointer-events-auto">
-            
-              <div className="flex justify-center -mb-8 relative z-10">
-                <motion.img
-                  src={mageCharacter}
-                  alt="Character"
-                  className="h-24 md:h-32 w-auto"
-                  style={{ filter: "drop-shadow(0 0 25px hsl(195 100% 50% / 0.6)) drop-shadow(0 0 50px hsl(195 100% 50% / 0.3))" }}
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </div>
+              <div className="absolute inset-0 -z-10 rounded-[28px] bg-[radial-gradient(circle_at_top,hsl(278_100%_70%/0.16),transparent_40%)] blur-xl" />
 
-              <div className="glass-panel-ai rounded-xl border border-primary/30 p-6 pt-12 relative overflow-hidden" >
-                <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-tl-xl" />
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-secondary/20 to-transparent rounded-tr-xl" />
-                <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-primary/10 to-transparent rounded-bl-xl" />
-                <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-secondary/10 to-transparent rounded-br-xl" />
-
+              <div className="relative w-full overflow-hidden rounded-[24px] border border-[hsl(278_100%_75%/0.14)] bg-[linear-gradient(135deg,hsl(265_90%_14%/0.98),hsl(220_45%_9%/0.98))] shadow-[0_24px_60px_hsl(220_50%_2%/0.42),0_0_30px_hsl(270_82%_58%/0.1)]">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
+                  className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-[16px] border border-border/40 bg-card/40 text-muted-foreground hover:text-foreground hover:border-[hsl(278_100%_70%/0.28)] hover:bg-[hsl(278_100%_70%/0.08)] transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <div className="text-center mb-6">
-                  <h2 className="font-display text-2xl md:text-3xl font-bold gradient-text glow-text tracking-wider">
-                    WELCOME
-                  </h2>
-                  <div className="w-12 h-0.5 bg-gradient-to-r from-primary to-secondary mx-auto mt-2 rounded-full" style={{ boxShadow: "0 0 10px hsl(195 100% 50% / 0.4)" }} />
+                <div className="px-5 pb-5 pt-14 md:px-6 md:pb-6">
+                  <div className="text-center">
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] px-3 py-1.5">
+                      <div className="h-2 w-2 rounded-full bg-[hsl(278_100%_82%)]" />
+                      <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-[hsl(278_100%_82%)]">
+                        Browser Access
+                      </span>
+                    </div>
+                    <h2 className="font-display text-3xl font-black tracking-tight text-foreground">
+                      Sign In
+                    </h2>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Access games, events, rankings, and AI features.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 space-y-2">
+                    <label className="text-sm font-medium text-foreground">Email address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] focus:border-[hsl(278_100%_70%/0.35)] transition-all"
+                    />
+                  </div>
+
+                  <div className="mt-5 space-y-3">
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Send Code
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye-outline transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Wallet className="w-4 h-4" />
+                      Connect Wallet
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full h-12 rounded-[16px] font-medium text-sm text-foreground border border-border/50 bg-muted/25 hover:bg-muted/45 hover:border-[hsl(278_100%_70%/0.24)] transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Chrome className="w-4 h-4" />
+                      Continue with Google
+                    </motion.button>
+                  </div>
                 </div>
-
-                <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium text-foreground">Email address</label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-12 rounded-xl border border-border/50 bg-muted/50 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:shadow-[0_0_15px_hsl(195_100%_50%/0.15)] transition-all"
-                  />
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary btn-cyan-lightning transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  Send Code
-                </motion.button>
-
-                <div className="flex items-center gap-3 my-5">
-                  <div className="flex-1 h-px bg-border/50" />
-                  <span className="text-xs text-muted-foreground font-medium">or</span>
-                  <div className="flex-1 h-px bg-border/50" />
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 btn-cyan-lightning transition-all duration-300 flex items-center justify-center gap-2 mb-3"
-                >
-                  <Wallet className="w-4 h-4" />
-                  Connect Wallet
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-medium text-sm text-foreground border border-border/50 bg-muted/30 hover:bg-muted/50 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Chrome className="w-4 h-4" />
-                  Google
-                </motion.button>
               </div>
             </div>
           </motion.div>
