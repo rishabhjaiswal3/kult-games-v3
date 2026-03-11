@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const VIDEO_DURATION = 5000; // 5 seconds
+const VIDEO_DURATION = 10000; // 10 seconds
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
@@ -34,7 +34,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     const video = videoRef.current;
     if (!video) return;
     const handleTimeUpdate = () => {
-      if (video.currentTime >= 5) {
+      if (video.currentTime >= 10) {
         video.pause();
         startExit();
       }
