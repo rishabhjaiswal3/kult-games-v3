@@ -42,7 +42,7 @@ const GameCard = ({
       <motion.div
         className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: "linear-gradient(135deg, hsl(195 100% 50% / 0) 0%, hsl(195 100% 50% / 0.05) 50%, hsl(195 100% 50% / 0) 100%)",
+          background: "linear-gradient(135deg, hsl(195 100% 50% / 0) 0%, hsl(195 100% 50% / 0.08) 50%, hsl(195 100% 50% / 0) 100%)",
           backgroundSize: "200% 200%",
         }}
         animate={{
@@ -58,7 +58,7 @@ const GameCard = ({
         
         {/* Play button */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center border border-border/50 group-hover:bg-primary/20 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)] transition-all duration-300">
+          <div className="w-14 h-14 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center border border-border/50 group-hover:bg-primary/20 group-hover:border-primary/50 group-hover:shadow-[0_0_25px_hsl(195_100%_50%/0.4)] transition-all duration-300">
             <Play className="w-6 h-6 text-foreground fill-foreground ml-0.5" />
           </div>
         </div>
@@ -72,7 +72,7 @@ const GameCard = ({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-display text-base font-bold text-foreground tracking-wide mb-2">{title}</h3>
+        <h3 className="font-display text-base font-bold text-foreground tracking-wide mb-2 group-hover:text-glow-cyan transition-all">{title}</h3>
 
         {/* Meta */}
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -80,13 +80,16 @@ const GameCard = ({
           <span>{sessionLength}</span>
         </div>
         
-        {/* AI-style skill bar with glow */}
+        {/* AI-style skill bar with cyan glow */}
         <div className="mt-3 flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground font-mono">SKILL</span>
           <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden relative">
             <motion.div 
               className="h-full bg-gradient-to-r from-primary to-secondary rounded-full relative"
-              style={{ width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%" }}
+              style={{ 
+                width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%",
+                boxShadow: "0 0 8px hsl(195 100% 50% / 0.5)",
+              }}
               initial={{ width: 0 }}
               whileInView={{ width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%" }}
               viewport={{ once: true }}

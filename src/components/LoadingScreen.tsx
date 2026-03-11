@@ -115,10 +115,13 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         onLoadedData={handleVideoReady}
         onEnded={handleVideoEnded}
         className={`max-h-screen max-w-full object-contain transition-opacity duration-700 ${videoLoaded ? "opacity-70" : "opacity-0"}`}
+        style={{ filter: "hue-rotate(-10deg) saturate(1.2)" }}
       >
         <source src="/videos/SC_2-2.mp4" type="video/mp4" />
       </video>
-      <div ref={veilRef} className="absolute inset-0 bg-background/28" />
+      <div ref={veilRef} className="absolute inset-0 bg-background/20" />
+      {/* Cyan glow overlay to match theme */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, hsl(195 100% 50% / 0.06) 0%, transparent 70%)" }} />
     </div>
   );
 };

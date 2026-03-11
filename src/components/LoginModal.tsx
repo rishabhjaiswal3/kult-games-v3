@@ -37,7 +37,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.img
                   src={mageCharacter}
                   alt="Character"
-                  className="h-24 md:h-32 w-auto drop-shadow-[0_0_20px_hsl(269_62%_52%/0.6)]"
+                  className="h-24 md:h-32 w-auto"
+                  style={{ filter: "drop-shadow(0 0 25px hsl(195 100% 50% / 0.6)) drop-shadow(0 0 50px hsl(195 100% 50% / 0.3))" }}
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
@@ -57,10 +58,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 </button>
 
                 <div className="text-center mb-6">
-                  <h2 className="font-display text-2xl md:text-3xl font-bold gradient-text tracking-wider">
+                  <h2 className="font-display text-2xl md:text-3xl font-bold gradient-text glow-text tracking-wider">
                     WELCOME
                   </h2>
-                  <div className="w-12 h-0.5 bg-gradient-to-r from-primary to-secondary mx-auto mt-2 rounded-full" />
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-primary to-secondary mx-auto mt-2 rounded-full" style={{ boxShadow: "0 0 10px hsl(195 100% 50% / 0.4)" }} />
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -70,14 +71,14 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-12 rounded-xl border border-border/50 bg-muted/50 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                    className="w-full h-12 rounded-xl border border-border/50 bg-muted/50 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:shadow-[0_0_15px_hsl(195_100%_50%/0.15)] transition-all"
                   />
                 </div>
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary hover:shadow-[0_0_25px_hsl(269_62%_52%/0.4)] transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground bg-gradient-to-r from-primary to-secondary btn-cyan-lightning transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
                   Send Code
@@ -92,7 +93,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 hover:shadow-[0_0_25px_hsl(269_62%_52%/0.3)] transition-all duration-300 flex items-center justify-center gap-2 mb-3"
+                  className="w-full h-12 rounded-xl font-display font-semibold text-sm tracking-wider text-primary-foreground border border-primary/30 bg-gradient-to-r from-primary/80 to-secondary/80 btn-cyan-lightning transition-all duration-300 flex items-center justify-center gap-2 mb-3"
                 >
                   <Wallet className="w-4 h-4" />
                   Connect Wallet

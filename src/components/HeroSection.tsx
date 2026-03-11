@@ -44,9 +44,9 @@ const HeroSection = () => {
         {/* AI Grid overlay */}
         <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
 
-        {/* Purple nebula glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/6 blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[120px]" />
+        {/* Cyan nebula glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-0 lg:gap-0">
@@ -61,7 +61,7 @@ const HeroSection = () => {
               >
                 <motion.div
                   className="w-2 h-2 rounded-full bg-primary"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 50%)", "0 0 12px hsl(195 100% 50%)", "0 0 4px hsl(195 100% 50%)"] }}
+                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 50%), 0 0 10px hsl(195 100% 50% / 0.5)", "0 0 15px hsl(195 100% 50%), 0 0 30px hsl(195 100% 50% / 0.5)", "0 0 4px hsl(195 100% 50%), 0 0 10px hsl(195 100% 50% / 0.5)"] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <span className="text-[10px] font-mono text-primary/70 tracking-[0.3em] uppercase">
@@ -92,7 +92,6 @@ const HeroSection = () => {
                 </p>
               </motion.div>
 
-
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -101,17 +100,17 @@ const HeroSection = () => {
               >
                 <button
                   onClick={() => navigate("/store")}
-                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-foreground/30 text-foreground hover:bg-foreground/10 transition-all duration-300 flex items-center gap-2 ai-border-glow"
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider border border-primary/40 text-foreground hover:bg-primary/10 hover:border-primary/60 hover:shadow-[0_0_20px_hsl(195_100%_50%/0.2)] transition-all duration-300 flex items-center gap-2"
                 >
                   EXPLORE MORE
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => navigate("/events")}
-                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(195_100%_50%/0.4)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground btn-cyan-lightning transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
                 >
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent"
                     animate={{ x: ["-200%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
@@ -128,7 +127,7 @@ const HeroSection = () => {
               transition={{ duration: 0.3 }}
               className="hidden md:block relative w-[320px] md:w-[420px] lg:w-[500px] self-center -mr-8 lg:-mr-16 md:mt-8 lg:-mt-12 max-h-[75vh] overflow-hidden"
             >
-              <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
+              <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} animate />
             </motion.div>
           </div>
         </div>
@@ -137,7 +136,7 @@ const HeroSection = () => {
       {/* Live Stats Strip */}
       <div className="relative z-10 border-y border-border/30 bg-background backdrop-blur-sm overflow-hidden">
         <motion.div
-          className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-primary/5 to-transparent z-10"
+          className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-primary/8 to-transparent z-10"
           animate={{ x: ["-128px", "calc(100vw + 128px)"] }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
         />
@@ -158,13 +157,14 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-mono text-muted-foreground tracking-wider">{stat.label}</p>
-                  <p className={`font-display text-sm font-bold tracking-wide ${stat.accent ? "text-primary" : "text-foreground"}`}>
+                  <p className={`font-display text-sm font-bold tracking-wide ${stat.accent ? "text-primary text-glow-cyan" : "text-foreground"}`}>
                     {stat.value}
                   </p>
                 </div>
                 {stat.accent && (
                   <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-green-500 ml-auto flex-shrink-0"
+                    className="w-1.5 h-1.5 rounded-full bg-neon-green ml-auto flex-shrink-0"
+                    style={{ boxShadow: "0 0 6px hsl(150 100% 50%)" }}
                     animate={{ opacity: [1, 0.3, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   />

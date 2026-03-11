@@ -28,18 +28,6 @@ const fallbackResponses = [
   "🎯 Great question! Our AI analysis suggests you might enjoy **Mystic Realms** — it's got a unique blend of exploration and puzzle-solving that 87% of players rated as 'addictive'. Shall I tell you more?",
   "⚡ I've analyzed your query against our game database. Here's what I found:\n\n• **Best for solo play**: Spell Conquest\n• **Best multiplayer**: Guild Wars Lite\n• **Most innovative**: Shadow Protocol\n\nWant me to dive deeper into any of these?",
   "🧠 Processing your request through 0G Compute... Based on community sentiment analysis, **Hex Dominion** has the highest satisfaction score this month (4.9/5). It combines strategy with real-time elements. Would you like a gameplay preview?",
-  "🌟 Here's what I think: The KULT ecosystem has 12 titles right now, and based on what you're asking, I'd narrow it down to 3 strong picks:\n\n1. **Shadow Protocol** — stealth + strategy\n2. **Hex Dominion** — pure tactical depth\n3. **Arena Clash** — adrenaline-fueled battles\n\nTell me more about what you like and I'll pick THE one for you!",
-  "🎮 That's a fantastic question! Let me pull up some data...\n\nOur players who ask similar things tend to love **Mystic Realms** (78% match rate). It's an open-world adventure with 200+ hours of content. The community is super welcoming too — perfect if you're looking for something deep.",
-  "💡 Based on 0G network analytics:\n\n• Most played this week: Hex Dominion\n• Highest rated: Spell Conquest (4.8⭐)\n• Fastest growing: Shadow Protocol (+156% players)\n• Best for beginners: Mystic Realms\n\nI can create a personalized recommendation if you tell me your preferred genre!",
-  "🔮 Interesting! Our AI model predicts you'd enjoy games with **high narrative depth**. Here are my top picks:\n\n1. **Spell Conquest** — Epic fantasy storyline\n2. **Mystic Realms** — Mystery-driven exploration\n3. **Shadow Protocol** — Cyberpunk thriller\n\nEach has 50+ hours of story content. Want a detailed breakdown?",
-  "⚔️ Let me think about that... After analyzing player patterns on the 0G network, here's my take:\n\nIf you have **10 min** → Arena Clash (quick matches)\nIf you have **30 min** → Hex Dominion (ranked games)\nIf you have **1 hour+** → Spell Conquest (quests & raids)\n\nTime is the best filter for game selection!",
-  "🏆 Great timing! We just updated our leaderboards. Here's what's hot:\n\n• **Tournament of the Week**: Arena Clash Championship (prize pool: 5000 $KULT)\n• **New Release**: Shadow Protocol v2.0 just dropped\n• **Community Pick**: Hex Dominion voted #1 strategy game\n\nWant to join any tournaments or need help getting started?",
-  "🎲 Random fun fact from 0G Compute: The average KULT player tries 3.2 games before finding their main. Our AI can cut that to 1 with the right questions! Tell me:\n\n1. Solo or multiplayer?\n2. Competitive or casual?\n3. Story-rich or gameplay-focused?\n\nAnswer these and I'll find your perfect match!",
-  "🌌 Exploring the KULT universe... I found something perfect for you! **Mystic Realms** just launched a new zone called 'The Ethereal Depths' — it's getting rave reviews (4.9⭐ from 2.3K players). Features include:\n\n• New boss encounters\n• Rare loot drops\n• Co-op puzzles\n\nWant me to set you up?",
-  "🛡️ Here's a pro tip from KULT AI: New players often overlook **Guild Wars Lite** — but it's actually the best way to learn game mechanics across multiple genres. It combines:\n\n• RPG elements from Spell Conquest\n• PvP from Arena Clash\n• Strategy from Hex Dominion\n\nThink of it as a 'sampler platter' of KULT games!",
-  "📊 Running sentiment analysis on your question... The data says you're looking for something engaging! Here are games sorted by 'engagement score':\n\n1. Spell Conquest — 94/100\n2. Hex Dominion — 91/100\n3. Shadow Protocol — 89/100\n4. Arena Clash — 87/100\n5. Mystic Realms — 85/100\n\nAll scores are based on real player data from the 0G network.",
-  "🎪 Welcome to the KULT recommendation engine! I've processed millions of player interactions to help you. Based on current trends:\n\n**If you like Fortnite** → Try Arena Clash\n**If you like Civilization** → Try Hex Dominion\n**If you like Skyrim** → Try Spell Conquest\n**If you like Myst** → Try Mystic Realms\n\nAny of these click with you?",
-  "⚡ Quick answer powered by 0G Compute: Yes, all KULT games support cross-platform play! You can start on desktop and continue on mobile. Your progress syncs via the 0G network in real-time. Want me to help you set up cross-play?",
 ];
 
 let fallbackIndex = 0;
@@ -95,7 +83,7 @@ const AIConcierge = () => {
 
   return (
     <section className="relative py-24 z-10">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/6 blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
@@ -108,17 +96,18 @@ const AIConcierge = () => {
             <motion.div
               className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/10 border border-primary/25 mb-6 relative"
               whileHover={{ scale: 1.1 }}
+              style={{ boxShadow: "0 0 25px hsl(195 100% 50% / 0.2)" }}
             >
               <Brain className="w-8 h-8 text-primary" />
               <motion.div
                 className="absolute inset-0 rounded-2xl"
-                style={{ boxShadow: "0 0 20px hsl(195 100% 50% / 0.2)" }}
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                style={{ boxShadow: "0 0 30px hsl(195 100% 50% / 0.3)" }}
+                animate={{ opacity: [0.3, 0.8, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
             </motion.div>
             <h2 className="font-display text-3xl md:text-5xl font-black text-foreground tracking-tight mb-4">
-              KULT <span className="gradient-text">AI</span>
+              KULT <span className="gradient-text glow-text">AI</span>
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto text-base">
               Your AI-native game concierge. Discover, compare, and decide — powered by 0G Compute.
@@ -134,10 +123,10 @@ const AIConcierge = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-4 overflow-hidden"
               >
-                <div className="glass-panel rounded-2xl border border-primary/20 overflow-hidden">
+                <div className="glass-panel rounded-2xl border border-primary/20 overflow-hidden" style={{ boxShadow: "0 0 20px hsl(195 100% 50% / 0.08)" }}>
                   <div className="flex items-center justify-between px-5 py-3 border-b border-border/50">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" style={{ boxShadow: "0 0 6px hsl(150 100% 50%)" }} />
                       <span className="text-xs font-display text-muted-foreground tracking-wider">KULT AI — ONLINE</span>
                     </div>
                     <button
@@ -165,7 +154,7 @@ const AIConcierge = () => {
                           <div
                             className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                               msg.role === "user"
-                                ? "bg-primary text-primary-foreground rounded-br-md"
+                                ? "bg-primary text-primary-foreground rounded-br-md shadow-[0_2px_15px_hsl(195_100%_50%/0.3)]"
                                 : "bg-muted/50 text-foreground border border-border/30 rounded-bl-md"
                             }`}
                           >
@@ -216,7 +205,7 @@ const AIConcierge = () => {
             <form onSubmit={handleSubmit}>
               <div className="glass-panel rounded-2xl p-1.5 gradient-border relative overflow-hidden">
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent pointer-events-none"
                   animate={{ x: ["-100%", "200%"] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                 />
@@ -234,7 +223,7 @@ const AIConcierge = () => {
                   <button
                     type="submit"
                     disabled={!input.trim() || isTyping}
-                    className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider hover:shadow-[0_0_20px_hsl(269_62%_52%/0.3)] transition-all relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-display text-xs font-semibold tracking-wider btn-cyan-lightning transition-all relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isTyping ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -259,9 +248,9 @@ const AIConcierge = () => {
                 transition={{ delay: 0.3 + i * 0.1 }}
                 whileHover={{ scale: 1.02, y: -2 }}
                 onClick={() => handlePromptClick(prompt.text)}
-                className="group flex items-center gap-4 p-4 rounded-xl glass-panel hover:bg-muted/40 hover:border-primary/20 transition-all duration-300 text-left"
+                className="group flex items-center gap-4 p-4 rounded-xl glass-panel hover:bg-muted/40 hover:border-primary/25 hover:shadow-[0_0_15px_hsl(195_100%_50%/0.1)] transition-all duration-300 text-left"
               >
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/25 group-hover:to-secondary/15 transition-all">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/25 group-hover:to-secondary/15 transition-all" style={{ boxShadow: "0 0 10px hsl(195 100% 50% / 0.1)" }}>
                   <prompt.icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">

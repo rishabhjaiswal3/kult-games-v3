@@ -28,9 +28,9 @@ const GamesSection = () => {
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
       <AIScanLine />
 
-      {/* Neon ambient glows */}
-      <div className="absolute top-20 left-0 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-20 right-0 w-[350px] h-[350px] rounded-full bg-neon-cyan/3 blur-[120px] pointer-events-none" />
+      {/* Cyan ambient glows */}
+      <div className="absolute top-20 left-0 w-[400px] h-[400px] rounded-full bg-primary/6 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-20 right-0 w-[350px] h-[350px] rounded-full bg-neon-cyan/4 blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
@@ -43,14 +43,14 @@ const GamesSection = () => {
             className="hidden lg:block w-[280px] flex-shrink-0 relative"
           >
             <div className="sticky top-24">
-              <MageCharacter src={mageMeditate} alt="Kult Mage" glowColor="primary" showMask />
+              <MageCharacter src={mageMeditate} alt="Kult Mage" glowColor="primary" showMask animate />
               {/* Floating text under mage */}
               <motion.div
                 className="text-center mt-4"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                <span className="text-[10px] font-mono text-primary/60 tracking-[0.3em]">KALTH AWAITS</span>
+                <span className="text-[10px] font-mono text-primary/60 tracking-[0.3em] text-glow-cyan">KALTH AWAITS</span>
               </motion.div>
             </div>
           </motion.div>
@@ -67,24 +67,24 @@ const GamesSection = () => {
               <div className="flex items-center gap-2 mb-3">
                 <motion.div
                   className="w-1.5 h-1.5 rounded-full bg-neon-cyan"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(var(--neon-cyan))", "0 0 12px hsl(var(--neon-cyan))", "0 0 4px hsl(var(--neon-cyan))"] }}
+                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(var(--neon-cyan)), 0 0 10px hsl(var(--neon-cyan) / 0.5)", "0 0 15px hsl(var(--neon-cyan)), 0 0 25px hsl(var(--neon-cyan) / 0.5)", "0 0 4px hsl(var(--neon-cyan)), 0 0 10px hsl(var(--neon-cyan) / 0.5)"] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
-                <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">
+                <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase text-glow-cyan">
                   ★ Games Hub
                 </span>
-                <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-r from-neon-cyan/50 to-transparent" />
+                <div className="h-[1px] flex-1 max-w-[80px] bg-gradient-to-r from-neon-cyan/50 to-transparent" style={{ boxShadow: "0 0 8px hsl(195 100% 60% / 0.3)" }} />
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <h2 className="font-display text-3xl md:text-4xl font-black text-foreground tracking-tight">
-                    Play Matches To Rise On The <span className="gradient-text">Leaderboard</span>
+                    Play Matches To Rise On The <span className="gradient-text glow-text">Leaderboard</span>
                   </h2>
                   <p className="text-muted-foreground mt-2 text-sm max-w-lg">
                     Choose your game, dominate the competition, and earn on-chain rewards.
                   </p>
                 </div>
-                <button className="hidden md:flex px-5 py-2.5 rounded-lg font-display text-xs font-semibold tracking-wider bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all items-center gap-2">
+                <button className="hidden md:flex px-5 py-2.5 rounded-lg font-display text-xs font-semibold tracking-wider bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:shadow-[0_0_15px_hsl(195_100%_50%/0.2)] transition-all items-center gap-2">
                   <Zap className="w-3.5 h-3.5" />
                   VIEW ALL GAMES
                 </button>
@@ -104,7 +104,7 @@ const GamesSection = () => {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-2 rounded-full text-xs font-display font-semibold tracking-wider whitespace-nowrap transition-all duration-300 ${
                     selectedCategory === cat
-                      ? "bg-primary text-primary-foreground shadow-[0_0_15px_hsl(269_62%_52%/0.3)]"
+                      ? "bg-primary text-primary-foreground shadow-[0_0_15px_hsl(195_100%_50%/0.4)] btn-cyan-lightning"
                       : "glass-panel text-muted-foreground hover:text-foreground hover:border-primary/30"
                   }`}
                 >
@@ -118,7 +118,7 @@ const GamesSection = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mb-8 rounded-2xl overflow-hidden relative group cursor-pointer border border-border/50 hover:border-primary/30 transition-colors"
+              className="mb-8 rounded-2xl overflow-hidden relative group cursor-pointer border border-border/50 hover:border-primary/40 transition-colors"
               onClick={() => window.location.href = "/game/zero-dash"}
             >
               <div className="absolute inset-0">
@@ -136,7 +136,7 @@ const GamesSection = () => {
               >
                 <motion.div
                   className="absolute left-0 right-0 h-[1px]"
-                  style={{ background: "linear-gradient(90deg, transparent, hsl(var(--neon-cyan) / 0.5), transparent)" }}
+                  style={{ background: "linear-gradient(90deg, transparent, hsl(var(--neon-cyan) / 0.6), transparent)", boxShadow: "0 0 10px hsl(195 100% 60% / 0.3)" }}
                   animate={{ top: ["0%", "100%"] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 />
@@ -157,14 +157,14 @@ const GamesSection = () => {
                   <div className="flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1">
                       <TrendingUp className="w-3.5 h-3.5 text-neon-cyan" />
-                      <span className="text-xs text-neon-cyan font-semibold">+32% this week</span>
+                      <span className="text-xs text-neon-cyan font-semibold text-glow-cyan">+32% this week</span>
                     </div>
                     <span className="text-xs text-muted-foreground">3-5 min sessions</span>
                   </div>
                 </div>
-                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_62%_52%/0.4)] transition-all flex items-center gap-2 relative overflow-hidden flex-shrink-0">
+                <button className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground btn-cyan-lightning transition-all flex items-center gap-2 relative overflow-hidden flex-shrink-0">
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent"
                     animate={{ x: ["-200%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
@@ -174,7 +174,7 @@ const GamesSection = () => {
               </div>
             </motion.div>
 
-            {/* Game grid with AnimatePresence for filter transitions */}
+            {/* Game grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               <AnimatePresence mode="popLayout">
                 {filtered.map((game, i) => (

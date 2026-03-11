@@ -91,7 +91,7 @@ const KultAIFloating = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_30px_hsl(269_62%_52%/0.4)] hover:shadow-[0_0_40px_hsl(269_62%_52%/0.6)] transition-shadow"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_30px_hsl(195_100%_50%/0.4)] hover:shadow-[0_0_50px_hsl(195_100%_50%/0.6)] transition-shadow"
           >
             <Brain className="w-6 h-6 text-primary-foreground" />
             <motion.div
@@ -111,24 +111,24 @@ const KultAIFloating = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.9 }}
             transition={{ type: "spring", damping: 22, stiffness: 280 }}
-            className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] rounded-2xl overflow-hidden border border-primary/15 flex flex-col"
+            className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] rounded-2xl overflow-hidden border border-primary/20 flex flex-col"
             style={{
               maxHeight: "min(620px, calc(100vh - 6rem))",
               background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)",
-              boxShadow: "0 25px 60px -12px hsl(195 100% 50% / 0.2), 0 0 0 1px hsl(var(--border) / 0.5), inset 0 1px 0 0 hsl(var(--primary) / 0.1)",
+              boxShadow: "0 25px 60px -12px hsl(195 100% 50% / 0.25), 0 0 0 1px hsl(var(--border) / 0.5), 0 0 40px hsl(195 100% 50% / 0.1), inset 0 1px 0 0 hsl(var(--primary) / 0.15)",
             }}
           >
             {/* Header */}
             <div className="relative flex items-center justify-between px-5 py-4 border-b border-border/40 flex-shrink-0 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-secondary/5 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/5 to-transparent" />
               <div className="flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/25 to-secondary/15 flex items-center justify-center border border-primary/20">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/25 to-secondary/15 flex items-center justify-center border border-primary/25" style={{ boxShadow: "0 0 15px hsl(195 100% 50% / 0.2)" }}>
                   <Brain className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <span className="text-sm font-display font-bold text-foreground tracking-wide block">KULT AI</span>
+                  <span className="text-sm font-display font-bold text-foreground tracking-wide block text-glow-cyan">KULT AI</span>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_theme(colors.green.500)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-neon-green" style={{ boxShadow: "0 0 6px hsl(150 100% 50%)" }} />
                     <span className="text-[10px] text-muted-foreground">Powered by 0G Compute</span>
                   </div>
                 </div>
@@ -148,6 +148,7 @@ const KultAIFloating = () => {
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
                       className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center mx-auto mb-4 border border-primary/15"
+                      style={{ boxShadow: "0 0 20px hsl(195 100% 50% / 0.15)" }}
                     >
                       <Sparkles className="w-7 h-7 text-primary" />
                     </motion.div>
@@ -161,7 +162,7 @@ const KultAIFloating = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.15 + i * 0.05 }}
                           onClick={() => sendMessage(p.text)}
-                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/20 hover:bg-muted/40 border border-border/30 hover:border-primary/30 transition-all text-left group"
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/20 hover:bg-muted/40 border border-border/30 hover:border-primary/30 hover:shadow-[0_0_10px_hsl(195_100%_50%/0.1)] transition-all text-left group"
                         >
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
                             <p.icon className="w-4 h-4 text-primary" />
@@ -189,7 +190,7 @@ const KultAIFloating = () => {
                     <div
                       className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-wrap ${
                         msg.role === "user"
-                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-br-md shadow-[0_2px_12px_hsl(269_62%_52%/0.3)]"
+                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-br-md shadow-[0_2px_15px_hsl(195_100%_50%/0.3)]"
                           : "bg-muted/40 text-foreground border border-border/30 rounded-bl-md"
                       }`}
                     >
@@ -233,12 +234,12 @@ const KultAIFloating = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask KULT AI..."
-                  className="flex-1 bg-muted/30 rounded-xl px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/40 border border-border/30 focus:border-primary/30 transition-all"
+                  className="flex-1 bg-muted/30 rounded-xl px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:shadow-[0_0_10px_hsl(195_100%_50%/0.1)] border border-border/30 focus:border-primary/30 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center hover:shadow-[0_0_20px_hsl(269_62%_52%/0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center btn-cyan-lightning transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   {isTyping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
