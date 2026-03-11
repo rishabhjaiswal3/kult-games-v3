@@ -32,7 +32,7 @@ const HeroSection = () => {
           className="absolute inset-0 w-full h-full object-cover opacity-[0.12]"
           style={{ objectPosition: 'center center' }}
         >
-          <source src="/videos/SC_1.mp4" type="video/mp4" />
+          <source src="/videos/SC_12-4.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/80" />
 
