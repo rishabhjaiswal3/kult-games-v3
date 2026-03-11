@@ -5,6 +5,7 @@ import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
+import NeuralPulse from "@/components/NeuralPulse";
 
 interface GameData {
   title: string;
@@ -20,6 +21,7 @@ interface GameData {
   platform: string[];
   chain: string;
   playUrl?: string;
+  video: string;
 }
 
 const gameData: Record<string, GameData> = {
@@ -37,6 +39,7 @@ const gameData: Record<string, GameData> = {
     platform: ["Web", "Mobile"],
     chain: "0G Chain",
     playUrl: "https://guesstheai.xyz/",
+    video: "/videos/SC_10.mp4",
   },
   "zero-g-pool": {
     title: "Zero G Pool",
@@ -52,6 +55,7 @@ const gameData: Record<string, GameData> = {
     platform: ["Web", "Mobile"],
     chain: "0G Chain",
     playUrl: "https://zerogpool.xyz/",
+    video: "/videos/SC_2-3.mp4",
   },
   "zero-dash": {
     title: "Zero Dash",
@@ -67,6 +71,7 @@ const gameData: Record<string, GameData> = {
     platform: ["Web", "Mobile"],
     chain: "0G Chain",
     playUrl: "https://zerodashgame.xyz/",
+    video: "/videos/SC_1-3.mp4",
   },
   "robo-wars": {
     title: "Robo Wars",
@@ -81,6 +86,7 @@ const gameData: Record<string, GameData> = {
     features: ["Robot Customization", "PvP Battles", "Tournament Mode", "NFT Parts"],
     platform: ["Web", "Mobile"],
     chain: "0G Chain",
+    video: "/videos/SC_12-5.mp4",
   },
   "highway-hustle": {
     title: "Highway Hustle",
@@ -96,6 +102,7 @@ const gameData: Record<string, GameData> = {
     platform: ["Web", "Mobile"],
     chain: "0G Chain",
     playUrl: "https://highwayhustle.xyz/",
+    video: "/videos/SC_12-4.mp4",
   },
 };
 
@@ -120,29 +127,31 @@ const GameDetail = () => {
       <ParticleField />
       <Navbar />
 
-      {/* Full-bleed hero image */}
+      {/* Cinematic video hero - matching site theme */}
       <section className="relative z-10">
-        <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
-          <img
-            src={game.image}
-            alt={game.title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/40" />
-          
+        <div className="relative min-h-[70vh] overflow-hidden flex items-end">
+          {/* Video background instead of static image */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          >
+            <source src={game.video} type="video/mp4" />
+          </video>
+
+          {/* Multi-layer overlays matching site theme */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-background/50" />
+
           <AIScanLine />
-          
-          {/* Horizontal neon glitch lines */}
-          {[15, 35, 55, 75, 88].map((top, i) => (
-            <motion.div
-              key={i}
-              className="absolute left-0 right-0 h-[1px] pointer-events-none"
-              style={{ top: `${top}%`, background: `linear-gradient(90deg, transparent, hsl(var(--neon-cyan) / 0.4), transparent)`, boxShadow: `0 0 8px hsl(195 100% 60% / 0.2)` }}
-              animate={{ opacity: [0, 0.6, 0], x: ["-10%", "5%", "-10%"] }}
-              transition={{ duration: 3 + i * 0.5, repeat: Infinity, delay: i * 0.7 }}
-            />
-          ))}
+          <NeuralPulse />
+
+          {/* Ambient glows */}
+          <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/5 blur-[150px] pointer-events-none" />
+          <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/6 blur-[120px] pointer-events-none" />
 
           {/* Neon border bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-neon-cyan/60 to-transparent" style={{ boxShadow: "0 0 15px hsl(195 100% 60% / 0.3)" }} />
@@ -169,9 +178,21 @@ const GameDetail = () => {
           </motion.div>
 
           {/* Hero content overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+          <div className="relative w-full p-6 md:p-12 pb-10">
             <div className="container mx-auto">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                {/* AI status */}
+                <div className="flex items-center gap-2 mb-4">
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-neon-cyan"
+                    animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-[10px] font-mono text-neon-cyan/70 tracking-[0.3em] uppercase">
+                    GAME LOADED • {game.chain}
+                  </span>
+                </div>
+
                 <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-black text-foreground tracking-tight leading-none mb-3 glow-text">
                   {game.title.toUpperCase()}
                 </h1>
@@ -205,10 +226,10 @@ const GameDetail = () => {
                     href={game.playUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground btn-cyan-lightning transition-all duration-300 flex items-center gap-3 relative overflow-hidden"
+                    className="px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_30px_hsl(195_100%_60%/0.4)] transition-all duration-300 flex items-center gap-3 relative overflow-hidden"
                   >
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
                       animate={{ x: ["-200%", "200%"] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     />
@@ -224,12 +245,23 @@ const GameDetail = () => {
           </div>
         </div>
 
-        {/* Game details section */}
-        <div className="relative bg-background">
+        {/* Game details section with video bg */}
+        <div className="relative">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.06]"
+          >
+            <source src={game.video} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-background/90" />
+
           <div className="absolute top-0 left-1/4 w-[500px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
           <div className="absolute top-20 right-1/4 w-[400px] h-[250px] rounded-full bg-neon-cyan/4 blur-[100px] pointer-events-none" />
 
-          <div className="container mx-auto px-6 py-12 md:py-16">
+          <div className="container mx-auto px-6 py-12 md:py-16 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
               {/* Main content */}
               <div className="lg:col-span-2">
@@ -276,6 +308,7 @@ const GameDetail = () => {
                   </div>
                 </motion.div>
 
+                {/* Game preview with actual game image */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -306,7 +339,7 @@ const GameDetail = () => {
                   viewport={{ once: true }}
                   className="sticky top-24 space-y-6"
                 >
-                  <div className="rounded-xl border border-border/50 bg-card/80 overflow-hidden">
+                  <div className="rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
                     <div className="relative h-36 overflow-hidden">
                       <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
@@ -342,7 +375,7 @@ const GameDetail = () => {
                         href={game.playUrl || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground btn-cyan-lightning transition-all duration-300 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_20px_hsl(195_100%_60%/0.3)] transition-all duration-300 flex items-center justify-center gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
                         PLAY GAME
@@ -350,7 +383,7 @@ const GameDetail = () => {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border/30 bg-card/40 p-5">
+                  <div className="rounded-xl border border-border/30 bg-card/40 backdrop-blur-sm p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <Zap className="w-4 h-4 text-primary" />
                       <span className="text-xs font-display font-bold text-foreground tracking-wider">POWERED BY</span>
