@@ -126,7 +126,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="hidden md:block relative w-[260px] md:w-[320px] lg:w-[380px] self-center"
+              className="hidden md:block relative w-[320px] md:w-[420px] lg:w-[500px] self-center -mr-8 lg:-mr-16"
             >
               <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
             </motion.div>
