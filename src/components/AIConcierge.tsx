@@ -112,7 +112,7 @@ const AIConcierge = () => {
               <Brain className="w-8 h-8 text-primary" />
               <motion.div
                 className="absolute inset-0 rounded-2xl"
-                style={{ boxShadow: "0 0 20px hsl(269 62% 52% / 0.2)" }}
+                style={{ boxShadow: "0 0 20px hsl(195 100% 50% / 0.2)" }}
                 animate={{ opacity: [0.3, 0.7, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />

@@ -45,8 +45,8 @@ const HeroSection = () => {
         <div className="absolute inset-0 ai-grid-overlay pointer-events-none" />
 
         {/* Purple nebula glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/8 blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[120px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-primary/6 blur-[150px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[120px]" />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-0 lg:gap-0">
@@ -61,7 +61,7 @@ const HeroSection = () => {
               >
                 <motion.div
                   className="w-2 h-2 rounded-full bg-primary"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(269 62% 52%)", "0 0 12px hsl(269 62% 52%)", "0 0 4px hsl(269 62% 52%)"] }}
+                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 50%)", "0 0 12px hsl(195 100% 50%)", "0 0 4px hsl(195 100% 50%)"] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <span className="text-[10px] font-mono text-primary/70 tracking-[0.3em] uppercase">
@@ -108,7 +108,7 @@ const HeroSection = () => {
                 </button>
                 <button
                   onClick={() => navigate("/events")}
-                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(269_62%_52%/0.4)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+                  className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(195_100%_50%/0.4)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
