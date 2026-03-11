@@ -10,8 +10,11 @@ const footerLinks = [
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 border-t border-border/30">
-      <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-20" />
+    <footer className="relative z-10 border-t border-border/30 bg-card/30 backdrop-blur-sm">
+      <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-10" />
+
+      {/* Ambient glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-neon-cyan/3 blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative">
         {/* Main footer content */}
@@ -27,7 +30,7 @@ const Footer = () => {
                 <a
                   key={social}
                   href="#"
-                  className="w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 transition-all group"
+                  className="w-9 h-9 rounded-lg border border-border/50 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all group"
                   aria-label={social}
                 >
                   <span className="text-xs font-bold group-hover:scale-110 transition-transform">{social[0]}</span>
@@ -37,29 +40,35 @@ const Footer = () => {
           </div>
 
           {/* Link columns */}
-          {footerLinks.map((section) => (
-            <div key={section.heading}>
+          {footerLinks.map((section, si) => (
+            <motion.div
+              key={section.heading}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: si * 0.08 }}
+            >
               <h4 className="font-display text-xs font-bold text-foreground tracking-[0.2em] uppercase mb-4">
                 {section.heading}
               </h4>
               <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group">
+                    <a href="#" className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors flex items-center gap-1 group">
                       {link}
                       <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom bar — leaderboard scan line style */}
         <div className="border-t border-border/20 py-6 relative overflow-hidden">
           <motion.div
-            className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+            className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-neon-cyan/15 to-transparent"
             animate={{ x: ["-96px", "calc(100vw + 96px)"] }}
             transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
           />
@@ -69,7 +78,7 @@ const Footer = () => {
               <span className="text-muted-foreground/30">|</span>
               <span className="text-xs text-muted-foreground font-mono">Powered by 0G</span>
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-primary/60"
+                className="w-1.5 h-1.5 rounded-full bg-neon-cyan/60"
                 animate={{ opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
