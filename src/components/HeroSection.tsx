@@ -21,9 +21,17 @@ const HeroSection = () => {
 
   return (
     <>
-      <section className="relative min-h-screen flex items-center justify-center pt-20 pb-8 overflow-hidden">
+      <section className="relative min-h-[100dvh] flex items-center justify-center pt-16 pb-6 md:pt-20 md:pb-8 overflow-hidden">
         {/* Background video */}
-        <video autoPlay loop muted playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover opacity-40">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          style={{ objectPosition: 'center center' }}
+        >
           <source src="/videos/SC_1.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/50" />
