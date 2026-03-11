@@ -55,6 +55,9 @@ export default {
         glass: "hsl(var(--glass))",
         neural: "hsl(var(--neural))",
         "surface-elevated": "hsl(var(--surface-elevated))",
+        "neon-cyan": "hsl(var(--neon-cyan))",
+        "neon-green": "hsl(var(--neon-green))",
+        "neon-magenta": "hsl(var(--neon-magenta))",
       },
       borderRadius: {
         lg: "var(--radius)",
