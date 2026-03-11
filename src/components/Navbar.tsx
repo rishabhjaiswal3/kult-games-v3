@@ -32,7 +32,7 @@ const Navbar = () => {
               className="w-1.5 h-1.5 rounded-full bg-primary"
               animate={{
                 opacity: [1, 0.3, 1],
-                boxShadow: ["0 0 3px hsl(195 100% 50%)", "0 0 8px hsl(195 100% 50%)", "0 0 3px hsl(195 100% 50%)"],
+                boxShadow: ["0 0 3px hsl(195 100% 50%), 0 0 8px hsl(195 100% 50% / 0.5)", "0 0 10px hsl(195 100% 50%), 0 0 20px hsl(195 100% 50% / 0.5)", "0 0 3px hsl(195 100% 50%), 0 0 8px hsl(195 100% 50% / 0.5)"],
               }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
@@ -46,11 +46,11 @@ const Navbar = () => {
                   key={item.label}
                   to={item.path}
                   className={`text-sm font-medium transition-colors duration-300 relative group ${
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+                    isActive ? "text-primary text-glow-cyan" : "text-muted-foreground hover:text-primary"
                   }`}
                 >
                   {item.label}
-                  <span className={`absolute -bottom-1 left-0 h-[1px] bg-gradient-to-r from-primary to-secondary transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"}`} />
+                  <span className={`absolute -bottom-1 left-0 h-[1px] bg-gradient-to-r from-primary to-secondary transition-all duration-300 ${isActive ? "w-full shadow-[0_0_8px_hsl(195_100%_50%/0.5)]" : "w-0 group-hover:w-full"}`} />
                 </Link>
               );
             })}
@@ -60,9 +60,9 @@ const Navbar = () => {
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          <button onClick={() => setLoginOpen(true)} className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 hover:shadow-[0_0_20px_hsl(269_62%_52%/0.4)] transition-all duration-300 btn-angular relative overflow-hidden">
+          <button onClick={() => setLoginOpen(true)} className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 btn-cyan-lightning btn-angular relative overflow-hidden">
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent"
               animate={{ x: ["-200%", "200%"] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
@@ -81,7 +81,7 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            <button onClick={() => { setLoginOpen(true); setMobileOpen(false); }} className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 btn-angular mt-2">
+            <button onClick={() => { setLoginOpen(true); setMobileOpen(false); }} className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider bg-primary text-primary-foreground border border-primary/50 btn-cyan-lightning btn-angular mt-2">
               LOGIN
             </button>
           </motion.div>
