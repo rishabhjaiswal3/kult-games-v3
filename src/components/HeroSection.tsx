@@ -92,22 +92,6 @@ const HeroSection = () => {
                 </p>
               </motion.div>
 
-              {/* AI processing bar */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-3 mb-6"
-              >
-                <div className="h-[1px] flex-1 max-w-[200px] bg-border/30 relative overflow-hidden">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
-                    animate={{ x: ["-100%", "400%"] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
-                </div>
-                <span className="text-[9px] font-mono text-muted-foreground tracking-wider">v3.0.26 // AI-POWERED</span>
-              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
