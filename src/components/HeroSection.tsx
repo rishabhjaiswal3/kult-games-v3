@@ -93,24 +93,25 @@ const HeroSection = () => {
             </h1>
           </motion.div>
 
-          {/* Mage character - centered, prominent */}
+          {/* Mage character - cinematic wide banner */}
           <motion.div
-            initial={{ opacity: 0, y: 60, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative w-full max-w-2xl lg:max-w-3xl mx-auto px-4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="relative w-full max-w-5xl mx-auto px-4"
           >
-            {/* Glow behind character - purple to match the mage */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[80%] h-[80%] rounded-full bg-neon-purple/15 blur-[80px]" />
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[60%] h-[60%] rounded-full bg-neon-purple/10 blur-[60px]" />
+              <div className="w-[90%] h-[80%] rounded-full bg-neon-purple/20 blur-[100px]" />
             </div>
             <img
               src={mageCharacter}
-              alt="Kult Mage"
-              className="relative z-10 w-full h-auto max-h-[45vh] object-contain drop-shadow-[0_0_60px_hsl(270_80%_65%/0.5)] drop-shadow-[0_0_120px_hsl(270_80%_65%/0.25)]"
+              alt="Kalth Mage"
+              className="relative z-10 w-full h-auto max-h-[50vh] object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 40px hsl(270 80% 65% / 0.6)) drop-shadow(0 0 80px hsl(270 80% 65% / 0.3))',
+                maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+              }}
             />
           </motion.div>
 
