@@ -16,15 +16,6 @@ const Index = () => {
       <Navbar />
       <HeroSection />
 
-      {/* Video break: Transition to games */}
-      <VideoShowcase
-        videoSrc="/videos/SC_2-3.mp4"
-        title="ENTER THE ARENA"
-        subtitle="Discover Next-Gen Blockchain Games"
-        height="50vh"
-        overlayOpacity={0.55}
-      />
-
       <GamesSection />
 
       {/* Video break: Transition to AI */}
@@ -32,7 +23,7 @@ const Index = () => {
         videoSrc="/videos/SC_10.mp4"
         title="POWERED BY AI"
         subtitle="Intelligent • Adaptive • On-Chain"
-        height="50vh"
+        height="45vh"
         overlayOpacity={0.6}
       >
         <button
@@ -50,7 +41,7 @@ const Index = () => {
         videoSrc="/videos/SC_12-5.mp4"
         title="YOUR LEGACY AWAITS"
         subtitle="Play • Compete • Earn"
-        height="45vh"
+        height="40vh"
         overlayOpacity={0.5}
       >
         <div className="flex flex-col sm:flex-row items-center gap-4">
