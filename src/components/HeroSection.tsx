@@ -93,24 +93,26 @@ const HeroSection = () => {
             </h1>
           </motion.div>
 
-          {/* Mage character - cinematic wide banner */}
+          {/* Mage character - full width cinematic banner */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative w-full max-w-5xl mx-auto px-4"
+            className="relative w-screen -mx-[50vw] left-1/2 right-1/2"
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[90%] h-[80%] rounded-full bg-neon-purple/20 blur-[100px]" />
+              <div className="w-[70%] h-[80%] rounded-full bg-neon-purple/25 blur-[120px]" />
             </div>
             <img
               src={mageCharacter}
               alt="Kalth Mage"
-              className="relative z-10 w-full h-auto max-h-[50vh] object-contain"
+              className="relative z-10 w-full h-auto max-h-[55vh] object-cover"
               style={{
                 filter: 'drop-shadow(0 0 40px hsl(270 80% 65% / 0.6)) drop-shadow(0 0 80px hsl(270 80% 65% / 0.3))',
-                maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)',
+                maskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, black 70%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, black 70%, transparent 100%)',
+                maskComposite: 'intersect',
+                WebkitMaskComposite: 'destination-in',
               }}
             />
           </motion.div>
