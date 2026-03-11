@@ -9,15 +9,14 @@ import MageCharacter from "@/components/MageCharacter";
 import mageThrone from "@/assets/mage-throne.png";
 
 const storeItems = [
-  { id: "guess-the-ai", title: "Guess The AI", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", price: "FREE", category: "Puzzle", rating: 4.8, tag: "Popular" },
+  { id: "guess-the-ai", title: "Guess The AI", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", price: "FREE", category: "Action", rating: 4.8, tag: "Popular" },
   { id: "zero-g-pool", title: "Zero G Pool", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png", price: "FREE", category: "Sports", rating: 4.8, tag: "New" },
   { id: "zero-dash", title: "Zero Dash", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png", price: "FREE", category: "Action", rating: 4.8, tag: "Trending" },
   { id: "robo-wars", title: "Robo Wars", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", price: "0.5 ETH", category: "Fighting", rating: 4.8, tag: "Premium" },
   { id: "highway-hustle", title: "Highway Hustle", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png", price: "FREE", category: "Racing", rating: 4.8, tag: "Hot" },
-  { id: "warzone-warriors", title: "Warzone Warriors", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", price: "1.2 ETH", category: "Battle", rating: 4.9, tag: "Exclusive" },
 ];
 
-const categories = ["All", "Puzzle", "Sports", "Action", "Fighting", "Racing", "Battle"];
+const categories = ["All", "Sports", "Action", "Fighting", "Racing"];
 
 const Store = () => {
   const [search, setSearch] = useState("");
