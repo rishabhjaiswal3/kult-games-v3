@@ -59,9 +59,9 @@
   body {
     @apply bg-background text-foreground font-body antialiased text-base font-medium;
     background-image: 
-      radial-gradient(ellipse at 20% 50%, hsl(269 62% 52% / 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(281 35% 72% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, hsl(269 62% 52% / 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, hsl(195 100% 50% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(195 60% 70% / 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, hsl(195 100% 50% / 0.03) 0%, transparent 50%);
   }
 }
 
