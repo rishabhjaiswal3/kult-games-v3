@@ -115,7 +115,7 @@ const KultAIFloating = () => {
             style={{
               maxHeight: "min(620px, calc(100vh - 6rem))",
               background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)",
-              boxShadow: "0 25px 60px -12px hsl(269 62% 52% / 0.25), 0 0 0 1px hsl(var(--border) / 0.5), inset 0 1px 0 0 hsl(var(--primary) / 0.1)",
+              boxShadow: "0 25px 60px -12px hsl(195 100% 50% / 0.2), 0 0 0 1px hsl(var(--border) / 0.5), inset 0 1px 0 0 hsl(var(--primary) / 0.1)",
             }}
           >
             {/* Header */}
