@@ -86,7 +86,7 @@ const AIConcierge = () => {
     <section className="relative py-24 z-10 overflow-hidden">
       {/* Background video like leaderboard */}
       <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.06]">
-        <source src="/videos/SC_7.mp4" type="video/mp4" />
+        <source src="/videos/SC_12-4.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-background/85" />
       <AIScanLine />
