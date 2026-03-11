@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import AIScanLine from "@/components/AIScanLine";
 import NeuralPulse from "@/components/NeuralPulse";
-import mageCharacter from "@/assets/mage-character.png";
+import mageCharacter from "@/assets/mage-character-new.png";
 
 const liveStats = [
   { icon: Users, label: "PLAYERS ONLINE", value: "12,847", accent: true },
