@@ -5,15 +5,14 @@ import { Flame, TrendingUp, Zap } from "lucide-react";
 import AIScanLine from "@/components/AIScanLine";
 
 const games = [
-  { id: "guess-the-ai", title: "Guess The AI", description: "Challenge your mind. Beat the AI.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "PUZZLE", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
   { id: "zero-g-pool", title: "Zero G Pool", description: "Your favourite 8-ball, now with a cosmic twist.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png", category: "SPORTS", rating: 4.8, sessionLength: "10-15 min", skillLevel: "Intermediate" },
   { id: "zero-dash", title: "Zero Dash", description: "Run. Escape. Don't look back.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png", category: "ACTION", rating: 4.8, sessionLength: "3-5 min", skillLevel: "All levels" },
   { id: "robo-wars", title: "Robo Wars", description: "Enter the arena where metal meets mayhem.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", category: "FIGHTING", rating: 4.8, sessionLength: "10-20 min", skillLevel: "Intermediate" },
   { id: "highway-hustle", title: "Highway Hustle", description: "Fast lanes. Fierce rivals. Full throttle.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png", category: "RACING", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
-  { id: "warzone-warriors", title: "Warzone Warriors", description: "Epic battles in a decentralized warzone.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "BATTLE", rating: 4.9, sessionLength: "15-30 min", skillLevel: "Advanced" },
+  { id: "warzone-warriors", title: "Warzone Warriors", description: "Epic battles in a decentralized warzone.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", category: "BATTLE", rating: 4.9, sessionLength: "15-30 min", skillLevel: "Advanced" },
 ];
 
-const allCategories = ["All Games", "Puzzle", "Sports", "Action", "Fighting", "Racing", "Battle"];
+const allCategories = ["All Games", "Sports", "Action", "Fighting", "Racing", "Battle"];
 
 const GamesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Games");

@@ -21,7 +21,7 @@ const HeroSection = () => {
 
   return (
     <>
-      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center pt-20 pb-8 overflow-hidden">
         {/* Background video */}
         <video autoPlay loop muted playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover opacity-40">
           <source src="/videos/SC_1.mp4" type="video/mp4" />
@@ -75,9 +75,9 @@ const HeroSection = () => {
                 transition={{ duration: 0.25 }}
                 className="mb-6"
               >
-                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]">
-                  <span className="text-foreground block">THE FUTURE OF</span>
-                  <GlitchText className="gradient-text glow-text block mt-2">ON-CHAIN GAMING</GlitchText>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]" style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}>
+                  <span className="text-foreground block font-display tracking-[0.04em]">THE FUTURE OF</span>
+                  <GlitchText className="gradient-text glow-text block mt-2 font-display">ON-CHAIN GAMING</GlitchText>
                 </h1>
                 <p className="mt-4 text-lg md:text-xl text-muted-foreground font-body font-medium max-w-lg leading-relaxed">
                   Play. Compete. Earn. The next generation of decentralized gaming starts here.
@@ -134,7 +134,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="hidden md:block relative w-[350px] md:w-[450px] lg:w-[550px]"
+              className="hidden md:block relative w-[300px] md:w-[380px] lg:w-[440px]"
             >
               <MageCharacter src={mageCharacter} alt="Kult Mage" showMask={false} />
             </motion.div>

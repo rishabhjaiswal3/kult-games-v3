@@ -148,7 +148,7 @@ const MageCharacter = ({
         onLoad={() => setImageLoaded(true)}
         className={`w-full h-auto relative z-[2] ${flip ? 'transform -scale-x-100' : ''}`}
         style={{
-          filter: `drop-shadow(0 0 60px hsl(${glowHsl} / 0.6))`,
+          filter: `drop-shadow(0 0 60px hsl(${glowHsl} / 0.6)) contrast(1.15) brightness(1.05)`,
           willChange: "transform, opacity, filter",
         }}
         initial={{ opacity: 0, y: 18, scale: 0.97, filter: `blur(18px) drop-shadow(0 0 60px hsl(${glowHsl} / 0.35))` }}
