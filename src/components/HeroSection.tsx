@@ -100,17 +100,17 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative w-full max-w-2xl lg:max-w-3xl mx-auto px-4"
           >
-            {/* Glow behind character */}
+            {/* Glow behind character - purple to match the mage */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[80%] h-[80%] rounded-full bg-neon-purple/10 blur-[80px]" />
+              <div className="w-[80%] h-[80%] rounded-full bg-neon-purple/15 blur-[80px]" />
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[60%] h-[60%] rounded-full bg-neon-cyan/8 blur-[60px]" />
+              <div className="w-[60%] h-[60%] rounded-full bg-neon-purple/10 blur-[60px]" />
             </div>
             <img
               src={mageCharacter}
               alt="Kult Mage"
-              className="relative z-10 w-full h-auto max-h-[45vh] object-contain drop-shadow-[0_0_40px_hsl(270_80%_60%/0.3)]"
+              className="relative z-10 w-full h-auto max-h-[45vh] object-contain drop-shadow-[0_0_60px_hsl(270_80%_65%/0.5)] drop-shadow-[0_0_120px_hsl(270_80%_65%/0.25)]"
             />
           </motion.div>
 
