@@ -68,18 +68,18 @@
 @layer components {
   .glass-panel {
     @apply backdrop-blur-xl border border-border/50;
-    background: hsl(236 45% 11% / 0.7);
+    background: hsl(220 45% 10% / 0.7);
     box-shadow: 
-      0 0 20px hsl(269 62% 52% / 0.08),
-      inset 0 1px 0 hsl(260 20% 93% / 0.04);
+      0 0 20px hsl(195 100% 50% / 0.06),
+      inset 0 1px 0 hsl(210 20% 93% / 0.04);
   }
 
   .glass-panel-ai {
     @apply backdrop-blur-xl border border-border/50 relative overflow-hidden;
-    background: hsl(236 45% 11% / 0.7);
+    background: hsl(220 45% 10% / 0.7);
     box-shadow: 
-      0 0 20px hsl(269 62% 52% / 0.08),
-      inset 0 1px 0 hsl(260 20% 93% / 0.04);
+      0 0 20px hsl(195 100% 50% / 0.06),
+      inset 0 1px 0 hsl(210 20% 93% / 0.04);
   }
   .glass-panel-ai::after {
     content: '';
@@ -87,9 +87,9 @@
     inset: 0;
     background: linear-gradient(
       135deg,
-      hsl(269 62% 52% / 0) 0%,
-      hsl(269 62% 52% / 0.04) 50%,
-      hsl(269 62% 52% / 0) 100%
+      hsl(195 100% 50% / 0) 0%,
+      hsl(195 100% 50% / 0.04) 50%,
+      hsl(195 100% 50% / 0) 100%
     );
     background-size: 200% 200%;
     animation: holographic-shimmer 6s ease-in-out infinite;
