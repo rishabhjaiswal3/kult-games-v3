@@ -17,13 +17,13 @@ const MageCharacter = ({
   alt = "Mage",
   className = "",
   flip = false,
-  glowColor = "primary",
+  glowColor = "purple",
   showMask = true,
   loading = "lazy",
   animate = true,
 }: MageCharacterProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const glowHsl = "195 100% 50%";
+  const glowHsl = glowColor === "purple" ? "270 80% 65%" : "195 100% 50%";
 
   return (
     <div
