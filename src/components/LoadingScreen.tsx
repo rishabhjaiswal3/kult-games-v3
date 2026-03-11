@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import kultLogo from "@/assets/kult-logo.png";
 
-const DURATION = 3200; // 3.2 seconds
+const DURATION = 5300; // 4.2 seconds
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
