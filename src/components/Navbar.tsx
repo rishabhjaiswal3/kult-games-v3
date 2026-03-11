@@ -32,7 +32,7 @@ const Navbar = () => {
               className="w-1.5 h-1.5 rounded-full bg-primary"
               animate={{
                 opacity: [1, 0.3, 1],
-                boxShadow: ["0 0 3px hsl(269 62% 52%)", "0 0 8px hsl(269 62% 52%)", "0 0 3px hsl(269 62% 52%)"],
+                boxShadow: ["0 0 3px hsl(195 100% 50%)", "0 0 8px hsl(195 100% 50%)", "0 0 3px hsl(195 100% 50%)"],
               }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />

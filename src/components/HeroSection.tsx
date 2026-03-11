@@ -61,7 +61,7 @@ const HeroSection = () => {
               >
                 <motion.div
                   className="w-2 h-2 rounded-full bg-primary"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(269 62% 52%)", "0 0 12px hsl(269 62% 52%)", "0 0 4px hsl(269 62% 52%)"] }}
+                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 50%)", "0 0 12px hsl(195 100% 50%)", "0 0 4px hsl(195 100% 50%)"] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <span className="text-[10px] font-mono text-primary/70 tracking-[0.3em] uppercase">

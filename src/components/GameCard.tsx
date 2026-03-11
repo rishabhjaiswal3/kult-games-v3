@@ -42,7 +42,7 @@ const GameCard = ({
       <motion.div
         className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: "linear-gradient(135deg, hsl(269 62% 52% / 0) 0%, hsl(269 62% 52% / 0.05) 50%, hsl(269 62% 52% / 0) 100%)",
+          background: "linear-gradient(135deg, hsl(195 100% 50% / 0) 0%, hsl(195 100% 50% / 0.05) 50%, hsl(195 100% 50% / 0) 100%)",
           backgroundSize: "200% 200%",
         }}
         animate={{
