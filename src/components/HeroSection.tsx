@@ -1,18 +1,25 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Swords, Flame, Users, Gamepad2, Trophy, ChevronDown } from "lucide-react";
+import { Swords, Flame, Users, Gamepad2, Trophy, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
-import AIDataStream from "@/components/AIDataStream";
 import AIScanLine from "@/components/AIScanLine";
-import GlitchText from "@/components/GlitchText";
-import AITypingText from "@/components/AITypingText";
 import NeuralPulse from "@/components/NeuralPulse";
+import mageCharacter from "@/assets/mage-character.png";
 
 const liveStats = [
   { icon: Users, label: "PLAYERS ONLINE", value: "12,847", accent: true },
   { icon: Gamepad2, label: "GAMES PLAYED", value: "1.2M+" },
   { icon: Trophy, label: "PRIZES WON", value: "420 ETH" },
   { icon: Flame, label: "TRENDING", value: "Zero Dash" },
+];
+
+const marqueeItems = [
+  "AAA QUALITY",
+  "ACTION - PACKED",
+  "MIND - BENDING",
+  "COLLECTION OF GAMES",
+  "ON-CHAIN REWARDS",
+  "AI POWERED",
 ];
 
 const HeroSection = () => {
@@ -31,7 +38,7 @@ const HeroSection = () => {
     <>
       <section
         ref={heroRef}
-        className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[100dvh] flex flex-col items-center justify-start overflow-hidden pt-28 md:pt-32"
       >
         {/* Full-screen cinematic video with parallax */}
         <motion.div className="absolute inset-0" style={{ scale: videoScale }}>
@@ -49,14 +56,12 @@ const HeroSection = () => {
         </motion.div>
 
         {/* Multi-layer overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-transparent to-background/50" />
 
         {/* AI Effects */}
-        <AIDataStream />
         <AIScanLine />
         <NeuralPulse />
-        <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-30" />
 
         {/* Ambient glows */}
         <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/6 blur-[150px] pointer-events-none" />
@@ -65,98 +70,76 @@ const HeroSection = () => {
 
         {/* Main content with parallax */}
         <motion.div
-          className="container mx-auto px-4 md:px-6 relative z-10"
+          className="w-full relative z-10 flex flex-col items-center"
           style={{ y: contentY, opacity: contentOpacity }}
         >
-          <div className="text-center max-w-4xl mx-auto">
-            {/* AI status indicator */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-center justify-center gap-2 mb-8"
+          {/* Heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-6 md:mb-8 px-4"
+          >
+            <h1
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] uppercase"
+              style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
+            >
+              <span className="text-foreground block font-display tracking-[0.04em]">
+                SHAPING THE FUTURE OF
+              </span>
+              <span className="gradient-text glow-text block mt-1 md:mt-2 font-display">
+                ON-CHAIN GAMING
+              </span>
+            </h1>
+          </motion.div>
+
+          {/* Mage character - centered, prominent */}
+          <motion.div
+            initial={{ opacity: 0, y: 60, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative w-full max-w-2xl lg:max-w-3xl mx-auto px-4"
+          >
+            {/* Glow behind character */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[80%] h-[80%] rounded-full bg-neon-purple/10 blur-[80px]" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[60%] h-[60%] rounded-full bg-neon-cyan/8 blur-[60px]" />
+            </div>
+            <img
+              src={mageCharacter}
+              alt="Kult Mage"
+              className="relative z-10 w-full h-auto max-h-[45vh] object-contain drop-shadow-[0_0_40px_hsl(270_80%_60%/0.3)]"
+            />
+          </motion.div>
+
+          {/* CTA buttons below character */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 md:mt-8 px-4"
+          >
+            <button
+              onClick={() => navigate("/store")}
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider border border-neon-cyan/30 text-foreground hover:bg-neon-cyan/10 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_hsl(195_100%_60%/0.2)] transition-all duration-300 backdrop-blur-sm"
+            >
+              EXPLORE GAMES
+            </button>
+            <button
+              onClick={() => navigate("/events")}
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_40px_hsl(195_100%_60%/0.5)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
             >
               <motion.div
-                className="w-2 h-2 rounded-full bg-neon-cyan"
-                animate={{
-                  opacity: [1, 0.3, 1],
-                  boxShadow: [
-                    "0 0 4px hsl(195 100% 60%)",
-                    "0 0 15px hsl(195 100% 60%)",
-                    "0 0 4px hsl(195 100% 60%)",
-                  ],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                animate={{ x: ["-200%", "200%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               />
-              <span className="text-[10px] font-mono text-neon-cyan/70 tracking-[0.3em] uppercase">
-                <AITypingText
-                  texts={[
-                    "NEURAL NETWORK ACTIVE",
-                    "BLOCKCHAIN SYNCED",
-                    "AI MODELS LOADED",
-                    "READY TO PLAY",
-                  ]}
-                  className="text-neon-cyan/70"
-                />
-              </span>
-            </motion.div>
-
-            {/* Main heading - massive & cinematic */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-8"
-            >
-              <h1
-                className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight leading-[0.95]"
-                style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
-              >
-                <span className="text-foreground block font-display tracking-[0.04em]">
-                  THE FUTURE OF
-                </span>
-                <GlitchText className="gradient-text glow-text block mt-2 md:mt-3 font-display">
-                  ON-CHAIN GAMING
-                </GlitchText>
-              </h1>
-              <p className="mt-5 md:mt-6 text-base md:text-xl text-muted-foreground font-body font-medium max-w-xl mx-auto leading-relaxed">
-                Play. Compete. Earn. The next generation of decentralized gaming
-                starts here.
-              </p>
-            </motion.div>
-
-            {/* CTA buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8"
-            >
-              <button
-                onClick={() => navigate("/store")}
-                className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider border border-neon-cyan/30 text-foreground hover:bg-neon-cyan/10 hover:border-neon-cyan/50 hover:shadow-[0_0_30px_hsl(195_100%_60%/0.2)] transition-all duration-300 flex items-center gap-2 backdrop-blur-sm"
-              >
-                EXPLORE MORE
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => navigate("/events")}
-                className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider bg-neon-cyan text-background hover:shadow-[0_0_40px_hsl(195_100%_60%/0.5)] transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
-                  animate={{ x: ["-200%", "200%"] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-                <Swords className="w-4 h-4 relative z-10" />
-                <span className="relative z-10">STAKE & BATTLE</span>
-              </button>
-            </motion.div>
-          </div>
+              <Swords className="w-4 h-4 relative z-10" />
+              <span className="relative z-10">STAKE & BATTLE</span>
+            </button>
+          </motion.div>
         </motion.div>
 
         {/* Scroll indicator */}
@@ -169,13 +152,31 @@ const HeroSection = () => {
           <ChevronDown className="w-4 h-4 text-neon-cyan/50" />
         </motion.div>
 
-        {/* Cinematic letterbox bars */}
-        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-background to-transparent pointer-events-none z-20" />
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent" style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.3)" }} />
+        {/* Bottom neon line */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent" style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.3)" }} />
       </section>
 
+      {/* Marquee strip */}
+      <div className="relative z-10 border-y border-neon-cyan/20 bg-card/60 backdrop-blur-sm overflow-hidden py-4">
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80 z-10 pointer-events-none" />
+        <motion.div
+          className="flex items-center gap-8 whitespace-nowrap"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        >
+          {[...marqueeItems, ...marqueeItems].map((item, i) => (
+            <span key={i} className="flex items-center gap-8">
+              <span className="text-neon-cyan text-lg">✦</span>
+              <span className="font-display text-sm md:text-base font-bold text-foreground tracking-[0.15em] uppercase">
+                {item}
+              </span>
+            </span>
+          ))}
+        </motion.div>
+      </div>
+
       {/* Live Stats Strip */}
-      <div className="relative z-10 border-y border-border/30 bg-card/50 backdrop-blur-sm overflow-hidden">
+      <div className="relative z-10 border-b border-border/30 bg-card/50 backdrop-blur-sm overflow-hidden">
         <motion.div
           className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-neon-cyan/8 to-transparent z-10"
           animate={{ x: ["-128px", "calc(100vw + 128px)"] }}
