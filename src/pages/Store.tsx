@@ -37,7 +37,7 @@ const Store = () => {
 
       <section className="relative pt-24 pb-20 z-10">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-15">
-          <source src="/videos/SC_5.mp4" type="video/mp4" />
+          <source src="/videos/SC_12-4.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/75" />
         <AIScanLine />

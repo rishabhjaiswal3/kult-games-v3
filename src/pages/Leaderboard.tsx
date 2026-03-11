@@ -40,7 +40,7 @@ const Leaderboard = () => {
 
       <section className="relative pt-24 pb-20 z-10">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-12">
-          <source src="/videos/SC_12-2.mp4" type="video/mp4" />
+          <source src="/videos/SC_12-4.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-background/80" />
         <AIScanLine />
