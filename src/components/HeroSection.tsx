@@ -106,7 +106,7 @@ const HeroSection = () => {
             <img
               src={mageCharacter}
               alt="Kalth Mage"
-              className="relative z-10 w-full h-auto max-h-[55vh] object-cover"
+              className="relative z-10 w-full h-auto object-cover"
               style={{
                 filter: 'drop-shadow(0 0 40px hsl(270 80% 65% / 0.6)) drop-shadow(0 0 80px hsl(270 80% 65% / 0.3))',
                 maskImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, black 70%, transparent 100%)',
