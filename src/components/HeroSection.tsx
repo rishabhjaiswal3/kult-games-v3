@@ -142,7 +142,7 @@ const HeroSection = () => {
               style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
             >
               {/* Line 1 — word stagger */}
-              <span className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl text-foreground block font-display tracking-[0.04em]">
+              <span className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl text-foreground block font-display tracking-[0.04em]">
                 {line1Words.map((word, i) => (
                   <motion.span
                     key={word}
@@ -162,7 +162,7 @@ const HeroSection = () => {
 
               {/* Line 2 — gradient + stagger */}
               <span
-                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl block mt-1 md:mt-2 font-display"
+                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl block mt-1 md:mt-2 font-display"
                 style={{
                   color: "hsl(278 100% 80%)",
                   textShadow: "0 0 18px hsl(270 82% 58% / 0.75), 0 0 42px hsl(270 82% 58% / 0.4), 0 0 72px hsl(278 100% 70% / 0.22)",
