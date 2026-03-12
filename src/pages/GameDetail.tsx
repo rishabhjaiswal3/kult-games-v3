@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
 import NeuralPulse from "@/components/NeuralPulse";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 interface GameData {
   title: string;
@@ -131,16 +132,7 @@ const GameDetail = () => {
       <section className="relative z-10">
         <div className="relative min-h-[70vh] overflow-hidden flex items-end">
           {/* Video background instead of static image */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          >
-            <source src={game.video} type="video/mp4" />
-          </video>
+          <AutoPlayVideo src={game.video} loop className="absolute inset-0 w-full h-full object-cover opacity-30" />
 
           {/* Multi-layer overlays matching site theme */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/30" />
@@ -247,15 +239,7 @@ const GameDetail = () => {
 
         {/* Game details section with video bg */}
         <div className="relative">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.06]"
-          >
-            <source src={game.video} type="video/mp4" />
-          </video>
+          <AutoPlayVideo src={game.video} loop className="absolute inset-0 w-full h-full object-cover opacity-[0.06]" />
           <div className="absolute inset-0 bg-background/90" />
 
           <div className="absolute top-0 left-1/4 w-[500px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />

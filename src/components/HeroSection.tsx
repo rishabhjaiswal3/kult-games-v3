@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Swords, Flame, Users, Gamepad2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const liveStats = [
   { icon: Users, label: "PLAYERS ONLINE", value: "12,847", accent: true },
@@ -54,17 +55,7 @@ const HeroSection = () => {
         className="relative min-h-[82dvh] md:min-h-[90dvh] flex flex-col items-center justify-start md:justify-end overflow-hidden pt-24 md:pt-0 md:pb-24"
       >
         <motion.div className="absolute inset-0" style={{ scale: videoScale }}>
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "center center" }}
-          >
-            <source src="/videos/SC_1-3.mp4" type="video/mp4" />
-          </video>
+          <AutoPlayVideo src="/videos/SC_1-3.mp4" loop className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: "center center" }} />
         </motion.div>
 
         {/* Mobile overlay: dark at top for text readability */}
@@ -207,7 +198,7 @@ const HeroSection = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 md:mt-8 px-4"
           >
             <button
-              onClick={() => navigate("/store")}
+              onClick={() => navigate("/games")}
               className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline backdrop-blur-sm"
             >
               EXPLORE GAMES

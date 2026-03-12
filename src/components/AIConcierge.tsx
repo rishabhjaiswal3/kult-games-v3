@@ -1,8 +1,21 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRight, Sparkles, MessageSquare, GitCompare, Gamepad2, Brain, Send, X, User, Loader2 } from "lucide-react";
+import { ArrowRight, Sparkles, MessageSquare, GitCompare, Gamepad2, Send, X, User, Loader2 } from "lucide-react";
+
+const KultAIIcon = ({ size = 16, color = "hsl(278,100%,82%)" }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 2L22.5 7.5V18.5L13 24L3.5 18.5V7.5L13 2Z" stroke={color} strokeWidth="1.2" strokeOpacity="0.7" fill="none"/>
+    <line x1="13" y1="2" x2="13" y2="6" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <line x1="13" y1="20" x2="13" y2="24" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <line x1="3.5" y1="7.5" x2="7" y2="9.5" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <line x1="22.5" y1="7.5" x2="19" y2="9.5" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <line x1="3.5" y1="18.5" x2="7" y2="16.5" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <line x1="22.5" y1="18.5" x2="19" y2="16.5" stroke={color} strokeWidth="1" strokeOpacity="0.4"/>
+    <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill={color} fillOpacity="0.95"/>
+  </svg>
+);
 import { useState, useRef, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import AIScanLine from "@/components/AIScanLine";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const prompts = [
   { icon: Sparkles, text: "Find my first game", description: "AI picks the best starting point for you" },
@@ -85,9 +98,7 @@ const AIConcierge = () => {
   return (
     <section className="relative py-24 z-10 overflow-hidden">
       {/* Background video like leaderboard */}
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-[0.08]">
-        <source src="/videos/SC_10.mp4" type="video/mp4" />
-      </video>
+      <AutoPlayVideo src="/videos/SC_10.mp4" loop className="absolute inset-0 w-full h-full object-cover opacity-[0.08]" />
       <div className="absolute inset-0 bg-background/85" />
       <AIScanLine />
 
@@ -106,18 +117,22 @@ const AIConcierge = () => {
           >
             <div className="flex items-center justify-center gap-2 mb-6">
               <motion.div
-                className="w-2 h-2 rounded-full bg-neon-cyan"
-                animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
+                className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%)]"
+                animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(278 100% 82%)", "0 0 15px hsl(278 100% 82%)", "0 0 4px hsl(278 100% 82%)"] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
-              <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">
-                <Brain className="w-3 h-3 inline mr-1" /> AI Concierge
+              <span className="text-xs font-mono text-[hsl(278_100%_82%)] tracking-[0.2em] uppercase flex items-center gap-1">
+                <KultAIIcon size={12} /> AI Concierge
               </span>
             </div>
-            <h2 className="font-display text-3xl md:text-5xl font-black text-foreground tracking-tight mb-4">
-              KULT <span className="gradient-text glow-text">AI</span>
+            <h2 className="font-display text-3xl md:text-5xl font-black tracking-tight mb-4 flex items-center justify-center gap-4">
+              <span className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-[hsl(278_100%_70%/0.22)] to-[hsl(270_82%_52%/0.14)] border border-[hsl(278_100%_75%/0.22)]" style={{ boxShadow: "0 0 24px hsl(270 82% 58% / 0.22), inset 0 1px 0 hsl(278 100% 82% / 0.12)" }}>
+                <KultAIIcon size={28} />
+              </span>
+              <span className="text-white" style={{ textShadow: "0 0 30px hsl(278 100% 82% / 0.2)" }}>KULT</span>
+              <span className="text-[hsl(278_100%_82%)]" style={{ textShadow: "0 0 30px hsl(278 100% 82% / 0.5), 0 0 60px hsl(270 82% 58% / 0.25)" }}>AI</span>
             </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto text-sm">
+            <p className="text-[hsl(278_100%_82%/0.5)] max-w-lg mx-auto text-sm">
               Your AI-native game concierge. Discover, compare, and decide — powered by 0G Compute.
             </p>
           </motion.div>
@@ -131,11 +146,12 @@ const AIConcierge = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-4 overflow-hidden"
               >
-                <div className="rounded-xl border border-neon-cyan/20 bg-card/50 backdrop-blur-sm overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-muted/20">
+                <div className="rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 backdrop-blur-sm overflow-hidden" style={{ boxShadow: "0 0 30px hsl(270 82% 58% / 0.08), inset 0 1px 0 hsl(278 100% 82% / 0.06)" }}>
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-[hsl(278_100%_70%/0.15)] bg-[hsl(278_100%_70%/0.06)]">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" style={{ boxShadow: "0 0 6px hsl(150 100% 50%)" }} />
-                      <span className="text-[10px] font-mono text-muted-foreground tracking-wider">KULT AI — ONLINE</span>
+                      <div className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%)] animate-pulse" style={{ boxShadow: "0 0 6px hsl(278 100% 82%)" }} />
+                      <KultAIIcon size={12} />
+                      <span className="text-[10px] font-mono text-[hsl(278_100%_82%/0.7)] tracking-wider">KULT AI — ONLINE</span>
                     </div>
                     <button
                       onClick={() => { setChatOpen(false); setMessages([]); }}
@@ -145,7 +161,7 @@ const AIConcierge = () => {
                     </button>
                   </div>
 
-                  <ScrollArea className="h-[400px]">
+                  <div className="h-[400px] overflow-y-auto scrollbar-none">
                     <div className="p-5 space-y-4">
                       {messages.map((msg, i) => (
                         <motion.div
@@ -156,15 +172,15 @@ const AIConcierge = () => {
                           className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                         >
                           {msg.role === "ai" && (
-                            <div className="w-8 h-8 rounded-lg bg-neon-cyan/10 flex items-center justify-center flex-shrink-0 mt-1">
-                              <Bot className="w-4 h-4 text-neon-cyan" />
+                            <div className="w-8 h-8 rounded-lg bg-[hsl(278_100%_70%/0.14)] flex items-center justify-center flex-shrink-0 mt-1 border border-[hsl(278_100%_75%/0.18)]">
+                              <KultAIIcon size={16} />
                             </div>
                           )}
                           <div
                             className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                               msg.role === "user"
-                                ? "bg-neon-cyan text-background rounded-br-md shadow-[0_2px_15px_hsl(195_100%_60%/0.2)]"
-                                : "bg-muted/30 text-foreground border border-border/30 rounded-bl-md"
+                                ? "btn-eye text-white rounded-br-md shadow-[0_2px_15px_hsl(270_82%_58%/0.25)]"
+                                : "bg-muted/30 text-foreground border border-[hsl(278_100%_70%/0.2)] rounded-bl-md"
                             }`}
                           >
                             {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
@@ -185,19 +201,19 @@ const AIConcierge = () => {
 
                       {isTyping && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-neon-cyan/10 flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-4 h-4 text-neon-cyan" />
+                          <div className="w-8 h-8 rounded-lg bg-[hsl(278_100%_70%/0.14)] flex items-center justify-center flex-shrink-0 border border-[hsl(278_100%_75%/0.18)]">
+                            <KultAIIcon size={16} />
                           </div>
-                          <div className="bg-muted/30 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
-                            <motion.div className="w-2 h-2 rounded-full bg-neon-cyan/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} />
-                            <motion.div className="w-2 h-2 rounded-full bg-neon-cyan/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} />
-                            <motion.div className="w-2 h-2 rounded-full bg-neon-cyan/60" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} />
+                          <div className="bg-muted/30 border border-[hsl(278_100%_70%/0.2)] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+                            <motion.div className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%/0.7)]" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} />
+                            <motion.div className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%/0.7)]" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} />
+                            <motion.div className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%/0.7)]" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} />
                           </div>
                         </motion.div>
                       )}
                       <div ref={messagesEndRef} />
                     </div>
-                  </ScrollArea>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -212,14 +228,14 @@ const AIConcierge = () => {
             className="relative mb-10"
           >
             <form onSubmit={handleSubmit}>
-              <div className="rounded-xl border border-neon-cyan/20 bg-card/50 backdrop-blur-sm p-1.5 relative overflow-hidden">
+              <div className="rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 backdrop-blur-sm p-1.5 relative overflow-hidden" style={{ boxShadow: "0 0 30px hsl(270 82% 58% / 0.08)" }}>
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-neon-cyan/6 to-transparent pointer-events-none"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-[hsl(278_100%_70%/0.06)] to-transparent pointer-events-none"
                   animate={{ x: ["-100%", "200%"] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                 />
                 <div className="flex items-center gap-3 px-5 py-4 rounded-lg bg-muted/20 relative">
-                  <Bot className="w-5 h-5 text-neon-cyan flex-shrink-0" />
+                  <KultAIIcon size={20} />
                   <input
                     ref={inputRef}
                     type="text"

@@ -6,8 +6,8 @@ import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 
 const navItems = [
-  { label: "Store", path: "/store" },
-  { label: "Games", path: "/" },
+  { label: "Home", path: "/" },
+  { label: "Games", path: "/games" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Events", path: "/events" },
 ];

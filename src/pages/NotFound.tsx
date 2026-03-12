@@ -81,7 +81,7 @@ const NotFound = () => {
             RETURN HOME
           </button>
           <button
-            onClick={() => navigate("/store")}
+            onClick={() => navigate("/games")}
             className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline flex items-center gap-2"
           >
             <Compass className="w-4 h-4" />

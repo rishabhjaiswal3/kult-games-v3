@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, User, Loader2, Brain, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight } from "lucide-react";
+import { Bot, Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ChatMessage {
   id: string;
@@ -93,7 +92,19 @@ const KultAIFloating = () => {
             onClick={() => setOpen(true)}
             className="fixed bottom-6 right-6 z-50 w-14 h-14 btn-eye flex items-center justify-center transition-shadow"
           >
-            <Brain className="w-6 h-6 text-white" />
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Outer hexagon ring */}
+                <path d="M13 2L22.5 7.5V18.5L13 24L3.5 18.5V7.5L13 2Z" stroke="white" strokeWidth="1.2" strokeOpacity="0.6" fill="none"/>
+                {/* Inner circuit lines */}
+                <line x1="13" y1="2" x2="13" y2="6" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                <line x1="13" y1="20" x2="13" y2="24" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                <line x1="3.5" y1="7.5" x2="7" y2="9.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                <line x1="22.5" y1="7.5" x2="19" y2="9.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                <line x1="3.5" y1="18.5" x2="7" y2="16.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                <line x1="22.5" y1="18.5" x2="19" y2="16.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
+                {/* Center spark / AI symbol */}
+                <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill="white" fillOpacity="0.95"/>
+              </svg>
             <motion.div
               className="absolute inset-0 rounded-full border-2 border-[hsl(278_100%_82%/0.35)]"
               animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
@@ -123,7 +134,16 @@ const KultAIFloating = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-[hsl(278_100%_70%/0.12)] via-[hsl(270_82%_52%/0.08)] to-transparent" />
               <div className="flex items-center gap-3 relative z-10">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(278_100%_70%/0.22)] to-[hsl(270_82%_52%/0.14)] flex items-center justify-center border border-[hsl(278_100%_75%/0.18)]" style={{ boxShadow: "0 0 15px hsl(270 82% 58% / 0.18)" }}>
-                  <Brain className="w-5 h-5 text-[hsl(278_100%_82%)]" />
+                  <svg width="20" height="20" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M13 2L22.5 7.5V18.5L13 24L3.5 18.5V7.5L13 2Z" stroke="hsl(278,100%,82%)" strokeWidth="1.2" strokeOpacity="0.7" fill="none"/>
+                      <line x1="13" y1="2" x2="13" y2="6" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <line x1="13" y1="20" x2="13" y2="24" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <line x1="3.5" y1="7.5" x2="7" y2="9.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <line x1="22.5" y1="7.5" x2="19" y2="9.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <line x1="3.5" y1="18.5" x2="7" y2="16.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <line x1="22.5" y1="18.5" x2="19" y2="16.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
+                      <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill="hsl(278,100%,82%)" fillOpacity="0.95"/>
+                    </svg>
                 </div>
                 <div>
                   <span className="text-sm font-display font-bold text-foreground tracking-wide block" style={{ textShadow: "0 0 18px hsl(270 82% 58% / 0.3)" }}>KULT AI</span>
@@ -139,7 +159,7 @@ const KultAIFloating = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
               <div className="p-5 space-y-4">
                 {messages.length === 0 && (
                   <div className="text-center py-8">
@@ -224,7 +244,7 @@ const KultAIFloating = () => {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Input */}
             <form onSubmit={handleSubmit} className="p-4 border-t border-border/40 flex-shrink-0">

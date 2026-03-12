@@ -3,6 +3,7 @@ import { Calendar, Clock, Users, Swords, Trophy, Zap, Sparkles, ArrowRight } fro
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const events = [
   { id: 1, title: "Zero Dash Championship", game: "Zero Dash", date: "Mar 15, 2026", time: "8:00 PM UTC", prize: "5 ETH", players: "128/256", status: "Registering", type: "Tournament", description: "The ultimate speed run showdown. Top 3 runners take home massive rewards." },
@@ -25,16 +26,7 @@ const Events = () => {
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
         <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
           <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="w-full aspect-[16/9] object-cover opacity-70"
-            >
-              <source src="/videos/SC_12.mp4" type="video/mp4" />
-            </video>
+            <AutoPlayVideo src="/videos/SC_12.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
             <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
             <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
           </div>

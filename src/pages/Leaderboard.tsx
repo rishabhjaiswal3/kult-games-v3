@@ -3,18 +3,144 @@ import { Trophy, Medal, Crown, TrendingUp, ChevronUp, ChevronDown } from "lucide
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
+
+// Inline human character avatars
+const AvatarCryptoKnight = () => (
+  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+    {/* Background */}
+    <rect width="80" height="80" rx="40" fill="#1a1000"/>
+    {/* Shoulders / armor */}
+    <path d="M10 80 Q10 58 20 54 L30 51 Q40 56 50 51 L60 54 Q70 58 70 80Z" fill="#a07010"/>
+    {/* Neck */}
+    <rect x="34" y="44" width="12" height="10" rx="3" fill="#c8906a"/>
+    {/* Head */}
+    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#d4956e"/>
+    {/* Hair — dark, swept back */}
+    <path d="M22 28 Q22 12 40 11 Q58 12 58 28 Q55 16 40 15 Q25 16 22 28Z" fill="#1a0e00"/>
+    <path d="M22 26 Q20 20 22 15 Q26 10 40 10 Q54 10 58 15 Q60 20 58 26" fill="#1a0e00"/>
+    {/* Ears */}
+    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#c8906a"/>
+    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#c8906a"/>
+    {/* Eyes */}
+    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#3a2000"/>
+    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#3a2000"/>
+    <circle cx="34" cy="32.5" r="1" fill="white"/>
+    <circle cx="48" cy="32.5" r="1" fill="white"/>
+    {/* Eyebrows */}
+    <path d="M29 28.5 Q33 27 37 28.5" stroke="#1a0e00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+    <path d="M43 28.5 Q47 27 51 28.5" stroke="#1a0e00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+    {/* Nose */}
+    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#b07850" strokeWidth="1" fill="none" strokeLinecap="round"/>
+    {/* Mouth — confident smirk */}
+    <path d="M34 46 Q40 50 46 46" stroke="#9a5a3a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Gold crown */}
+    <path d="M26 16 L29 10 L33 15 L40 8 L47 15 L51 10 L54 16Z" fill="#ffd700" fillOpacity="0.95"/>
+    <rect x="26" y="15" width="28" height="4" rx="1" fill="#e6c000"/>
+    {/* Armor collar */}
+    <path d="M26 54 Q30 50 40 52 Q50 50 54 54" stroke="#ffd700" strokeWidth="2" fill="none" strokeOpacity="0.8"/>
+  </svg>
+);
+
+const AvatarNeonBlaze = () => (
+  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+    {/* Background */}
+    <rect width="80" height="80" rx="40" fill="#060c18"/>
+    {/* Shoulders / jacket */}
+    <path d="M10 80 Q10 58 20 54 L30 51 Q40 56 50 51 L60 54 Q70 58 70 80Z" fill="#1a2a4a"/>
+    {/* Jacket collar lines */}
+    <path d="M30 54 L36 62 L40 64 L44 62 L50 54" stroke="#4a90d0" strokeWidth="1.5" fill="none" strokeOpacity="0.7"/>
+    {/* Neck */}
+    <rect x="34" y="44" width="12" height="10" rx="3" fill="#b8806a"/>
+    {/* Head */}
+    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#c4826c"/>
+    {/* Hair — light, spiky/stylish */}
+    <path d="M22 26 Q24 10 40 10 Q56 10 58 26 Q54 14 40 13 Q26 14 22 26Z" fill="#e8d080"/>
+    <path d="M22 24 Q21 16 24 12 L28 8 L32 13 Q36 8 40 9 Q44 8 48 13 L52 8 L56 12 Q59 16 58 24" fill="#e8d080"/>
+    {/* Hair highlights */}
+    <path d="M32 11 Q36 8 40 10" stroke="#fff8c0" strokeWidth="1.5" strokeOpacity="0.6" fill="none"/>
+    {/* Ears */}
+    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#b8806a"/>
+    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#b8806a"/>
+    {/* Eyes — ice blue */}
+    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#1060a0"/>
+    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#1060a0"/>
+    <circle cx="34" cy="32.5" r="1" fill="white"/>
+    <circle cx="48" cy="32.5" r="1" fill="white"/>
+    {/* Eyebrows */}
+    <path d="M29 28.5 Q33 27.5 37 28.5" stroke="#c8a840" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+    <path d="M43 28.5 Q47 27.5 51 28.5" stroke="#c8a840" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+    {/* Nose */}
+    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#a06848" strokeWidth="1" fill="none" strokeLinecap="round"/>
+    {/* Mouth — slight smile */}
+    <path d="M35 46 Q40 49 45 46" stroke="#884830" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Earring */}
+    <circle cx="22" cy="37" r="2" fill="#4a90d0" fillOpacity="0.9"/>
+  </svg>
+);
+
+const AvatarPhantomX = () => (
+  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+    {/* Background */}
+    <rect width="80" height="80" rx="40" fill="#100800"/>
+    {/* Shoulders / hoodie */}
+    <path d="M10 80 Q10 58 18 54 L28 50 Q40 56 52 50 L62 54 Q70 58 70 80Z" fill="#2a1808"/>
+    {/* Hoodie edge */}
+    <path d="M28 52 Q34 60 40 62 Q46 60 52 52" stroke="#c86820" strokeWidth="1.5" fill="none" strokeOpacity="0.6"/>
+    {/* Neck */}
+    <rect x="34" y="44" width="12" height="10" rx="3" fill="#8a5840"/>
+    {/* Head */}
+    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#9a6448"/>
+    {/* Hair — dark, medium length */}
+    <path d="M22 30 Q22 12 40 11 Q58 12 58 30 Q56 16 40 14 Q24 16 22 30Z" fill="#0a0600"/>
+    <path d="M22 28 Q21 18 23 13 Q28 8 40 9 Q52 8 57 13 Q59 18 58 28" fill="#0a0600"/>
+    {/* Side hair */}
+    <path d="M22 30 Q20 36 22 40" stroke="#0a0600" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    <path d="M58 30 Q60 36 58 40" stroke="#0a0600" strokeWidth="5" strokeLinecap="round" fill="none"/>
+    {/* Ears */}
+    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#8a5840"/>
+    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#8a5840"/>
+    {/* Eyes — amber/orange */}
+    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
+    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#804010"/>
+    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#804010"/>
+    <circle cx="34" cy="32.5" r="1" fill="white"/>
+    <circle cx="48" cy="32.5" r="1" fill="white"/>
+    {/* Eyebrows — slightly furrowed */}
+    <path d="M29 28 Q33 26.5 37 27.5" stroke="#0a0600" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    <path d="M43 27.5 Q47 26.5 51 28" stroke="#0a0600" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    {/* Nose */}
+    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#7a4428" strokeWidth="1" fill="none" strokeLinecap="round"/>
+    {/* Mouth — neutral/serious */}
+    <path d="M35 46 Q40 47 45 46" stroke="#6a3820" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Scar / face mark */}
+    <path d="M46 28 L48 33" stroke="#c86820" strokeWidth="1" strokeOpacity="0.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const PlayerAvatar = ({ rank }: { rank: number; }) => {
+  if (rank === 1) return <AvatarCryptoKnight />;
+  if (rank === 2) return <AvatarNeonBlaze />;
+  if (rank === 3) return <AvatarPhantomX />;
+  return null;
+};
 
 const players = [
-  { rank: 1, name: "CryptoKnight", avatar: "CK", score: 98750, wins: 342, change: "up", game: "Robo Wars" },
-  { rank: 2, name: "NeonBlaze", avatar: "NB", score: 87200, wins: 298, change: "up", game: "Zero Dash" },
-  { rank: 3, name: "PhantomX", avatar: "PX", score: 76800, wins: 267, change: "down", game: "Highway Hustle" },
-  { rank: 4, name: "VoidWalker", avatar: "VW", score: 65400, wins: 234, change: "up", game: "Zero G Pool" },
-  { rank: 5, name: "ShadowMage", avatar: "SM", score: 54200, wins: 198, change: "same", game: "Guess The AI" },
-  { rank: 6, name: "PixelHunter", avatar: "PH", score: 48900, wins: 176, change: "up", game: "Robo Wars" },
-  { rank: 7, name: "StormBreaker", avatar: "SB", score: 42100, wins: 155, change: "down", game: "Zero Dash" },
-  { rank: 8, name: "ArcaneWolf", avatar: "AW", score: 38700, wins: 142, change: "up", game: "Highway Hustle" },
-  { rank: 9, name: "CyberNova", avatar: "CN", score: 35200, wins: 128, change: "down", game: "Zero G Pool" },
-  { rank: 10, name: "RuneMaster", avatar: "RM", score: 31500, wins: 115, change: "same", game: "Guess The AI" },
+  { rank: 1, name: "CryptoKnight", avatar: "CK", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=CryptoKnight", score: 98750, wins: 342, change: "up", game: "Robo Wars" },
+  { rank: 2, name: "NeonBlaze", avatar: "NB", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=NeonBlaze", score: 87200, wins: 298, change: "up", game: "Zero Dash" },
+  { rank: 3, name: "PhantomX", avatar: "PX", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=PhantomX", score: 76800, wins: 267, change: "down", game: "Highway Hustle" },
+  { rank: 4, name: "VoidWalker", avatar: "VW", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=VoidWalker", score: 65400, wins: 234, change: "up", game: "Zero G Pool" },
+  { rank: 5, name: "ShadowMage", avatar: "SM", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=ShadowMage", score: 54200, wins: 198, change: "same", game: "Guess The AI" },
+  { rank: 6, name: "PixelHunter", avatar: "PH", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=PixelHunter", score: 48900, wins: 176, change: "up", game: "Robo Wars" },
+  { rank: 7, name: "StormBreaker", avatar: "SB", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=StormBreaker", score: 42100, wins: 155, change: "down", game: "Zero Dash" },
+  { rank: 8, name: "ArcaneWolf", avatar: "AW", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=ArcaneWolf", score: 38700, wins: 142, change: "up", game: "Highway Hustle" },
+  { rank: 9, name: "CyberNova", avatar: "CN", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberNova", score: 35200, wins: 128, change: "down", game: "Zero G Pool" },
+  { rank: 10, name: "RuneMaster", avatar: "RM", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=RuneMaster", score: 31500, wins: 115, change: "same", game: "Guess The AI" },
 ];
 
 const timeFilters = ["All Time", "This Week", "Today"];
@@ -36,16 +162,7 @@ const Leaderboard = () => {
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
         <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
           <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="w-full aspect-[16/9] object-cover opacity-70"
-            >
-              <source src="/videos/SC_7.mp4" type="video/mp4" />
-            </video>
+            <AutoPlayVideo src="/videos/SC_7.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
             <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
             <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
           </div>
@@ -94,51 +211,135 @@ const Leaderboard = () => {
           </div>
 
           {/* Top 3 podium */}
-          <div className="grid grid-cols-3 gap-3 md:gap-6 mb-12 w-full">
+          <div className="grid grid-cols-3 gap-3 md:gap-5 mb-12 w-full items-end">
             {[players[1], players[0], players[2]].map((p, i) => {
               const isFirst = i === 1;
-              const colors = p.rank === 1
-                ? { bg: "bg-[hsl(var(--gold))]/20", text: "text-[hsl(var(--gold))]", border: "border-[hsl(var(--gold))]/50", glow: "shadow-[0_0_50px_hsl(40_85%_58%/0.35),0_0_100px_hsl(40_85%_58%/0.15)]" }
-                : p.rank === 2
-                ? { bg: "bg-foreground/8", text: "text-foreground/80", border: "border-foreground/25", glow: "shadow-[0_0_20px_hsl(0_0%_75%/0.1)]" }
-                : { bg: "bg-[hsl(25,70%,50%)]/15", text: "text-[hsl(25,70%,50%)]", border: "border-[hsl(25,70%,50%)]/30", glow: "shadow-[0_0_20px_hsl(25_70%_50%/0.1)]" };
+
+              const theme =
+                p.rank === 1
+                  ? {
+                      accent: "hsl(40 85% 58%)",
+                      accentMuted: "hsl(40 85% 58% / 0.12)",
+                      accentBorder: "hsl(40 85% 58% / 0.55)",
+                      accentGlow: "hsl(40 85% 58% / 0.35)",
+                      cardBg: "linear-gradient(160deg, hsl(40 60% 14% / 0.75), hsl(220 45% 10% / 0.90))",
+                      topBar: "linear-gradient(90deg, transparent, hsl(40 85% 58% / 0.9), transparent)",
+                      textAccent: "text-[hsl(40_85%_62%)]",
+                      avatarBg: "bg-[hsl(40_60%_16%)]",
+                      scoreColor: "text-[hsl(40_85%_62%)]",
+                      shadow: "shadow-[0_0_60px_hsl(40_85%_58%/0.3),0_0_120px_hsl(40_85%_58%/0.12),inset_0_1px_0_hsl(40_85%_80%/0.15)]",
+                    }
+                  : p.rank === 2
+                  ? {
+                      accent: "hsl(220 15% 75%)",
+                      accentMuted: "hsl(220 15% 75% / 0.10)",
+                      accentBorder: "hsl(220 15% 75% / 0.35)",
+                      accentGlow: "hsl(220 15% 75% / 0.15)",
+                      cardBg: "linear-gradient(160deg, hsl(220 25% 14% / 0.72), hsl(220 40% 9% / 0.88))",
+                      topBar: "linear-gradient(90deg, transparent, hsl(220 15% 75% / 0.7), transparent)",
+                      textAccent: "text-[hsl(220_15%_80%)]",
+                      avatarBg: "bg-[hsl(220_20%_16%)]",
+                      scoreColor: "text-[hsl(220_15%_82%)]",
+                      shadow: "shadow-[0_0_30px_hsl(220_15%_75%/0.12),inset_0_1px_0_hsl(220_15%_90%/0.1)]",
+                    }
+                  : {
+                      accent: "hsl(25 70% 52%)",
+                      accentMuted: "hsl(25 70% 52% / 0.10)",
+                      accentBorder: "hsl(25 70% 52% / 0.38)",
+                      accentGlow: "hsl(25 70% 52% / 0.18)",
+                      cardBg: "linear-gradient(160deg, hsl(25 45% 13% / 0.72), hsl(220 40% 9% / 0.88))",
+                      topBar: "linear-gradient(90deg, transparent, hsl(25 70% 52% / 0.75), transparent)",
+                      textAccent: "text-[hsl(25_70%_60%)]",
+                      avatarBg: "bg-[hsl(25_45%_16%)]",
+                      scoreColor: "text-[hsl(25_70%_62%)]",
+                      shadow: "shadow-[0_0_30px_hsl(25_70%_52%/0.15),inset_0_1px_0_hsl(25_70%_70%/0.1)]",
+                    };
 
               return (
                 <motion.div
                   key={p.rank}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className={`rounded-xl p-4 md:p-6 text-center border backdrop-blur-sm ${colors.border} ${colors.glow} ${isFirst ? "-mt-4 md:-mt-8 bg-[hsl(var(--gold))]/5" : "mt-2 md:mt-4 bg-card/60"}`}
+                  transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+                  className={`relative rounded-2xl border backdrop-blur-xl overflow-hidden ${theme.shadow}`}
+                  style={{
+                    background: theme.cardBg,
+                    borderColor: theme.accentBorder,
+                    marginBottom: isFirst ? "0px" : undefined,
+                  }}
                 >
-                  {isFirst ? (
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
-                      <motion.div
-                        className="absolute inset-0 rounded-full border-2 border-[hsl(var(--gold))]/60"
-                        animate={{ scale: [1, 1.18, 1], opacity: [0.7, 0.2, 0.7] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      />
-                      <motion.div
-                        className="absolute inset-[-4px] rounded-full border border-[hsl(var(--gold))]/30"
-                        animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0, 0.4] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                      />
-                      <div className={`w-full h-full rounded-full flex items-center justify-center font-display font-bold text-lg md:text-xl ${colors.bg} ${colors.text}`}
-                        style={{ boxShadow: "0 0 20px hsl(40 85% 58% / 0.4)" }}
+                  {/* Top accent bar */}
+                  <div className="h-[2px] w-full" style={{ background: theme.topBar }} />
+
+                  {/* Subtle inner glow overlay */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: `radial-gradient(ellipse at 50% 0%, ${theme.accentGlow}, transparent 65%)` }}
+                  />
+
+                  <div className={`relative flex flex-col items-center text-center px-3 md:px-5 pt-5 md:pt-7 pb-4 md:pb-6 ${isFirst ? "pt-6 md:pt-9" : ""}`}>
+                    {/* Avatar */}
+                    <div className="relative mb-3 md:mb-4">
+                      {isFirst && (
+                        <>
+                          <motion.div
+                            className="absolute inset-[-6px] rounded-full"
+                            style={{ border: `1.5px solid ${theme.accentBorder}` }}
+                            animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.1, 0.6] }}
+                            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                          />
+                          <motion.div
+                            className="absolute inset-[-12px] rounded-full"
+                            style={{ border: `1px solid ${theme.accentGlow}` }}
+                            animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0, 0.3] }}
+                            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                          />
+                        </>
+                      )}
+                      <div
+                        className={`${isFirst ? "w-16 h-16 md:w-20 md:h-20" : "w-12 h-12 md:w-16 md:h-16"} rounded-full overflow-hidden ${theme.avatarBg}`}
+                        style={{
+                          boxShadow: isFirst ? `0 0 24px ${theme.accentGlow}, inset 0 1px 0 hsl(0 0% 100% / 0.12)` : `inset 0 1px 0 hsl(0 0% 100% / 0.08)`,
+                          outline: `2px solid ${theme.accentBorder}`,
+                          outlineOffset: "2px",
+                        }}
                       >
-                        {p.avatar}
+                        <PlayerAvatar rank={p.rank} />
                       </div>
                     </div>
-                  ) : (
-                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full mx-auto mb-3 flex items-center justify-center font-display font-bold text-base md:text-lg ${colors.bg} ${colors.text}`}>
-                      {p.avatar}
-                    </div>
-                  )}
 
-                  <div className="mb-1">{getRankIcon(p.rank)}</div>
-                  <h3 className={`font-display text-xs md:text-sm font-bold mt-1 truncate ${isFirst ? "text-[hsl(var(--gold))]" : "text-foreground"}`}>{p.name}</h3>
-                  <p className={`font-display text-base md:text-xl font-bold mt-1 ${isFirst ? "text-[hsl(var(--gold))]" : "text-neon-cyan"}`}>{p.score.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.wins} WINS</p>
+                    {/* Rank badge */}
+                    <div
+                      className="flex items-center gap-1 px-2.5 py-0.5 rounded-full mb-2 text-[10px] font-mono font-semibold tracking-widest"
+                      style={{ background: theme.accentMuted, color: theme.accent, border: `1px solid ${theme.accentBorder}` }}
+                    >
+                      {getRankIcon(p.rank)}
+                      <span>#{p.rank}</span>
+                    </div>
+
+                    {/* Name */}
+                    <h3 className={`font-display text-xs md:text-sm font-bold truncate w-full ${theme.textAccent}`}>{p.name}</h3>
+
+                    {/* Score */}
+                    <p className={`font-display ${isFirst ? "text-xl md:text-2xl" : "text-base md:text-lg"} font-black mt-1.5 tabular-nums ${theme.scoreColor}`}>
+                      {p.score.toLocaleString()}
+                    </p>
+
+                    {/* Wins + game */}
+                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5 tracking-wider">{p.wins} WINS</p>
+                    <span
+                      className="mt-2 px-2 py-0.5 rounded-full text-[9px] font-mono tracking-wider"
+                      style={{ background: theme.accentMuted, color: theme.accent }}
+                    >
+                      {p.game.toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Bottom podium step indicator */}
+                  <div
+                    className="h-1 w-full mt-auto"
+                    style={{ background: `linear-gradient(90deg, transparent, ${theme.accentBorder}, transparent)`, opacity: 0.6 }}
+                  />
                 </motion.div>
               );
             })}
@@ -175,7 +376,9 @@ const Leaderboard = () => {
                       <td className="p-4">{getRankIcon(p.rank)}</td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-neon-cyan/10 flex items-center justify-center text-xs font-display font-bold text-neon-cyan group-hover:bg-neon-cyan/20 transition-colors">{p.avatar}</div>
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-neon-cyan/10 flex items-center justify-center flex-shrink-0">
+                            <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                          </div>
                           <span className="font-display text-sm font-semibold text-foreground group-hover:text-neon-cyan transition-colors">{p.name}</span>
                         </div>
                       </td>

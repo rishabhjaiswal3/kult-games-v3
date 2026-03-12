@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const storeItems = [
   { id: "guess-the-ai", title: "Guess The AI", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", price: "FREE", category: "Action", rating: 4.8, tag: "Popular", platform: ["Web", "Mobile"] },
@@ -34,16 +35,7 @@ const Store = () => {
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
         <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
           <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="w-full aspect-[16/9] object-cover opacity-75"
-            >
-              <source src="/videos/SC_5.mp4" type="video/mp4" />
-            </video>
+            <AutoPlayVideo src="/videos/SC_5.mp4" loop className="w-full aspect-[16/9] object-cover opacity-75" />
             <div className="absolute inset-0 bg-gradient-to-l from-background/5 via-background/12 to-background/50" />
             <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30" />
           </div>
@@ -71,7 +63,7 @@ const Store = () => {
                 <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">★ Marketplace</span>
               </div>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
-                KULT <span className="gradient-text">STORE</span>
+                KULT <span className="gradient-text">GAMES</span>
               </h1>
               <p className="text-muted-foreground mt-3 max-w-md text-sm">Browse and play the best on-chain games. All games, one platform.</p>
               <div className="mt-5 flex flex-wrap gap-2">

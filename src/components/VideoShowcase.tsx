@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 interface VideoShowcaseProps {
   videoSrc: string;
@@ -36,16 +37,7 @@ const VideoShowcase = ({
     >
       {/* Parallax video */}
       <motion.div className="absolute inset-0" style={{ y, scale }}>
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="w-full h-[130%] object-cover"
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        <AutoPlayVideo src={videoSrc} loop className="w-full h-[130%] object-cover" />
       </motion.div>
 
       {/* Overlay */}
@@ -67,16 +59,28 @@ const VideoShowcase = ({
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-[10px] font-mono text-neon-cyan/80 tracking-[0.4em] uppercase mb-4"
+          className="flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] uppercase mb-4"
         >
-          {subtitle}
+          {subtitle.split(" • ").map((word, i, arr) => (
+            <span key={word} className="flex items-center gap-2">
+              <span
+                className="text-white font-bold drop-shadow-[0_0_6px_hsl(0_0%_100%/0.4)]"
+              >
+                {word}
+              </span>
+              {i < arr.length - 1 && (
+                <span className="text-white/25">•</span>
+              )}
+            </span>
+          ))}
         </motion.span>
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight gradient-text glow-text"
+          className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-white drop-shadow-[0_2px_24px_hsl(220_80%_4%/0.9)]"
+          style={{ textShadow: "0 0 40px hsl(195 100% 60% / 0.25), 0 2px 20px hsl(220 80% 4% / 0.8)" }}
         >
           {title}
         </motion.h2>

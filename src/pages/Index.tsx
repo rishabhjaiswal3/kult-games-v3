@@ -44,7 +44,7 @@ const Index = () => {
       >
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
-            onClick={() => navigate("/store")}
+            onClick={() => navigate("/games")}
             className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye relative overflow-hidden"
           >
             EXPLORE GAMES

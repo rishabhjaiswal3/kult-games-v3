@@ -15,6 +15,14 @@ const games = [
 const GamesSection = () => {
   const [videoOpacity, setVideoOpacity] = useState(0.12);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.load();
+    v.play().catch(() => {});
+  }, []);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -60,6 +68,7 @@ const GamesSection = () => {
     <section className="relative py-16 md:py-24 z-10 overflow-hidden" >
       {/* Background video — plays once then fades out */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         playsInline
@@ -101,18 +110,7 @@ const GamesSection = () => {
               <span className="gradient-text glow-text">Quantity</span>
             </h2>
           </div>
-
-        </motion.div>
-
-        {/* Horizontal scrolling game cards - matching reference layout */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="relative"
-        >
-          <div className="relative z-20 mb-5 flex justify-end gap-3">
+           <div className="relative z-20 hidden lg:flex justify-end gap-3">
             <button
               type="button"
               aria-label="Scroll games left"
@@ -136,6 +134,17 @@ const GamesSection = () => {
               <ChevronRight className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-primary" />
             </button>
           </div>
+        </motion.div>
+
+        {/* Horizontal scrolling game cards - matching reference layout */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="relative"
+        >
+         
           <div
             ref={scrollRef}
             className="flex gap-5 overflow-x-auto overflow-y-hidden pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x"
@@ -169,7 +178,7 @@ const GamesSection = () => {
           className="mt-8 flex justify-center"
         >
           <button
-            onClick={() => window.location.href = "/store"}
+            onClick={() => window.location.href = "/games"}
             className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
           >
             VIEW ALL GAMES
