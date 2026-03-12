@@ -33,13 +33,6 @@ const Store = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
-        <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
-          <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <AutoPlayVideo src="/videos/SC_5.mp4" loop className="w-full aspect-[16/9] object-cover opacity-75" />
-            <div className="absolute inset-0 bg-gradient-to-l from-background/5 via-background/12 to-background/50" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30" />
-          </div>
-        </div>
         <AIScanLine />
 
         {/* Ambient glows */}
@@ -52,33 +45,44 @@ const Store = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative mt-[245px] w-full sm:mt-[420px] lg:mt-0 lg:w-[42%] rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] px-6 py-7 backdrop-blur-md md:px-8 md:py-9"
+              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] overflow-hidden backdrop-blur-md"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <motion.div
-                  className="w-2 h-2 rounded-full bg-neon-cyan"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">★ Marketplace</span>
+              {/* Text content */}
+              <div className="relative z-10 order-first px-6 py-7 md:px-8 md:py-9">
+                <div className="flex items-center gap-2 mb-3">
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-neon-cyan"
+                    animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">★ Marketplace</span>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
+                  KULT <span className="gradient-text">GAMES</span>
+                </h1>
+                <p className="text-muted-foreground mt-3 max-w-md text-sm">Browse and play the best on-chain games. All games, one platform.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-neon-cyan/20 bg-neon-cyan/10 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-neon-cyan uppercase">
+                    Web + Mobile
+                  </span>
+                  <span className="rounded-full border border-border/50 bg-card/40 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-foreground uppercase">
+                    Curated Picks
+                  </span>
+                  <span className="rounded-full border border-border/50 bg-card/40 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-foreground uppercase">
+                    Free To Play
+                  </span>
+                </div>
               </div>
-              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
-                KULT <span className="gradient-text">GAMES</span>
-              </h1>
-              <p className="text-muted-foreground mt-3 max-w-md text-sm">Browse and play the best on-chain games. All games, one platform.</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-full border border-neon-cyan/20 bg-neon-cyan/10 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-neon-cyan uppercase">
-                  Web + Mobile
-                </span>
-                <span className="rounded-full border border-border/50 bg-card/40 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-foreground uppercase">
-                  Curated Picks
-                </span>
-                <span className="rounded-full border border-border/50 bg-card/40 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-foreground uppercase">
-                  Free To Play
-                </span>
+
+              {/* Video — bottom on mobile/tablet, right on desktop */}
+              <div className="order-last w-full lg:w-[500px] flex-shrink-0 pointer-events-none flex items-center">
+                <div className="relative overflow-hidden w-full lg:rounded-l-[32px]">
+                  <AutoPlayVideo src="/videos/SC_5.mp4" loop className="w-full aspect-[16/9] object-cover opacity-75" />
+                  <div className="absolute inset-0 bg-gradient-to-l from-background/5 via-background/12 to-background/50" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30" />
+                </div>
               </div>
             </motion.div>
-
           </div>
 
           {/* Search & Filter */}

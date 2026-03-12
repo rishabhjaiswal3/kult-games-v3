@@ -24,13 +24,7 @@ const Events = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
-        <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
-          <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <AutoPlayVideo src="/videos/SC_12.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
-            <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
-          </div>
-        </div>
+   
 
         {/* Purple ambient glows */}
         <div className="absolute top-40 left-0 w-[500px] h-[400px] rounded-full bg-neon-purple/6 blur-[150px] pointer-events-none" />
@@ -42,10 +36,21 @@ const Events = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative mt-[245px] w-full sm:mt-[420px] lg:mt-0 lg:w-[42%] rounded-[28px] border border-[hsl(278_100%_70%/0.2)] bg-[linear-gradient(135deg,hsl(265_90%_18%/0.78),hsl(220_45%_10%/0.6),hsl(220_45%_10%/0.28))] px-6 py-7 backdrop-blur-md shadow-[0_0_40px_hsl(270_82%_58%/0.12)] md:px-8 md:py-9"
+              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-[hsl(278_100%_70%/0.2)] bg-[linear-gradient(135deg,hsl(265_90%_18%/0.78),hsl(220_45%_10%/0.6),hsl(220_45%_10%/0.28))] overflow-hidden backdrop-blur-md shadow-[0_0_40px_hsl(270_82%_58%/0.12)]"
             >
               <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_top_left,hsl(278_100%_70%/0.16),transparent_42%)] pointer-events-none" />
-              <div className="relative z-10">
+
+              {/* Video — top on mobile/tablet, right on desktop */}
+              <div className="order-last w-full lg:w-[500px] flex-shrink-0 pointer-events-none flex items-center">
+                <div className="relative overflow-hidden lg:rounded-l-[32px]">
+                  <AutoPlayVideo src="/videos/SC_12.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
+                  <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
+                </div>
+              </div>
+
+              {/* Text content */}
+              <div className="relative z-10 order-first lg:order-first px-6 py-7 md:px-8 md:py-9">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(278_100%_70%/0.24)] bg-[hsl(278_100%_70%/0.08)] px-3 py-1.5 mb-4">
                   <motion.div
                     className="w-2 h-2 rounded-full bg-[hsl(278_100%_78%)]"
@@ -79,7 +84,6 @@ const Events = () => {
             transition={{ delay: 0.2 }}
             className="relative rounded-2xl overflow-hidden mb-10 border border-[hsl(278_100%_70%/0.22)] group"
           >
-            {/* Background glow */}
             <div className="absolute inset-0 bg-gradient-to-r from-[hsl(265_90%_28%/0.28)] via-[hsl(270_82%_52%/0.14)] to-[hsl(278_100%_70%/0.22)]" />
 
             <div className="relative z-10 p-6 md:p-10">

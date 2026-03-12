@@ -160,14 +160,6 @@ const Leaderboard = () => {
       <Navbar />
 
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
-        <div className="absolute top-24 right-0 w-full lg:w-[60%] pointer-events-none">
-          <div className="relative overflow-hidden lg:rounded-l-[32px]">
-            <AutoPlayVideo src="/videos/SC_7.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
-            <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
-          </div>
-        </div>
-
         {/* Ambient glows */}
         <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/4 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
@@ -177,36 +169,48 @@ const Leaderboard = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative mt-[245px] w-full sm:mt-[420px] lg:mt-0 lg:w-[42%] rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] px-6 py-7 backdrop-blur-md shadow-[0_0_40px_hsl(195_100%_60%/0.1)] md:px-8 md:py-9"
+              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] overflow-hidden backdrop-blur-md shadow-[0_0_40px_hsl(195_100%_60%/0.1)]"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <motion.div
-                  className="w-2 h-2 rounded-full bg-neon-cyan flex-shrink-0"
-                  animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <span className="text-[10px] font-mono text-neon-cyan/60 tracking-[0.2em] uppercase">
-                  <Trophy className="w-3 h-3 inline mr-1" /> Rankings
-                </span>
-              </div>
-              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
-                LEADER<span className="gradient-text">BOARD</span>
-              </h1>
-              <p className="text-muted-foreground mt-3 max-w-md text-sm">Climb the ranks. Prove your dominance. Earn eternal glory on-chain.</p>
+              {/* Text content */}
+              <div className="relative z-10 order-first px-6 py-7 md:px-8 md:py-9">
+                <div className="flex items-center gap-2 mb-3">
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-neon-cyan flex-shrink-0"
+                    animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-[10px] font-mono text-neon-cyan/60 tracking-[0.2em] uppercase">
+                    <Trophy className="w-3 h-3 inline mr-1" /> Rankings
+                  </span>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
+                  LEADER<span className="gradient-text">BOARD</span>
+                </h1>
+                <p className="text-muted-foreground mt-3 max-w-md text-sm">Climb the ranks. Prove your dominance. Earn eternal glory on-chain.</p>
 
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex gap-2 mt-6">
-                {timeFilters.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTimeFilter(tf)}
-                    className={`px-4 py-1.5 rounded-full font-display text-xs font-semibold tracking-wider transition-all duration-300 ${
-                      timeFilter === tf ? "btn-eye" : "glass-panel btn-eye-outline"
-                    }`}
-                  >
-                    {tf.toUpperCase()}
-                  </button>
-                ))}
-              </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex gap-2 mt-6">
+                  {timeFilters.map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setTimeFilter(tf)}
+                      className={`px-4 py-1.5 rounded-full font-display text-xs font-semibold tracking-wider transition-all duration-300 ${
+                        timeFilter === tf ? "btn-eye" : "glass-panel btn-eye-outline"
+                      }`}
+                    >
+                      {tf.toUpperCase()}
+                    </button>
+                  ))}
+                </motion.div>
+              </div>
+
+              {/* Video — bottom on mobile/tablet, right on desktop */}
+              <div className="order-last w-full lg:w-[500px] flex-shrink-0 pointer-events-none flex items-center">
+                <div className="relative overflow-hidden w-full lg:rounded-l-[32px]">
+                  <AutoPlayVideo src="/videos/SC_7.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
+                  <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
+                </div>
+              </div>
             </motion.div>
           </div>
 

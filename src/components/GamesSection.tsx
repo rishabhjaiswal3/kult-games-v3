@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import GameCard from "./GameCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AIScanLine from "@/components/AIScanLine";
+import { useNavigate } from "react-router-dom";
+// import { Navigate } from "react-router-dom";
 
 const games = [
   { id: "guess-the-ai", title: "Guess The AI", description: "Challenge your mind. Beat the AI.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "ACTION", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
@@ -14,6 +16,7 @@ const games = [
 
 const GamesSection = () => {
   const [videoOpacity, setVideoOpacity] = useState(0.12);
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -178,7 +181,8 @@ const GamesSection = () => {
           className="mt-8 flex justify-center"
         >
           <button
-            onClick={() => window.location.href = "/games"}
+            // onClick={() => window.location.href = "/games"}
+            onClick={()=> navigate("/games")}
             className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
           >
             VIEW ALL GAMES
