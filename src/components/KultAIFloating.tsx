@@ -1,12 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "ai";
-  text: string;
-}
+import KultAIMessageContent from "@/components/KultAIMessageContent";
+import { useKultAIChat } from "@/hooks/useKultAIChat";
 
 const quickPrompts = [
   { icon: Sparkles, text: "Find my first game" },
@@ -15,67 +11,18 @@ const quickPrompts = [
   { icon: Gamepad2, text: "What's trending on 0G?" },
 ];
 
-const mockResponses: Record<string, string> = {
-  "find my first game": "🎮 Based on new player data, I'd recommend **Spell Conquest** — it's our most beginner-friendly title with a 94% retention rate. Want me to launch it for you?",
-  "pick based on my vibe": "🎭 Tell me your mood!\n\n• **Competitive** → Arena Clash\n• **Chill** → Mystic Realms\n• **Strategic** → Hex Dominion\n• **Social** → Guild Wars Lite",
-  "compare games for me": "⚔️ **Spell Conquest** vs **Arena Clash**\n\n• Genre: RPG vs PvP Fighter\n• Avg Session: 25 min vs 10 min\n• Rating: 4.8⭐ vs 4.6⭐\n\nSpell Conquest for story, Arena Clash for competition.",
-  "what's trending on 0g?": "🔥 **Trending now:**\n\n1. **Hex Dominion** — 12.4K players (+34%)\n2. **Spell Conquest** — 9.8K (new expansion!)\n3. **Arena Clash** — 8.2K (tournament season)\n4. **Shadow Protocol** — 5.7K (just launched!)",
-};
-
-const fallbackResponses = [
-  "🤔 I'd suggest **Spell Conquest** for RPG or **Arena Clash** for PvP. Want more details?",
-  "🎯 Our AI suggests **Mystic Realms** — 87% of players call it 'addictive'. Shall I tell you more?",
-  "⚡ Best picks:\n• **Solo**: Spell Conquest\n• **Multiplayer**: Guild Wars Lite\n• **Innovative**: Shadow Protocol",
-  "🧠 **Hex Dominion** has the highest satisfaction this month (4.9/5). Want a preview?",
-  "🌟 Top 3 picks:\n1. **Shadow Protocol** — stealth + strategy\n2. **Hex Dominion** — tactical depth\n3. **Arena Clash** — adrenaline battles",
-  "🎮 Players with similar questions love **Mystic Realms** (78% match). 200+ hours of content!",
-  "💡 Analytics:\n• Most played: Hex Dominion\n• Highest rated: Spell Conquest (4.8⭐)\n• Fastest growing: Shadow Protocol (+156%)",
-  "🔮 High narrative picks:\n1. **Spell Conquest** — Epic fantasy\n2. **Mystic Realms** — Mystery exploration\n3. **Shadow Protocol** — Cyberpunk thriller",
-  "⚔️ By time:\n**10 min** → Arena Clash\n**30 min** → Hex Dominion\n**1 hour+** → Spell Conquest",
-  "🏆 Hot now:\n• Tournament: Arena Clash Championship (5000 $KULT)\n• New: Shadow Protocol v2.0\n• Community Pick: Hex Dominion #1",
-  "🎲 Tell me: Solo or multiplayer? Competitive or casual? Story or gameplay? I'll find your match!",
-  "🌌 **Mystic Realms** new zone 'Ethereal Depths' — 4.9⭐ from 2.3K players. Want me to set you up?",
-  "🛡️ Pro tip: **Guild Wars Lite** is a 'sampler platter' combining RPG, PvP, and strategy elements!",
-  "📊 Engagement scores:\n1. Spell Conquest — 94/100\n2. Hex Dominion — 91/100\n3. Shadow Protocol — 89/100",
-  "🎪 **Like Fortnite?** → Arena Clash\n**Like Civilization?** → Hex Dominion\n**Like Skyrim?** → Spell Conquest",
-  "⚡ All KULT games support cross-platform play! Start on desktop, continue on mobile.",
-];
-
-let fallbackIndex = 0;
-
-const getAIResponse = (input: string): string => {
-  const lower = input.toLowerCase().trim();
-  for (const [key, value] of Object.entries(mockResponses)) {
-    if (lower.includes(key) || key.includes(lower)) return value;
-  }
-  return fallbackResponses[fallbackIndex++ % fallbackResponses.length];
-};
-
 const KultAIFloating = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { error, input, isStreaming, isWaitingForFirstChunk, messages, sendMessage, setInput } = useKultAIChat();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim() || isTyping) return;
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", text: text.trim() }]);
-    setInput("");
-    setIsTyping(true);
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "ai", text: getAIResponse(text) }]);
-      setIsTyping(false);
-    }, 800 + Math.random() * 1200);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sendMessage(input);
+    void sendMessage();
   };
 
   return (
@@ -181,9 +128,9 @@ const KultAIFloating = () => {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.15 + i * 0.05 }}
-                          onClick={() => sendMessage(p.text)}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-[16px] bg-muted/20 hover:bg-[hsl(278_100%_70%/0.08)] border border-border/30 hover:border-[hsl(278_100%_70%/0.28)] hover:shadow-[0_0_10px_hsl(270_82%_58%/0.12)] transition-all text-left group"
-                      >
+                          onClick={() => void sendMessage(p.text)}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-[16px] bg-muted/20 hover:bg-[hsl(278_100%_70%/0.08)] border border-border/30 hover:border-[hsl(278_100%_70%/0.28)] hover:shadow-[0_0_10px_hsl(270_82%_58%/0.12)] transition-all text-left group"
+                        >
                           <div className="w-8 h-8 rounded-[16px] bg-[hsl(278_100%_70%/0.12)] flex items-center justify-center group-hover:bg-[hsl(278_100%_70%/0.18)] transition-colors flex-shrink-0">
                             <p.icon className="w-4 h-4 text-[hsl(278_100%_82%)]" />
                           </div>
@@ -208,19 +155,13 @@ const KultAIFloating = () => {
                       </div>
                     )}
                     <div
-                      className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-wrap ${
+                      className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed break-words ${
                         msg.role === "user"
-                          ? "btn-eye text-white rounded-br-md shadow-[0_2px_15px_hsl(270_82%_58%/0.25)]"
+                          ? "btn-eye text-white rounded-br-md whitespace-pre-wrap shadow-[0_2px_15px_hsl(270_82%_58%/0.25)]"
                           : "bg-muted/40 text-foreground border border-border/30 rounded-bl-md"
                       }`}
                     >
-                      {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
-                        part.startsWith("**") && part.endsWith("**") ? (
-                          <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-                        ) : (
-                          <span key={i}>{part}</span>
-                        )
-                      )}
+                      {msg.role === "ai" ? <KultAIMessageContent text={msg.text} /> : msg.text}
                     </div>
                     {msg.role === "user" && (
                       <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 mt-0.5 border border-border/30">
@@ -230,7 +171,7 @@ const KultAIFloating = () => {
                   </motion.div>
                 ))}
 
-                {isTyping && (
+                {isWaitingForFirstChunk && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[hsl(278_100%_70%/0.22)] to-[hsl(270_82%_52%/0.14)] flex items-center justify-center flex-shrink-0 border border-[hsl(278_100%_75%/0.16)]">
                       <Bot className="w-3.5 h-3.5 text-[hsl(278_100%_82%)]" />
@@ -248,6 +189,11 @@ const KultAIFloating = () => {
 
             {/* Input */}
             <form onSubmit={handleSubmit} className="p-4 border-t border-border/40 flex-shrink-0">
+              {error && (
+                <p className="mb-3 text-xs text-destructive/80">
+                  {error}
+                </p>
+              )}
               <div className="flex items-center gap-2.5">
                 <input
                   type="text"
@@ -258,10 +204,10 @@ const KultAIFloating = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || isTyping}
+                  disabled={!input.trim() || isStreaming}
                   className="w-10 h-10 btn-eye flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                 >
-                  {isTyping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {isStreaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
             </form>
