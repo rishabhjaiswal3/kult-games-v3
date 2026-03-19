@@ -1,7 +1,8 @@
-const DEFAULT_KULT_AI_API_URL = "http://localhost:8000/api/v1/chat";
 const KULT_BROWSER_GAME_ID = "kult_browser";
 const USER_ID_STORAGE_KEY = "kult-ai-user-id";
 const SESSION_ID_STORAGE_KEY = "kult-ai-session-id";
+const KULT_AI_DEPLOY_PATH = "/assistant/v1/chat";
+const LOCAL_KULT_AI_API_URL = "http://localhost:8000/v1/chat";
 
 export interface KultAIStreamOptions {
   query: string;
@@ -62,8 +63,41 @@ export const setKultAISessionId = (sessionId: string) => {
   writeStorageValue(SESSION_ID_STORAGE_KEY, sessionId, false);
 };
 
+const joinUrl = (baseUrl: string, path: string) => `${baseUrl.replace(/\/+$/, "")}${path}`;
+
+export const resolveKultAIChatUrl = ({
+  explicitUrl,
+  apiBaseUrl,
+  origin,
+}: {
+  explicitUrl?: string;
+  apiBaseUrl?: string;
+  origin?: string;
+}) => {
+  const normalizedExplicitUrl = explicitUrl?.trim();
+  if (normalizedExplicitUrl) {
+    return normalizedExplicitUrl;
+  }
+
+  const normalizedApiBaseUrl = apiBaseUrl?.trim();
+  if (normalizedApiBaseUrl) {
+    return joinUrl(normalizedApiBaseUrl, KULT_AI_DEPLOY_PATH);
+  }
+
+  const normalizedOrigin = origin?.trim();
+  if (normalizedOrigin) {
+    return joinUrl(normalizedOrigin, KULT_AI_DEPLOY_PATH);
+  }
+
+  return LOCAL_KULT_AI_API_URL;
+};
+
 export const getKultAIChatUrl = () =>
-  (import.meta.env.VITE_KULT_AI_API_URL as string | undefined)?.trim() || DEFAULT_KULT_AI_API_URL;
+  resolveKultAIChatUrl({
+    explicitUrl: import.meta.env.VITE_KULT_AI_API_URL as string | undefined,
+    apiBaseUrl: import.meta.env.VITE_API_URL as string | undefined,
+    origin: typeof window !== "undefined" ? window.location.origin : undefined,
+  });
 
 const parseStreamChunk = (payload: string) => {
   const lines = payload.replace(/\r\n/g, "\n").split("\n");

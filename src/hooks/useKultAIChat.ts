@@ -97,7 +97,7 @@ export const useKultAIChat = () => {
             ? {
                 ...message,
                 text:
-                  "KULT AI could not reach the inference service. Start `zero-g/inference` on port 8000 and try again.",
+                  "KULT AI could not reach the assistant service. In production it should resolve to `/assistant/v1/chat`; for local development start `zero-g/inference` on port 8000.",
                 state: "error",
               }
             : message,
