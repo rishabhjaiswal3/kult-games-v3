@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Sparkles, MessageSquare, GitCompare, Gamepad2, Send, X, User, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 const KultAIIcon = ({ size = 16, color = "hsl(278,100%,82%)" }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -13,9 +14,10 @@ const KultAIIcon = ({ size = 16, color = "hsl(278,100%,82%)" }: { size?: number;
     <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill={color} fillOpacity="0.95"/>
   </svg>
 );
-import { useState, useRef, useEffect } from "react";
 import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import KultAIMessageContent from "@/components/KultAIMessageContent";
+import { useKultAIChat } from "@/hooks/useKultAIChat";
 
 const prompts = [
   { icon: Sparkles, text: "Find my first game", description: "AI picks the best starting point for you" },
@@ -24,75 +26,29 @@ const prompts = [
   { icon: Gamepad2, text: "What's trending on 0G?", description: "See what the community is playing now" },
 ];
 
-interface ChatMessage {
-  id: string;
-  role: "user" | "ai";
-  text: string;
-}
-
-const mockResponses: Record<string, string> = {
-  "find my first game": "🎮 Based on new player data, I'd recommend **Spell Conquest** — it's our most beginner-friendly title with a 94% retention rate among first-time players. The tutorial is seamless, and you'll be casting spells within 2 minutes. Want me to launch it for you?",
-  "pick based on my vibe": "🎭 Tell me more about your mood! Are you feeling:\n\n• **Competitive** → Try Arena Clash\n• **Chill & exploratory** → Mystic Realms is perfect\n• **Strategic & cerebral** → Hex Dominion awaits\n• **Social & party** → Guild Wars Lite\n\nJust type your vibe and I'll narrow it down!",
-  "compare games for me": "⚔️ Sure! Here's a quick comparison of our top 2 titles:\n\n**Spell Conquest** vs **Arena Clash**\n\n| Feature | Spell Conquest | Arena Clash |\n|---------|---------------|-------------|\n| Genre | RPG/Strategy | PvP Fighter |\n| Avg Session | 25 min | 10 min |\n| Difficulty | Medium | Hard |\n| Rating | 4.8⭐ | 4.6⭐ |\n\nSpell Conquest is better for story lovers, Arena Clash for quick competitive rounds.",
-  "what's trending on 0g?": "🔥 **Trending on 0G right now:**\n\n1. **Hex Dominion** — 12.4K active players (+34% this week)\n2. **Spell Conquest** — 9.8K active (new expansion dropped!)\n3. **Arena Clash** — 8.2K active (tournament season)\n4. **Mystic Realms** — 6.1K active\n5. **Shadow Protocol** — 5.7K active (just launched!)\n\nHex Dominion is surging thanks to the new ranked mode. Want details on any of these?",
-};
-
-const fallbackResponses = [
-  "🤔 Interesting question! Based on our game catalog, I'd suggest checking out **Spell Conquest** for an immersive RPG experience or **Arena Clash** if you prefer fast-paced PvP action. Want more specific recommendations?",
-  "🎯 Great question! Our AI analysis suggests you might enjoy **Mystic Realms** — it's got a unique blend of exploration and puzzle-solving that 87% of players rated as 'addictive'. Shall I tell you more?",
-  "⚡ I've analyzed your query against our game database. Here's what I found:\n\n• **Best for solo play**: Spell Conquest\n• **Best multiplayer**: Guild Wars Lite\n• **Most innovative**: Shadow Protocol\n\nWant me to dive deeper into any of these?",
-  "🧠 Processing your request through 0G Compute... Based on community sentiment analysis, **Hex Dominion** has the highest satisfaction score this month (4.9/5). It combines strategy with real-time elements. Would you like a gameplay preview?",
-];
-
-let fallbackIndex = 0;
-
-const getAIResponse = (input: string): string => {
-  const lower = input.toLowerCase().trim();
-  for (const [key, value] of Object.entries(mockResponses)) {
-    if (lower.includes(key) || key.includes(lower)) {
-      return value;
-    }
-  }
-  const response = fallbackResponses[fallbackIndex % fallbackResponses.length];
-  fallbackIndex++;
-  return response;
-};
-
 const AIConcierge = () => {
   const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { clearMessages, error, input, isStreaming, isWaitingForFirstChunk, messages, sendMessage, setInput } = useKultAIChat();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", text: text.trim() };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const aiText = getAIResponse(text);
-      const aiMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: "ai", text: aiText };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 800 + Math.random() * 1200);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sendMessage(input);
+    if (!chatOpen) {
+      setChatOpen(true);
+    }
+    void sendMessage();
   };
 
   const handlePromptClick = (text: string) => {
-    if (!chatOpen) setChatOpen(true);
-    setTimeout(() => sendMessage(text), 100);
+    if (!chatOpen) {
+      setChatOpen(true);
+    }
+    void sendMessage(text);
   };
 
   return (
@@ -154,7 +110,10 @@ const AIConcierge = () => {
                       <span className="text-[10px] font-mono text-[hsl(278_100%_82%/0.7)] tracking-wider">KULT AI — ONLINE</span>
                     </div>
                     <button
-                      onClick={() => { setChatOpen(false); setMessages([]); }}
+                      onClick={() => {
+                        setChatOpen(false);
+                        clearMessages(true);
+                      }}
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <X className="w-4 h-4" />
@@ -177,19 +136,13 @@ const AIConcierge = () => {
                             </div>
                           )}
                           <div
-                            className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+                            className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words ${
                               msg.role === "user"
-                                ? "btn-eye text-white rounded-br-md shadow-[0_2px_15px_hsl(270_82%_58%/0.25)]"
+                                ? "btn-eye text-white rounded-br-md whitespace-pre-wrap shadow-[0_2px_15px_hsl(270_82%_58%/0.25)]"
                                 : "bg-muted/30 text-foreground border border-[hsl(278_100%_70%/0.2)] rounded-bl-md"
                             }`}
                           >
-                            {msg.text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
-                              part.startsWith("**") && part.endsWith("**") ? (
-                                <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-                              ) : (
-                                <span key={i}>{part}</span>
-                              )
-                            )}
+                            {msg.role === "ai" ? <KultAIMessageContent text={msg.text} /> : msg.text}
                           </div>
                           {msg.role === "user" && (
                             <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 mt-1 border border-border/30">
@@ -199,7 +152,7 @@ const AIConcierge = () => {
                         </motion.div>
                       ))}
 
-                      {isTyping && (
+                      {isWaitingForFirstChunk && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
                           <div className="w-8 h-8 rounded-lg bg-[hsl(278_100%_70%/0.14)] flex items-center justify-center flex-shrink-0 border border-[hsl(278_100%_75%/0.18)]">
                             <KultAIIcon size={16} />
@@ -247,10 +200,10 @@ const AIConcierge = () => {
                   />
                   <button
                     type="submit"
-                    disabled={!input.trim() || isTyping}
+                    disabled={!input.trim() || isStreaming}
                     className="px-5 py-2.5 font-display text-xs font-semibold tracking-wider btn-eye transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {isTyping ? (
+                    {isStreaming ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Send className="w-4 h-4" />
@@ -260,6 +213,11 @@ const AIConcierge = () => {
                 </div>
               </div>
             </form>
+            {error && (
+              <p className="mt-2 px-4 text-xs text-destructive/80">
+                {error}
+              </p>
+            )}
           </motion.div>
 
           {/* Prompt suggestions — leaderboard row style */}
