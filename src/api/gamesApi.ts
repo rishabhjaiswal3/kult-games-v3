@@ -10,8 +10,8 @@ export const gamesApi = {
   },
 
   getCategories: async (): Promise<string[]> => {
-    const { data } = await apiClient.get<string[]>("/games/all-categories");
-    return data;
+    const { data } = await apiClient.get<string[] | { categories: string[] }>("/games/all-categories");
+    return Array.isArray(data) ? data : (data as { categories: string[] }).categories ?? [];
   },
 
   getById: async (id: string): Promise<Game> => {
