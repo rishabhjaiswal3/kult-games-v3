@@ -3,7 +3,7 @@ import type { LoginRequest, LoginResponse, Player, UpdateNameRequest } from "@/t
 
 export const playerApi = {
   login: async (walletAddress: string): Promise<LoginResponse> => {
-    const body: LoginRequest = { wallet_address: walletAddress };
+    const body: LoginRequest = { walletAddress };
     const { data } = await apiClient.post<LoginResponse>("/player/login", body);
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(WALLET_KEY, walletAddress);

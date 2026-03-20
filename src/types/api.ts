@@ -10,7 +10,7 @@ export interface Player {
 }
 
 export interface LoginRequest {
-  wallet_address: string;
+  walletAddress: string;
 }
 
 export interface LoginResponse {

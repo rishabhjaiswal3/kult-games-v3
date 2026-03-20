@@ -37,7 +37,7 @@ const Store = () => {
     staleTime: 10 * 60_000,
   });
 
-  const apiCategories = categoriesData ?? [];
+  const apiCategories = Array.isArray(categoriesData) ? categoriesData : [];
   const categories = ["All", ...apiCategories];
 
   const allGames = gamesData?.games ?? [];
