@@ -4,10 +4,15 @@ import type { LoginRequest, LoginResponse, Player, UpdateNameRequest } from "@/t
 export const playerApi = {
   login: async (walletAddress: string): Promise<LoginResponse> => {
     const body: LoginRequest = { walletAddress };
-    const { data } = await apiClient.post<LoginResponse>("/player/login", body);
-    localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(WALLET_KEY, walletAddress);
-    return data;
+    const { data } = await apiClient.post<any>("/player/login", body);
+    // Support both flat { token, player } and wrapped { data: { token, player } }
+    const token: string = data.token ?? data.data?.token ?? "";
+    const player = data.player ?? data.data?.player ?? null;
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(WALLET_KEY, walletAddress);
+    }
+    return { token, player } as LoginResponse;
   },
 
   getProfile: async (): Promise<Player> => {
