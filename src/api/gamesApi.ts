@@ -1,21 +1,27 @@
 import apiClient from "@/lib/apiClient";
 import type { Game, GamesResponse } from "@/types/api";
 
+interface ApiEnvelope<T> {
+  ok: boolean;
+  data: T;
+}
+
 export const gamesApi = {
   getAll: async (page = 1, limit = 20): Promise<GamesResponse> => {
-    const { data } = await apiClient.get<GamesResponse>("/games/all", {
+    const { data } = await apiClient.get<ApiEnvelope<GamesResponse>>("/games/all", {
       params: { page, limit },
     });
-    return data;
+    return data.data;
   },
 
   getCategories: async (): Promise<string[]> => {
-    const { data } = await apiClient.get<string[] | { categories: string[] }>("/games/all-categories");
-    return Array.isArray(data) ? data : (data as { categories: string[] }).categories ?? [];
+    const { data } = await apiClient.get<ApiEnvelope<string[] | { categories: string[] }>>("/games/all-categories");
+    const inner = data.data;
+    return Array.isArray(inner) ? inner : (inner as { categories: string[] }).categories ?? [];
   },
 
   getById: async (id: string): Promise<Game> => {
-    const { data } = await apiClient.get<Game>(`/games/${id}`);
-    return data;
+    const { data } = await apiClient.get<ApiEnvelope<Game>>(`/games/${id}`);
+    return data.data;
   },
 };

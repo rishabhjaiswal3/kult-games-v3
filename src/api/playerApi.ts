@@ -16,14 +16,14 @@ export const playerApi = {
   },
 
   getProfile: async (): Promise<Player> => {
-    const { data } = await apiClient.get<Player>("/player/profile");
-    return data;
+    const { data } = await apiClient.get<{ ok: boolean; data: Player }>("/player/profile");
+    return data.data;
   },
 
   updateName: async (name: string): Promise<Player> => {
     const body: UpdateNameRequest = { name };
-    const { data } = await apiClient.patch<Player>("/player/name", body);
-    return data;
+    const { data } = await apiClient.patch<{ ok: boolean; data: Player }>("/player/name", body);
+    return data.data;
   },
 
   logout: () => {
