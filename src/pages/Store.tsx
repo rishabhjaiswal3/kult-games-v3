@@ -102,13 +102,13 @@ const Store = () => {
                 className="w-full bg-muted/50 rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground border border-border/50 focus:border-neon-cyan/50 focus:outline-none focus:shadow-[0_0_10px_hsl(195_100%_60%/0.1)] transition-all"
               />
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
               <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-display font-semibold tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-display font-semibold tracking-wider whitespace-nowrap transition-all duration-300 ${
                     selectedCategory === cat
                       ? "btn-eye"
                       : "btn-eye-outline"
