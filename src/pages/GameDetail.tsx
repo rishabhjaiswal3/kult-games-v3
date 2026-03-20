@@ -1,118 +1,82 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Star, Clock, Users, Trophy, Share2, Zap, Shield, Gamepad2, ExternalLink } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import ParticleField from "@/components/ParticleField";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
 import NeuralPulse from "@/components/NeuralPulse";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import { Skeleton } from "@/components/ui/skeleton";
+import { gamesApi } from "@/api/gamesApi";
+import type { Game } from "@/types/api";
 
-interface GameData {
-  title: string;
-  description: string;
-  longDescription: string;
-  image: string;
-  category: string;
-  rating: number;
-  sessionLength: string;
-  skillLevel: string;
-  players: string;
-  features: string[];
-  platform: string[];
-  chain: string;
-  playUrl?: string;
-  video: string;
+function getGameName(name: Game["name"]): string {
+  if (typeof name === "string") return name;
+  return name?.en ?? Object.values(name)[0] ?? "";
 }
 
-const gameData: Record<string, GameData> = {
-  "guess-the-ai": {
-    title: "Guess The AI",
-    description: "Challenge your mind. Beat the AI.",
-    longDescription: "Test your wits against advanced AI opponents in this mind-bending game. Can you distinguish between human and AI-generated content? Rise through the ranks and prove your cognitive superiority on the blockchain.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png",
-    category: "ACTION",
-    rating: 4.8,
-    sessionLength: "5-10 min",
-    skillLevel: "Beginner",
-    players: "1-4 Players",
-    features: ["AI-Powered Opponents", "On-Chain Rewards", "Daily Challenges", "Global Leaderboard"],
-    platform: ["Web", "Mobile"],
-    chain: "0G Chain",
-    playUrl: "https://guesstheai.xyz/",
-    video: "/videos/SC_10.mp4",
-  },
-  "zero-g-pool": {
-    title: "Zero G Pool",
-    description: "Your favourite 8-ball, now with a cosmic twist.",
-    longDescription: "Experience billiards like never before in zero gravity. Physics-defying trick shots, cosmic arenas, and multiplayer tournaments make this the ultimate pool experience on the blockchain.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png",
-    category: "SPORTS",
-    rating: 4.8,
-    sessionLength: "10-15 min",
-    skillLevel: "Intermediate",
-    players: "1-2 Players",
-    features: ["Zero Gravity Physics", "Multiplayer Matches", "Custom Tables", "NFT Cues"],
-    platform: ["Web", "Mobile"],
-    chain: "0G Chain",
-    playUrl: "https://zerogpool.xyz/",
-    video: "/videos/SC_2-3.mp4",
-  },
-  "zero-dash": {
-    title: "Zero Dash",
-    description: "Run. Escape. Don't look back.",
-    longDescription: "An adrenaline-pumping endless runner set in a cyberpunk dystopia. Dodge obstacles, collect power-ups, and compete for the highest score on the global leaderboard.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png",
-    category: "ACTION",
-    rating: 4.8,
-    sessionLength: "3-5 min",
-    skillLevel: "All levels",
-    players: "1 Player",
-    features: ["Endless Runner", "Power-ups", "Daily Rewards", "Season Rankings"],
-    platform: ["Web", "Mobile"],
-    chain: "0G Chain",
-    playUrl: "https://zerodashgame.xyz/",
-    video: "/videos/SC_1-3.mp4",
-  },
-  "robo-wars": {
-    title: "Robo Wars",
-    description: "Enter the arena where metal meets mayhem.",
-    longDescription: "Build, customize, and battle your robots in intense PvP combat. Earn parts, upgrade your machines, and dominate the arena in this on-chain fighting game.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png",
-    category: "FIGHTING",
-    rating: 4.8,
-    sessionLength: "10-20 min",
-    skillLevel: "Intermediate",
-    players: "1-2 Players",
-    features: ["Robot Customization", "PvP Battles", "Tournament Mode", "NFT Parts"],
-    platform: ["Web", "Mobile"],
-    chain: "0G Chain",
-    video: "/videos/SC_12-5.mp4",
-  },
-  "highway-hustle": {
-    title: "Highway Hustle",
-    description: "Fast lanes. Fierce rivals. Full throttle.",
-    longDescription: "Race through neon-lit highways at breakneck speed. Customize your ride, challenge rivals, and earn your way to the top of the racing leaderboard.",
-    image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png",
-    category: "RACING",
-    rating: 4.8,
-    sessionLength: "5-10 min",
-    skillLevel: "Beginner",
-    players: "1-8 Players",
-    features: ["High-Speed Racing", "Vehicle Upgrades", "Multiplayer Races", "Track Editor"],
-    platform: ["Web", "Mobile"],
-    chain: "0G Chain",
-    playUrl: "https://highwayhustle.xyz/",
-    video: "/videos/SC_12-4.mp4",
-  },
-};
+function getGameDescription(desc: Game["description"]): string {
+  if (!desc) return "";
+  if (typeof desc === "string") return desc;
+  return desc?.en ?? Object.values(desc)[0] ?? "";
+}
+
+function getGameImage(game: Game): string {
+  return game.image_url ?? game.images?.[0]?.url ?? "";
+}
 
 const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const game = id ? gameData[id] : null;
 
-  if (!game) {
+  const { data: game, isLoading, isError } = useQuery({
+    queryKey: ["game", id],
+    queryFn: () => gamesApi.getById(id!),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background relative overflow-x-hidden">
+        <Navbar />
+        <section className="relative z-10 pt-16">
+          <div className="relative min-h-[70vh] overflow-hidden flex items-end">
+            <Skeleton className="absolute inset-0 rounded-none" />
+            <div className="relative w-full p-6 md:p-12 pb-10 space-y-4">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-16 w-2/3" />
+              <Skeleton className="h-5 w-96 max-w-full" />
+              <div className="flex gap-4">
+                <Skeleton className="h-10 w-36" />
+                <Skeleton className="h-10 w-12" />
+              </div>
+            </div>
+          </div>
+          <div className="w-full px-6 md:px-8 xl:px-12 py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-32 w-full" />
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <Skeleton className="h-48 w-full rounded-xl" />
+                <Skeleton className="h-24 w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (isError || !game) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -123,6 +87,19 @@ const GameDetail = () => {
     );
   }
 
+  const title = getGameName(game.name);
+  const description = getGameDescription(game.description);
+  const image = getGameImage(game);
+  const meta = game.metadata ?? {};
+  const longDescription = (meta.long_description as string) ?? description;
+  const features = (meta.features as string[]) ?? [];
+  const sessionLength = (meta.session_length as string) ?? "";
+  const skillLevel = (meta.skill_level as string) ?? "";
+  const players = (meta.players as string) ?? "";
+  const chain = (meta.chain as string) ?? "0G Chain";
+  const playUrl = (meta.play_url as string) ?? "";
+  const video = (meta.video as string) ?? "/videos/SC_10.mp4";
+
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
       <ParticleField />
@@ -132,7 +109,7 @@ const GameDetail = () => {
       <section className="relative z-10">
         <div className="relative min-h-[70vh] overflow-hidden flex items-end">
           {/* Video background instead of static image */}
-          <AutoPlayVideo src={game.video} loop className="absolute inset-0 w-full h-full object-cover opacity-30" />
+          <AutoPlayVideo src={video} loop className="absolute inset-0 w-full h-full object-cover opacity-30" />
 
           {/* Multi-layer overlays matching site theme */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-background/30" />
@@ -181,15 +158,15 @@ const GameDetail = () => {
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
                   <span className="text-[10px] font-mono text-neon-cyan/70 tracking-[0.3em] uppercase">
-                    GAME LOADED • {game.chain}
+                    GAME LOADED • {chain}
                   </span>
                 </div>
 
                 <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-black text-foreground tracking-tight leading-none mb-3 glow-text">
-                  {game.title.toUpperCase()}
+                  {title.toUpperCase()}
                 </h1>
                 <p className="text-muted-foreground text-base md:text-lg max-w-xl mb-6">
-                  {game.description}
+                  {description}
                 </p>
 
                 {/* Quick stats row */}
@@ -200,22 +177,22 @@ const GameDetail = () => {
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">{game.sessionLength}</span>
+                    <span className="text-sm">{sessionLength}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Users className="w-4 h-4" />
-                    <span className="text-sm">{game.players}</span>
+                    <span className="text-sm">{players}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Trophy className="w-4 h-4" />
-                    <span className="text-sm">{game.skillLevel}</span>
+                    <span className="text-sm">{skillLevel}</span>
                   </div>
                 </div>
 
                 {/* Action buttons */}
                 <div className="flex items-center gap-4">
                   <a
-                    href={game.playUrl || "#"}
+                    href={playUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-3 relative overflow-hidden"
@@ -239,7 +216,7 @@ const GameDetail = () => {
 
         {/* Game details section with video bg */}
         <div className="relative">
-          <AutoPlayVideo src={game.video} loop className="absolute inset-0 w-full h-full object-cover opacity-[0.06]" />
+          <AutoPlayVideo src={video} loop className="absolute inset-0 w-full h-full object-cover opacity-[0.06]" />
           <div className="absolute inset-0 bg-background/90" />
 
           <div className="absolute top-0 left-1/4 w-[500px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
@@ -259,7 +236,7 @@ const GameDetail = () => {
                     <h2 className="font-display text-xl font-bold text-foreground tracking-wider">ABOUT</h2>
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    {game.longDescription}
+                    {longDescription}
                   </p>
                 </motion.div>
 
@@ -274,7 +251,7 @@ const GameDetail = () => {
                     <h2 className="font-display text-xl font-bold text-foreground tracking-wider">FEATURES</h2>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {game.features.map((feature, i) => (
+                    {features.map((feature: string, i: number) => (
                       <motion.div
                         key={feature}
                         initial={{ opacity: 0, x: -10 }}
@@ -305,8 +282,8 @@ const GameDetail = () => {
                   </div>
                   <div className="rounded-xl overflow-hidden border border-border/50 relative group">
                     <img
-                      src={game.image}
-                      alt={`${game.title} preview`}
+                      src={image}
+                      alt={`${title} preview`}
                       className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
@@ -325,13 +302,13 @@ const GameDetail = () => {
                 >
                   <div className="rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
                     <div className="relative h-36 overflow-hidden">
-                      <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
+                      <img src={image} alt={title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                     </div>
 
                     <div className="p-5 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-display text-lg font-bold text-foreground">{game.title}</span>
+                        <span className="font-display text-lg font-bold text-foreground">{title}</span>
                         <span className="text-xs font-mono text-primary tracking-wider text-glow-cyan">FREE</span>
                       </div>
 
@@ -350,13 +327,13 @@ const GameDetail = () => {
                       <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground font-mono tracking-wider">CHAIN</span>
-                        <span className="text-xs text-neon-cyan font-display font-semibold ml-auto text-glow-cyan">{game.chain}</span>
+                        <span className="text-xs text-neon-cyan font-display font-semibold ml-auto text-glow-cyan">{chain}</span>
                       </div>
 
                       <div className="h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
 
                       <a
-                        href={game.playUrl || "#"}
+                        href={playUrl || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center justify-center gap-2"

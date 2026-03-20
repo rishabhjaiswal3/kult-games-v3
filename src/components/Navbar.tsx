@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -16,6 +17,7 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const { isAuthenticated, player, walletAddress, logout } = useAuth();
 
   return (
     <>
@@ -72,17 +74,31 @@ const Navbar = () => {
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          <button
-            onClick={() => setLoginOpen(true)}
-            className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye relative overflow-hidden"
-          >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
-              animate={{ x: ["-200%", "200%"] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            />
-            <span className="relative z-10">LOGIN</span>
-          </button>
+          {isAuthenticated ? (
+            <div className="hidden md:flex items-center gap-3">
+              <span className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
+                {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
+              </span>
+              <button
+                onClick={logout}
+                className="px-4 py-2 font-display text-xs font-semibold tracking-wider btn-eye-outline"
+              >
+                LOGOUT
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setLoginOpen(true)}
+              className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye relative overflow-hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                animate={{ x: ["-200%", "200%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              <span className="relative z-10">LOGIN</span>
+            </button>
+          )}
         </div>
 
         {mobileOpen && (
@@ -101,12 +117,26 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            <button
-              onClick={() => { setLoginOpen(true); setMobileOpen(false); }}
-              className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye mt-2"
-            >
-              LOGIN
-            </button>
+            {isAuthenticated ? (
+              <>
+                <p className="text-xs font-mono text-muted-foreground px-1">
+                  {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
+                </p>
+                <button
+                  onClick={() => { logout(); setMobileOpen(false); }}
+                  className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye-outline mt-2"
+                >
+                  LOGOUT
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { setLoginOpen(true); setMobileOpen(false); }}
+                className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye mt-2"
+              >
+                LOGIN
+              </button>
+            )}
           </motion.div>
         )}
       </div>

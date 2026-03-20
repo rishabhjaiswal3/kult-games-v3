@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
-import { Trophy, Medal, Crown, TrendingUp, ChevronUp, ChevronDown } from "lucide-react";
+import { Trophy, Medal, Crown, TrendingUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import { leaderboardApi } from "@/api/leaderboardApi";
+import type { LeaderboardEntry } from "@/types/api";
 
 // Inline human character avatars
 const AvatarCryptoKnight = () => (
@@ -130,23 +134,30 @@ const PlayerAvatar = ({ rank }: { rank: number; }) => {
   return null;
 };
 
-const players = [
-  { rank: 1, name: "CryptoKnight", avatar: "CK", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=CryptoKnight", score: 98750, wins: 342, change: "up", game: "Robo Wars" },
-  { rank: 2, name: "NeonBlaze", avatar: "NB", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=NeonBlaze", score: 87200, wins: 298, change: "up", game: "Zero Dash" },
-  { rank: 3, name: "PhantomX", avatar: "PX", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=PhantomX", score: 76800, wins: 267, change: "down", game: "Highway Hustle" },
-  { rank: 4, name: "VoidWalker", avatar: "VW", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=VoidWalker", score: 65400, wins: 234, change: "up", game: "Zero G Pool" },
-  { rank: 5, name: "ShadowMage", avatar: "SM", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=ShadowMage", score: 54200, wins: 198, change: "same", game: "Guess The AI" },
-  { rank: 6, name: "PixelHunter", avatar: "PH", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=PixelHunter", score: 48900, wins: 176, change: "up", game: "Robo Wars" },
-  { rank: 7, name: "StormBreaker", avatar: "SB", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=StormBreaker", score: 42100, wins: 155, change: "down", game: "Zero Dash" },
-  { rank: 8, name: "ArcaneWolf", avatar: "AW", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=ArcaneWolf", score: 38700, wins: 142, change: "up", game: "Highway Hustle" },
-  { rank: 9, name: "CyberNova", avatar: "CN", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberNova", score: 35200, wins: 128, change: "down", game: "Zero G Pool" },
-  { rank: 10, name: "RuneMaster", avatar: "RM", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=RuneMaster", score: 31500, wins: 115, change: "same", game: "Guess The AI" },
-];
-
 const timeFilters = ["All Time", "This Week", "Today"];
+
+function getAvatarUrl(walletAddress: string, name?: string) {
+  const seed = name ?? walletAddress;
+  return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+}
+
+function getDisplayName(entry: LeaderboardEntry) {
+  if (entry.name) return entry.name;
+  const addr = entry.wallet_address;
+  return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : `Player #${entry.rank}`;
+}
 
 const Leaderboard = () => {
   const [timeFilter, setTimeFilter] = useState("All Time");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["leaderboard", "global"],
+    queryFn: () => leaderboardApi.getGlobal(1, 50),
+    staleTime: 60_000,
+  });
+
+  const players = data?.entries ?? [];
+  const top3 = [players[1], players[0], players[2]].filter(Boolean) as LeaderboardEntry[];
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-[hsl(var(--gold))]" />;
@@ -216,7 +227,16 @@ const Leaderboard = () => {
 
           {/* Top 3 podium */}
           <div className="grid grid-cols-3 gap-3 md:gap-5 mb-12 w-full items-end">
-            {[players[1], players[0], players[2]].map((p, i) => {
+            {isLoading
+              ? [0, 1, 2].map((i) => (
+                  <div key={i} className={`rounded-2xl border border-border/30 bg-card/50 p-5 flex flex-col items-center gap-3 ${i === 1 ? "pb-8" : ""}`}>
+                    <Skeleton className={`rounded-full ${i === 1 ? "w-20 h-20" : "w-16 h-16"}`} />
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                ))
+            : top3.map((p, i) => {
               const isFirst = i === 1;
 
               const theme =
@@ -322,7 +342,7 @@ const Leaderboard = () => {
                     </div>
 
                     {/* Name */}
-                    <h3 className={`font-display text-xs md:text-sm font-bold truncate w-full ${theme.textAccent}`}>{p.name}</h3>
+                    <h3 className={`font-display text-xs md:text-sm font-bold truncate w-full ${theme.textAccent}`}>{getDisplayName(p)}</h3>
 
                     {/* Score */}
                     <p className={`font-display ${isFirst ? "text-xl md:text-2xl" : "text-base md:text-lg"} font-black mt-1.5 tabular-nums ${theme.scoreColor}`}>
@@ -330,13 +350,15 @@ const Leaderboard = () => {
                     </p>
 
                     {/* Wins + game */}
-                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5 tracking-wider">{p.wins} WINS</p>
-                    <span
-                      className="mt-2 px-2 py-0.5 rounded-full text-[9px] font-mono tracking-wider"
-                      style={{ background: theme.accentMuted, color: theme.accent }}
-                    >
-                      {p.game.toUpperCase()}
-                    </span>
+                    {p.wins != null && <p className="text-[10px] text-muted-foreground font-mono mt-0.5 tracking-wider">{p.wins} WINS</p>}
+                    {p.game && (
+                      <span
+                        className="mt-2 px-2 py-0.5 rounded-full text-[9px] font-mono tracking-wider"
+                        style={{ background: theme.accentMuted, color: theme.accent }}
+                      >
+                        {p.game.toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
                   {/* Bottom podium step indicator */}
@@ -369,6 +391,28 @@ const Leaderboard = () => {
                   </tr>
                 </thead>
                 <tbody>
+                  {isLoading && Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="border-b border-border/10">
+                      <td className="p-4"><Skeleton className="h-4 w-4" /></td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                          <Skeleton className="h-4 w-28" />
+                        </div>
+                      </td>
+                      <td className="p-4 hidden md:table-cell"><Skeleton className="h-4 w-20" /></td>
+                      <td className="p-4"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                      <td className="p-4 hidden sm:table-cell"><Skeleton className="h-4 w-8 ml-auto" /></td>
+                      <td className="p-4"><Skeleton className="h-4 w-4 mx-auto" /></td>
+                    </tr>
+                  ))}
+                  {!isLoading && players.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-12 text-center text-muted-foreground text-sm font-mono">
+                        NO DATA AVAILABLE
+                      </td>
+                    </tr>
+                  )}
                   {players.map((p, i) => (
                     <motion.tr
                       key={p.rank}
@@ -381,18 +425,16 @@ const Leaderboard = () => {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full overflow-hidden bg-neon-cyan/10 flex items-center justify-center flex-shrink-0">
-                            <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                            <img src={getAvatarUrl(p.wallet_address, p.name)} alt={getDisplayName(p)} className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                           </div>
-                          <span className="font-display text-sm font-semibold text-foreground group-hover:text-neon-cyan transition-colors">{p.name}</span>
+                          <span className="font-display text-sm font-semibold text-foreground group-hover:text-neon-cyan transition-colors">{getDisplayName(p)}</span>
                         </div>
                       </td>
-                      <td className="p-4 text-xs text-muted-foreground font-mono hidden md:table-cell">{p.game}</td>
+                      <td className="p-4 text-xs text-muted-foreground font-mono hidden md:table-cell">{p.game ?? "—"}</td>
                       <td className="p-4 text-right font-display text-sm font-bold text-foreground">{p.score.toLocaleString()}</td>
-                      <td className="p-4 text-right text-sm text-muted-foreground hidden sm:table-cell">{p.wins}</td>
+                      <td className="p-4 text-right text-sm text-muted-foreground hidden sm:table-cell">{p.wins ?? "—"}</td>
                       <td className="p-4 text-center">
-                        {p.change === "up" && <ChevronUp className="w-4 h-4 text-neon-cyan mx-auto" />}
-                        {p.change === "down" && <ChevronDown className="w-4 h-4 text-destructive mx-auto" />}
-                        {p.change === "same" && <TrendingUp className="w-4 h-4 text-muted-foreground mx-auto" />}
+                        <TrendingUp className="w-4 h-4 text-muted-foreground mx-auto" />
                       </td>
                     </motion.tr>
                   ))}
