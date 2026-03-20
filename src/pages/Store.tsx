@@ -1,30 +1,51 @@
 import { motion } from "framer-motion";
 import { Search, Filter, Star, Tag, Gamepad2 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import { Skeleton } from "@/components/ui/skeleton";
+import { gamesApi } from "@/api/gamesApi";
+import type { Game } from "@/types/api";
 
-const storeItems = [
-  { id: "guess-the-ai", title: "Guess The AI", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", price: "FREE", category: "Action", rating: 4.8, tag: "Popular", platform: ["Web", "Mobile"] },
-  { id: "zero-g-pool", title: "Zero G Pool", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png", price: "FREE", category: "Sports", rating: 4.8, tag: "New", platform: ["Web", "Mobile"] },
-  { id: "zero-dash", title: "Zero Dash", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png", price: "FREE", category: "Action", rating: 4.8, tag: "Trending", platform: ["Web", "Mobile"] },
-  { id: "robo-wars", title: "Robo Wars", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", price: "FREE", category: "Fighting", rating: 4.8, tag: "Premium", platform: ["Web"] },
-  { id: "highway-hustle", title: "Highway Hustle", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png", price: "FREE", category: "Racing", rating: 4.8, tag: "Hot", platform: ["Web", "Mobile"] },
-];
+function getGameName(name: Game["name"]): string {
+  if (typeof name === "string") return name;
+  return name?.en ?? Object.values(name)[0] ?? "";
+}
 
-const categories = ["All", "Sports", "Action", "Fighting", "Racing"];
+function getGameImage(game: Game): string {
+  return game.image_url ?? game.images?.[0]?.url ?? "";
+}
 
 const Store = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const navigate = useNavigate();
 
-  const filtered = storeItems.filter((item) => {
-    const matchSearch = item.title.toLowerCase().includes(search.toLowerCase());
-    const matchCat = selectedCategory === "All" || item.category === selectedCategory;
+  const { data: gamesData, isLoading: gamesLoading } = useQuery({
+    queryKey: ["games", "all"],
+    queryFn: () => gamesApi.getAll(1, 50),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ["games", "categories"],
+    queryFn: gamesApi.getCategories,
+    staleTime: 10 * 60_000,
+  });
+
+  const apiCategories = categoriesData ?? [];
+  const categories = ["All", ...apiCategories];
+
+  const allGames = gamesData?.games ?? [];
+
+  const filtered = allGames.filter((game) => {
+    const name = getGameName(game.name).toLowerCase();
+    const matchSearch = name.includes(search.toLowerCase());
+    const matchCat = selectedCategory === "All" || game.category === selectedCategory;
     return matchSearch && matchCat;
   });
 
@@ -122,54 +143,76 @@ const Store = () => {
 
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                whileHover={{ y: -6 }}
-                onClick={() => navigate(`/game/${item.id}`)}
-                className="group cursor-pointer rounded-xl overflow-hidden bg-card/80 border border-border/50 hover:border-neon-cyan/30 transition-all duration-300"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-display font-bold tracking-wider bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30 backdrop-blur-sm">
-                      <Tag className="w-3 h-3 inline mr-1" />{item.tag}
-                    </span>
-                  </div>
-                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-card/80 backdrop-blur-sm">
-                    <Star className="w-3 h-3 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]" />
-                    <span className="text-xs font-semibold text-foreground">{item.rating}</span>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-display text-base font-bold text-foreground tracking-wide group-hover:text-neon-cyan transition-colors">{item.title}</h3>
-                    <span className={`font-display text-sm font-bold ${item.price === "FREE" ? "text-neon-cyan" : "text-[hsl(var(--gold))]"}`}>{item.price}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground font-mono tracking-wider">{item.category.toUpperCase()}</span>
-                    <div className="flex gap-1">
-                      {item.platform.map((p) => (
-                        <span key={p} className="text-[9px] font-mono text-muted-foreground bg-muted/50 rounded px-1.5 py-0.5">{p}</span>
-                      ))}
+            {gamesLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-xl overflow-hidden bg-card/80 border border-border/50">
+                    <Skeleton className="aspect-[16/10] w-full rounded-none" />
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-10" />
+                      </div>
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-8 w-full" />
                     </div>
                   </div>
-                  <button className="w-full mt-3 py-2 rounded-lg text-xs font-display font-semibold tracking-wider btn-eye flex items-center justify-center gap-1.5">
-                    <Gamepad2 className="w-3.5 h-3.5" />
-                    PLAY GAME
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+                ))
+              : filtered.map((item, i) => {
+                  const name = getGameName(item.name);
+                  const image = getGameImage(item);
+                  const gameId = item.slug ?? item._id;
+                  return (
+                    <motion.div
+                      key={item._id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      whileHover={{ y: -6 }}
+                      onClick={() => navigate(`/game/${gameId}`)}
+                      className="group cursor-pointer rounded-xl overflow-hidden bg-card/80 border border-border/50 hover:border-neon-cyan/30 transition-all duration-300"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden">
+                        <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-display font-bold tracking-wider bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30 backdrop-blur-sm">
+                            <Tag className="w-3 h-3 inline mr-1" />{item.category}
+                          </span>
+                        </div>
+                        {item.rating != null && (
+                          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-card/80 backdrop-blur-sm">
+                            <Star className="w-3 h-3 text-[hsl(var(--gold))] fill-[hsl(var(--gold))]" />
+                            <span className="text-xs font-semibold text-foreground">{item.rating}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-display text-base font-bold text-foreground tracking-wide group-hover:text-neon-cyan transition-colors">{name}</h3>
+                          <span className="font-display text-sm font-bold text-neon-cyan">FREE</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground font-mono tracking-wider">{item.category.toUpperCase()}</span>
+                          <div className="flex gap-1">
+                            {(item.platform ?? []).map((p) => (
+                              <span key={p} className="text-[9px] font-mono text-muted-foreground bg-muted/50 rounded px-1.5 py-0.5">{p}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <button className="w-full mt-3 py-2 rounded-lg text-xs font-display font-semibold tracking-wider btn-eye flex items-center justify-center gap-1.5">
+                          <Gamepad2 className="w-3.5 h-3.5" />
+                          PLAY GAME
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })
+            }
           </div>
 
-          {filtered.length === 0 && (
+          {!gamesLoading && filtered.length === 0 && (
             <div className="text-center py-20">
               <p className="text-muted-foreground font-display">No games found matching your criteria.</p>
             </div>

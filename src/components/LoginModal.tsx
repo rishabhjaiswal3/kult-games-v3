@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Wallet, Chrome } from "lucide-react";
+import { X, Mail, Wallet, Globe } from "lucide-react";
 import { useState } from "react";
+import { useLoginWithEmail, useLoginWithOAuth, useConnectWallet } from "@privy-io/react-auth";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,6 +10,44 @@ interface LoginModalProps {
 
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const { sendCode, loginWithCode } = useLoginWithEmail({
+    onComplete: () => { onClose(); },
+  });
+  const { initOAuth } = useLoginWithOAuth({
+    onComplete: () => { onClose(); },
+  });
+  const { connectWallet } = useConnectWallet({
+    onSuccess: () => { onClose(); },
+  });
+
+  const handleSendCode = async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      await sendCode({ email });
+      setOtpSent(true);
+    } catch {
+      // error handled by Privy
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!otpCode) return;
+    setLoading(true);
+    try {
+      await loginWithCode({ code: otpCode });
+    } catch {
+      // error handled by Privy
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -57,45 +96,83 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     </p>
                   </div>
 
-                  <div className="mt-6 space-y-2">
-                    <label className="text-sm font-medium text-foreground">Email address</label>
-                    <input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] focus:border-[hsl(278_100%_70%/0.35)] transition-all"
-                    />
-                  </div>
+                  {!otpSent ? (
+                    <>
+                      <div className="mt-6 space-y-2">
+                        <label className="text-sm font-medium text-foreground">Email address</label>
+                        <input
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
+                          className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] focus:border-[hsl(278_100%_70%/0.35)] transition-all"
+                        />
+                      </div>
 
-                  <div className="mt-5 space-y-3">
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <Mail className="w-4 h-4" />
-                      Send Code
-                    </motion.button>
+                      <div className="mt-5 space-y-3">
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={handleSendCode}
+                          disabled={loading || !email}
+                          className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Mail className="w-4 h-4" />
+                          {loading ? "Sending..." : "Send Code"}
+                        </motion.button>
 
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye-outline transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <Wallet className="w-4 h-4" />
-                      Connect Wallet
-                    </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={() => connectWallet()}
+                          className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye-outline transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          Connect Wallet
+                        </motion.button>
 
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="w-full h-12 rounded-[16px] font-medium text-sm text-foreground border border-border/50 bg-muted/25 hover:bg-muted/45 hover:border-[hsl(278_100%_70%/0.24)] transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <Chrome className="w-4 h-4" />
-                      Continue with Google
-                    </motion.button>
-                  </div>
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={() => initOAuth({ provider: "google" })}
+                          className="w-full h-12 rounded-[16px] font-medium text-sm text-foreground border border-border/50 bg-muted/25 hover:bg-muted/45 hover:border-[hsl(278_100%_70%/0.24)] transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                          <Globe className="w-4 h-4" />
+                          Continue with Google
+                        </motion.button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mt-6 space-y-4">
+                      <p className="text-sm text-muted-foreground text-center">
+                        Enter the code sent to <span className="text-foreground font-medium">{email}</span>
+                      </p>
+                      <input
+                        type="text"
+                        placeholder="6-digit code"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()}
+                        className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-center text-foreground tracking-[0.3em] text-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] transition-all"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={handleVerifyCode}
+                        disabled={loading || !otpCode}
+                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loading ? "Verifying..." : "Verify Code"}
+                      </motion.button>
+                      <button
+                        onClick={() => setOtpSent(false)}
+                        className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        ← Back
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

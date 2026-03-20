@@ -1,22 +1,40 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import GameCard from "./GameCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AIScanLine from "@/components/AIScanLine";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
-// import { Navigate } from "react-router-dom";
+import { gamesApi } from "@/api/gamesApi";
+import type { Game } from "@/types/api";
 
-const games = [
-  { id: "guess-the-ai", title: "Guess The AI", description: "Challenge your mind. Beat the AI.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Guess_the_ai.png", category: "ACTION", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
-  { id: "zero-g-pool", title: "Zero G Pool", description: "Your favourite 8-ball, now with a cosmic twist.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero_Z_Pool.png", category: "SPORTS", rating: 4.8, sessionLength: "10-15 min", skillLevel: "Intermediate" },
-  { id: "zero-dash", title: "Zero Dash", description: "Run. Escape. Don't look back.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Zero%20dash%20Carousel%20Desk.png", category: "ACTION", rating: 4.8, sessionLength: "3-5 min", skillLevel: "All levels" },
-  { id: "robo-wars", title: "Robo Wars", description: "Enter the arena where metal meets mayhem.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Robo_wars.png", category: "FIGHTING", rating: 4.8, sessionLength: "10-20 min", skillLevel: "Intermediate" },
-  { id: "highway-hustle", title: "Highway Hustle", description: "Fast lanes. Fierce rivals. Full throttle.", image: "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com/Home_Carousel/Desktop/Highway_Hustle.png", category: "RACING", rating: 4.8, sessionLength: "5-10 min", skillLevel: "Beginner" },
-];
+function getGameName(name: Game["name"]): string {
+  if (typeof name === "string") return name;
+  return name?.en ?? Object.values(name)[0] ?? "";
+}
+
+function getGameImage(game: Game): string {
+  return game.image_url ?? game.images?.[0]?.url ?? "";
+}
+
+function getGameDescription(desc: Game["description"]): string {
+  if (!desc) return "";
+  if (typeof desc === "string") return desc;
+  return desc?.en ?? Object.values(desc)[0] ?? "";
+}
 
 const GamesSection = () => {
   const [videoOpacity, setVideoOpacity] = useState(0.12);
   const navigate = useNavigate();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["games", "all"],
+    queryFn: () => gamesApi.getAll(1, 10),
+    staleTime: 5 * 60_000,
+  });
+
+  const games = data?.games ?? [];
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -153,18 +171,40 @@ const GamesSection = () => {
             className="flex gap-5 overflow-x-auto overflow-y-hidden pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {games.map((game, i) => (
-              <motion.div
-                key={game.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-                className="flex-shrink-0 w-[260px] md:w-[280px] snap-start"
-              >
-                <GameCard {...game} index={i} />
-              </motion.div>
-            ))}
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[260px] md:w-[280px] snap-start rounded-xl overflow-hidden bg-card border border-border/50">
+                    <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                    <div className="p-4 space-y-3">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                      <Skeleton className="h-1 w-full" />
+                    </div>
+                  </div>
+                ))
+              : games.map((game, i) => (
+                  <motion.div
+                    key={game._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                    className="flex-shrink-0 w-[260px] md:w-[280px] snap-start"
+                  >
+                    <GameCard
+                      id={game.slug ?? game._id}
+                      title={getGameName(game.name)}
+                      description={getGameDescription(game.description)}
+                      image={getGameImage(game)}
+                      category={game.category}
+                      rating={game.rating ?? 0}
+                      sessionLength={(game.metadata?.session_length as string) ?? ""}
+                      skillLevel={(game.metadata?.skill_level as string) ?? "All levels"}
+                      index={i}
+                    />
+                  </motion.div>
+                ))
+            }
           </div>
 
           {/* Fade edges for scroll indication */}
