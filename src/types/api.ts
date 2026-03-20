@@ -50,9 +50,10 @@ export interface Game {
 
 export interface GamesResponse {
   games: Game[];
-  total: number;
+  totalCount: number;
   page: number;
-  limit: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
