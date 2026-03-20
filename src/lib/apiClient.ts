@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app";
+const BASE_URL = (import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app") + "/api";
 
 export const TOKEN_KEY = "kult_token";
 export const WALLET_KEY = "kult_wallet";
