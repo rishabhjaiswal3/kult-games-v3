@@ -21,7 +21,7 @@ export const gamesApi = {
   },
 
   getById: async (id: string): Promise<Game> => {
-    const { data } = await apiClient.get<ApiEnvelope<Game>>(`/games/${id}`);
-    return data.data;
+    const { data } = await apiClient.get<ApiEnvelope<{ game: Game }>>(`/games/${id}`);
+    return data.data.game;
   },
 };
