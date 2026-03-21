@@ -95,23 +95,17 @@ const GameDetail = () => {
   }
 
   const title = getGameName(game.name);
-  const description = getGameDescription(game.description) || game.slogan || "";
+  const description =  "";
   const image = getGameImage(game);
   const meta = game.metadata ?? {};
-  const g = game as unknown as Record<string, unknown>;
-  const longDescription = (meta.long_description as string)
-    ?? (g.long_description as string)
-    ?? (g.about as string)
-    ?? description;
-  const features: string[] = (meta.features as string[])
-    ?? (g.features as string[])
-    ?? [];
-  const sessionLength = (meta.session_length as string) ?? (g.session_length as string) ?? "";
-  const skillLevel = (meta.skill_level as string) ?? (g.skill_level as string) ?? "";
-  const players = (meta.players as string) ?? (g.players as string) ?? "";
-  const chain = (meta.chain as string) ?? (g.chain as string) ?? "0G Chain";
-  const playUrl = (meta.play_url as string) ?? (g.play_url as string) ?? "";
-  const video = (meta.video as string) ?? (g.video as string) ?? "/videos/SC_10.mp4";
+  const longDescription = (meta.long_description as string) ?? game.about ?? description;
+  const features: string[] = (meta.features as string[]) ?? [];
+  const sessionLength = (meta.session_length as string) ?? "";
+  const skillLevel = (meta.skill_level as string) ?? "";
+  const players = (meta.players as string) ?? "";
+  const chain = (meta.chain as string) ?? "0G Chain";
+  const playUrl = (meta.play_url as string) ?? game.url ?? "";
+  const video = (meta.video as string) ?? "/videos/SC_10.mp4";
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">

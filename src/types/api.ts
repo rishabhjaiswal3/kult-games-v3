@@ -65,6 +65,8 @@ export interface Game {
   images?: GameImage[];
   thumbnail?: GameThumbnail;
   slogan?: string;
+  about?: string;
+  url?: string;
   is_active?: boolean;
   metadata?: Record<string, unknown>;
 }
