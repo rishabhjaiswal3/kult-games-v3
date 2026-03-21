@@ -135,7 +135,7 @@ const Store = () => {
                       : "btn-eye-outline"
                   }`}
                 >
-                  {cat.toUpperCase()}
+                  {cat?.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -194,7 +194,7 @@ const Store = () => {
                           <span className="font-display text-sm font-bold text-neon-cyan">FREE</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-muted-foreground font-mono tracking-wider">{item.category.toUpperCase()}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono tracking-wider">{item?.category?.toUpperCase()}</span>
                           <div className="flex gap-1">
                             {(item.platform ?? []).map((p) => (
                               <span key={p} className="text-[9px] font-mono text-muted-foreground bg-muted/50 rounded px-1.5 py-0.5">{p}</span>
