@@ -13,6 +13,7 @@ import { gamesApi } from "@/api/gamesApi";
 import type { Game } from "@/types/api";
 
 function getGameName(name: Game["name"]): string {
+  if (!name) return "";
   if (typeof name === "string") return name;
   return name?.en ?? Object.values(name)[0] ?? "";
 }
@@ -24,7 +25,13 @@ function getGameDescription(desc: Game["description"]): string {
 }
 
 function getGameImage(game: Game): string {
-  return game.image_url ?? game.images?.[0]?.url ?? "";
+  return (
+    game.thumbnail?.horizontal?.url ??
+    game.thumbnail?.vertical?.url ??
+    game.image_url ??
+    game.images?.[0]?.url ??
+    ""
+  );
 }
 
 const GameDetail = () => {
@@ -88,17 +95,23 @@ const GameDetail = () => {
   }
 
   const title = getGameName(game.name);
-  const description = getGameDescription(game.description);
+  const description = getGameDescription(game.description) || game.slogan || "";
   const image = getGameImage(game);
   const meta = game.metadata ?? {};
-  const longDescription = (meta.long_description as string) ?? description;
-  const features = (meta.features as string[]) ?? [];
-  const sessionLength = (meta.session_length as string) ?? "";
-  const skillLevel = (meta.skill_level as string) ?? "";
-  const players = (meta.players as string) ?? "";
-  const chain = (meta.chain as string) ?? "0G Chain";
-  const playUrl = (meta.play_url as string) ?? "";
-  const video = (meta.video as string) ?? "/videos/SC_10.mp4";
+  const g = game as unknown as Record<string, unknown>;
+  const longDescription = (meta.long_description as string)
+    ?? (g.long_description as string)
+    ?? (g.about as string)
+    ?? description;
+  const features: string[] = (meta.features as string[])
+    ?? (g.features as string[])
+    ?? [];
+  const sessionLength = (meta.session_length as string) ?? (g.session_length as string) ?? "";
+  const skillLevel = (meta.skill_level as string) ?? (g.skill_level as string) ?? "";
+  const players = (meta.players as string) ?? (g.players as string) ?? "";
+  const chain = (meta.chain as string) ?? (g.chain as string) ?? "0G Chain";
+  const playUrl = (meta.play_url as string) ?? (g.play_url as string) ?? "";
+  const video = (meta.video as string) ?? (g.video as string) ?? "/videos/SC_10.mp4";
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
@@ -236,10 +249,11 @@ const GameDetail = () => {
                     <h2 className="font-display text-xl font-bold text-foreground tracking-wider">ABOUT</h2>
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-base">
-                    {longDescription}
+                    {longDescription || title}
                   </p>
                 </motion.div>
 
+                {features.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -268,8 +282,10 @@ const GameDetail = () => {
                     ))}
                   </div>
                 </motion.div>
+                )}
 
                 {/* Game preview with actual game image */}
+                {image && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -290,6 +306,7 @@ const GameDetail = () => {
                     <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/30 group-hover:shadow-[inset_0_0_20px_hsl(195_100%_50%/0.1)] rounded-xl transition-all duration-300" />
                   </div>
                 </motion.div>
+                )}
               </div>
 
               {/* Sidebar */}
@@ -316,7 +333,7 @@ const GameDetail = () => {
                         <Gamepad2 className="w-4 h-4 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground font-mono tracking-wider">PLATFORM</span>
                         <div className="flex gap-1.5 ml-auto">
-                          {game.platform.map((p) => (
+                          {(game.platform ?? []).map((p) => (
                             <span key={p} className="px-2 py-0.5 rounded-full text-[10px] font-display font-semibold bg-muted text-muted-foreground">
                               {p}
                             </span>

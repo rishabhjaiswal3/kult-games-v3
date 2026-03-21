@@ -17,7 +17,13 @@ function getGameName(name: Game["name"]): string {
 }
 
 function getGameImage(game: Game): string {
-  return game.image_url ?? game.images?.[0]?.url ?? "";
+  return (
+    game.thumbnail?.horizontal?.url ??
+    game.thumbnail?.vertical?.url ??
+    game.image_url ??
+    game.images?.[0]?.url ??
+    ""
+  );
 }
 
 const Store = () => {
@@ -160,10 +166,10 @@ const Store = () => {
               : filtered.map((item, i) => {
                   const name = getGameName(item.name);
                   const image = getGameImage(item);
-                  const gameId = item.slug ?? item._id;
+                  const gameId = item?.['identification'];
                   return (
                     <motion.div
-                      key={item._id}
+                      key={item._id ?? i}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}

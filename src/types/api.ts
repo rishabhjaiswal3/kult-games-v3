@@ -29,6 +29,24 @@ export interface GameImage {
   variant?: string;
 }
 
+export interface GameThumbnailVariant {
+  url: string | null;
+  alt?: string | null;
+  blurhash?: string | null;
+  height?: number | null;
+  width?: number | null;
+  mime_type?: string | null;
+  size_in_kb?: number | null;
+  svg_content?: string | null;
+}
+
+export interface GameThumbnail {
+  horizontal?: GameThumbnailVariant | null;
+  vertical?: GameThumbnailVariant | null;
+  square?: GameThumbnailVariant | null;
+  ultrawide?: GameThumbnailVariant | null;
+}
+
 export interface LocalizedString {
   en: string;
   [locale: string]: string;
@@ -36,7 +54,8 @@ export interface LocalizedString {
 
 export interface Game {
   _id: string;
-  slug: string;
+  identification?: string;
+  slug?: string;
   name: LocalizedString | string;
   description?: LocalizedString | string;
   category: string;
@@ -44,6 +63,8 @@ export interface Game {
   rating?: number;
   image_url?: string;
   images?: GameImage[];
+  thumbnail?: GameThumbnail;
+  slogan?: string;
   is_active?: boolean;
   metadata?: Record<string, unknown>;
 }

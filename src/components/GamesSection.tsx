@@ -15,7 +15,13 @@ function getGameName(name: Game["name"]): string {
 }
 
 function getGameImage(game: Game): string {
-  return game.image_url ?? game.images?.[0]?.url ?? "";
+  return (
+    game.thumbnail?.horizontal?.url ??
+    game.thumbnail?.vertical?.url ??
+    game.image_url ??
+    game.images?.[0]?.url ??
+    ""
+  );
 }
 
 function getGameDescription(desc: Game["description"]): string {
@@ -192,7 +198,7 @@ const GamesSection = () => {
                     className="flex-shrink-0 w-[260px] md:w-[280px] snap-start"
                   >
                     <GameCard
-                      id={game.slug ?? game._id}
+                      id={game.identification ?? game.slug ?? game._id}
                       title={getGameName(game.name)}
                       description={getGameDescription(game.description)}
                       image={getGameImage(game)}
