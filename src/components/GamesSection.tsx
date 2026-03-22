@@ -30,7 +30,11 @@ function getGameDescription(desc: Game["description"]): string {
   return desc?.en ?? Object.values(desc)[0] ?? "";
 }
 
-const GamesSection = () => {
+interface GamesSectionProps {
+  onViewAllGames: () => void;
+}
+
+const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
   const [videoOpacity, setVideoOpacity] = useState(0.12);
   const navigate = useNavigate();
 
@@ -227,8 +231,7 @@ const GamesSection = () => {
           className="mt-8 flex justify-center"
         >
           <button
-            // onClick={() => window.location.href = "/games"}
-            onClick={()=> navigate("/games")}
+            onClick={onViewAllGames}
             className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
           >
             VIEW ALL GAMES

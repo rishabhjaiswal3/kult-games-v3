@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,9 +15,37 @@ const navItems = [
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
+
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+
+    const params = new URLSearchParams(location.search);
+    if (params.get("login") !== "1") return;
+
+    setLoginOpen(true);
+    params.delete("login");
+    const nextSearch = params.toString();
+    navigate(
+      {
+        pathname: "/",
+        search: nextSearch ? `?${nextSearch}` : "",
+      },
+      { replace: true }
+    );
+  }, [location.pathname, location.search, navigate]);
+
+  const handleLoginClick = () => {
+    if (location.pathname === "/") {
+      setLoginOpen(true);
+      return;
+    }
+
+    navigate("/?login=1");
+  };
 
   return (
     <>
@@ -88,7 +116,7 @@ const Navbar = () => {
             </div>
           ) : (
             <button
-              onClick={() => setLoginOpen(true)}
+              onClick={handleLoginClick}
               className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye relative overflow-hidden"
             >
               <motion.div
@@ -131,7 +159,7 @@ const Navbar = () => {
               </>
             ) : (
               <button
-                onClick={() => { setLoginOpen(true); setMobileOpen(false); }}
+                onClick={() => { handleLoginClick(); setMobileOpen(false); }}
                 className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye mt-2"
               >
                 LOGIN

@@ -5,16 +5,27 @@ import AIConcierge from "@/components/AIConcierge";
 import Footer from "@/components/Footer";
 import VideoShowcase from "@/components/VideoShowcase";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+
+  const handleGamesAccess = () => {
+    if (isAuthenticated) {
+      navigate("/games");
+      return;
+    }
+
+    login();
+  };
 
   return (
     <div className="min-h-screen bg-background relative">
       <Navbar />
-      <HeroSection />
+      <HeroSection onExploreGames={handleGamesAccess} />
 
-      <GamesSection />
+      <GamesSection onViewAllGames={handleGamesAccess} />
 
       {/* Video break: Transition to AI */}
       <VideoShowcase
@@ -44,7 +55,7 @@ const Index = () => {
       >
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
-            onClick={() => navigate("/games")}
+            onClick={handleGamesAccess}
             className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye relative overflow-hidden"
           >
             EXPLORE GAMES
