@@ -11,6 +11,7 @@ import Store from "./pages/Store";
 import Leaderboard from "./pages/Leaderboard";
 import Events from "./pages/Events";
 import GameDetail from "./pages/GameDetail";
+import GamePlay from "./pages/GamePlay";
 import NotFound from "./pages/NotFound";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
@@ -100,6 +101,7 @@ const App = () => {
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/events" element={<Events />} />
               <Route path="/game/:id" element={<GameDetail />} />
+              <Route path="/game/:id/play" element={<GamePlay />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
