@@ -36,7 +36,11 @@ const particles = [
 const line1Words = ["SHAPING", "THE", "FUTURE", "OF"];
 const line2Words = ["ON-CHAIN", "GAMING"];
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onExploreGames: () => void;
+}
+
+const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -198,7 +202,7 @@ const HeroSection = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 md:mt-8 px-4"
           >
             <button
-              onClick={() => navigate("/games")}
+              onClick={onExploreGames}
               className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline backdrop-blur-sm"
             >
               EXPLORE GAMES

@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Game } from "@/types/api";
 
 function getGameName(name: Game["name"]): string {
@@ -34,6 +35,7 @@ function getGameImage(game: Game): string {
 const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ["game", id],
@@ -134,6 +136,15 @@ const GameDetail = () => {
     },
   ].filter(Boolean);
 
+  const handlePlayAccess = () => {
+    if (isAuthenticated) {
+      navigate(`/game/${id}/play`);
+      return;
+    }
+
+    navigate("/?login=1");
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <Navbar />
@@ -208,7 +219,7 @@ const GameDetail = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/game/${id}/play`)}
+                  onClick={handlePlayAccess}
                   className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
                 >
                   <Play className="relative z-10 h-5 w-5 fill-current" />
@@ -362,7 +373,7 @@ const GameDetail = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/game/${id}/play`)}
+              onClick={handlePlayAccess}
               className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
             >
               <Play className="relative z-10 h-5 w-5 fill-current" />
