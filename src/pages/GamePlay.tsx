@@ -2,10 +2,35 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
+import { useAuth } from "@/contexts/AuthContext";
+
+/**
+ * Append ?walletAddress= to any play URL so games that implement
+ * /auto-login (warzonewarrior, warzone-new-warrior, GUESS_THE_AI, …)
+ * can silently log the user in when loaded inside this iframe.
+ *
+ * Handles URLs that already have query params, and falls back gracefully
+ * if the URL string is malformed.
+ */
+function buildIframeUrl(playUrl: string, walletAddress: string | null): string {
+  if (!playUrl) return "";
+  if (!walletAddress) return playUrl;
+
+  try {
+    const url = new URL(playUrl);
+    url.searchParams.set("walletAddress", walletAddress);
+    return url.toString();
+  } catch {
+    // Relative or non-standard URL — fall back to string concat
+    const sep = playUrl.includes("?") ? "&" : "?";
+    return `${playUrl}${sep}walletAddress=${encodeURIComponent(walletAddress)}`;
+  }
+}
 
 const GamePlay = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { walletAddress } = useAuth();
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ["game", id],
@@ -14,7 +39,8 @@ const GamePlay = () => {
     staleTime: 5 * 60_000,
   });
 
-  const playUrl = (game?.metadata?.play_url as string) ?? game?.url ?? "";
+  const rawPlayUrl = (game?.metadata?.play_url as string) ?? game?.url ?? "";
+  const playUrl = buildIframeUrl(rawPlayUrl, walletAddress);
 
   if (isLoading) {
     return (
@@ -24,7 +50,7 @@ const GamePlay = () => {
     );
   }
 
-  if (isError || !game || !playUrl) {
+  if (isError || !game || !rawPlayUrl) {
     return (
       <div className="w-screen h-screen bg-background flex items-center justify-center flex-col gap-4">
         <p className="text-muted-foreground font-display">Game URL not available.</p>
@@ -46,7 +72,7 @@ const GamePlay = () => {
         BACK
       </button>
 
-      {/* Game iframe */}
+      {/* Game iframe — walletAddress injected into URL for auto-login */}
       <iframe
         src={playUrl}
         title={game.name as string}
