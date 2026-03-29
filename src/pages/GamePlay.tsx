@@ -12,25 +12,26 @@ import { useAuth } from "@/contexts/AuthContext";
  * Handles URLs that already have query params, and falls back gracefully
  * if the URL string is malformed.
  */
-function buildIframeUrl(playUrl: string, walletAddress: string | null): string {
+
+function buildIframeUrl(playUrl: string, token: string | null): string {
   if (!playUrl) return "";
-  if (!walletAddress) return playUrl;
+  if (!token) return playUrl;
 
   try {
     const url = new URL(playUrl);
-    url.searchParams.set("walletAddress", walletAddress);
+    url.searchParams.set("token", token);
     return url.toString();
   } catch {
     // Relative or non-standard URL — fall back to string concat
     const sep = playUrl.includes("?") ? "&" : "?";
-    return `${playUrl}${sep}walletAddress=${encodeURIComponent(walletAddress)}`;
+    return `${playUrl}${sep}token=${encodeURIComponent(token)}`;
   }
 }
 
 const GamePlay = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { walletAddress } = useAuth();
+  useAuth();
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ["game", id],
@@ -40,8 +41,8 @@ const GamePlay = () => {
   });
 
   const rawPlayUrl = (game?.metadata?.play_url as string) ?? game?.url ?? "";
-  const playUrl = buildIframeUrl(rawPlayUrl, walletAddress);
-
+  const token = localStorage.getItem("kult_token");
+  const playUrl = buildIframeUrl(rawPlayUrl, token);
   if (isLoading) {
     return (
       <div className="w-screen h-screen bg-background flex items-center justify-center">
