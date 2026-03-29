@@ -20,6 +20,15 @@ const Navbar = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
 
+  const logLoginEvent = (message: string) => {
+    if (typeof window === "undefined") return;
+    console.info(`[Auth] ${message}`, {
+      pathname: location.pathname,
+      search: location.search,
+      url: window.location.href,
+    });
+  };
+
   useEffect(() => {
     if (location.pathname !== "/") return;
 
@@ -27,6 +36,7 @@ const Navbar = () => {
     if (params.get("login") !== "1") return;
 
     setLoginOpen(true);
+    logLoginEvent("Opening login modal from query parameter");
     params.delete("login");
     const nextSearch = params.toString();
     navigate(
@@ -41,9 +51,11 @@ const Navbar = () => {
   const handleLoginClick = () => {
     if (location.pathname === "/") {
       setLoginOpen(true);
+      logLoginEvent("Opening login modal from login button");
       return;
     }
 
+    logLoginEvent("Redirecting to login via query parameter");
     navigate("/?login=1");
   };
 

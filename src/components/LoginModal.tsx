@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Globe } from "lucide-react";
-import { useState } from "react";
-import { useLoginWithEmail, useLoginWithOAuth, useConnectWallet } from "@privy-io/react-auth";
+import { useEffect, useState } from "react";
+import { useLoginWithEmail, useLoginWithOAuth, useLogin } from "@privy-io/react-auth";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,15 +14,22 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return;
+    console.info("[Auth] LoginModal opened", {
+      url: window.location.href,
+      pathname: window.location.pathname,
+      search: window.location.search,
+    });
+  }, [isOpen]);
+
   const { sendCode, loginWithCode } = useLoginWithEmail({
     onComplete: () => { onClose(); },
   });
   const { initOAuth } = useLoginWithOAuth({
     onComplete: () => { onClose(); },
   });
-  const { connectWallet } = useConnectWallet({
-    onSuccess: () => { onClose(); },
-  });
+  const { login } = useLogin();
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -125,7 +132,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         <motion.button
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
-                          onClick={() => connectWallet()}
+                          onClick={() => login({ loginMethods: ["wallet"] })}
                           className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye-outline transition-all duration-300 flex items-center justify-center gap-2"
                         >
                           <Wallet className="w-4 h-4" />
