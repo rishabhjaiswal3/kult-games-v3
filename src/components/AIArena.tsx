@@ -435,7 +435,7 @@ const AIArena = () => {
                                 src={visualImage}
                                 alt={step.label}
                                 className="w-full h-full object-cover"
-                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 12%" : "center" }}
+                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 10%" : "center" }}
                                 loading="lazy"
                               />
                             ) : (
@@ -460,6 +460,103 @@ const AIArena = () => {
                             </div>
                           </div>
                         </div>
+                        <div className="flex items-start justify-end gap-3">
+                          <div>
+                            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                              Step {idx + 1}
+                            </p>
+                            <p className="font-display text-base md:text-lg font-bold tracking-wide uppercase" style={{ color: c.text }}>
+                              {step.label}
+                            </p>
+                            <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                              {step.sublabel}
+                            </p>
+                            {step.badge && (
+                              <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-mono tracking-wider uppercase" style={{ color: step.badge.color }}>
+                                <step.badge.icon className="w-3 h-3" />
+                                {step.badge.text}
+                              </span>
+                            )}
+                          </div>
+                          <div className="w-12 h-12 rounded-xl border flex items-center justify-center shrink-0" style={{ borderColor: c.border, background: c.bg }}>
+                            <step.icon style={{ width: 20, height: 20, color: c.icon }} />
+                          </div>
+                        </div>
+                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-border/35">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ background: `linear-gradient(90deg, ${c.line}, ${c.icon})` }}
+                            animate={isRevealed ? { width: "100%" } : { width: "18%" }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                          />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8 md:mb-0 md:sticky md:top-16 self-start">
+              <motion.div
+                className="relative rounded-3xl border border-neon-purple/25 bg-card/40 backdrop-blur-xl p-5 md:p-6 overflow-hidden"
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                style={{ boxShadow: "0 0 80px hsl(270 82% 58% / 0.15), inset 0 1px 0 hsl(210 20% 100% / 0.06)" }}
+              >
+                <div className="absolute -top-24 -right-24 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.2), transparent 70%)" }} />
+                <div className="absolute -bottom-20 -left-20 w-52 h-52 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.24), transparent 70%)" }} />
+
+                <p className="text-[10px] md:text-xs font-mono tracking-[0.2em] uppercase text-neon-cyan mb-2 relative z-10">
+                  AI Flow Console
+                </p>
+                <h3 className="font-display text-xl md:text-3xl font-black text-foreground mb-2 relative z-10">
+                  Scroll to Run Agent Lifecycle
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xl leading-relaxed mb-4 relative z-10">
+                  Step cards reveal progressively as you scroll. Monitor live progression here.
+                </p>
+
+                <div className="h-2.5 rounded-full bg-border/30 overflow-hidden mb-4 relative z-10">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${completionPercent}%`,
+                      background: "linear-gradient(90deg, hsl(270 82% 58%), hsl(195 100% 55%), hsl(40 85% 58%))",
+                      boxShadow: "0 0 20px hsl(195 100% 55% / 0.45)",
+                    }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 relative z-10">
+                  <div className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-widest text-neon-purple font-mono">Session Sync</p>
+                    <p className="text-base md:text-lg font-bold text-foreground">{completionPercent}%</p>
+                  </div>
+                  <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-widest text-neon-cyan font-mono">Active Step</p>
+                    <p className="text-base md:text-lg font-bold text-foreground">{activeStepIndex + 1} / {FLOW_STEPS.length}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
+                  <div className="rounded-xl overflow-hidden border border-border/50">
+                    <div className="relative aspect-[16/10]">
+                      <img
+                        src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
+                        alt={FLOW_STEPS[activeStepIndex]?.label}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: FLOW_STEPS[activeStepIndex]?.visual === "agent-spawn" ? "center 10%" : "center" }}
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                      <p className="absolute bottom-2 left-2 text-[11px] font-semibold text-white/90">
+                        {FLOW_STEPS[activeStepIndex]?.label}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
