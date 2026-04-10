@@ -107,12 +107,12 @@ const FLOW_STEPS: FlowStep[] = [
 ];
 
 const FLOW_VISUAL_IMAGES: Record<string, string> = {
-  "wallet-init": "/ai-flow/wallet-init.svg",
-  "agent-spawn": "/ai-flow/agent-spawn.svg",
-  "hot-wallet": "/ai-flow/hot-wallet.svg",
-  "ai-purchases": "/ai-flow/ai-purchases.svg",
-  "ai-arena": "/ai-flow/ai-arena.svg",
-  "ai-trash-talk": "/ai-flow/ai-trash-talk.svg",
+  "wallet-init": flowWalletInit,
+  "agent-spawn": flowAgentSpawn,
+  "hot-wallet": flowHotWallet,
+  "ai-purchases": flowAiPurchases,
+  "ai-arena": flowAiBattle,
+  "ai-trash-talk": flowTrashTalk,
 };
 
 const HERO_PROTOCOLS = [
