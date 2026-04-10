@@ -37,21 +37,30 @@ const KultAIFloating = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 btn-eye flex items-center justify-center transition-shadow"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 btn-eye flex items-center justify-center transition-shadow rounded-2xl"
           >
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Outer hexagon ring */}
-                <path d="M13 2L22.5 7.5V18.5L13 24L3.5 18.5V7.5L13 2Z" stroke="white" strokeWidth="1.2" strokeOpacity="0.6" fill="none"/>
-                {/* Inner circuit lines */}
-                <line x1="13" y1="2" x2="13" y2="6" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                <line x1="13" y1="20" x2="13" y2="24" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                <line x1="3.5" y1="7.5" x2="7" y2="9.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                <line x1="22.5" y1="7.5" x2="19" y2="9.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                <line x1="3.5" y1="18.5" x2="7" y2="16.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                <line x1="22.5" y1="18.5" x2="19" y2="16.5" stroke="white" strokeWidth="1" strokeOpacity="0.4"/>
-                {/* Center spark / AI symbol */}
-                <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill="white" fillOpacity="0.95"/>
-              </svg>
+            {/* AI Agent head icon */}
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Antenna */}
+              <line x1="16" y1="2" x2="16" y2="7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="16" cy="2" r="1.5" fill="hsl(195, 100%, 65%)" />
+              {/* Head shell */}
+              <rect x="6" y="7" width="20" height="16" rx="5" fill="white" fillOpacity="0.12" stroke="white" strokeWidth="1.4" />
+              {/* Eyes - glowing */}
+              <circle cx="12" cy="15" r="2.5" fill="hsl(195, 100%, 65%)">
+                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+              </circle>
+              <circle cx="20" cy="15" r="2.5" fill="hsl(278, 100%, 78%)">
+                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" begin="0.3s" />
+              </circle>
+              {/* Mouth / speaker grill */}
+              <rect x="12" y="19" width="8" height="1.2" rx="0.6" fill="white" fillOpacity="0.5" />
+              {/* Ear nodes */}
+              <circle cx="4" cy="15" r="1.5" fill="white" fillOpacity="0.4" />
+              <circle cx="28" cy="15" r="1.5" fill="white" fillOpacity="0.4" />
+              {/* Jaw / chin */}
+              <path d="M10 23L16 27L22 23" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.5" />
+            </svg>
             <motion.div
               className="absolute inset-0 rounded-full border-2 border-[hsl(278_100%_82%/0.35)]"
               animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
