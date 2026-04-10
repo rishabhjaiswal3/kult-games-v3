@@ -21,6 +21,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
+import flowWalletInit from "@/assets/flow-wallet-init.jpg";
+import flowAgentSpawn from "@/assets/flow-agent-spawn.jpg";
+import flowHotWallet from "@/assets/flow-hot-wallet.jpg";
+import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
+import flowAiBattle from "@/assets/flow-ai-battle.jpg";
+import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
 
 type AIFeature = {
   icon: React.ElementType;
@@ -101,12 +107,12 @@ const FLOW_STEPS: FlowStep[] = [
 ];
 
 const FLOW_VISUAL_IMAGES: Record<string, string> = {
-  "wallet-init": "/ai-flow/wallet-init.svg",
-  "agent-spawn": "/ai-flow/agent-spawn.svg",
-  "hot-wallet": "/ai-flow/hot-wallet.svg",
-  "ai-purchases": "/ai-flow/ai-purchases.svg",
-  "ai-arena": "/ai-flow/ai-arena.svg",
-  "ai-trash-talk": "/ai-flow/ai-trash-talk.svg",
+  "wallet-init": flowWalletInit,
+  "agent-spawn": flowAgentSpawn,
+  "hot-wallet": flowHotWallet,
+  "ai-purchases": flowAiPurchases,
+  "ai-arena": flowAiBattle,
+  "ai-trash-talk": flowTrashTalk,
 };
 
 const HERO_PROTOCOLS = [
