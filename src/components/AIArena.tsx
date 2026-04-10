@@ -429,7 +429,7 @@ const AIArena = () => {
                           }}
                         />
                         <div className="mb-3 rounded-xl overflow-hidden border border-border/40 bg-black/30">
-                          <div className="relative aspect-[16/7]">
+                          <div className="relative aspect-[16/10]">
                             {visualImage ? (
                               <img src={visualImage} alt={step.label} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
@@ -537,7 +537,7 @@ const AIArena = () => {
                 <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
                   <div className="rounded-xl overflow-hidden border border-border/50">
-                    <div className="relative aspect-[16/7]">
+                    <div className="relative aspect-[16/10]">
                       <img
                         src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
                         alt={FLOW_STEPS[activeStepIndex]?.label}
