@@ -266,7 +266,7 @@ const AIArena = () => {
                 }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
-              <span className="text-xs font-mono text-neon-cyan tracking-[0.25em] uppercase">
+              <span className="text-xs font-mono text-neon-cyan tracking-[0.25em] mt-2 uppercase">
                 AI Arena • Live
               </span>
             </motion.div>
