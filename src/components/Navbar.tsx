@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, Plus, Sparkles, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import kultLogo from "@/assets/kult-logo.png";
@@ -19,7 +19,27 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [agentModalOpen, setAgentModalOpen] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [isSettingUpAgent, setIsSettingUpAgent] = useState(false);
+  const [agentWalletReady, setAgentWalletReady] = useState(false);
+  const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
+  const isAIArenaPage = location.pathname === "/ai-arena";
+
+  const handleAgentSetup = () => {
+    if (isSettingUpAgent) return;
+    setIsSettingUpAgent(true);
+    window.setTimeout(() => {
+      setIsSettingUpAgent(false);
+      setAgentWalletReady(true);
+      setAgentModalOpen(false);
+    }, 1500);
+  };
+
+  const fundWallet = (amount: number) => {
+    setAgentWalletBalanceG((prev) => prev + amount);
+  };
 
   const logLoginEvent = (message: string) => {
     if (typeof window === "undefined") return;
@@ -117,14 +137,40 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-3">
+              {isAIArenaPage && (
+                <>
+                  {!agentWalletReady ? (
+                    <button
+                      onClick={() => setAgentModalOpen(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Create AI Agent
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setWalletModalOpen(true)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 hover:bg-neon-cyan/20 transition-all"
+                      aria-label="Open agent wallet"
+                    >
+                      <WalletCards className="w-4 h-4 text-neon-cyan" />
+                      <span className="text-[11px] font-mono text-neon-cyan tracking-wide">Agent Wallet</span>
+                      <span className="px-1.5 py-0.5 rounded-md border border-neon-purple/40 bg-neon-purple/10 text-[10px] font-mono text-neon-purple">
+                        {agentWalletBalanceG}G
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
               <span className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
                 {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
               </span>
               <button
                 onClick={logout}
-                className="px-4 py-2 font-display text-xs font-semibold tracking-wider btn-eye-outline"
+                className="w-9 h-9 rounded-lg border border-border/45 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all"
+                aria-label="Logout"
               >
-                LOGOUT
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
@@ -188,6 +234,14 @@ const Navbar = () => {
             ))}
             {isAuthenticated ? (
               <>
+                {isAIArenaPage && (
+                  <button
+                    onClick={() => { setAgentModalOpen(true); setMobileOpen(false); }}
+                    className="w-full px-6 py-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wider"
+                  >
+                    CREATE AI AGENT
+                  </button>
+                )}
                 <p className="text-xs font-mono text-muted-foreground px-1">
                   {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
                 </p>
@@ -211,6 +265,93 @@ const Navbar = () => {
       </div>
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
+      {agentModalOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setAgentModalOpen(false)} aria-label="Close AI agent modal" />
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="relative w-full max-w-md rounded-2xl border border-neon-cyan/30 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">AI Agent Creation</p>
+            <h3 className="font-display text-2xl font-black text-foreground mb-2">Create Your AI Agent</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Spawn your autonomous agent with hot wallet support, battle intelligence, and adaptive strategy.
+            </p>
+            <div className="space-y-2.5 mb-4">
+              {[
+                "Autonomous wallet-based actions",
+                "AI purchases and market adaptation",
+                "Arena battle strategy with voice persona",
+              ].map((p) => (
+                <div key={p} className="rounded-lg border border-border/40 bg-card/45 px-3 py-2 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-neon-purple" />
+                  <span className="text-xs text-muted-foreground">{p}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleAgentSetup}
+              disabled={isSettingUpAgent}
+              className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/20 transition-colors disabled:opacity-70"
+            >
+              {isSettingUpAgent ? "Setting up AI Agent..." : "Continue to AI Arena Setup"}
+            </button>
+          </motion.div>
+        </div>
+      )}
+      {walletModalOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWalletModalOpen(false)} aria-label="Close wallet modal" />
+          <motion.div
+            initial={{ opacity: 0, y: 14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="relative w-full max-w-sm rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">Agent Wallet</p>
+            <h3 className="font-display text-xl font-black text-foreground mb-3">Wallet Balance</h3>
+            <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/10 px-4 py-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-neon-purple mb-1">Current Balance</p>
+              <p className="text-2xl font-black text-foreground">{agentWalletBalanceG}G</p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              This wallet powers AI arena actions. Fund balance to enable autonomous gameplay operations.
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <button
+                onClick={() => fundWallet(10)}
+                className="rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-2 py-1.5 text-xs text-neon-purple font-semibold hover:bg-neon-purple/20 transition-colors"
+              >
+                +10G
+              </button>
+              <button
+                onClick={() => fundWallet(50)}
+                className="rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-1.5 text-xs text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors"
+              >
+                +50G
+              </button>
+              <button
+                onClick={() => fundWallet(200)}
+                className="rounded-lg border border-amber-300/40 bg-amber-300/10 px-2 py-1.5 text-xs text-amber-300 font-semibold hover:bg-amber-300/20 transition-colors"
+              >
+                +200G
+              </button>
+            </div>
+            <button
+              onClick={() => fundWallet(500)}
+              className="mt-2 w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 transition-colors"
+            >
+              Fund Wallet
+            </button>
+            <button
+              onClick={() => setWalletModalOpen(false)}
+              className="mt-4 w-full rounded-lg border border-border/45 bg-card/50 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-neon-cyan/35 transition-colors"
+            >
+              Close
+            </button>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 };
