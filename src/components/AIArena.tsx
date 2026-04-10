@@ -21,6 +21,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
+import flowWalletInit from "@/assets/flow-wallet-init.jpg";
+import flowAgentSpawn from "@/assets/flow-agent-spawn.jpg";
+import flowHotWallet from "@/assets/flow-hot-wallet.jpg";
+import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
+import flowAiBattle from "@/assets/flow-ai-battle.jpg";
+import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
 
 type AIFeature = {
   icon: React.ElementType;
