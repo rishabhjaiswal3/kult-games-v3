@@ -21,4 +21,13 @@
   <circle cx="930" cy="260" r="12" fill="#FFB347" fill-opacity="0.8"/>
   <circle cx="965" cy="300" r="8" fill="#63E8FF" fill-opacity="0.8"/>
   <circle cx="910" cy="320" r="6" fill="#C292FF" fill-opacity="0.9"/>
+  <circle cx="520" cy="360" r="58" stroke="#FFB347" stroke-opacity="0.35" stroke-dasharray="8 8"/>
+  <circle cx="520" cy="360" r="86" stroke="#63E8FF" stroke-opacity="0.22" stroke-dasharray="3 10"/>
+  <path d="M340 260H380M900 260H940M340 460H380M900 460H940" stroke="#63E8FF" stroke-opacity="0.42" stroke-width="2"/>
+  <path d="M320 360H380M900 360H960" stroke="#FFB347" stroke-opacity="0.55" stroke-width="2"/>
+  <g stroke="#FFCF7A" stroke-opacity="0.5" stroke-width="2">
+    <path d="M980 250L1020 230"/>
+    <path d="M980 270L1030 270"/>
+    <path d="M980 290L1020 310"/>
+  </g>
 </svg>

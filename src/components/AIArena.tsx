@@ -26,17 +26,18 @@ type AIFeature = {
   icon: React.ElementType;
   label: string;
   color: string;
+  description: string;
 };
 
 const AI_FEATURE_DEFS: Record<string, AIFeature> = {
-  "ai-agent": { icon: Bot, label: "AI Agent", color: "hsl(195 100% 60%)" },
-  "ai-training": { icon: Dumbbell, label: "AI Training", color: "hsl(270 82% 68%)" },
-  "ai-arena": { icon: Swords, label: "AI Arena", color: "hsl(0 85% 62%)" },
-  "trash-talk": { icon: MessageSquareWarning, label: "Trash Talk", color: "hsl(40 85% 65%)" },
-  "hot-wallet": { icon: Wallet, label: "Hot Wallet", color: "hsl(150 100% 50%)" },
-  "ai-purchases": { icon: ShoppingCart, label: "AI Purchases", color: "hsl(195 80% 55%)" },
-  "agent-fight": { icon: Swords, label: "Agent Fight", color: "hsl(310 100% 60%)" },
-  "ai-recommendation": { icon: Sparkles, label: "AI Recommendation", color: "hsl(278 100% 72%)" },
+  "ai-agent": { icon: Bot, label: "AI Agent", color: "hsl(195 100% 60%)", description: "Autonomous decision unit" },
+  "ai-training": { icon: Dumbbell, label: "AI Training", color: "hsl(270 82% 68%)", description: "Learns from matches" },
+  "ai-arena": { icon: Swords, label: "AI Arena", color: "hsl(0 85% 62%)", description: "Competitive AI duels" },
+  "trash-talk": { icon: MessageSquareWarning, label: "Trash Talk", color: "hsl(40 85% 65%)", description: "Context-aware taunts" },
+  "hot-wallet": { icon: Wallet, label: "Hot Wallet", color: "hsl(150 100% 50%)", description: "Live autonomous funding" },
+  "ai-purchases": { icon: ShoppingCart, label: "AI Purchases", color: "hsl(195 80% 55%)", description: "Smart in-game buys" },
+  "agent-fight": { icon: Swords, label: "Agent Fight", color: "hsl(310 100% 60%)", description: "Agent-vs-agent combat" },
+  "ai-recommendation": { icon: Sparkles, label: "AI Recommendation", color: "hsl(278 100% 72%)", description: "Personalized suggestions" },
 };
 
 const GAME_AI_FEATURES: Record<string, string[]> = {
@@ -162,6 +163,19 @@ const FLOW_VISUAL_IMAGES: Record<string, string> = {
   "ai-trash-talk": "/ai-flow/ai-trash-talk.svg",
 };
 
+const HERO_PROTOCOLS = [
+  { icon: BrainCircuit, label: "Neural Core" },
+  { icon: Wallet, label: "Hot Wallet Mesh" },
+  { icon: Swords, label: "Arena Combat AI" },
+  { icon: MessageSquareWarning, label: "Voice + Banter" },
+];
+
+const STACK_MODULES = [
+  { icon: Bot, label: "Auto Agent", sub: "Self-operating core", tone: "hsl(195 100% 60%)" },
+  { icon: BrainCircuit, label: "Strategy Layer", sub: "Adaptive planning mesh", tone: "hsl(278 100% 72%)" },
+  { icon: MessageSquareWarning, label: "Arena Voice", sub: "Realtime banter engine", tone: "hsl(40 85% 65%)" },
+];
+
 const COLOR_MAP = {
   purple: {
     bg: "hsl(270 82% 52% / 0.16)",
@@ -234,6 +248,7 @@ const AIArena = () => {
   const [drawProgress, setDrawProgress] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => setDrawProgress(v));
   const completionPercent = Math.round(drawProgress * 100);
+  const cappedFlowPercent = Math.min(92, Math.max(2, completionPercent));
 
   /* how many steps to reveal */
   const revealedSteps = Math.min(
@@ -274,6 +289,9 @@ const AIArena = () => {
         />
 
         <div className="container mx-auto px-6 relative z-10 text-center">
+          <div className="max-w-5xl mx-auto rounded-[28px] border border-neon-purple/20 bg-card/35 backdrop-blur-xl px-5 md:px-10 py-10 md:py-12 shadow-[0_0_80px_hsl(270_82%_58%_/_0.12)] relative overflow-hidden">
+            <div className="absolute -top-28 -left-20 w-64 h-64 rounded-full bg-neon-purple/10 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-16 w-72 h-72 rounded-full bg-neon-cyan/10 blur-3xl pointer-events-none" />
           {/* Label */}
           <motion.div
             className="flex items-center justify-center gap-2 mb-6"
@@ -344,20 +362,15 @@ const AIArena = () => {
           </motion.div>
 
           <motion.div
-            className="flex flex-wrap items-center justify-center gap-2.5"
+            className="grid grid-cols-2 md:grid-cols-4 gap-2.5 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            {[
-              { icon: BrainCircuit, label: "Autonomous AI Agent" },
-              { icon: Wallet, label: "Built-in Hot Wallet" },
-              { icon: Swords, label: "PvP AI Battles" },
-              { icon: MessageSquareWarning, label: "Live Trash Talk" },
-            ].map((item) => (
+            {HERO_PROTOCOLS.map((item) => (
               <div
                 key={item.label}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/50 bg-card/40 text-[11px] md:text-xs text-muted-foreground"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border/45 bg-card/45 text-[11px] md:text-xs text-muted-foreground"
               >
                 <item.icon className="w-3.5 h-3.5 text-neon-purple" />
                 <span>{item.label}</span>
@@ -376,6 +389,7 @@ const AIArena = () => {
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           />
+          </div>
         </div>
       </section>
 
@@ -383,8 +397,8 @@ const AIArena = () => {
       <section ref={timelineContainerRef} className="relative py-10 md:py-20">
         <div className="container mx-auto px-6">
           <div className="max-w-7xl mx-auto md:grid md:grid-cols-[minmax(0,1fr)_480px] gap-6 lg:gap-10 items-start">
-            <div className="md:sticky md:top-24">
-              <div className="relative pr-10 pl-2 py-2 rounded-3xl border border-border/40 bg-card/30 backdrop-blur-lg overflow-hidden">
+            <div className="md:sticky md:top-16">
+              <div className="relative pr-10 pl-2 py-2 rounded-3xl border border-neon-cyan/25 bg-card/35 backdrop-blur-xl overflow-hidden shadow-[0_0_90px_hsl(195_100%_55%_/_0.16)]">
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
@@ -392,6 +406,8 @@ const AIArena = () => {
                       "linear-gradient(180deg, hsl(270 82% 58% / 0.08) 0%, transparent 35%, transparent 70%, hsl(195 100% 55% / 0.08) 100%)",
                   }}
                 />
+                <div className="absolute -top-20 -left-10 w-52 h-52 rounded-full bg-neon-purple/12 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-16 -right-12 w-56 h-56 rounded-full bg-neon-cyan/12 blur-3xl pointer-events-none" />
                 <div className="absolute right-4 top-4 bottom-4 w-[2px] rounded-full bg-border/35" />
                 <motion.div
                   className="absolute right-4 top-4 w-[2px] rounded-full origin-top"
@@ -405,7 +421,7 @@ const AIArena = () => {
                 <motion.div
                   className="absolute right-2.5 w-4 h-4 rounded-full border border-neon-cyan/60 bg-background/90"
                   style={{
-                    top: `calc(${Math.max(2, completionPercent)}% - 8px)`,
+                    top: `calc(${cappedFlowPercent}% - 8px)`,
                     boxShadow: "0 0 12px hsl(195 100% 60% / 0.65)",
                   }}
                 />
@@ -420,26 +436,43 @@ const AIArena = () => {
                     return (
                       <motion.div
                         key={step.label}
-                        className="relative mr-5 rounded-2xl border p-4 md:p-5 text-right overflow-hidden"
+                        className="relative mr-5 rounded-[20px] border p-4 md:p-5 text-right overflow-hidden"
                         animate={
                           isRevealed
                             ? { opacity: 1, x: 0, y: 0, scale: 1 }
                             : { opacity: 0.35, x: 10, y: 8, scale: 0.985 }
                         }
                         transition={{ duration: 0.35, ease: "easeOut" }}
+                        whileHover={{ y: -2, scale: 1.01 }}
                         style={{
                           borderColor: isRevealed ? c.border : "hsl(var(--border) / 0.55)",
-                          background: isRevealed ? "hsl(var(--card) / 0.62)" : "hsl(var(--card) / 0.38)",
+                          background: isRevealed
+                            ? `linear-gradient(145deg, hsl(var(--card) / 0.78), hsl(var(--card) / 0.56))`
+                            : "hsl(var(--card) / 0.38)",
                           boxShadow: isRevealed
-                            ? `0 0 24px ${c.glow}, inset 0 1px 0 hsl(210 20% 100% / 0.06)`
+                            ? `0 0 30px ${c.glow}, 0 0 60px ${c.glow}, inset 0 1px 0 hsl(210 20% 100% / 0.08)`
                             : "inset 0 1px 0 hsl(210 20% 100% / 0.04)",
                         }}
                       >
                         <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `radial-gradient(circle at 85% 10%, ${c.glow}, transparent 52%)`,
+                            opacity: isRevealed ? 0.75 : 0.2,
+                          }}
+                        />
+                        <div
                           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full border border-background"
                           style={{
                             background: isRevealed ? c.icon : "hsl(var(--muted-foreground))",
-                            boxShadow: isRevealed ? `0 0 10px ${c.icon}` : "none",
+                            boxShadow: isRevealed ? `0 0 14px ${c.icon}` : "none",
+                          }}
+                        />
+                        <div
+                          className="absolute top-2.5 right-2.5 h-[2px] w-16 rounded-full"
+                          style={{
+                            background: isRevealed ? `linear-gradient(90deg, transparent, ${c.icon})` : "transparent",
+                            boxShadow: isRevealed ? `0 0 12px ${c.icon}` : "none",
                           }}
                         />
                         <div className="mb-3 rounded-xl overflow-hidden border border-border/40 bg-black/30">
@@ -460,6 +493,19 @@ const AIArena = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                             <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/60 border border-white/10 text-[10px] font-mono tracking-wide text-white/90">
                               {step.label.toUpperCase()}
+                            </div>
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-md border border-white/20 bg-black/40 text-[9px] font-mono tracking-widest text-white/75">
+                              NODE {idx + 1}
+                            </div>
+                            <div
+                              className="absolute top-2 right-2 px-2 py-1 rounded-md text-[9px] font-mono tracking-widest border"
+                              style={{
+                                color: isRevealed ? c.text : "hsl(var(--muted-foreground))",
+                                borderColor: isRevealed ? c.border : "hsl(var(--border) / 0.45)",
+                                background: isRevealed ? c.bg : "hsl(var(--muted) / 0.25)",
+                              }}
+                            >
+                              {isRevealed ? "ACTIVE" : "QUEUED"}
                             </div>
                           </div>
                         </div>
@@ -485,6 +531,14 @@ const AIArena = () => {
                             <step.icon style={{ width: 20, height: 20, color: c.icon }} />
                           </div>
                         </div>
+                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-border/35">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ background: `linear-gradient(90deg, ${c.line}, ${c.icon})` }}
+                            animate={isRevealed ? { width: "100%" } : { width: "18%" }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                          />
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -492,33 +546,34 @@ const AIArena = () => {
               </div>
             </div>
 
-            <div className="mb-8 md:mb-0 md:sticky md:top-24 self-start">
+            <div className="mb-8 md:mb-0 md:sticky md:top-16 self-start">
               <motion.div
-                className="relative rounded-3xl border border-neon-purple/25 bg-card/45 backdrop-blur-xl p-6 md:p-8 overflow-hidden min-h-[520px]"
+                className="relative rounded-3xl border border-neon-purple/30 bg-card/50 backdrop-blur-xl p-5 md:p-6 overflow-hidden"
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                style={{ boxShadow: "0 0 70px hsl(270 82% 58% / 0.12), inset 0 1px 0 hsl(210 20% 100% / 0.06)" }}
+                style={{ boxShadow: "0 0 110px hsl(270 82% 58% / 0.2), 0 0 40px hsl(195 100% 55% / 0.12), inset 0 1px 0 hsl(210 20% 100% / 0.07)" }}
               >
                 <div
                   className="absolute -top-24 -right-24 w-56 h-56 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.2), transparent 70%)" }}
+                  style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.28), transparent 70%)" }}
                 />
                 <div
                   className="absolute -bottom-20 -left-20 w-52 h-52 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.22), transparent 70%)" }}
+                  style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.32), transparent 70%)" }}
                 />
+                <div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: "linear-gradient(130deg, transparent 30%, hsl(195 100% 55% / 0.12) 50%, transparent 72%)" }} />
                 <p className="text-[10px] md:text-xs font-mono tracking-[0.2em] uppercase text-neon-cyan mb-2 relative z-10">
                   AI Flow Console
                 </p>
-                <h3 className="font-display text-2xl md:text-4xl font-black text-foreground mb-3 relative z-10">
+                <h3 className="font-display text-xl md:text-3xl font-black text-foreground mb-2 relative z-10">
                   Scroll to Run Agent Lifecycle
                 </h3>
-                <p className="text-base text-muted-foreground max-w-xl leading-relaxed mb-6 relative z-10">
+                <p className="text-sm md:text-[15px] text-muted-foreground max-w-xl leading-relaxed mb-4 relative z-10">
                   The step cards are now on the left and reveal progressively as the flow signal moves downward.
                   Monitor live progression here while you scroll.
                 </p>
-                <div className="h-3 rounded-full bg-border/30 overflow-hidden mb-5 relative z-10">
+                <div className="h-2.5 rounded-full bg-border/30 overflow-hidden mb-4 relative z-10">
                   <motion.div
                     className="h-full rounded-full"
                     style={{
@@ -529,15 +584,51 @@ const AIArena = () => {
                     }}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3 relative z-10">
-                  <div className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 px-3 py-2">
+                <div className="grid grid-cols-2 gap-2.5 relative z-10">
+                  <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/12 px-3 py-2 shadow-[0_0_24px_hsl(270_82%_58%_/_0.2)]">
                     <p className="text-[10px] uppercase tracking-widest text-neon-purple font-mono">Session Sync</p>
-                    <p className="text-lg font-bold text-foreground">{completionPercent}%</p>
+                    <p className="text-base md:text-lg font-bold text-foreground">{completionPercent}%</p>
                   </div>
-                  <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
+                  <div className="rounded-xl border border-neon-cyan/35 bg-neon-cyan/12 px-3 py-2 shadow-[0_0_24px_hsl(195_100%_55%_/_0.2)]">
                     <p className="text-[10px] uppercase tracking-widest text-neon-cyan font-mono">Active Step</p>
-                    <p className="text-lg font-bold text-foreground">{activeStepIndex + 1} / {FLOW_STEPS.length}</p>
+                    <p className="text-base md:text-lg font-bold text-foreground">{activeStepIndex + 1} / {FLOW_STEPS.length}</p>
                   </div>
+                </div>
+                <div className="mt-4 rounded-2xl border border-border/45 bg-card/40 p-3 relative z-10">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
+                  <div className="rounded-xl overflow-hidden border border-border/50">
+                    <div className="relative aspect-[16/7]">
+                      <img
+                        src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
+                        alt={FLOW_STEPS[activeStepIndex]?.label}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                      <p className="absolute bottom-2 left-2 text-[11px] font-semibold text-white/90">
+                        {FLOW_STEPS[activeStepIndex]?.label}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
+                  {[
+                    { icon: Shield, label: "Secure Runtime", tone: "hsl(150 100% 50%)" },
+                    { icon: Zap, label: "Real-time Decisions", tone: "hsl(195 100% 60%)" },
+                    { icon: Sparkles, label: "Adaptive Strategy", tone: "hsl(278 100% 75%)" },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border px-3 py-2 bg-card/40"
+                      style={{ borderColor: `${item.tone}55` }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <item.icon className="w-4 h-4" style={{ color: item.tone }} />
+                        <p className="text-[11px] font-semibold tracking-wide" style={{ color: item.tone }}>
+                          {item.label}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             </div>
@@ -582,7 +673,7 @@ const AIArena = () => {
 
           {/* Carousel */}
           {gamesWithFeatures.length > 0 && activeGame && (
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="relative">
                 {/* Nav arrows */}
                 <button
@@ -607,9 +698,9 @@ const AIArena = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -40 }}
                   transition={{ duration: 0.4, type: "spring", stiffness: 260, damping: 28 }}
-                  className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden"
+                  className="rounded-3xl border border-border/45 bg-card/50 backdrop-blur-md overflow-hidden"
                   style={{
-                    boxShadow: "0 0 40px hsl(270 82% 58% / 0.08), inset 0 1px 0 hsl(210 20% 100% / 0.04)",
+                    boxShadow: "0 0 60px hsl(270 82% 58% / 0.1), inset 0 1px 0 hsl(210 20% 100% / 0.05)",
                   }}
                 >
                   {/* Game image */}
@@ -648,7 +739,7 @@ const AIArena = () => {
                   </div>
 
                   {/* AI features */}
-                  <div className="p-5 md:p-6">
+                  <div className="p-6 md:p-7">
                     <div className="flex items-center justify-between gap-3 mb-4">
                       <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
                         AI Features
@@ -657,7 +748,7 @@ const AIArena = () => {
                         Agent Profile Ready
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
                       {GAME_AI_FEATURES[activeGame.key]?.map((fKey, fi) => {
                         const feat = AI_FEATURE_DEFS[fKey];
                         if (!feat) return null;
@@ -667,7 +758,7 @@ const AIArena = () => {
                             initial={{ opacity: 0, scale: 0.85 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: fi * 0.06 }}
-                            className="group flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-card/40 backdrop-blur-sm cursor-default transition-all duration-200"
+                            className="group flex items-center gap-3 px-3.5 py-3 rounded-xl border bg-card/45 backdrop-blur-sm cursor-default transition-all duration-200"
                             style={{
                               borderColor: `${feat.color}30`,
                             }}
@@ -678,14 +769,19 @@ const AIArena = () => {
                             }}
                           >
                             <div
-                              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                               style={{ background: `${feat.color}18` }}
                             >
-                              <feat.icon style={{ width: 14, height: 14, color: feat.color }} />
+                              <feat.icon style={{ width: 15, height: 15, color: feat.color }} />
                             </div>
-                            <span className="text-xs font-semibold tracking-wide" style={{ color: feat.color }}>
-                              {feat.label}
-                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold tracking-wide leading-none" style={{ color: feat.color }}>
+                                {feat.label}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                {feat.description}
+                              </p>
+                            </div>
                           </motion.div>
                         );
                       })}
@@ -698,19 +794,27 @@ const AIArena = () => {
                       </p>
                     )}
 
-                    <div className="mt-5 pt-4 border-t border-border/40 flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-                        AI-ready stack:
-                      </span>
-                      <span className="px-2 py-1 rounded-md text-[10px] border border-neon-cyan/30 text-neon-cyan bg-neon-cyan/10">
-                        Auto Agent
-                      </span>
-                      <span className="px-2 py-1 rounded-md text-[10px] border border-neon-purple/30 text-neon-purple bg-neon-purple/10">
-                        Strategy Layer
-                      </span>
-                      <span className="px-2 py-1 rounded-md text-[10px] border border-amber-300/30 text-amber-300 bg-amber-300/10">
-                        Arena Voice
-                      </span>
+                    <div className="mt-5 pt-4 border-t border-border/40">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2.5">
+                        AI-ready stack
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {STACK_MODULES.map((stack) => (
+                          <div
+                            key={stack.label}
+                            className="rounded-xl border p-2.5 bg-card/45 hover:-translate-y-0.5 transition-transform"
+                            style={{ borderColor: `${stack.tone}45` }}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <stack.icon className="w-3.5 h-3.5" style={{ color: stack.tone }} />
+                              <p className="text-[11px] font-semibold" style={{ color: stack.tone }}>
+                                {stack.label}
+                              </p>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">{stack.sub}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
