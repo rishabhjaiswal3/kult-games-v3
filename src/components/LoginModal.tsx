@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Wallet, Globe } from "lucide-react";
+import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLoginWithEmail, useLoginWithOAuth, useLogin } from "@privy-io/react-auth";
 
@@ -60,115 +60,227 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[hsl(220_50%_4%/0.82)] backdrop-blur-md"
+            className="fixed inset-0 z-[100]"
+            style={{
+              background: "radial-gradient(ellipse at 50% 40%, hsl(270 82% 15% / 0.3), hsl(220 50% 4% / 0.88))",
+              backdropFilter: "blur(12px)",
+            }}
             onClick={onClose}
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            initial={{ opacity: 0, scale: 0.92, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            exit={{ opacity: 0, scale: 0.92, y: 30 }}
+            transition={{ type: "spring", damping: 28, stiffness: 320 }}
             className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
             style={{ maxHeight: "100vh" }}
           >
             <div className="relative w-full max-w-md pointer-events-auto">
-              <div className="absolute inset-0 -z-10 rounded-[28px] bg-[radial-gradient(circle_at_top,hsl(278_100%_70%/0.16),transparent_40%)] blur-xl" />
+              {/* Outer ambient glow */}
+              <div
+                className="absolute -inset-4 -z-10 rounded-[36px] opacity-60"
+                style={{
+                  background: "radial-gradient(circle at 50% 0%, hsl(270 82% 58% / 0.25), transparent 60%)",
+                  filter: "blur(30px)",
+                }}
+              />
 
-              <div className="relative w-full overflow-hidden rounded-[24px] border border-[hsl(278_100%_75%/0.14)] bg-[linear-gradient(135deg,hsl(265_90%_14%/0.98),hsl(220_45%_9%/0.98))] shadow-[0_24px_60px_hsl(220_50%_2%/0.42),0_0_30px_hsl(270_82%_58%/0.1)]">
+              {/* Card */}
+              <div
+                className="relative w-full overflow-hidden"
+                style={{
+                  borderRadius: "24px",
+                  border: "1px solid hsl(270 80% 60% / 0.2)",
+                  background: "linear-gradient(160deg, hsl(265 48% 12% / 0.98), hsl(220 45% 7% / 0.98))",
+                  boxShadow:
+                    "0 30px 80px hsl(220 50% 2% / 0.5), 0 0 0 1px hsl(270 80% 60% / 0.08), 0 0 60px hsl(270 82% 58% / 0.08), inset 0 1px 0 hsl(278 100% 82% / 0.08)",
+                }}
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-[10%] right-[10%] h-[1px]"
+                  style={{
+                    background: "linear-gradient(90deg, transparent, hsl(270 80% 65% / 0.6), hsl(195 100% 65% / 0.4), transparent)",
+                  }}
+                />
+
+                {/* Close button */}
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-[16px] border border-border/40 bg-card/40 text-muted-foreground hover:text-foreground hover:border-[hsl(278_100%_70%/0.28)] hover:bg-[hsl(278_100%_70%/0.08)] transition-all"
+                  className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid hsl(210 25% 20% / 0.5)",
+                    background: "hsl(220 45% 10% / 0.5)",
+                  }}
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
 
-                <div className="px-5 pb-5 pt-14 md:px-6 md:pb-6">
-                  <div className="text-center">
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] px-3 py-1.5">
-                      <div className="h-2 w-2 rounded-full bg-[hsl(278_100%_82%)]" />
-                      <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-[hsl(278_100%_82%)]">
-                        Browser Access
+                <div className="px-6 pb-7 pt-10">
+                  {/* Header */}
+                  <div className="text-center mb-7">
+                    {/* Icon */}
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className="mx-auto mb-5 w-16 h-16 flex items-center justify-center"
+                      style={{
+                        borderRadius: "20px",
+                        background: "linear-gradient(135deg, hsl(270 80% 20% / 0.5), hsl(220 45% 10% / 0.5))",
+                        border: "1px solid hsl(270 80% 60% / 0.2)",
+                        boxShadow: "0 0 30px hsl(270 82% 58% / 0.15), inset 0 1px 0 hsl(278 100% 82% / 0.1)",
+                      }}
+                    >
+                      <Zap className="w-7 h-7" style={{ color: "hsl(278 100% 82%)", filter: "drop-shadow(0 0 8px hsl(278 100% 82% / 0.6))" }} />
+                    </motion.div>
+
+                    <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3" style={{ border: "1px solid hsl(270 80% 60% / 0.2)", background: "hsl(270 80% 60% / 0.06)" }}>
+                      <div className="h-1.5 w-1.5 rounded-full" style={{ background: "hsl(195 100% 65%)", boxShadow: "0 0 6px hsl(195 100% 65%)" }} />
+                      <span className="text-[10px] font-mono uppercase tracking-[0.22em]" style={{ color: "hsl(210 15% 50%)" }}>
+                        Secure Access
                       </span>
                     </div>
-                    <h2 className="font-display text-3xl font-black tracking-tight text-foreground">
-                      Sign In
+
+                    <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
+                      Welcome Back
                     </h2>
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      Access games, events, rankings, and AI features.
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                      Sign in to access games, AI features & rankings.
                     </p>
                   </div>
 
                   {!otpSent ? (
-                    <>
-                      <div className="mt-6 space-y-2">
-                        <label className="text-sm font-medium text-foreground">Email address</label>
+                    <div className="space-y-4">
+                      {/* Email input */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</label>
                         <input
                           type="email"
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
-                          className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] focus:border-[hsl(278_100%_70%/0.35)] transition-all"
+                          className="w-full h-12 px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all"
+                          style={{
+                            borderRadius: "14px",
+                            border: "1px solid hsl(210 25% 20% / 0.6)",
+                            background: "hsl(220 45% 8% / 0.6)",
+                            boxShadow: "inset 0 2px 4px hsl(220 50% 4% / 0.3)",
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.5)";
+                            e.currentTarget.style.boxShadow = "inset 0 2px 4px hsl(220 50% 4% / 0.3), 0 0 0 3px hsl(270 80% 60% / 0.1)";
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.6)";
+                            e.currentTarget.style.boxShadow = "inset 0 2px 4px hsl(220 50% 4% / 0.3)";
+                          }}
                         />
                       </div>
 
-                      <div className="mt-5 space-y-3">
-                        <motion.button
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={handleSendCode}
-                          disabled={loading || !email}
-                          className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Mail className="w-4 h-4" />
-                          {loading ? "Sending..." : "Send Code"}
-                        </motion.button>
+                      {/* Send Code button */}
+                      <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={handleSendCode}
+                        disabled={loading || !email}
+                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Mail className="w-4 h-4" />
+                        {loading ? "Sending..." : "Send Code"}
+                      </motion.button>
 
+                      {/* Divider */}
+                      <div className="flex items-center gap-3 py-1">
+                        <div className="flex-1 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(210 25% 20% / 0.6), transparent)" }} />
+                        <span className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest">or</span>
+                        <div className="flex-1 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(210 25% 20% / 0.6), transparent)" }} />
+                      </div>
+
+                      {/* Alt methods */}
+                      <div className="grid grid-cols-2 gap-3">
                         <motion.button
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => login({ loginMethods: ["wallet"] })}
-                          className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye-outline transition-all duration-300 flex items-center justify-center gap-2"
+                          className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all group"
+                          style={{
+                            borderRadius: "12px",
+                            border: "1px solid hsl(210 25% 20% / 0.5)",
+                            background: "hsl(220 45% 10% / 0.4)",
+                            color: "hsl(210 20% 93%)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.4)";
+                            e.currentTarget.style.boxShadow = "0 0 15px hsl(270 82% 58% / 0.1)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.5)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
-                          <Wallet className="w-4 h-4" />
-                          Connect Wallet
+                          <Wallet className="w-3.5 h-3.5 text-[hsl(195_100%_65%)]" />
+                          Wallet
                         </motion.button>
 
                         <motion.button
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => initOAuth({ provider: "google" })}
-                          className="w-full h-12 rounded-[16px] font-medium text-sm text-foreground border border-border/50 bg-muted/25 hover:bg-muted/45 hover:border-[hsl(278_100%_70%/0.24)] transition-all duration-300 flex items-center justify-center gap-2"
+                          className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"
+                          style={{
+                            borderRadius: "12px",
+                            border: "1px solid hsl(210 25% 20% / 0.5)",
+                            background: "hsl(220 45% 10% / 0.4)",
+                            color: "hsl(210 20% 93%)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.4)";
+                            e.currentTarget.style.boxShadow = "0 0 15px hsl(270 82% 58% / 0.1)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.5)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
-                          <Globe className="w-4 h-4" />
-                          Continue with Google
+                          <Globe className="w-3.5 h-3.5" />
+                          Google
                         </motion.button>
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <div className="mt-6 space-y-4">
+                    <div className="space-y-5">
                       <p className="text-sm text-muted-foreground text-center">
                         Enter the code sent to <span className="text-foreground font-medium">{email}</span>
                       </p>
                       <input
                         type="text"
-                        placeholder="6-digit code"
+                        placeholder="000000"
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()}
-                        className="w-full h-12 rounded-[16px] border border-border/50 bg-muted/35 px-4 text-center text-foreground tracking-[0.3em] text-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[hsl(278_100%_70%/0.28)] transition-all"
+                        className="w-full h-14 px-4 text-center text-foreground tracking-[0.4em] text-xl font-mono placeholder:text-muted-foreground/30 focus:outline-none transition-all"
+                        style={{
+                          borderRadius: "16px",
+                          border: "1px solid hsl(270 80% 60% / 0.3)",
+                          background: "hsl(220 45% 8% / 0.6)",
+                          boxShadow: "inset 0 2px 4px hsl(220 50% 4% / 0.3), 0 0 0 3px hsl(270 80% 60% / 0.08)",
+                        }}
                       />
                       <motion.button
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
                         onClick={handleVerifyCode}
                         disabled={loading || !otpCode}
-                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {loading ? "Verifying..." : "Verify Code"}
                       </motion.button>
@@ -180,6 +292,11 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       </button>
                     </div>
                   )}
+
+                  {/* Footer */}
+                  <p className="mt-6 text-center text-[10px] text-muted-foreground/40">
+                    Secured by Privy · On-chain identity
+                  </p>
                 </div>
               </div>
             </div>

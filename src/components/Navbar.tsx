@@ -130,12 +130,40 @@ const Navbar = () => {
           ) : (
             <button
               onClick={handleLoginClick}
-              className="hidden md:block px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye relative overflow-hidden"
+              className="hidden md:flex items-center gap-2 px-5 py-2.5 font-display text-xs font-semibold tracking-wider relative overflow-hidden group"
+              style={{
+                background: "linear-gradient(135deg, hsl(265 48% 12%), hsl(220 45% 8%))",
+                border: "1px solid hsl(270 80% 60% / 0.4)",
+                borderRadius: "14px",
+                boxShadow: "0 4px 20px hsl(270 82% 20% / 0.3), 0 0 15px hsl(270 82% 58% / 0.1), inset 0 1px 0 hsl(278 100% 82% / 0.1)",
+                color: "hsl(278 100% 82%)",
+              }}
             >
+              {/* Shimmer */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(90deg, transparent, hsl(278 100% 82% / 0.08), transparent)",
+                  borderRadius: "inherit",
+                }}
                 animate={{ x: ["-200%", "200%"] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              {/* Hover glow */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: "radial-gradient(circle at 50% 50%, hsl(270 82% 58% / 0.15), transparent 70%)",
+                  borderRadius: "inherit",
+                }}
+              />
+              {/* Dot indicator */}
+              <div
+                className="relative z-10 w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: "hsl(278 100% 82%)",
+                  boxShadow: "0 0 6px hsl(278 100% 82%), 0 0 12px hsl(278 100% 82% / 0.5)",
+                }}
               />
               <span className="relative z-10">LOGIN</span>
             </button>
