@@ -27,45 +27,77 @@ const KultAIFloating = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button — glass hexagonal style */}
       <AnimatePresence>
         {!open && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 btn-eye flex items-center justify-center transition-shadow rounded-2xl"
+            className="fixed bottom-6 right-6 z-50 w-14 h-14 flex items-center justify-center group"
+            style={{
+              background: "linear-gradient(145deg, hsl(265 48% 12%), hsl(220 45% 8%))",
+              border: "1px solid hsl(270 80% 60% / 0.35)",
+              borderRadius: "18px",
+              boxShadow:
+                "0 8px 32px hsl(270 82% 20% / 0.4), 0 0 20px hsl(270 82% 58% / 0.15), inset 0 1px 0 hsl(278 100% 82% / 0.1)",
+            }}
           >
-            {/* AI Agent head icon */}
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Antenna */}
-              <line x1="16" y1="2" x2="16" y2="7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="16" cy="2" r="1.5" fill="hsl(195, 100%, 65%)" />
-              {/* Head shell */}
-              <rect x="6" y="7" width="20" height="16" rx="5" fill="white" fillOpacity="0.12" stroke="white" strokeWidth="1.4" />
-              {/* Eyes - glowing */}
-              <circle cx="12" cy="15" r="2.5" fill="hsl(195, 100%, 65%)">
-                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="20" cy="15" r="2.5" fill="hsl(278, 100%, 78%)">
-                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" begin="0.3s" />
-              </circle>
-              {/* Mouth / speaker grill */}
-              <rect x="12" y="19" width="8" height="1.2" rx="0.6" fill="white" fillOpacity="0.5" />
-              {/* Ear nodes */}
-              <circle cx="4" cy="15" r="1.5" fill="white" fillOpacity="0.4" />
-              <circle cx="28" cy="15" r="1.5" fill="white" fillOpacity="0.4" />
-              {/* Jaw / chin */}
-              <path d="M10 23L16 27L22 23" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.5" />
-            </svg>
+            {/* Pulsing ring */}
             <motion.div
-              className="absolute inset-0 rounded-full border-2 border-[hsl(278_100%_82%/0.35)]"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0"
+              style={{ borderRadius: "18px", border: "1.5px solid hsl(270 80% 65% / 0.3)" }}
+              animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
             />
+            {/* Inner glow */}
+            <div
+              className="absolute inset-[3px]"
+              style={{
+                borderRadius: "15px",
+                background: "radial-gradient(circle at 50% 30%, hsl(270 82% 58% / 0.2), transparent 70%)",
+              }}
+            />
+            {/* Icon */}
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" className="relative z-10">
+              {/* Neural core */}
+              <circle cx="13" cy="13" r="8" fill="none" stroke="hsl(270, 80%, 65%)" strokeWidth="1" strokeOpacity="0.5" />
+              <circle cx="13" cy="13" r="4.5" fill="hsl(270, 80%, 65%)" fillOpacity="0.15" stroke="hsl(278, 100%, 82%)" strokeWidth="1" />
+              {/* Center eye */}
+              <circle cx="13" cy="13" r="2" fill="hsl(278, 100%, 82%)">
+                <animate attributeName="r" values="2;2.5;2" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" />
+              </circle>
+              {/* Orbital nodes */}
+              <circle cx="13" cy="4" r="1.2" fill="hsl(195, 100%, 65%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" />
+              </circle>
+              <circle cx="20.8" cy="8.5" r="1.2" fill="hsl(270, 80%, 70%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.3s" />
+              </circle>
+              <circle cx="20.8" cy="17.5" r="1.2" fill="hsl(195, 100%, 65%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.6s" />
+              </circle>
+              <circle cx="13" cy="22" r="1.2" fill="hsl(270, 80%, 70%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.9s" />
+              </circle>
+              <circle cx="5.2" cy="17.5" r="1.2" fill="hsl(195, 100%, 65%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="1.2s" />
+              </circle>
+              <circle cx="5.2" cy="8.5" r="1.2" fill="hsl(270, 80%, 70%)">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="1.5s" />
+              </circle>
+              {/* Connection lines */}
+              <line x1="13" y1="5.2" x2="13" y2="8.5" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="19.6" y1="9.3" x2="17" y2="11" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="19.6" y1="16.7" x2="17" y2="15" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="13" y1="20.8" x2="13" y2="17.5" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="6.4" y1="16.7" x2="9" y2="15" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
+              <line x1="6.4" y1="9.3" x2="9" y2="11" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
+            </svg>
           </motion.button>
         )}
       </AnimatePresence>
