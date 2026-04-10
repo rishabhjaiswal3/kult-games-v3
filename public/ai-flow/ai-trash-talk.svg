@@ -1,0 +1,24 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3A230F"/>
+      <stop offset="52%" stop-color="#2E1546"/>
+      <stop offset="100%" stop-color="#16283D"/>
+    </linearGradient>
+    <radialGradient id="voice" cx="0.28" cy="0.45" r="0.5">
+      <stop offset="0%" stop-color="#FFBE54" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#FFBE54" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="720" fill="url(#voice)"/>
+  <circle cx="360" cy="370" r="96" fill="#152845" stroke="#63E8FF" stroke-opacity="0.58"/>
+  <circle cx="360" cy="350" r="24" fill="#63E8FF" fill-opacity="0.3" stroke="#63E8FF"/>
+  <rect x="540" y="250" width="560" height="110" rx="20" fill="#0D1A2F" fill-opacity="0.68" stroke="#FFBE54" stroke-opacity="0.55"/>
+  <rect x="540" y="390" width="470" height="90" rx="18" fill="#0D1A2F" fill-opacity="0.68" stroke="#A98AFF" stroke-opacity="0.55"/>
+  <path d="M460 350C530 340 560 315 600 300" stroke="#FFBE54" stroke-width="5" stroke-linecap="round"/>
+  <path d="M460 380C540 388 600 415 640 430" stroke="#A98AFF" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="995" cy="304" r="8" fill="#FFBE54"/>
+  <circle cx="1040" cy="304" r="8" fill="#FFBE54"/>
+  <circle cx="1085" cy="304" r="8" fill="#FFBE54"/>
+</svg>
