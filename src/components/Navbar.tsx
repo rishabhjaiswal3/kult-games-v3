@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Games", path: "/games" },
+  { label: "AI Arena", path: "/ai-arena" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Events", path: "/events" },
 ];

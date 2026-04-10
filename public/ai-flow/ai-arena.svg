@@ -1,0 +1,21 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2C123A"/>
+      <stop offset="55%" stop-color="#1A1D46"/>
+      <stop offset="100%" stop-color="#0E2333"/>
+    </linearGradient>
+    <radialGradient id="ring" cx="0.5" cy="0.52" r="0.45">
+      <stop offset="0%" stop-color="#FF5BC8" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#FF5BC8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="720" fill="url(#ring)"/>
+  <ellipse cx="640" cy="510" rx="360" ry="120" fill="#0A1428" fill-opacity="0.65" stroke="#63E8FF" stroke-opacity="0.5"/>
+  <ellipse cx="640" cy="500" rx="270" ry="85" fill="#111F39" stroke="#A98AFF" stroke-opacity="0.55"/>
+  <circle cx="500" cy="430" r="52" fill="#63E8FF" fill-opacity="0.26" stroke="#63E8FF"/>
+  <circle cx="780" cy="430" r="52" fill="#FF5BC8" fill-opacity="0.25" stroke="#FF5BC8"/>
+  <path d="M550 420H730" stroke="#FFD26A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M640 360V480" stroke="#FFD26A" stroke-width="3" stroke-dasharray="8 8"/>
+</svg>
