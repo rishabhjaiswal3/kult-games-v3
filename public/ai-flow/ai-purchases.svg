@@ -20,4 +20,15 @@
   <path d="M460 360H530M750 360H820" stroke="#A98AFF" stroke-width="3"/>
   <circle cx="495" cy="360" r="8" fill="#A98AFF"/>
   <circle cx="785" cy="360" r="8" fill="#A98AFF"/>
+  <path d="M280 520L440 520M570 520L730 520M860 520L1020 520" stroke="#63E8FF" stroke-opacity="0.35" stroke-width="2"/>
+  <rect x="285" y="274" width="130" height="16" rx="8" fill="#63E8FF" fill-opacity="0.28"/>
+  <rect x="575" y="274" width="130" height="16" rx="8" fill="#A98AFF" fill-opacity="0.32"/>
+  <rect x="865" y="274" width="130" height="16" rx="8" fill="#63E8FF" fill-opacity="0.28"/>
+  <path d="M460 310C500 290 515 280 530 260" stroke="#63E8FF" stroke-opacity="0.45" stroke-width="2"/>
+  <path d="M750 310C790 290 805 280 820 260" stroke="#A98AFF" stroke-opacity="0.45" stroke-width="2"/>
+  <g fill="#63E8FF" fill-opacity="0.9">
+    <circle cx="220" cy="210" r="3"/>
+    <circle cx="250" cy="190" r="2.5"/>
+    <circle cx="1080" cy="190" r="3"/>
+  </g>
 </svg>
