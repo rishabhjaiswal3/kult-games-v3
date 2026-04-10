@@ -19,10 +19,6 @@ import {
   Sparkles,
   Star,
   ArrowRight,
-  WalletCards,
-  Coins,
-  Info,
-  X,
 } from "lucide-react";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 import flowWalletInit from "@/assets/flow-wallet-init.jpg";
@@ -200,19 +196,6 @@ const AIArena = () => {
   useMotionValueEvent(scrollYProgress, "change", (v) => setDrawProgress(v));
   const completionPercent = Math.round(drawProgress * 100);
   const cappedFlowPercent = Math.min(92, Math.max(2, completionPercent));
-  const [agentWalletCreated, setAgentWalletCreated] = useState(false);
-  const [agentFunds, setAgentFunds] = useState(0);
-  const [walletInfoOpen, setWalletInfoOpen] = useState(false);
-
-  const createAgentWallet = () => {
-    setAgentWalletCreated(true);
-    setAgentFunds((prev) => (prev > 0 ? prev : 0));
-  };
-
-  const fundAgent = (amount: number) => {
-    setAgentWalletCreated(true);
-    setAgentFunds((prev) => prev + amount);
-  };
 
   const revealedSteps = Math.min(
     FLOW_STEPS.length,
@@ -546,78 +529,6 @@ const AIArena = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5 relative z-10">
-                  <div className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 px-3 py-2">
-                    <p className="text-[10px] uppercase tracking-widest text-neon-purple font-mono">Session Sync</p>
-                    <p className="text-base md:text-lg font-bold text-foreground">{completionPercent}%</p>
-                  </div>
-                  <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
-                    <p className="text-[10px] uppercase tracking-widest text-neon-cyan font-mono">Active Step</p>
-                    <p className="text-base md:text-lg font-bold text-foreground">{activeStepIndex + 1} / {FLOW_STEPS.length}</p>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/10 p-3.5 relative z-10">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-1">
-                        AI Agent Wallet
-                      </p>
-                      <p className="text-base md:text-lg font-bold text-foreground">
-                        {agentWalletCreated ? `${agentFunds.toLocaleString()} KULT` : "Not Created"}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        {agentWalletCreated
-                          ? "Funds available. Keep funding to power your agent's actions."
-                          : "Create your AI agent wallet to start funding and autonomous actions."}
-                      </p>
-                    </div>
-                    <div className="w-10 h-10 rounded-lg border border-neon-cyan/35 bg-neon-cyan/10 flex items-center justify-center shrink-0">
-                      <WalletCards className="w-5 h-5 text-neon-cyan" />
-                    </div>
-                  </div>
-                  {!agentWalletCreated ? (
-                    <button
-                      onClick={createAgentWallet}
-                      className="mt-3 w-full rounded-lg border border-neon-cyan/45 bg-neon-cyan/15 px-3 py-2 text-xs text-neon-cyan font-semibold hover:bg-neon-cyan/25 transition-colors"
-                    >
-                      Create AI Agent Wallet
-                    </button>
-                  ) : (
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      <button
-                        onClick={() => fundAgent(50)}
-                        className="rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-2 py-1.5 text-[11px] text-neon-purple font-semibold hover:bg-neon-purple/20 transition-colors"
-                      >
-                        +50
-                      </button>
-                      <button
-                        onClick={() => fundAgent(200)}
-                        className="rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-1.5 text-[11px] text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors"
-                      >
-                        +200
-                      </button>
-                      <button
-                        onClick={() => fundAgent(1000)}
-                        className="rounded-lg border border-amber-300/40 bg-amber-300/10 px-2 py-1.5 text-[11px] text-amber-300 font-semibold hover:bg-amber-300/20 transition-colors"
-                      >
-                        +1000
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => setWalletInfoOpen(true)}
-                    className="mt-2 w-full rounded-lg border border-border/45 bg-card/45 px-3 py-1.5 text-[11px] text-muted-foreground font-medium hover:text-foreground hover:border-neon-cyan/35 transition-colors inline-flex items-center justify-center gap-1.5"
-                  >
-                    <Info className="w-3.5 h-3.5" />
-                    View AI Agent Wallet Info
-                  </button>
-                  <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <Coins className="w-3.5 h-3.5 text-neon-cyan" />
-                    <span>Fund wallet to unlock AI purchases, battle actions and arena execution.</span>
-                  </div>
-                </div>
-
                 <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
                   <div className="rounded-xl overflow-hidden border border-border/50">
@@ -842,62 +753,6 @@ const AIArena = () => {
         </div>
       </section>
 
-      {walletInfoOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <button
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setWalletInfoOpen(false)}
-            aria-label="Close wallet info modal"
-          />
-          <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="relative w-full max-w-lg rounded-2xl border border-neon-cyan/30 bg-card/90 backdrop-blur-xl p-5 md:p-6 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
-          >
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan">AI Agent Wallet</p>
-                <h4 className="font-display text-xl md:text-2xl font-black text-foreground mt-1">
-                  {agentWalletCreated ? "Wallet Active" : "Wallet Not Created"}
-                </h4>
-              </div>
-              <button
-                onClick={() => setWalletInfoOpen(false)}
-                className="w-9 h-9 rounded-lg border border-border/45 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-neon-cyan/35"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 p-3 mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-neon-purple">Current Funds</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{agentFunds.toLocaleString()} KULT</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4">
-              <div className="rounded-xl border border-neon-cyan/25 bg-neon-cyan/10 p-2.5">
-                <p className="text-[11px] text-neon-cyan font-semibold">Status</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {agentWalletCreated ? "Connected and ready for autonomous actions" : "Create wallet to activate agent economy"}
-                </p>
-              </div>
-              <div className="rounded-xl border border-amber-300/25 bg-amber-300/10 p-2.5">
-                <p className="text-[11px] text-amber-300 font-semibold">Capabilities</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Asset purchases, arena battle actions, and voice interactions
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={() => fundAgent(100)} className="rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-2 py-2 text-xs text-neon-purple font-semibold hover:bg-neon-purple/20 transition-colors">+100</button>
-              <button onClick={() => fundAgent(500)} className="rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-2 text-xs text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors">+500</button>
-              <button onClick={() => fundAgent(2000)} className="rounded-lg border border-amber-300/40 bg-amber-300/10 px-2 py-2 text-xs text-amber-300 font-semibold hover:bg-amber-300/20 transition-colors">+2000</button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 };
