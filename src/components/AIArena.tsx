@@ -435,30 +435,31 @@ const AIArena = () => {
                                 src={visualImage}
                                 alt={step.label}
                                 className="w-full h-full object-cover"
-                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 14%" : "center" }}
+                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 12%" : "center" }}
                                 loading="lazy"
                               />
                             ) : (
                               <div className="w-full h-full bg-card" />
                             )}
-...
-                  <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
-                    <div className="rounded-xl overflow-hidden border border-border/50">
-                      <div className="relative aspect-[16/10]">
-                        <img
-                          src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
-                          alt={FLOW_STEPS[activeStepIndex]?.label}
-                          className="w-full h-full object-cover"
-                          style={{ objectPosition: FLOW_STEPS[activeStepIndex]?.visual === "agent-spawn" ? "center 14%" : "center" }}
-                          loading="lazy"
-                        />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
-                      <p className="absolute bottom-2 left-2 text-[11px] font-semibold text-white/90">
-                        {FLOW_STEPS[activeStepIndex]?.label}
-                      </p>
-                    </div>
-                  </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                            <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/60 border border-white/10 text-[10px] font-mono tracking-wide text-white/90">
+                              {step.label.toUpperCase()}
+                            </div>
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-md border border-white/20 bg-black/40 text-[9px] font-mono tracking-widest text-white/75">
+                              NODE {idx + 1}
+                            </div>
+                            <div
+                              className="absolute top-2 right-2 px-2 py-1 rounded-md text-[9px] font-mono tracking-widest border"
+                              style={{
+                                color: isRevealed ? c.text : "hsl(var(--muted-foreground))",
+                                borderColor: isRevealed ? c.border : "hsl(var(--border) / 0.45)",
+                                background: isRevealed ? c.bg : "hsl(var(--muted) / 0.25)",
+                              }}
+                            >
+                              {isRevealed ? "ACTIVE" : "QUEUED"}
+                            </div>
+                          </div>
+                        </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
