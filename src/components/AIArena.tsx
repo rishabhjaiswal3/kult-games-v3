@@ -20,8 +20,8 @@ import {
   Star,
   ArrowRight,
 } from "lucide-react";
+import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 
-/* ─── AI features per game (slug / identification → features) ─── */
 type AIFeature = {
   icon: React.ElementType;
   label: string;
@@ -82,7 +82,6 @@ function getGameDescription(desc: Game["description"]): string {
   return desc?.en ?? Object.values(desc)[0] ?? "";
 }
 
-/* ─── Timeline flow steps ─── */
 interface FlowStep {
   icon: React.ElementType;
   label: string;
@@ -93,66 +92,13 @@ interface FlowStep {
 }
 
 const FLOW_STEPS: FlowStep[] = [
-  {
-    icon: Wallet,
-    label: "User Wallet",
-    sublabel: "You create your wallet to enter the Kult arena",
-    visual: "wallet-init",
-    color: "purple",
-  },
-  {
-    icon: Bot,
-    label: "AI Agent Spawns",
-    sublabel: "An AI agent is automatically generated for you",
-    visual: "agent-spawn",
-    badge: { icon: Zap, text: "Auto-Generated", color: "hsl(40 85% 65%)" },
-    color: "cyan",
-  },
-  {
-    icon: Wallet,
-    label: "Hot Wallet",
-    sublabel: "Your agent gets its own wallet — fund it and it acts autonomously",
-    visual: "hot-wallet",
-    badge: { icon: Shield, text: "Fund & Activate", color: "hsl(150 100% 50%)" },
-    color: "amber",
-  },
-  {
-    icon: ShoppingCart,
-    label: "AI Purchases",
-    sublabel: "Your agent auto-buys the best assets, skins and power-ups",
-    visual: "ai-purchases",
-    color: "cyan",
-  },
-  {
-    icon: Swords,
-    label: "AI Battle",
-    sublabel: "Agents duel each other — your AI fights with strategy",
-    visual: "ai-arena",
-    color: "purple",
-  },
-  {
-    icon: MessageSquareWarning,
-    label: "Trash Talk",
-    sublabel: "Your AI roasts opponents during battles — ruthless and hilarious",
-    visual: "ai-trash-talk",
-    color: "amber",
-  },
+  { icon: Wallet, label: "User Wallet", sublabel: "You create your wallet to enter the Kult arena", visual: "wallet-init", color: "purple" },
+  { icon: Bot, label: "AI Agent Spawns", sublabel: "An AI agent is automatically generated for you", visual: "agent-spawn", badge: { icon: Zap, text: "Auto-Generated", color: "hsl(40 85% 65%)" }, color: "cyan" },
+  { icon: Wallet, label: "Hot Wallet", sublabel: "Your agent gets its own wallet — fund it and it acts autonomously", visual: "hot-wallet", badge: { icon: Shield, text: "Fund & Activate", color: "hsl(150 100% 50%)" }, color: "amber" },
+  { icon: ShoppingCart, label: "AI Purchases", sublabel: "Your agent auto-buys the best assets, skins and power-ups", visual: "ai-purchases", color: "cyan" },
+  { icon: Swords, label: "AI Battle", sublabel: "Agents duel each other — your AI fights with strategy", visual: "ai-arena", color: "purple" },
+  { icon: MessageSquareWarning, label: "Trash Talk", sublabel: "Your AI roasts opponents during battles — ruthless and hilarious", visual: "ai-trash-talk", color: "amber" },
 ];
-
-const FLOW_VISUAL_BACKGROUNDS: Record<string, string> = {
-  "wallet-init":
-    "linear-gradient(135deg, hsl(270 82% 35% / 0.95), hsl(260 70% 25% / 0.9), hsl(195 100% 25% / 0.85))",
-  "agent-spawn":
-    "radial-gradient(circle at 25% 20%, hsl(195 100% 55% / 0.45), transparent 45%), linear-gradient(130deg, hsl(200 75% 18% / 0.95), hsl(270 82% 26% / 0.95), hsl(290 70% 22% / 0.9))",
-  "hot-wallet":
-    "radial-gradient(circle at 80% 15%, hsl(40 95% 60% / 0.35), transparent 40%), linear-gradient(120deg, hsl(35 80% 24% / 0.95), hsl(20 85% 20% / 0.92), hsl(195 90% 22% / 0.85))",
-  "ai-purchases":
-    "linear-gradient(120deg, hsl(195 90% 22% / 0.95), hsl(220 70% 24% / 0.92), hsl(270 78% 26% / 0.9))",
-  "ai-arena":
-    "radial-gradient(circle at 50% 10%, hsl(310 100% 62% / 0.22), transparent 38%), linear-gradient(120deg, hsl(315 65% 20% / 0.95), hsl(260 78% 20% / 0.9), hsl(195 95% 20% / 0.85))",
-  "ai-trash-talk":
-    "radial-gradient(circle at 15% 22%, hsl(40 95% 60% / 0.3), transparent 44%), linear-gradient(120deg, hsl(40 80% 23% / 0.95), hsl(275 70% 22% / 0.92), hsl(220 65% 19% / 0.88))",
-};
 
 const FLOW_VISUAL_IMAGES: Record<string, string> = {
   "wallet-init": "/ai-flow/wallet-init.svg",
@@ -203,11 +149,7 @@ const COLOR_MAP = {
   },
 };
 
-/* ═══════════════════════════════════════════════════════════════
-   COMPONENT
-═══════════════════════════════════════════════════════════════ */
 const AIArena = () => {
-  /* ── Games carousel ── */
   const { data } = useQuery({
     queryKey: ["games", "all"],
     queryFn: () => gamesApi.getAll(1, 20),
@@ -238,7 +180,6 @@ const AIArena = () => {
     return () => window.clearInterval(timer);
   }, [gamesWithFeatures.length, nextGame]);
 
-  /* ── Section scroll progress for the line-draw effect ── */
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: timelineContainerRef,
@@ -250,7 +191,6 @@ const AIArena = () => {
   const completionPercent = Math.round(drawProgress * 100);
   const cappedFlowPercent = Math.min(92, Math.max(2, completionPercent));
 
-  /* how many steps to reveal */
   const revealedSteps = Math.min(
     FLOW_STEPS.length,
     Math.floor(drawProgress * (FLOW_STEPS.length + 1))
@@ -259,7 +199,6 @@ const AIArena = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Background grid */}
       <div
         className="fixed inset-0 pointer-events-none opacity-20"
         style={{
@@ -271,143 +210,159 @@ const AIArena = () => {
         }}
       />
 
-      {/* Ambient glows */}
-      <div className="fixed top-20 left-1/4 w-[600px] h-[600px] rounded-full bg-neon-purple/3 blur-[200px] pointer-events-none" />
-      <div className="fixed bottom-20 right-1/3 w-[500px] h-[500px] rounded-full bg-neon-cyan/3 blur-[180px] pointer-events-none" />
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src={aiArenaHero}
+            alt="AI Arena battlefield"
+            className="w-full h-full object-cover"
+            width={1920}
+            height={960}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(ellipse at center 40%, transparent 30%, hsl(var(--background)) 75%)",
+            }}
+          />
+        </div>
 
-      {/* ──────────────────  HERO HEADER  ────────────────── */}
-      <section className="relative pt-28 pb-12 md:pt-36 md:pb-16 overflow-hidden">
-        {/* Scan line */}
         <motion.div
-          className="absolute left-0 right-0 h-[1px] pointer-events-none z-10"
+          className="absolute left-0 right-0 h-[1px] pointer-events-none z-20"
           style={{
-            background: "linear-gradient(90deg, transparent, hsl(278 100% 82% / 0.15), transparent)",
-            boxShadow: "0 0 20px hsl(278 100% 82% / 0.1)",
+            background: "linear-gradient(90deg, transparent, hsl(195 100% 80% / 0.25), transparent)",
+            boxShadow: "0 0 30px hsl(195 100% 80% / 0.15)",
           }}
           animate={{ top: ["0%", "100%"] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
 
-        <div className="container mx-auto px-6 relative z-10 text-center">
-          <div className="max-w-5xl mx-auto rounded-[28px] border border-neon-purple/20 bg-card/35 backdrop-blur-xl px-5 md:px-10 py-10 md:py-12 shadow-[0_0_80px_hsl(270_82%_58%_/_0.12)] relative overflow-hidden">
-            <div className="absolute -top-28 -left-20 w-64 h-64 rounded-full bg-neon-purple/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-16 w-72 h-72 rounded-full bg-neon-cyan/10 blur-3xl pointer-events-none" />
-          {/* Label */}
+        <div className="relative z-10 container mx-auto px-6 text-center">
           <motion.div
-            className="flex items-center justify-center gap-2 mb-6"
-            initial={{ opacity: 0, y: 12 }}
+            className="max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
-              className="w-2 h-2 rounded-full bg-neon-cyan"
-              animate={{
-                opacity: [1, 0.3, 1],
-                boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-            <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase flex items-center gap-1.5">
-              <BrainCircuit className="w-3 h-3" /> AI ARENA
-            </span>
-          </motion.div>
-
-          <motion.h1
-            className="font-display text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.7 }}
-          >
-            <span className="text-white" style={{ textShadow: "0 0 30px hsl(195 100% 60% / 0.12)" }}>
-              YOUR AI{" "}
-            </span>
-            <span
-              style={{
-                color: "hsl(195 100% 65%)",
-                textShadow: "0 0 20px hsl(195 100% 60% / 0.6), 0 0 50px hsl(195 100% 60% / 0.3)",
-              }}
+              className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-neon-cyan/30 bg-background/50 backdrop-blur-md"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              AGENT
-            </span>
-          </motion.h1>
+              <motion.div
+                className="w-2 h-2 rounded-full bg-neon-cyan"
+                animate={{
+                  opacity: [1, 0.3, 1],
+                  boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 18px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"],
+                }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              <span className="text-xs font-mono text-neon-cyan tracking-[0.25em] uppercase">
+                AI Arena • Live
+              </span>
+            </motion.div>
 
-          <motion.p
-            className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base leading-relaxed mb-6"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            Create your wallet. Spawn an AI agent with its own hot wallet. Fund it, and let your AI fight, trade, and
-            trash-talk on your behalf.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-3 mb-7"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-          >
-            <Link
-              to="/games"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/20 transition-all"
+            <motion.h1
+              className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[0.95]"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.7 }}
             >
-              Start Building Agent <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="#ai-game-map"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border/50 bg-card/40 text-muted-foreground text-sm font-semibold hover:text-foreground hover:border-neon-purple/40 transition-all"
-            >
-              Explore AI Games
-            </a>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-2.5 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            {HERO_PROTOCOLS.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border/45 bg-card/45 text-[11px] md:text-xs text-muted-foreground"
+              <span className="text-foreground block" style={{ textShadow: "0 0 40px hsl(195 100% 60% / 0.15)" }}>
+                YOUR AI
+              </span>
+              <span
+                className="block mt-1"
+                style={{
+                  background: "linear-gradient(90deg, hsl(195 100% 65%), hsl(278 100% 75%), hsl(195 100% 65%))",
+                  backgroundSize: "200% auto",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 30px hsl(195 100% 60% / 0.4))",
+                }}
               >
-                <item.icon className="w-3.5 h-3.5 text-neon-purple" />
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </motion.div>
+                AGENT
+              </span>
+            </motion.h1>
 
-          {/* Decorative line */}
-          <motion.div
-            className="mx-auto w-16 h-[2px] rounded-full"
-            style={{
-              background: "linear-gradient(90deg, transparent, hsl(195 100% 60%), transparent)",
-              boxShadow: "0 0 14px hsl(195 100% 60% / 0.5)",
-            }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          />
-          </div>
+            <motion.p
+              className="text-muted-foreground max-w-xl mx-auto text-base md:text-lg leading-relaxed mb-8"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              Spawn an autonomous AI agent with its own hot wallet. Let it fight, trade, and trash-talk on your behalf.
+            </motion.p>
+
+            <motion.div
+              className="flex flex-wrap items-center justify-center gap-4 mb-10"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Link
+                to="/games"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan text-sm font-bold hover:bg-neon-cyan/20 hover:border-neon-cyan/70 transition-all backdrop-blur-sm"
+                style={{ boxShadow: "0 0 30px hsl(195 100% 60% / 0.15)" }}
+              >
+                Start Building Agent
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <a
+                href="#ai-game-map"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-border/60 bg-card/30 text-muted-foreground text-sm font-bold hover:text-foreground hover:border-neon-purple/50 transition-all backdrop-blur-sm"
+              >
+                Explore AI Games
+              </a>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              {HERO_PROTOCOLS.map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm text-xs text-muted-foreground"
+                  whileHover={{ borderColor: "hsl(278 100% 75% / 0.4)", y: -2 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.06 }}
+                >
+                  <item.icon className="w-4 h-4 text-neon-purple" />
+                  <span className="font-medium">{item.label}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </section>
 
-      {/* ──────────────────  AI ORCHESTRATION FLOW  ────────────────── */}
       <section ref={timelineContainerRef} className="relative py-10 md:py-20">
         <div className="container mx-auto px-6">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-xs font-mono text-neon-purple tracking-[0.25em] uppercase">Agent Lifecycle</span>
+            <h2 className="font-display text-2xl md:text-4xl font-black tracking-tight text-foreground mt-3">
+              How Your <span style={{ color: "hsl(195 100% 65%)" }}>AI Agent</span> Works
+            </h2>
+          </motion.div>
+
           <div className="max-w-7xl mx-auto md:grid md:grid-cols-[minmax(0,1fr)_480px] gap-6 lg:gap-10 items-start">
             <div className="md:sticky md:top-16">
-              <div className="relative pr-10 pl-2 py-2 rounded-3xl border border-neon-cyan/25 bg-card/35 backdrop-blur-xl overflow-hidden shadow-[0_0_90px_hsl(195_100%_55%_/_0.16)]">
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, hsl(270 82% 58% / 0.08) 0%, transparent 35%, transparent 70%, hsl(195 100% 55% / 0.08) 100%)",
-                  }}
-                />
-                <div className="absolute -top-20 -left-10 w-52 h-52 rounded-full bg-neon-purple/12 blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-16 -right-12 w-56 h-56 rounded-full bg-neon-cyan/12 blur-3xl pointer-events-none" />
+              <div className="relative pr-10 pl-2 py-2 rounded-3xl border border-neon-cyan/20 bg-card/30 backdrop-blur-xl overflow-hidden shadow-[0_0_60px_hsl(195_100%_55%_/_0.1)]">
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(270 82% 58% / 0.06) 0%, transparent 35%, transparent 70%, hsl(195 100% 55% / 0.06) 100%)" }} />
                 <div className="absolute right-4 top-4 bottom-4 w-[2px] rounded-full bg-border/35" />
                 <motion.div
                   className="absolute right-4 top-4 w-[2px] rounded-full origin-top"
@@ -430,7 +385,6 @@ const AIArena = () => {
                   {FLOW_STEPS.map((step, idx) => {
                     const c = COLOR_MAP[step.color];
                     const isRevealed = idx < revealedSteps;
-                    const visualBg = FLOW_VISUAL_BACKGROUNDS[step.visual] ?? FLOW_VISUAL_BACKGROUNDS["agent-spawn"];
                     const visualImage = FLOW_VISUAL_IMAGES[step.visual];
 
                     return (
@@ -468,28 +422,13 @@ const AIArena = () => {
                             boxShadow: isRevealed ? `0 0 14px ${c.icon}` : "none",
                           }}
                         />
-                        <div
-                          className="absolute top-2.5 right-2.5 h-[2px] w-16 rounded-full"
-                          style={{
-                            background: isRevealed ? `linear-gradient(90deg, transparent, ${c.icon})` : "transparent",
-                            boxShadow: isRevealed ? `0 0 12px ${c.icon}` : "none",
-                          }}
-                        />
                         <div className="mb-3 rounded-xl overflow-hidden border border-border/40 bg-black/30">
                           <div className="relative aspect-[16/7]">
                             {visualImage ? (
-                              <img src={visualImage} alt={step.label} className="w-full h-full object-cover" />
+                              <img src={visualImage} alt={step.label} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                              <div className="w-full h-full" style={{ background: visualBg }} />
+                              <div className="w-full h-full bg-card" />
                             )}
-                            <div
-                              className="absolute inset-0 opacity-30"
-                              style={{
-                                backgroundImage:
-                                  "linear-gradient(hsl(0 0% 100% / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 100% / 0.08) 1px, transparent 1px)",
-                                backgroundSize: "20px 20px",
-                              }}
-                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                             <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/60 border border-white/10 text-[10px] font-mono tracking-wide text-white/90">
                               {step.label.toUpperCase()}
@@ -548,53 +487,48 @@ const AIArena = () => {
 
             <div className="mb-8 md:mb-0 md:sticky md:top-16 self-start">
               <motion.div
-                className="relative rounded-3xl border border-neon-purple/30 bg-card/50 backdrop-blur-xl p-5 md:p-6 overflow-hidden"
+                className="relative rounded-3xl border border-neon-purple/25 bg-card/40 backdrop-blur-xl p-5 md:p-6 overflow-hidden"
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                style={{ boxShadow: "0 0 110px hsl(270 82% 58% / 0.2), 0 0 40px hsl(195 100% 55% / 0.12), inset 0 1px 0 hsl(210 20% 100% / 0.07)" }}
+                style={{ boxShadow: "0 0 80px hsl(270 82% 58% / 0.15), inset 0 1px 0 hsl(210 20% 100% / 0.06)" }}
               >
-                <div
-                  className="absolute -top-24 -right-24 w-56 h-56 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.28), transparent 70%)" }}
-                />
-                <div
-                  className="absolute -bottom-20 -left-20 w-52 h-52 rounded-full pointer-events-none"
-                  style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.32), transparent 70%)" }}
-                />
-                <div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: "linear-gradient(130deg, transparent 30%, hsl(195 100% 55% / 0.12) 50%, transparent 72%)" }} />
+                <div className="absolute -top-24 -right-24 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.2), transparent 70%)" }} />
+                <div className="absolute -bottom-20 -left-20 w-52 h-52 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.24), transparent 70%)" }} />
+
                 <p className="text-[10px] md:text-xs font-mono tracking-[0.2em] uppercase text-neon-cyan mb-2 relative z-10">
                   AI Flow Console
                 </p>
                 <h3 className="font-display text-xl md:text-3xl font-black text-foreground mb-2 relative z-10">
                   Scroll to Run Agent Lifecycle
                 </h3>
-                <p className="text-sm md:text-[15px] text-muted-foreground max-w-xl leading-relaxed mb-4 relative z-10">
-                  The step cards are now on the left and reveal progressively as the flow signal moves downward.
-                  Monitor live progression here while you scroll.
+                <p className="text-sm text-muted-foreground max-w-xl leading-relaxed mb-4 relative z-10">
+                  Step cards reveal progressively as you scroll. Monitor live progression here.
                 </p>
+
                 <div className="h-2.5 rounded-full bg-border/30 overflow-hidden mb-4 relative z-10">
                   <motion.div
                     className="h-full rounded-full"
                     style={{
                       width: `${completionPercent}%`,
-                      background:
-                        "linear-gradient(90deg, hsl(270 82% 58%), hsl(195 100% 55%), hsl(40 85% 58%))",
+                      background: "linear-gradient(90deg, hsl(270 82% 58%), hsl(195 100% 55%), hsl(40 85% 58%))",
                       boxShadow: "0 0 20px hsl(195 100% 55% / 0.45)",
                     }}
                   />
                 </div>
+
                 <div className="grid grid-cols-2 gap-2.5 relative z-10">
-                  <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/12 px-3 py-2 shadow-[0_0_24px_hsl(270_82%_58%_/_0.2)]">
+                  <div className="rounded-xl border border-neon-purple/30 bg-neon-purple/10 px-3 py-2">
                     <p className="text-[10px] uppercase tracking-widest text-neon-purple font-mono">Session Sync</p>
                     <p className="text-base md:text-lg font-bold text-foreground">{completionPercent}%</p>
                   </div>
-                  <div className="rounded-xl border border-neon-cyan/35 bg-neon-cyan/12 px-3 py-2 shadow-[0_0_24px_hsl(195_100%_55%_/_0.2)]">
+                  <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
                     <p className="text-[10px] uppercase tracking-widest text-neon-cyan font-mono">Active Step</p>
                     <p className="text-base md:text-lg font-bold text-foreground">{activeStepIndex + 1} / {FLOW_STEPS.length}</p>
                   </div>
                 </div>
-                <div className="mt-4 rounded-2xl border border-border/45 bg-card/40 p-3 relative z-10">
+
+                <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
                   <div className="rounded-xl overflow-hidden border border-border/50">
                     <div className="relative aspect-[16/7]">
@@ -602,6 +536,7 @@ const AIArena = () => {
                         src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
                         alt={FLOW_STEPS[activeStepIndex]?.label}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
                       <p className="absolute bottom-2 left-2 text-[11px] font-semibold text-white/90">
@@ -610,17 +545,14 @@ const AIArena = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
                   {[
                     { icon: Shield, label: "Secure Runtime", tone: "hsl(150 100% 50%)" },
                     { icon: Zap, label: "Real-time Decisions", tone: "hsl(195 100% 60%)" },
                     { icon: Sparkles, label: "Adaptive Strategy", tone: "hsl(278 100% 75%)" },
                   ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-xl border px-3 py-2 bg-card/40"
-                      style={{ borderColor: `${item.tone}55` }}
-                    >
+                    <div key={item.label} className="rounded-xl border px-3 py-2 bg-card/40" style={{ borderColor: `${item.tone}55` }}>
                       <div className="flex items-center gap-2">
                         <item.icon className="w-4 h-4" style={{ color: item.tone }} />
                         <p className="text-[11px] font-semibold tracking-wide" style={{ color: item.tone }}>
@@ -636,16 +568,10 @@ const AIArena = () => {
         </div>
       </section>
 
-      {/* ──────────────────  GAMES CAROUSEL  ────────────────── */}
       <section id="ai-game-map" className="relative py-16 md:py-24 overflow-hidden">
-        {/* Top separator */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/30 to-transparent"
-          style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.15)" }}
-        />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/25 to-transparent" />
 
         <div className="container mx-auto px-6 relative z-10">
-          {/* Section heading */}
           <motion.div
             className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -671,11 +597,9 @@ const AIArena = () => {
             </p>
           </motion.div>
 
-          {/* Carousel */}
           {gamesWithFeatures.length > 0 && activeGame && (
             <div className="max-w-5xl mx-auto">
               <div className="relative">
-                {/* Nav arrows */}
                 <button
                   onClick={prevGame}
                   className="absolute -left-4 md:-left-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full border border-border/50 bg-card/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all"
@@ -691,28 +615,23 @@ const AIArena = () => {
                   <ChevronRight className="w-5 h-5" />
                 </button>
 
-                {/* Card */}
                 <motion.div
                   key={activeGame.key}
                   initial={{ opacity: 0, x: 40 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -40 }}
                   transition={{ duration: 0.4, type: "spring", stiffness: 260, damping: 28 }}
-                  className="rounded-3xl border border-border/45 bg-card/50 backdrop-blur-md overflow-hidden"
-                  style={{
-                    boxShadow: "0 0 60px hsl(270 82% 58% / 0.1), inset 0 1px 0 hsl(210 20% 100% / 0.05)",
-                  }}
+                  className="rounded-3xl border border-border/40 bg-card/40 backdrop-blur-md overflow-hidden"
+                  style={{ boxShadow: "0 0 60px hsl(270 82% 58% / 0.1)" }}
                 >
-                  {/* Game image */}
                   <div className="relative aspect-[16/7] overflow-hidden">
                     <img
                       src={getGameImage(activeGame.game)}
                       alt={getGameName(activeGame.game.name)}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-
-                    {/* Game info overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-1">
                         {activeGame.game.rating != null && activeGame.game.rating > 0 && (
@@ -729,8 +648,6 @@ const AIArena = () => {
                         {getGameName(activeGame.game.name)}
                       </h3>
                     </div>
-
-                    {/* Pagination indicator */}
                     <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-card/70 backdrop-blur-sm border border-border/40">
                       <span className="text-xs font-mono text-muted-foreground">
                         {carouselIdx + 1} / {gamesWithFeatures.length}
@@ -738,15 +655,10 @@ const AIArena = () => {
                     </div>
                   </div>
 
-                  {/* AI features */}
                   <div className="p-6 md:p-7">
                     <div className="flex items-center justify-between gap-3 mb-4">
-                      <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
-                        AI Features
-                      </p>
-                      <span className="text-[10px] md:text-xs text-neon-cyan font-mono tracking-wider uppercase">
-                        Agent Profile Ready
-                      </span>
+                      <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">AI Features</p>
+                      <span className="text-[10px] md:text-xs text-neon-cyan font-mono tracking-wider uppercase">Agent Profile Ready</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
                       {GAME_AI_FEATURES[activeGame.key]?.map((fKey, fi) => {
@@ -759,35 +671,21 @@ const AIArena = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: fi * 0.06 }}
                             className="group flex items-center gap-3 px-3.5 py-3 rounded-xl border bg-card/45 backdrop-blur-sm cursor-default transition-all duration-200"
-                            style={{
-                              borderColor: `${feat.color}30`,
-                            }}
-                            whileHover={{
-                              borderColor: feat.color,
-                              boxShadow: `0 0 16px ${feat.color}22`,
-                              y: -2,
-                            }}
+                            style={{ borderColor: `${feat.color}30` }}
+                            whileHover={{ borderColor: feat.color, boxShadow: `0 0 16px ${feat.color}22`, y: -2 }}
                           >
-                            <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{ background: `${feat.color}18` }}
-                            >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${feat.color}18` }}>
                               <feat.icon style={{ width: 15, height: 15, color: feat.color }} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-semibold tracking-wide leading-none" style={{ color: feat.color }}>
-                                {feat.label}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                                {feat.description}
-                              </p>
+                              <p className="text-xs font-semibold tracking-wide leading-none" style={{ color: feat.color }}>{feat.label}</p>
+                              <p className="text-[10px] text-muted-foreground mt-1 truncate">{feat.description}</p>
                             </div>
                           </motion.div>
                         );
                       })}
                     </div>
 
-                    {/* Description */}
                     {getGameDescription(activeGame.game.description) && (
                       <p className="text-xs text-muted-foreground mt-4 leading-relaxed line-clamp-2">
                         {getGameDescription(activeGame.game.description)}
@@ -795,21 +693,13 @@ const AIArena = () => {
                     )}
 
                     <div className="mt-5 pt-4 border-t border-border/40">
-                      <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2.5">
-                        AI-ready stack
-                      </p>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2.5">AI-ready stack</p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         {STACK_MODULES.map((stack) => (
-                          <div
-                            key={stack.label}
-                            className="rounded-xl border p-2.5 bg-card/45 hover:-translate-y-0.5 transition-transform"
-                            style={{ borderColor: `${stack.tone}45` }}
-                          >
+                          <div key={stack.label} className="rounded-xl border p-2.5 bg-card/45 hover:-translate-y-0.5 transition-transform" style={{ borderColor: `${stack.tone}45` }}>
                             <div className="flex items-center gap-2 mb-1">
                               <stack.icon className="w-3.5 h-3.5" style={{ color: stack.tone }} />
-                              <p className="text-[11px] font-semibold" style={{ color: stack.tone }}>
-                                {stack.label}
-                              </p>
+                              <p className="text-[11px] font-semibold" style={{ color: stack.tone }}>{stack.label}</p>
                             </div>
                             <p className="text-[10px] text-muted-foreground">{stack.sub}</p>
                           </div>
@@ -819,7 +709,6 @@ const AIArena = () => {
                   </div>
                 </motion.div>
 
-                {/* Dot indicators */}
                 <div className="flex items-center justify-center gap-2 mt-5">
                   {gamesWithFeatures.map((_, i) => (
                     <button
