@@ -661,11 +661,6 @@ const AIArena = () => {
                         {getGameName(activeGame.game.name)}
                       </h3>
                     </div>
-                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-card/70 backdrop-blur-sm border border-border/40">
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {carouselIdx + 1} / {gamesWithFeatures.length}
-                      </span>
-                    </div>
                   </div>
 
                   <div className="p-6 md:p-7">
