@@ -669,30 +669,41 @@ const AIArena = () => {
                   </div>
 
                   <div className="p-6 md:p-7">
-                    <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center justify-between gap-3 mb-5">
                       <p className="text-xs font-mono text-muted-foreground tracking-wider uppercase">AI Features</p>
                       <span className="text-[10px] md:text-xs text-neon-cyan font-mono tracking-wider uppercase">Agent Profile Ready</span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+
+                    <div className="flex flex-wrap gap-2.5 mb-5">
                       {GAME_AI_FEATURES[activeGame.key]?.map((fKey, fi) => {
                         const feat = AI_FEATURE_DEFS[fKey];
                         if (!feat) return null;
                         return (
                           <motion.div
                             key={fKey}
-                            initial={{ opacity: 0, scale: 0.85 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: fi * 0.06 }}
-                            className="group flex items-center gap-3 px-3.5 py-3 rounded-xl border bg-card/45 backdrop-blur-sm cursor-default transition-all duration-200"
-                            style={{ borderColor: `${feat.color}30` }}
-                            whileHover={{ borderColor: feat.color, boxShadow: `0 0 16px ${feat.color}22`, y: -2 }}
+                            className="group relative flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-full border backdrop-blur-sm cursor-default transition-all duration-200 hover:-translate-y-0.5"
+                            style={{
+                              borderColor: `${feat.color}40`,
+                              background: `linear-gradient(135deg, ${feat.color}12, ${feat.color}06)`,
+                              boxShadow: `0 0 0 1px ${feat.color}08`,
+                            }}
+                            whileHover={{
+                              borderColor: feat.color,
+                              boxShadow: `0 0 20px ${feat.color}25, 0 0 0 1px ${feat.color}30`,
+                            }}
                           >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${feat.color}18` }}>
-                              <feat.icon style={{ width: 15, height: 15, color: feat.color }} />
+                            <div
+                              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ background: `${feat.color}20`, boxShadow: `0 0 10px ${feat.color}15` }}
+                            >
+                              <feat.icon style={{ width: 14, height: 14, color: feat.color }} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-semibold tracking-wide leading-none" style={{ color: feat.color }}>{feat.label}</p>
-                              <p className="text-[10px] text-muted-foreground mt-1 truncate">{feat.description}</p>
+                              <p className="text-xs font-bold tracking-wide leading-none" style={{ color: feat.color }}>{feat.label}</p>
+                              <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{feat.description}</p>
                             </div>
                           </motion.div>
                         );
@@ -700,21 +711,23 @@ const AIArena = () => {
                     </div>
 
                     {getGameDescription(activeGame.game.description) && (
-                      <p className="text-xs text-muted-foreground mt-4 leading-relaxed line-clamp-2">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-4">
                         {getGameDescription(activeGame.game.description)}
                       </p>
                     )}
 
-                    <div className="mt-5 pt-4 border-t border-border/40">
+                    <div className="pt-4 border-t border-border/40">
                       <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2.5">AI-ready stack</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div className="flex flex-wrap gap-2">
                         {STACK_MODULES.map((stack) => (
-                          <div key={stack.label} className="rounded-xl border p-2.5 bg-card/45 hover:-translate-y-0.5 transition-transform" style={{ borderColor: `${stack.tone}45` }}>
-                            <div className="flex items-center gap-2 mb-1">
-                              <stack.icon className="w-3.5 h-3.5" style={{ color: stack.tone }} />
-                              <p className="text-[11px] font-semibold" style={{ color: stack.tone }}>{stack.label}</p>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">{stack.sub}</p>
+                          <div
+                            key={stack.label}
+                            className="flex items-center gap-2 rounded-full border px-3 py-1.5 bg-card/45 hover:-translate-y-0.5 transition-transform"
+                            style={{ borderColor: `${stack.tone}35` }}
+                          >
+                            <stack.icon className="w-3.5 h-3.5" style={{ color: stack.tone }} />
+                            <span className="text-[10px] font-semibold" style={{ color: stack.tone }}>{stack.label}</span>
+                            <span className="text-[9px] text-muted-foreground hidden sm:inline">· {stack.sub}</span>
                           </div>
                         ))}
                       </div>
