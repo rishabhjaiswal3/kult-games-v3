@@ -67,6 +67,10 @@
     "vaul": "^0.9.9",
     "zod": "^3.25.76"
   },
+  "overrides": {
+    "wrap-ansi-cjs": "npm:wrap-ansi@7.0.0",
+    "cbw-sdk": "npm:@coinbase/wallet-sdk@3.9.3"
+  },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
