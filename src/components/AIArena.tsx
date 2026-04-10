@@ -431,7 +431,13 @@ const AIArena = () => {
                         <div className="mb-3 rounded-xl overflow-hidden border border-border/40 bg-black/30">
                           <div className="relative aspect-[16/10]">
                             {visualImage ? (
-                              <img src={visualImage} alt={step.label} className="w-full h-full object-cover" loading="lazy" />
+                              <img
+                                src={visualImage}
+                                alt={step.label}
+                                className="w-full h-full object-cover"
+                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 10%" : "center" }}
+                                loading="lazy"
+                              />
                             ) : (
                               <div className="w-full h-full bg-card" />
                             )}
@@ -542,6 +548,7 @@ const AIArena = () => {
                         src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
                         alt={FLOW_STEPS[activeStepIndex]?.label}
                         className="w-full h-full object-cover"
+                        style={{ objectPosition: FLOW_STEPS[activeStepIndex]?.visual === "agent-spawn" ? "center 10%" : "center" }}
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
