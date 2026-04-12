@@ -1,9 +1,11 @@
 import { StorageKeys } from "@/constants/storageKeys";
 import { keccak256, type Hex } from "viem";
 
+const DEFAULT_AGENT_ID_SALT = "kult-ai-agent-v1";
+
 export function getAgentIdSalt(): string {
   const s = import.meta.env.VITE_AGENT_ID_SALT?.trim();
-  return s || "";
+  return s || DEFAULT_AGENT_ID_SALT;
 }
 
 /** Lowercase 0x-prefixed address for stable binding. */
