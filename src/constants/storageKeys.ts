@@ -10,6 +10,10 @@ export const StorageKeys = {
     walletAddress: "kult_wallet",
     /** Anonymous KULT AI chat user id. */
     kultAiUserId: "kult-ai-user-id",
+    /** AI Warzone agent hot wallet (for fund API). */
+    warzoneHotWalletAddress: "kult_warzone_hot_wallet",
+    /** Full AI Warzone agent object (JSON) from create / GET agent. */
+    aiAgentInfo: "ai_agent_info",
   },
   session: {
     /** Wallet address after Warzone agent binding sign. */
