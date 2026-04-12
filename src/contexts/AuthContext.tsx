@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { playerApi } from "@/api/playerApi";
-import { TOKEN_KEY, WALLET_KEY } from "@/lib/apiClient";
+import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import type { Player } from "@/types/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

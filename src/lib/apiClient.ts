@@ -1,39 +1,8 @@
-import axios from "axios";
+import { getApiClient } from "@/lib/apiClientFactory";
 
-const BASE_URL = (import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app") + "/api";
+export { StorageKeys, TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+export { getApiClient, createApiClient, type ApiServiceId } from "@/lib/apiClientFactory";
+export { MAIN_BACKEND, AI_WARZONE_URL } from "@/lib/serviceUrls";
 
-export const TOKEN_KEY = "kult_token";
-export const WALLET_KEY = "kult_wallet";
-
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// ── Request interceptor — attach JWT token if present ─────────────────────────
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token && token !== "undefined" && token !== "null") {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// ── Response interceptor — handle 401 globally ────────────────────────────────
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(WALLET_KEY);
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default apiClient;
+/** Default client: main Kult backend (`/api` on {@link MAIN_BACKEND}). */
+export default getApiClient("main");

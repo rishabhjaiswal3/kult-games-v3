@@ -6,12 +6,12 @@ import { usePrivy, useWallets, type ConnectedWallet } from "@privy-io/react-auth
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
-
-const AGENT_WALLET_VERIFIED_KEY = "kult_ai_agent_wallet_verified";
-
-function buildAgentWalletSignMessage(address: string) {
-  return `Kult Games — Connect wallet for AI Agent creation.\nAddress: ${address}`;
-}
+import { StorageKeys } from "@/constants/storageKeys";
+import {
+  buildAgentBindingSignMessage,
+  deriveWarzoneAgentId,
+  normalizeWalletAddress,
+} from "@/lib/warzoneAgentId";
 
 function pickEthereumWallet(wallets: ConnectedWallet[], preferred?: string | null) {
   const eth = wallets.filter((w) => w.type === "ethereum");
@@ -50,17 +50,26 @@ const Navbar = () => {
 
   const openAgentAfterWalletProof = useCallback(async (wallet: ConnectedWallet) => {
     try {
-      if (sessionStorage.getItem(AGENT_WALLET_VERIFIED_KEY) === wallet.address) {
+      const addrNorm = normalizeWalletAddress(wallet.address);
+      const cachedAddr = sessionStorage.getItem(StorageKeys.session.warzoneAgentWalletVerified);
+      const cachedAgentId = sessionStorage.getItem(StorageKeys.session.warzoneAgentId);
+      if (cachedAddr === addrNorm && cachedAgentId) {
         setAgentModalOpen(true);
         return;
       }
+      if (cachedAddr === addrNorm && !cachedAgentId) {
+        sessionStorage.removeItem(StorageKeys.session.warzoneAgentWalletVerified);
+      }
       setAgentSigning(true);
-      const signature = await wallet.sign(buildAgentWalletSignMessage(wallet.address));
+      const signature = await wallet.sign(buildAgentBindingSignMessage(wallet.address));
+      const agentId = deriveWarzoneAgentId(wallet.address, signature);
+      sessionStorage.setItem(StorageKeys.session.warzoneAgentWalletVerified, addrNorm);
+      sessionStorage.setItem(StorageKeys.session.warzoneAgentId, agentId);
       console.log("[AI Agent] Wallet sign result", {
         walletAddress: wallet.address,
+        agentId,
         signature,
       });
-      sessionStorage.setItem(AGENT_WALLET_VERIFIED_KEY, wallet.address);
       setAgentModalOpen(true);
     } catch {
       console.warn("[Navbar] Wallet signature cancelled or failed");
