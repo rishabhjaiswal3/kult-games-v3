@@ -23,7 +23,6 @@ import {
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 import flowWalletInit from "@/assets/flow-wallet-init.jpg";
 import flowAgentSpawn from "@/assets/flow-agent-spawn.jpg";
-import flowHotWallet from "@/assets/flow-hot-wallet.jpg";
 import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
 import flowAiBattle from "@/assets/flow-ai-battle.jpg";
 import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
@@ -40,19 +39,18 @@ const AI_FEATURE_DEFS: Record<string, AIFeature> = {
   "ai-training": { icon: Dumbbell, label: "AI Training", color: "hsl(270 82% 68%)", description: "Learns from matches" },
   "ai-arena": { icon: Swords, label: "AI Arena", color: "hsl(0 85% 62%)", description: "Competitive AI duels" },
   "trash-talk": { icon: MessageSquareWarning, label: "Trash Talk", color: "hsl(40 85% 65%)", description: "Context-aware taunts" },
-  "hot-wallet": { icon: Wallet, label: "Hot Wallet", color: "hsl(150 100% 50%)", description: "Live autonomous funding" },
   "ai-purchases": { icon: ShoppingCart, label: "AI Purchases", color: "hsl(195 80% 55%)", description: "Smart in-game buys" },
   "agent-fight": { icon: Swords, label: "Agent Fight", color: "hsl(310 100% 60%)", description: "Agent-vs-agent combat" },
   "ai-recommendation": { icon: Sparkles, label: "AI Recommendation", color: "hsl(278 100% 72%)", description: "Personalized suggestions" },
 };
 
 const GAME_AI_FEATURES: Record<string, string[]> = {
-  "warzone-warriors": ["ai-training", "ai-arena", "trash-talk", "hot-wallet", "ai-purchases"],
-  "highway-hustle": ["hot-wallet", "ai-training", "agent-fight"],
+  "warzone-warriors": ["ai-training", "ai-arena", "trash-talk", "ai-purchases"],
+  "highway-hustle": [ "ai-training", "agent-fight"],
   "guess-the-ai": ["trash-talk", "ai-recommendation"],
   "robo-wars": ["ai-training", "trash-talk"],
-  "zero-dash": ["ai-agent", "hot-wallet", "ai-purchases"],
-  "zero-g-pool": ["hot-wallet", "ai-agent", "agent-fight"],
+  "zero-dash": ["ai-agent",  "ai-purchases"],
+  "zero-g-pool": ["ai-agent", "agent-fight"],
 };
 
 function resolveGameKey(game: Game): string | null {
@@ -100,7 +98,6 @@ interface FlowStep {
 const FLOW_STEPS: FlowStep[] = [
   { icon: Wallet, label: "User Wallet", sublabel: "You create your wallet to enter the Kult arena", visual: "wallet-init", color: "purple" },
   { icon: Bot, label: "AI Agent Spawns", sublabel: "An AI agent is automatically generated for you", visual: "agent-spawn", badge: { icon: Zap, text: "Auto-Generated", color: "hsl(40 85% 65%)" }, color: "cyan" },
-  { icon: Wallet, label: "Hot Wallet", sublabel: "Your agent gets its own wallet — fund it and it acts autonomously", visual: "hot-wallet", badge: { icon: Shield, text: "Fund & Activate", color: "hsl(150 100% 50%)" }, color: "amber" },
   { icon: ShoppingCart, label: "AI Purchases", sublabel: "Your agent auto-buys the best assets, skins and power-ups", visual: "ai-purchases", color: "cyan" },
   { icon: Swords, label: "AI Battle", sublabel: "Agents duel each other — your AI fights with strategy", visual: "ai-arena", color: "purple" },
   { icon: MessageSquareWarning, label: "Trash Talk", sublabel: "Your AI roasts opponents during battles — ruthless and hilarious", visual: "ai-trash-talk", color: "amber" },
@@ -109,7 +106,6 @@ const FLOW_STEPS: FlowStep[] = [
 const FLOW_VISUAL_IMAGES: Record<string, string> = {
   "wallet-init": flowWalletInit,
   "agent-spawn": flowAgentSpawn,
-  "hot-wallet": flowHotWallet,
   "ai-purchases": flowAiPurchases,
   "ai-arena": flowAiBattle,
   "ai-trash-talk": flowTrashTalk,
@@ -117,7 +113,6 @@ const FLOW_VISUAL_IMAGES: Record<string, string> = {
 
 const HERO_PROTOCOLS = [
   { icon: BrainCircuit, label: "Neural Core" },
-  { icon: Wallet, label: "Hot Wallet Mesh" },
   { icon: Swords, label: "Arena Combat AI" },
   { icon: MessageSquareWarning, label: "Voice + Banter" },
 ];
