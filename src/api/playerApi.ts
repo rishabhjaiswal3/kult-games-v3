@@ -1,4 +1,5 @@
-import apiClient, { TOKEN_KEY, WALLET_KEY } from "@/lib/apiClient";
+import apiClient from "@/lib/apiClient";
+import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import type { LoginRequest, LoginResponse, Player, UpdateNameRequest } from "@/types/api";
 
 export const playerApi = {

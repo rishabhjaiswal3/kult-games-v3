@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
+import { StorageKeys } from "@/constants/storageKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
@@ -41,7 +42,7 @@ const GamePlay = () => {
   });
 
   const rawPlayUrl = (game?.metadata?.play_url as string) ?? game?.url ?? "";
-  const token = localStorage.getItem("kult_token");
+  const token = localStorage.getItem(StorageKeys.local.authToken);
   const playUrl = buildIframeUrl(rawPlayUrl, token);
   if (isLoading) {
     return (

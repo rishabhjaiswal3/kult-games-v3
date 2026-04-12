@@ -1,0 +1,28 @@
+/**
+ * Single registry for localStorage / sessionStorage key strings.
+ * Do not hardcode these values elsewhere.
+ */
+export const StorageKeys = {
+  local: {
+    /** JWT for main Kult API (`Authorization: Bearer`). */
+    authToken: "kult_token",
+    /** Wallet address string persisted after main API login. */
+    walletAddress: "kult_wallet",
+    /** Anonymous KULT AI chat user id. */
+    kultAiUserId: "kult-ai-user-id",
+  },
+  session: {
+    /** Wallet address after Warzone agent binding sign. */
+    warzoneAgentWalletVerified: "kult_ai_agent_wallet_verified",
+    /** Derived Warzone agent id (`address_keccak…`). */
+    warzoneAgentId: "kult_warzone_agent_id",
+  },
+} as const;
+
+/** Shorthand for interceptors and auth — same as `StorageKeys.local.authToken`. */
+export const TOKEN_KEY = StorageKeys.local.authToken;
+/** Shorthand — same as `StorageKeys.local.walletAddress`. */
+export const WALLET_KEY = StorageKeys.local.walletAddress;
+
+export type LocalStorageKey = (typeof StorageKeys.local)[keyof typeof StorageKeys.local];
+export type SessionStorageKey = (typeof StorageKeys.session)[keyof typeof StorageKeys.session];

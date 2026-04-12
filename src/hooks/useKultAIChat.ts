@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { StorageKeys } from "@/constants/storageKeys";
 import { streamKultAIReply } from "@/lib/kultAiChat";
 
 export interface KultAIMessage {
@@ -7,8 +8,6 @@ export interface KultAIMessage {
   role: "user" | "ai";
   text: string;
 }
-
-const USER_STORAGE_KEY = "kult-ai-user-id";
 
 const createId = () =>
   typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -20,13 +19,13 @@ const getOrCreateUserId = () => {
     return "kult-browser-user";
   }
 
-  const existing = window.localStorage.getItem(USER_STORAGE_KEY);
+  const existing = window.localStorage.getItem(StorageKeys.local.kultAiUserId);
   if (existing) {
     return existing;
   }
 
   const nextId = createId();
-  window.localStorage.setItem(USER_STORAGE_KEY, nextId);
+  window.localStorage.setItem(StorageKeys.local.kultAiUserId, nextId);
   return nextId;
 };
 
