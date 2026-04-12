@@ -1,10 +1,27 @@
 import { motion } from "framer-motion";
 import { Menu, X, LogOut, Plus, Sparkles, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePrivy, useWallets, type ConnectedWallet } from "@privy-io/react-auth";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
+
+const AGENT_WALLET_VERIFIED_KEY = "kult_ai_agent_wallet_verified";
+
+function buildAgentWalletSignMessage(address: string) {
+  return `Kult Games — Connect wallet for AI Agent creation.\nAddress: ${address}`;
+}
+
+function pickEthereumWallet(wallets: ConnectedWallet[], preferred?: string | null) {
+  const eth = wallets.filter((w) => w.type === "ethereum");
+  if (eth.length === 0) return undefined;
+  if (preferred) {
+    const match = eth.find((w) => w.address.toLowerCase() === preferred.toLowerCase());
+    if (match) return match;
+  }
+  return eth[0];
+}
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -24,8 +41,52 @@ const Navbar = () => {
   const [isSettingUpAgent, setIsSettingUpAgent] = useState(false);
   const [agentWalletReady, setAgentWalletReady] = useState(false);
   const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
+  const [agentGatePending, setAgentGatePending] = useState(false);
+  const [agentSigning, setAgentSigning] = useState(false);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
+  const { linkWallet } = usePrivy();
+  const { wallets, ready: walletsReady } = useWallets();
   const isAIArenaPage = location.pathname === "/ai-arena";
+
+  const openAgentAfterWalletProof = useCallback(async (wallet: ConnectedWallet) => {
+    try {
+      if (sessionStorage.getItem(AGENT_WALLET_VERIFIED_KEY) === wallet.address) {
+        setAgentModalOpen(true);
+        return;
+      }
+      setAgentSigning(true);
+      const signature = await wallet.sign(buildAgentWalletSignMessage(wallet.address));
+      console.log("[AI Agent] Wallet sign result", {
+        walletAddress: wallet.address,
+        signature,
+      });
+      sessionStorage.setItem(AGENT_WALLET_VERIFIED_KEY, wallet.address);
+      setAgentModalOpen(true);
+    } catch {
+      console.warn("[Navbar] Wallet signature cancelled or failed");
+    } finally {
+      setAgentSigning(false);
+    }
+  }, []);
+
+  const handleCreateAgentClick = useCallback(() => {
+    if (!walletsReady || agentSigning) return;
+    const eth = pickEthereumWallet(wallets, walletAddress);
+    if (!eth) {
+      setAgentGatePending(true);
+      linkWallet({ walletChainType: "ethereum-only" });
+      return;
+    }
+    void openAgentAfterWalletProof(eth);
+  }, [walletsReady, wallets, walletAddress, linkWallet, openAgentAfterWalletProof, agentSigning]);
+
+  useEffect(() => {
+    if (!agentGatePending || !walletsReady) return;
+    const eth = pickEthereumWallet(wallets, walletAddress);
+    if (!eth) return;
+    setAgentGatePending(false);
+    void openAgentAfterWalletProof(eth);
+  }, [agentGatePending, walletsReady, wallets, walletAddress, openAgentAfterWalletProof]);
 
   const handleAgentSetup = () => {
     if (isSettingUpAgent) return;
@@ -141,11 +202,16 @@ const Navbar = () => {
                 <>
                   {!agentWalletReady ? (
                     <button
-                      onClick={() => setAgentModalOpen(true)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all"
+                      onClick={handleCreateAgentClick}
+                      disabled={!walletsReady || agentSigning || agentGatePending}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all disabled:opacity-60 disabled:pointer-events-none"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Create AI Agent
+                      {agentGatePending
+                        ? "Connect wallet…"
+                        : agentSigning
+                          ? "Sign message…"
+                          : "Create AI Agent"}
                     </button>
                   ) : (
                     <button
@@ -234,12 +300,28 @@ const Navbar = () => {
             ))}
             {isAuthenticated ? (
               <>
-                {isAIArenaPage && (
+                {isAIArenaPage && !agentWalletReady && (
                   <button
-                    onClick={() => { setAgentModalOpen(true); setMobileOpen(false); }}
+                    onClick={() => {
+                      handleCreateAgentClick();
+                      setMobileOpen(false);
+                    }}
+                    disabled={!walletsReady || agentSigning || agentGatePending}
+                    className="w-full px-6 py-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wider disabled:opacity-60"
+                  >
+                    {agentGatePending
+                      ? "CONNECT WALLET…"
+                      : agentSigning
+                        ? "SIGN MESSAGE…"
+                        : "CREATE AI AGENT"}
+                  </button>
+                )}
+                {isAIArenaPage && agentWalletReady && (
+                  <button
+                    onClick={() => { setWalletModalOpen(true); setMobileOpen(false); }}
                     className="w-full px-6 py-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wider"
                   >
-                    CREATE AI AGENT
+                    AGENT WALLET ({agentWalletBalanceG}G)
                   </button>
                 )}
                 <p className="text-xs font-mono text-muted-foreground px-1">
