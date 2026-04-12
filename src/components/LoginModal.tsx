@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLoginWithEmail, useLoginWithOAuth, useLogin } from "@privy-io/react-auth";
+import { useLoginWithEmail, useLoginWithOAuth, useLogin, usePrivy } from "@privy-io/react-auth";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -30,6 +30,16 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     onComplete: () => { onClose(); },
   });
   const { login } = useLogin();
+  const { authenticated, ready, linkWallet } = usePrivy();
+
+  const handleWalletAuth = () => {
+    if (!ready) return;
+    if (authenticated) {
+      linkWallet({ walletChainType: "ethereum-only" });
+    } else {
+      login({ loginMethods: ["wallet"] });
+    }
+  };
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -210,7 +220,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => login({ loginMethods: ["wallet"] })}
+                          onClick={handleWalletAuth}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all group"
                           style={{
                             borderRadius: "12px",

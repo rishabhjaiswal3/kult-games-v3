@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { playerApi } from "@/api/playerApi";
-import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { StorageKeys, TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { Player } from "@/types/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -84,6 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     playerApi.logout();
+    clearAiAgentInfo();
+    localStorage.removeItem(StorageKeys.local.warzoneHotWalletAddress);
     setPlayer(null);
     await privyLogout();
   };
