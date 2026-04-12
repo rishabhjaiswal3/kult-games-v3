@@ -54,6 +54,7 @@ const Navbar = () => {
       : null
   );
   const [isFunding, setIsFunding] = useState(false);
+  const [fundAmountInput, setFundAmountInput] = useState("");
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
   const { linkWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
@@ -189,6 +190,7 @@ const Navbar = () => {
     }
   };
 
+  /** POST /agent/fund — server credits the agent hot wallet; amount comes from your input. */
   const fundWallet = async (amount: number) => {
     const hot =
       hotWalletAddress ??
@@ -211,6 +213,20 @@ const Navbar = () => {
       setIsFunding(false);
     }
   };
+
+  const submitFundFromInput = async () => {
+    const raw = fundAmountInput.trim();
+    const n = Number.parseInt(raw, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      toast.error("Enter a valid whole amount (minimum 1)");
+      return;
+    }
+    await fundWallet(n);
+  };
+
+  useEffect(() => {
+    if (walletModalOpen) setFundAmountInput("");
+  }, [walletModalOpen]);
 
   const logLoginEvent = (message: string) => {
     if (typeof window === "undefined") return;
@@ -256,8 +272,8 @@ const Navbar = () => {
       <div
         className="fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 glass-panel-ai border-border/30"
       >
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 min-w-[100px] md:min-w-[130px]">
+        <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-2 sm:gap-3 w-full min-w-0">
+          <Link to="/" className="flex items-center gap-2 shrink-0 min-w-[100px] md:min-w-[130px]">
             <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" width={120} height={40} loading="eager" decoding="async" />
             <motion.div
               className="w-1.5 h-1.5 rounded-full"
@@ -274,7 +290,7 @@ const Navbar = () => {
             />
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-4 lg:gap-6 mx-2">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -300,98 +316,97 @@ const Navbar = () => {
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-
-          {isAuthenticated ? (
-            <div className="hidden md:flex items-center gap-3">
-              {isAIArenaPage && (
-                <>
-                  {!agentWalletReady ? (
-                    <button
-                      onClick={handleCreateAgentClick}
-                      disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all disabled:opacity-60 disabled:pointer-events-none"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      {agentGatePending
-                        ? "Connect wallet…"
-                        : agentSigning
-                          ? "Sign message…"
-                          : agentChecking
-                            ? "Checking agent…"
-                            : "Create AI Agent"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setWalletModalOpen(true)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 hover:bg-neon-cyan/20 transition-all"
-                      aria-label="Open agent wallet"
-                    >
-                      <WalletCards className="w-4 h-4 text-neon-cyan" />
-                      <span className="text-[11px] font-mono text-neon-cyan tracking-wide">Agent Wallet</span>
-                      <span className="px-1.5 py-0.5 rounded-md border border-neon-purple/40 bg-neon-purple/10 text-[10px] font-mono text-neon-purple">
-                        {agentWalletBalanceG}
-                      </span>
-                    </button>
-                  )}
-                </>
-              )}
-              <span className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
-                {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
-              </span>
-              <button
-                onClick={logout}
-                className="w-9 h-9 rounded-lg border border-border/45 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all"
-                aria-label="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleLoginClick}
-              className="hidden md:flex items-center gap-2 px-5 py-2.5 font-display text-xs font-semibold tracking-wider relative overflow-hidden group"
-              style={{
-                background: "linear-gradient(135deg, hsl(265 48% 12%), hsl(220 45% 8%))",
-                border: "1px solid hsl(270 80% 60% / 0.4)",
-                borderRadius: "14px",
-                boxShadow: "0 4px 20px hsl(270 82% 20% / 0.3), 0 0 15px hsl(270 82% 58% / 0.1), inset 0 1px 0 hsl(278 100% 82% / 0.1)",
-                color: "hsl(278 100% 82%)",
-              }}
-            >
-              {/* Shimmer */}
-              <motion.div
-                className="absolute inset-0"
-                style={{
-                  background: "linear-gradient(90deg, transparent, hsl(278 100% 82% / 0.08), transparent)",
-                  borderRadius: "inherit",
-                }}
-                animate={{ x: ["-200%", "200%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-              {/* Hover glow */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: "radial-gradient(circle at 50% 50%, hsl(270 82% 58% / 0.15), transparent 70%)",
-                  borderRadius: "inherit",
-                }}
-              />
-              {/* Dot indicator */}
-              <div
-                className="relative z-10 w-1.5 h-1.5 rounded-full"
-                style={{
-                  background: "hsl(278 100% 82%)",
-                  boxShadow: "0 0 6px hsl(278 100% 82%), 0 0 12px hsl(278 100% 82% / 0.5)",
-                }}
-              />
-              <span className="relative z-10">LOGIN</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+            <button type="button" className="md:hidden text-foreground p-1 -mr-1" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen}>
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-          )}
+
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center gap-2 lg:gap-3">
+                {isAIArenaPage && (
+                  <>
+                    {!agentWalletReady ? (
+                      <button
+                        onClick={handleCreateAgentClick}
+                        disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-2 lg:px-4 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-[10px] lg:text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all disabled:opacity-60 disabled:pointer-events-none shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        {agentGatePending
+                          ? "Connect wallet…"
+                          : agentSigning
+                            ? "Sign message…"
+                            : agentChecking
+                              ? "Checking agent…"
+                              : "Create AI Agent"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setWalletModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 hover:bg-neon-cyan/20 transition-all shrink-0"
+                        aria-label="Open agent wallet"
+                      >
+                        <WalletCards className="w-4 h-4 text-neon-cyan" />
+                        <span className="text-[11px] font-mono text-neon-cyan tracking-wide hidden xl:inline">Agent Wallet</span>
+                        <span className="px-1.5 py-0.5 rounded-md border border-neon-purple/40 bg-neon-purple/10 text-[10px] font-mono text-neon-purple">
+                          {agentWalletBalanceG}
+                        </span>
+                      </button>
+                    )}
+                  </>
+                )}
+                <span className="text-[10px] lg:text-xs font-mono text-muted-foreground truncate max-w-[72px] lg:max-w-[120px] hidden lg:inline" title={player?.name ?? walletAddress ?? undefined}>
+                  {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
+                </span>
+                <button
+                  onClick={logout}
+                  className="w-9 h-9 rounded-lg border border-border/45 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all shrink-0"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleLoginClick}
+                className="hidden md:inline-flex items-center gap-2 px-4 py-2 lg:px-5 lg:py-2.5 font-display text-[10px] lg:text-xs font-semibold tracking-wider relative overflow-hidden group shrink-0 whitespace-nowrap"
+                style={{
+                  background: "linear-gradient(135deg, hsl(265 48% 12%), hsl(220 45% 8%))",
+                  border: "1px solid hsl(270 80% 60% / 0.4)",
+                  borderRadius: "14px",
+                  boxShadow: "0 4px 20px hsl(270 82% 20% / 0.3), 0 0 15px hsl(270 82% 58% / 0.1), inset 0 1px 0 hsl(278 100% 82% / 0.1)",
+                  color: "hsl(278 100% 82%)",
+                }}
+              >
+                <motion.div
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(90deg, transparent, hsl(278 100% 82% / 0.08), transparent)",
+                    borderRadius: "inherit",
+                  }}
+                  animate={{ x: ["-200%", "200%"] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: "radial-gradient(circle at 50% 50%, hsl(270 82% 58% / 0.15), transparent 70%)",
+                    borderRadius: "inherit",
+                  }}
+                />
+                <div
+                  className="relative z-10 w-1.5 h-1.5 rounded-full"
+                  style={{
+                    background: "hsl(278 100% 82%)",
+                    boxShadow: "0 0 6px hsl(278 100% 82%), 0 0 12px hsl(278 100% 82% / 0.5)",
+                  }}
+                />
+                <span className="relative z-10">LOGIN</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {mobileOpen && (
@@ -511,42 +526,46 @@ const Navbar = () => {
               <p className="text-2xl font-black text-foreground">{agentWalletBalanceG}</p>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              This wallet powers AI arena actions. Fund balance to enable autonomous gameplay operations.
+              Enter an amount, then confirm. The app calls the Warzone fund API for your agent hot wallet (on-chain settlement is handled by the service).
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-3 space-y-2">
+              <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">
+                Amount
+              </label>
+              <input
+                id="fund-amount"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                value={fundAmountInput}
+                onChange={(e) => setFundAmountInput(e.target.value)}
+                placeholder="e.g. 100"
+                disabled={isFunding}
+                className="w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/30 disabled:opacity-50"
+              />
+              <div className="grid grid-cols-4 gap-2">
+                {[10, 50, 200, 500].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    disabled={isFunding}
+                    onClick={() => setFundAmountInput(String(v))}
+                    className="rounded-lg border border-border/45 bg-card/50 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/35 transition-colors disabled:opacity-50"
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
-                onClick={() => void fundWallet(10)}
-                disabled={isFunding}
-                className="rounded-lg border border-neon-purple/40 bg-neon-purple/10 px-2 py-1.5 text-xs text-neon-purple font-semibold hover:bg-neon-purple/20 transition-colors disabled:opacity-50"
+                onClick={() => void submitFundFromInput()}
+                disabled={isFunding || !fundAmountInput.trim()}
+                className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2.5 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 transition-colors disabled:opacity-50"
               >
-                +10
-              </button>
-              <button
-                type="button"
-                onClick={() => void fundWallet(50)}
-                disabled={isFunding}
-                className="rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-1.5 text-xs text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors disabled:opacity-50"
-              >
-                +50
-              </button>
-              <button
-                type="button"
-                onClick={() => void fundWallet(200)}
-                disabled={isFunding}
-                className="rounded-lg border border-amber-300/40 bg-amber-300/10 px-2 py-1.5 text-xs text-amber-300 font-semibold hover:bg-amber-300/20 transition-colors disabled:opacity-50"
-              >
-                +200
+                {isFunding ? "Funding…" : "Fund wallet"}
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => void fundWallet(500)}
-              disabled={isFunding}
-              className="mt-2 w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 transition-colors disabled:opacity-50"
-            >
-              {isFunding ? "Funding…" : "Fund +500"}
-            </button>
             <button
               onClick={() => setWalletModalOpen(false)}
               className="mt-4 w-full rounded-lg border border-border/45 bg-card/50 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-neon-cyan/35 transition-colors"

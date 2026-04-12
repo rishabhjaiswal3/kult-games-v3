@@ -1,5 +1,5 @@
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { gamesApi } from "@/api/gamesApi";
 import type { Game } from "@/types/api";
@@ -12,7 +12,6 @@ import {
   BrainCircuit,
   Zap,
   MessageSquareWarning,
-  Shield,
   Dumbbell,
   ChevronLeft,
   ChevronRight,
@@ -26,6 +25,7 @@ import flowAgentSpawn from "@/assets/flow-agent-spawn.jpg";
 import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
 import flowAiBattle from "@/assets/flow-ai-battle.jpg";
 import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
+import WarzoneAgentTracker from "@/components/WarzoneAgentTracker";
 
 type AIFeature = {
   icon: React.ElementType;
@@ -181,22 +181,21 @@ const AIArena = () => {
     return () => window.clearInterval(timer);
   }, [gamesWithFeatures.length, nextGame]);
 
-  const timelineContainerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: timelineContainerRef,
-    offset: ["start 0.85", "end 0.55"],
-  });
+  const [lifecycleIdx, setLifecycleIdx] = useState(0);
+  const prevLifecycle = useCallback(() => {
+    setLifecycleIdx((i) => (i === 0 ? FLOW_STEPS.length - 1 : i - 1));
+  }, []);
+  const nextLifecycle = useCallback(() => {
+    setLifecycleIdx((i) => (i === FLOW_STEPS.length - 1 ? 0 : i + 1));
+  }, []);
 
-  const [drawProgress, setDrawProgress] = useState(0);
-  useMotionValueEvent(scrollYProgress, "change", (v) => setDrawProgress(v));
-  const completionPercent = Math.round(drawProgress * 100);
-  const cappedFlowPercent = Math.min(92, Math.max(2, completionPercent));
+  useEffect(() => {
+    if (FLOW_STEPS.length <= 1) return;
+    const timer = window.setInterval(nextLifecycle, 6500);
+    return () => window.clearInterval(timer);
+  }, [nextLifecycle]);
 
-  const revealedSteps = Math.min(
-    FLOW_STEPS.length,
-    Math.floor(drawProgress * (FLOW_STEPS.length + 1))
-  );
-  const activeStepIndex = Math.min(FLOW_STEPS.length - 1, Math.max(0, revealedSteps - 1));
+  const lifecycleStep = FLOW_STEPS[lifecycleIdx];
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -211,7 +210,7 @@ const AIArena = () => {
         }}
       />
 
-      <section className="relative min-h-[85vh] pt-10 md:pt-14 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[48vh] sm:min-h-[52vh] md:min-h-[56vh] pt-20 sm:pt-24 md:pt-28 pb-8 md:pb-10 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={aiArenaHero}
@@ -240,7 +239,7 @@ const AIArena = () => {
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
 
-        <div className="relative z-10 container mx-auto px-6 text-center">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 text-center">
           <motion.div
             className="max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
@@ -248,7 +247,7 @@ const AIArena = () => {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
-              className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-neon-cyan/30 bg-background/50 backdrop-blur-md"
+              className="inline-flex items-center gap-2 mb-4 sm:mb-5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-neon-cyan/30 bg-background/50 backdrop-blur-md"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
@@ -267,7 +266,7 @@ const AIArena = () => {
             </motion.div>
 
             <motion.h1
-              className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[0.95]"
+              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[0.95]"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.7 }}
@@ -290,7 +289,7 @@ const AIArena = () => {
             </motion.h1>
 
             <motion.p
-              className="text-muted-foreground max-w-xl mx-auto text-base md:text-lg leading-relaxed mb-8"
+              className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 px-1"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -299,14 +298,14 @@ const AIArena = () => {
             </motion.p>
 
             <motion.div
-              className="flex flex-wrap items-center justify-center gap-4 mb-10"
+              className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-5 sm:mb-6"
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
               <Link
                 to="/games"
-                className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan text-sm font-bold hover:bg-neon-cyan/20 hover:border-neon-cyan/70 transition-all backdrop-blur-sm"
+                className="group inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan text-xs sm:text-sm font-bold hover:bg-neon-cyan/20 hover:border-neon-cyan/70 transition-all backdrop-blur-sm"
                 style={{ boxShadow: "0 0 30px hsl(195 100% 60% / 0.15)" }}
               >
                 Start Building Agent
@@ -314,14 +313,14 @@ const AIArena = () => {
               </Link>
               <a
                 href="#ai-game-map"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-border/60 bg-card/30 text-muted-foreground text-sm font-bold hover:text-foreground hover:border-neon-purple/50 transition-all backdrop-blur-sm"
+                className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-border/60 bg-card/30 text-muted-foreground text-xs sm:text-sm font-bold hover:text-foreground hover:border-neon-purple/50 transition-all backdrop-blur-sm"
               >
                 Explore AI Games
               </a>
             </motion.div>
 
             <motion.div
-              className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -329,7 +328,7 @@ const AIArena = () => {
               {HERO_PROTOCOLS.map((item, i) => (
                 <motion.div
                   key={item.label}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm text-xs text-muted-foreground"
+                  className="flex items-center justify-center gap-1.5 px-2 py-2 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm text-[10px] sm:text-xs text-muted-foreground"
                   whileHover={{ borderColor: "hsl(278 100% 75% / 0.4)", y: -2 }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -346,220 +345,127 @@ const AIArena = () => {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </section>
 
-      <section ref={timelineContainerRef} className="relative py-10 md:py-20">
-        <div className="container mx-auto px-6">
+      <WarzoneAgentTracker />
+
+      <section className="relative py-5 md:py-7 border-b border-border/20">
+        <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
           <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
+            className="mb-3 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2"
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="text-xs font-mono text-neon-purple tracking-[0.25em] uppercase">Agent Lifecycle</span>
-            <h2 className="font-display text-2xl md:text-4xl font-black tracking-tight text-foreground mt-3">
-              How Your <span style={{ color: "hsl(195 100% 65%)" }}>AI Agent</span> Works
-            </h2>
+            <div>
+              <span className="text-[10px] font-mono text-neon-purple tracking-[0.25em] uppercase">Agent lifecycle</span>
+              <h2 className="font-display text-lg sm:text-xl md:text-2xl font-black tracking-tight text-foreground mt-0.5">
+                How Your <span style={{ color: "hsl(195 100% 65%)" }}>AI Agent</span> Works
+              </h2>
+            </div>
+            <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md sm:text-right leading-snug">
+              Wallet → agent → purchases → battles → banter. Use arrows or dots to step through.
+            </p>
           </motion.div>
 
-          <div className="max-w-7xl mx-auto md:grid md:grid-cols-[minmax(0,1fr)_480px] gap-6 lg:gap-10 items-start">
-            <div className="md:sticky md:top-16">
-              <div className="relative pr-10 pl-2 py-2 rounded-3xl border border-neon-cyan/20 bg-card/30 backdrop-blur-xl overflow-hidden shadow-[0_0_60px_hsl(195_100%_55%_/_0.1)]">
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, hsl(270 82% 58% / 0.06) 0%, transparent 35%, transparent 70%, hsl(195 100% 55% / 0.06) 100%)" }} />
-                <div className="absolute right-4 top-4 bottom-4 w-[2px] rounded-full bg-border/35" />
-                <motion.div
-                  className="absolute right-4 top-4 w-[2px] rounded-full origin-top"
-                  style={{
-                    height: "calc(100% - 32px)",
-                    scaleY: drawProgress,
-                    background: "linear-gradient(180deg, hsl(270 82% 58%), hsl(195 100% 55%), hsl(40 85% 58%))",
-                    boxShadow: "0 0 14px hsl(195 100% 55% / 0.45)",
-                  }}
-                />
-                <motion.div
-                  className="absolute right-2.5 w-4 h-4 rounded-full border border-neon-cyan/60 bg-background/90"
-                  style={{
-                    top: `calc(${cappedFlowPercent}% - 8px)`,
-                    boxShadow: "0 0 12px hsl(195 100% 60% / 0.65)",
-                  }}
-                />
+          <div className="relative max-w-xl mx-auto">
+            <button
+              type="button"
+              onClick={prevLifecycle}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 sm:-translate-x-12 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/50 bg-card/70 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all"
+              aria-label="Previous step"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={nextLifecycle}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 sm:translate-x-12 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/50 bg-card/70 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all"
+              aria-label="Next step"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
 
-                <div className="space-y-4 relative z-10">
-                  {FLOW_STEPS.map((step, idx) => {
-                    const c = COLOR_MAP[step.color];
-                    const isRevealed = idx < revealedSteps;
-                    const visualImage = FLOW_VISUAL_IMAGES[step.visual];
-
-                    return (
-                      <motion.div
-                        key={step.label}
-                        className="relative mr-5 rounded-[20px] border p-4 md:p-5 text-right overflow-hidden"
-                        animate={
-                          isRevealed
-                            ? { opacity: 1, x: 0, y: 0, scale: 1 }
-                            : { opacity: 0.35, x: 10, y: 8, scale: 0.985 }
-                        }
-                        transition={{ duration: 0.35, ease: "easeOut" }}
-                        whileHover={{ y: -2, scale: 1.01 }}
-                        style={{
-                          borderColor: isRevealed ? c.border : "hsl(var(--border) / 0.55)",
-                          background: isRevealed
-                            ? `linear-gradient(145deg, hsl(var(--card) / 0.78), hsl(var(--card) / 0.56))`
-                            : "hsl(var(--card) / 0.38)",
-                          boxShadow: isRevealed
-                            ? `0 0 30px ${c.glow}, 0 0 60px ${c.glow}, inset 0 1px 0 hsl(210 20% 100% / 0.08)`
-                            : "inset 0 1px 0 hsl(210 20% 100% / 0.04)",
-                        }}
-                      >
-                        <div
-                          className="absolute inset-0 pointer-events-none"
-                          style={{
-                            background: `radial-gradient(circle at 85% 10%, ${c.glow}, transparent 52%)`,
-                            opacity: isRevealed ? 0.75 : 0.2,
-                          }}
-                        />
-                        <div
-                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full border border-background"
-                          style={{
-                            background: isRevealed ? c.icon : "hsl(var(--muted-foreground))",
-                            boxShadow: isRevealed ? `0 0 14px ${c.icon}` : "none",
-                          }}
-                        />
-                        <div className="mb-3 rounded-xl overflow-hidden border border-border/40 bg-black/30">
-                          <div className="relative aspect-[16/10]">
-                            {visualImage ? (
-                              <img
-                                src={visualImage}
-                                alt={step.label}
-                                className="w-full h-full object-cover"
-                                style={{ objectPosition: step.visual === "agent-spawn" ? "center 10%" : "center" }}
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-card" />
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                            <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/60 border border-white/10 text-[10px] font-mono tracking-wide text-white/90">
-                              {step.label.toUpperCase()}
-                            </div>
-                            <div className="absolute top-2 left-2 px-2 py-1 rounded-md border border-white/20 bg-black/40 text-[9px] font-mono tracking-widest text-white/75">
-                              NODE {idx + 1}
-                            </div>
-                            <div
-                              className="absolute top-2 right-2 px-2 py-1 rounded-md text-[9px] font-mono tracking-widest border"
-                              style={{
-                                color: isRevealed ? c.text : "hsl(var(--muted-foreground))",
-                                borderColor: isRevealed ? c.border : "hsl(var(--border) / 0.45)",
-                                background: isRevealed ? c.bg : "hsl(var(--muted) / 0.25)",
-                              }}
-                            >
-                              {isRevealed ? "ACTIVE" : "QUEUED"}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-start justify-end gap-3">
-                          <div>
-                            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-1">
-                              Step {idx + 1}
-                            </p>
-                            <p className="font-display text-base md:text-lg font-bold tracking-wide uppercase" style={{ color: c.text }}>
-                              {step.label}
-                            </p>
-                            <p className="text-sm text-muted-foreground leading-relaxed mt-1">
-                              {step.sublabel}
-                            </p>
-                            {step.badge && (
-                              <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-mono tracking-wider uppercase" style={{ color: step.badge.color }}>
-                                <step.badge.icon className="w-3 h-3" />
-                                {step.badge.text}
-                              </span>
-                            )}
-                          </div>
-                          <div className="w-12 h-12 rounded-xl border flex items-center justify-center shrink-0" style={{ borderColor: c.border, background: c.bg }}>
-                            <step.icon style={{ width: 20, height: 20, color: c.icon }} />
-                          </div>
-                        </div>
-                        <div className="mt-3 h-1.5 rounded-full overflow-hidden bg-border/35">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: `linear-gradient(90deg, ${c.line}, ${c.icon})` }}
-                            animate={isRevealed ? { width: "100%" } : { width: "18%" }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
+            <div className="overflow-hidden px-1 sm:px-2">
+              <AnimatePresence mode="wait" initial={false}>
+                {lifecycleStep && (() => {
+                  const c = COLOR_MAP[lifecycleStep.color];
+                  const visualImage = FLOW_VISUAL_IMAGES[lifecycleStep.visual];
+                  return (
+                    <motion.div
+                      key={lifecycleIdx}
+                      initial={{ opacity: 0, x: 28 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -28 }}
+                      transition={{ duration: 0.28, ease: "easeOut" }}
+                      className="rounded-2xl border bg-card/40 backdrop-blur-md overflow-hidden"
+                      style={{
+                        borderColor: c.border,
+                        boxShadow: `0 0 32px ${c.glow}`,
+                      }}
+                    >
+                      <div className="relative aspect-[16/9] border-b border-border/30 bg-black/50">
+                        {visualImage ? (
+                          <img
+                            src={visualImage}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            style={{
+                              objectPosition: lifecycleStep.visual === "agent-spawn" ? "center 10%" : "center",
+                            }}
+                            loading="lazy"
                           />
+                        ) : (
+                          <div className="w-full h-full bg-card" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+                          <p className="text-[10px] font-mono text-white/80 tracking-widest">
+                            {lifecycleIdx + 1} / {FLOW_STEPS.length}
+                          </p>
+                          <div
+                            className="w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 bg-background/50 backdrop-blur-sm"
+                            style={{ borderColor: c.border }}
+                          >
+                            <lifecycleStep.icon style={{ width: 22, height: 22, color: c.icon }} />
+                          </div>
                         </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
+                      </div>
+                      <div className="p-4 sm:p-5 text-left">
+                        <p className="font-display text-lg sm:text-xl font-black uppercase tracking-wide" style={{ color: c.text }}>
+                          {lifecycleStep.label}
+                        </p>
+                        <p className="text-sm text-muted-foreground leading-relaxed mt-2">{lifecycleStep.sublabel}</p>
+                        {lifecycleStep.badge && (
+                          <span
+                            className="inline-flex items-center gap-1.5 mt-3 text-[11px] font-mono uppercase tracking-wide"
+                            style={{ color: lifecycleStep.badge.color }}
+                          >
+                            <lifecycleStep.badge.icon className="w-3.5 h-3.5" />
+                            {lifecycleStep.badge.text}
+                          </span>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
             </div>
 
-            <div className="mb-8 md:mb-0 md:sticky md:top-16 self-start">
-              <motion.div
-                className="relative rounded-3xl border border-neon-purple/25 bg-card/40 backdrop-blur-xl p-5 md:p-6 overflow-hidden"
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                style={{ boxShadow: "0 0 80px hsl(270 82% 58% / 0.15), inset 0 1px 0 hsl(210 20% 100% / 0.06)" }}
-              >
-                <div className="absolute -top-24 -right-24 w-56 h-56 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(195 100% 55% / 0.2), transparent 70%)" }} />
-                <div className="absolute -bottom-20 -left-20 w-52 h-52 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(270 82% 58% / 0.24), transparent 70%)" }} />
-
-                <p className="text-[10px] md:text-xs font-mono tracking-[0.2em] uppercase text-neon-cyan mb-2 relative z-10">
-                  AI Flow Console
-                </p>
-                <h3 className="font-display text-xl md:text-3xl font-black text-foreground mb-2 relative z-10">
-                  Scroll to Run Agent Lifecycle
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-xl leading-relaxed mb-4 relative z-10">
-                  Step cards reveal progressively as you scroll. Monitor live progression here.
-                </p>
-
-                <div className="h-2.5 rounded-full bg-border/30 overflow-hidden mb-4 relative z-10">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${completionPercent}%`,
-                      background: "linear-gradient(90deg, hsl(270 82% 58%), hsl(195 100% 55%), hsl(40 85% 58%))",
-                      boxShadow: "0 0 20px hsl(195 100% 55% / 0.45)",
-                    }}
-                  />
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-border/40 bg-card/35 p-3 relative z-10">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-neon-cyan font-mono mb-2">Active AI Node</p>
-                  <div className="rounded-xl overflow-hidden border border-border/50">
-                    <div className="relative aspect-[16/10]">
-                      <img
-                        src={FLOW_VISUAL_IMAGES[FLOW_STEPS[activeStepIndex]?.visual]}
-                        alt={FLOW_STEPS[activeStepIndex]?.label}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: FLOW_STEPS[activeStepIndex]?.visual === "agent-spawn" ? "center 10%" : "center" }}
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
-                      <p className="absolute bottom-2 left-2 text-[11px] font-semibold text-white/90">
-                        {FLOW_STEPS[activeStepIndex]?.label}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
-                  {[
-                    { icon: Shield, label: "Secure Runtime", tone: "hsl(150 100% 50%)" },
-                    { icon: Zap, label: "Real-time Decisions", tone: "hsl(195 100% 60%)" },
-                    { icon: Sparkles, label: "Adaptive Strategy", tone: "hsl(278 100% 75%)" },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-xl border px-3 py-2 bg-card/40" style={{ borderColor: `${item.tone}55` }}>
-                      <div className="flex items-center gap-2">
-                        <item.icon className="w-4 h-4" style={{ color: item.tone }} />
-                        <p className="text-[11px] font-semibold tracking-wide" style={{ color: item.tone }}>
-                          {item.label}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {FLOW_STEPS.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setLifecycleIdx(i)}
+                  className="relative w-2.5 h-2.5 rounded-full transition-all duration-300"
+                  style={{
+                    background: i === lifecycleIdx ? "hsl(195 100% 60%)" : "hsl(220 30% 28%)",
+                    boxShadow: i === lifecycleIdx ? "0 0 10px hsl(195 100% 60% / 0.55)" : "none",
+                    transform: i === lifecycleIdx ? "scale(1.25)" : "scale(1)",
+                  }}
+                  aria-label={`Go to step ${i + 1}`}
+                  aria-current={i === lifecycleIdx ? "step" : undefined}
+                />
+              ))}
             </div>
           </div>
         </div>
