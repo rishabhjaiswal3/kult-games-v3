@@ -123,6 +123,12 @@ const STACK_MODULES = [
   { icon: MessageSquareWarning, label: "Arena Voice", sub: "Realtime banter engine", tone: "hsl(40 85% 65%)" },
 ];
 
+const HERO_METRICS = [
+  { label: "Agents online", value: "2,348" },
+  { label: "Matches / hour", value: "8,921" },
+  { label: "Win optimization", value: "97.4%" },
+];
+
 const COLOR_MAP = {
   purple: {
     bg: "hsl(270 82% 52% / 0.16)",
@@ -174,51 +180,63 @@ function useLifecycleColumnCount() {
 
 function AgentCoreVisual() {
   const particles = [
-    { top: "14%", left: "22%", delay: 0, duration: 2.6 },
-    { top: "18%", left: "68%", delay: 0.35, duration: 3.1 },
-    { top: "36%", left: "14%", delay: 0.6, duration: 2.8 },
-    { top: "34%", left: "80%", delay: 0.2, duration: 3.4 },
-    { top: "58%", left: "20%", delay: 0.5, duration: 2.9 },
-    { top: "62%", left: "76%", delay: 0.1, duration: 3.2 },
-    { top: "78%", left: "38%", delay: 0.4, duration: 2.7 },
-    { top: "74%", left: "60%", delay: 0.75, duration: 3.3 },
+    { top: "18%", left: "24%", delay: 0, duration: 2.8 },
+    { top: "22%", left: "72%", delay: 0.35, duration: 3.1 },
+    { top: "42%", left: "16%", delay: 0.55, duration: 2.7 },
+    { top: "40%", left: "82%", delay: 0.2, duration: 3.2 },
+    { top: "64%", left: "26%", delay: 0.45, duration: 3.4 },
+    { top: "66%", left: "74%", delay: 0.15, duration: 3.0 },
   ];
-
   return (
-    <div className="relative mx-auto w-full max-w-[320px] sm:p-2 lg:mx-0 lg:ml-auto">
-      <div className="relative mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center">
+    <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[400px] lg:max-w-[460px] lg:mx-0 lg:ml-auto">
+      <div className="relative mx-auto flex aspect-square w-full items-center justify-center">
+        <div className="absolute right-0 top-0 z-30 w-[40%] max-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-background/80 p-1.5 shadow-[0_12px_35px_hsl(220_70%_2%/0.45)] backdrop-blur-sm sm:max-w-[190px]">
+          <div className="relative overflow-hidden rounded-xl">
+            <img src={flowAiBattle} alt="" className="h-24 w-full object-cover sm:h-28" loading="eager" decoding="async" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+            <span className="absolute bottom-1.5 left-1.5 rounded-full border border-neon-cyan/30 bg-background/75 px-2 py-0.5 text-[8px] font-mono uppercase tracking-[0.16em] text-neon-cyan">
+              Live duel feed
+            </span>
+          </div>
+        </div>
         <div
-          className="pointer-events-none absolute inset-[8%] rounded-full border border-neon-cyan/20"
-          style={{ boxShadow: "0 0 56px hsl(195 100% 50% / 0.12)" }}
+          className="pointer-events-none absolute inset-[7%] rounded-full border border-neon-cyan/20"
+          style={{ boxShadow: "0 0 48px hsl(195 100% 50% / 0.15)" }}
         />
         <motion.div
-          className="pointer-events-none absolute inset-[18%] rounded-full border border-dashed border-neon-purple/25"
+          className="pointer-events-none absolute inset-[17%] rounded-full border border-dashed border-neon-purple/25"
           animate={{ rotate: 360 }}
-          transition={{ duration: 42, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 38, repeat: Infinity, ease: "linear" }}
         />
         <div
-          className="pointer-events-none absolute inset-[24%] rounded-full"
+          className="pointer-events-none absolute inset-[26%] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(195 100% 50% / 0.14) 0%, transparent 70%)",
-            boxShadow: "inset 0 0 34px hsl(270 80% 65% / 0.2)",
+            background: "radial-gradient(circle, hsl(195 100% 50% / 0.18) 0%, transparent 72%)",
+            boxShadow: "inset 0 0 32px hsl(270 80% 65% / 0.15)",
           }}
         />
+        <div className="absolute left-2 top-8 rounded-xl border border-neon-cyan/20 bg-background/70 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.18em] text-neon-cyan/85 backdrop-blur-sm">
+          Cortex
+        </div>
+        <div className="absolute bottom-10 right-3 rounded-xl border border-neon-purple/30 bg-background/70 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.18em] text-violet-300/90 backdrop-blur-sm">
+          Synapse
+        </div>
         {particles.map((p, i) => (
           <motion.span
             key={`brain-particle-${i}`}
-            className="pointer-events-none absolute z-10 h-1.5 w-1.5 rounded-full bg-neon-cyan/80"
-            style={{ top: p.top, left: p.left, boxShadow: "0 0 14px hsl(195 100% 60% / 0.7)" }}
-            animate={{ y: [0, -8, 0], opacity: [0.35, 1, 0.35], scale: [0.9, 1.2, 0.9] }}
+            className="pointer-events-none absolute z-10 h-2 w-2 rounded-full bg-neon-cyan/80"
+            style={{ top: p.top, left: p.left, boxShadow: "0 0 12px hsl(195 100% 60% / 0.7)" }}
+            animate={{ y: [0, -7, 0], opacity: [0.3, 1, 0.3], scale: [0.9, 1.15, 0.9] }}
             transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
           />
         ))}
         <motion.div
-          className="relative z-20 flex h-[50%] w-[50%] max-h-[138px] max-w-[138px] items-center justify-center rounded-[30%] border border-neon-cyan/30 bg-gradient-to-b from-card/95 to-background/90"
-          style={{ boxShadow: "inset 0 1px 0 hsl(210 20% 100% / 0.08), 0 0 36px hsl(195 100% 50% / 0.2)" }}
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+          className="relative z-20 flex h-[54%] w-[54%] max-h-[190px] max-w-[190px] items-center justify-center rounded-[34%] border border-neon-cyan/30 bg-gradient-to-b from-card/95 to-background/95 sm:max-h-[220px] sm:max-w-[220px]"
+          style={{ boxShadow: "inset 0 1px 0 hsl(210 20% 100% / 0.08), 0 0 40px hsl(195 100% 50% / 0.25)" }}
+          animate={{ y: [0, -4, 0], rotate: [0, 1.5, 0] }}
+          transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <BrainCircuit className="h-16 w-16 text-neon-cyan sm:h-20 sm:w-20" strokeWidth={1.2} />
+          <BrainCircuit className="h-16 w-16 text-neon-cyan sm:h-20 sm:w-20 lg:h-24 lg:w-24" strokeWidth={1.1} />
         </motion.div>
         <span className="absolute bottom-1 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-neon-cyan/15 bg-background/85 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.28em] text-neon-cyan/80">
           Neural processing
@@ -417,8 +435,8 @@ const AIArena = () => {
           />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 sm:px-6">
-          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] ai-border-glow">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6" >
+          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[28px] ai-border-glow">
             <div
               className="relative overflow-hidden rounded-[28px] border-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12"
               style={{
@@ -433,8 +451,8 @@ const AIArena = () => {
               />
               <div className="pointer-events-none absolute -right-20 top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full bg-neon-purple/8 blur-[100px]" aria-hidden />
               <div className="pointer-events-none absolute -left-16 top-0 h-[200px] w-[200px] rounded-full bg-neon-cyan/6 blur-[80px]" aria-hidden />
-              <div className="relative flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-14 lg:text-left">
-              <div className="w-full flex-1 text-center lg:text-left">
+              <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start lg:gap-8">
+              <div className="w-full text-center lg:text-left">
                 <div className="mb-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
                   <span className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/8 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/95">
                     <span className="relative flex h-1.5 w-1.5">
@@ -448,34 +466,34 @@ const AIArena = () => {
                   </span>
                 </div>
 
-                <h1 className="font-display font-black tracking-[-0.03em]">
-                  <span className="block text-[clamp(2.25rem,7vw,3.75rem)] leading-[0.95] text-foreground/95">
-                    YOUR AI
-                  </span>
-                  <span className="mt-0.5 block text-[clamp(2.75rem,10vw,5rem)] font-black leading-[0.9] gradient-text">
-                    AGENT
-                  </span>
-                </h1>
+                  <h1 className="font-display font-black tracking-[-0.03em]">
+                    <span className="block text-[clamp(2rem,8vw,4rem)] leading-[0.95] text-foreground/95">
+                      YOUR AI
+                    </span>
+                    <span className="mt-0.5 block text-[clamp(2.6rem,11vw,5.4rem)] font-black leading-[0.88] gradient-text">
+                      AGENT
+                    </span>
+                  </h1>
 
-                <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
-                  Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
-                </p>
+                  <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
+                    Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
+                  </p>
 
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                  <Link
-                    to="/games"
-                    className="group relative z-10 inline-flex items-center gap-2 rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-wide btn-eye"
-                  >
-                    <span className="relative z-10">Start building</span>
-                    <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                  <a
-                    href="#warzone-agent-tracker"
-                    className="relative z-10 inline-flex items-center gap-2 rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-wide btn-eye-outline"
-                  >
-                    <span className="relative z-10">Track agent</span>
-                  </a>
-                </div>
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                    <Link
+                      to="/games"
+                      className="group relative z-10 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye sm:px-7 sm:py-3.5"
+                    >
+                      <span className="relative z-10">Start building</span>
+                      <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                    <a
+                      href="#warzone-agent-tracker"
+                      className="relative z-10 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye-outline sm:px-7 sm:py-3.5"
+                    >
+                      <span className="relative z-10">Track agent</span>
+                    </a>
+                  </div>
 
                 <div className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-2 sm:mx-0 sm:max-w-none sm:justify-start">
                   {HERO_PROTOCOLS.map((item) => (
@@ -488,11 +506,58 @@ const AIArena = () => {
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="w-full shrink-0 lg:w-auto lg:max-w-[340px]">
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {HERO_METRICS.map((metric) => (
+                    <div
+                      key={metric.label}
+                      className="rounded-xl border border-white/10 bg-background/55 px-3 py-3"
+                    >
+                      <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">{metric.label}</p>
+                      <p className="mt-1 text-base font-bold text-neon-cyan">{metric.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-white/10 bg-card/45 p-3 sm:p-4">
+                  <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan/85">Agent system modules</p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {STACK_MODULES.map((module) => (
+                      <div
+                        key={module.label}
+                        className="rounded-xl border border-white/10 bg-background/60 px-3 py-3"
+                      >
+                        <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-card">
+                          <module.icon className="h-4 w-4" style={{ color: module.tone }} />
+                        </div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-foreground/90">{module.label}</p>
+                        <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{module.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 rounded-lg border border-neon-cyan/20 bg-neon-cyan/[0.06] px-3 py-2">
+                    <div className="flex items-center justify-between gap-3 text-[10px] font-mono uppercase tracking-[0.16em] text-neon-cyan/90">
+                      <span>Realtime arena activity</span>
+                      <span className="inline-flex items-center gap-1 text-emerald-400">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                        Live
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background/60">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-neon-cyan via-violet-400 to-neon-cyan"
+                        animate={{ x: ["-30%", "30%", "-30%"] }}
+                        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full lg:pt-2">
                 <AgentCoreVisual />
               </div>
+
+             
             </div>
             </div>
           </div>

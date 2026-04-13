@@ -144,7 +144,7 @@ const WarzoneAgentTracker = () => {
           </div>
         </div>
 
-        {/* <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
+        <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
           <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/85">Agent lookup</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
             <input
@@ -171,14 +171,14 @@ const WarzoneAgentTracker = () => {
               Auto-detected from session: {shortAddr(getAddress(walletAddress))}
             </p>
           )}
-        </div> */}
+        </div>
 
         {!activeWallet && (
           <p className="text-sm text-muted-foreground text-center py-8">Connect a wallet or enter an address and scan.</p>
         )}
 
         {activeWallet && (
-          <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-none touch-pan-x md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 md:pb-0 md:touch-auto">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-none touch-pan-x md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 md:pb-0 md:touch-auto md:[&>div:last-child]:col-span-2">
             {/* Neural / training */}
             <div className="relative w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
               <span
@@ -310,45 +310,6 @@ const WarzoneAgentTracker = () => {
                   </div>
                 </>
               ) : null}
-            </div>
-
-            {/* Backend wallet */}
-            <div className="w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
-              {/* <div className="flex items-start justify-between gap-2 mb-3">
-                <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">Backend 0G wallet</p>
-                {backend && (
-                  <span
-                    className={`shrink-0 text-[10px] font-mono px-2 py-0.5 rounded-md border uppercase ${
-                      backend.funded
-                        ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
-                        : "border-amber-500/50 text-amber-300 bg-amber-500/10"
-                    }`}
-                  >
-                    {backend.funded ? "FUNDED" : "LOW"}
-                  </span>
-                )}
-              </div> */}
-              {/* {backendQ.isLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Loading…
-                </div>
-              ) : backendQ.isError ? (
-                <p className="text-sm text-red-400/90">Could not load backend wallet.</p>
-              ) : backend ? (
-                <>
-                  <p className="text-[10px] uppercase text-muted-foreground mb-1">Wallet address</p>
-                  <p className="text-xs font-mono break-all mb-3">{backend.address}</p>
-                  <p className="text-[10px] uppercase text-muted-foreground mb-1">A0GI balance</p>
-                  <p className="text-lg font-mono text-emerald-400 mb-3">{backend.balanceEth} A0GI</p>
-                  <p className="text-[10px] uppercase text-muted-foreground mb-1">Network</p>
-                  <p className="text-xs font-mono mb-3">{backend.network}</p>
-                  <div
-                    className={`rounded-lg border px-3 py-2 text-xs ${backend.funded ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-200/90" : "border-amber-500/30 bg-amber-500/5 text-amber-200/90"}`}
-                  >
-                    {backend.tip}
-                  </div>
-                </>
-              ) : null} */}
             </div>
 
             {/* Server health */}
