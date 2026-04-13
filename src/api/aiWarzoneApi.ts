@@ -1,6 +1,11 @@
 import { getApiClient } from "@/lib/apiClientFactory";
 import type {
   AiWarzoneAgent,
+  AiWarzoneArenaCreateRequest,
+  AiWarzoneArenaJoinRequest,
+  AiWarzoneArenaMatch,
+  AiWarzoneArenaMatchDetail,
+  AiWarzoneArenaMatchesResponse,
   AiWarzoneBehaviorStatus,
   AiWarzoneCreateAgentRequest,
   AiWarzoneCreateEscrowRequest,
@@ -37,8 +42,29 @@ export const aiWarzoneApi = {
     const { data } = await http().post<AiWarzoneFundAgentResponse>("/agent/fund", body);
     return data;
   },
-  createEscrow: async (body: AiWarzoneCreateEscrowRequest): Promise<AiWarzoneEscrowResponse> => {
-    const { data } = await http().post<AiWarzoneEscrowResponse>("/arena/escrow", body);
+  /** POST /arena/create — create open arena match */
+  createArenaMatch: async (body: AiWarzoneArenaCreateRequest): Promise<AiWarzoneArenaMatch> => {
+    const { data } = await http().post<AiWarzoneArenaMatch>("/arena/create", body);
+    return data;
+  },
+
+  /** POST /arena/join — join existing arena match */
+  joinArenaMatch: async (body: AiWarzoneArenaJoinRequest): Promise<AiWarzoneArenaMatch> => {
+    const { data } = await http().post<AiWarzoneArenaMatch>("/arena/join", body);
+    return data;
+  },
+
+  /** GET /arena/matches — list available/active matches for matchmaking explorer */
+  getArenaMatches: async (): Promise<AiWarzoneArenaMatchesResponse> => {
+    const { data } = await http().get<AiWarzoneArenaMatchesResponse>("/arena/matches");
+    return data;
+  },
+
+  /** GET /arena/match?matchId= — single match detail */
+  getArenaMatch: async (matchId: string): Promise<AiWarzoneArenaMatchDetail> => {
+    const { data } = await http().get<AiWarzoneArenaMatchDetail>("/arena/match", {
+      params: { matchId },
+    });
     return data;
   },
 

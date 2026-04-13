@@ -75,6 +75,58 @@ export interface AiWarzoneEscrowResponse {
   escrowId: string;
 }
 
+// ─── Arena matchmaking explorer ──────────────────────────────────────────────
+
+export interface AiWarzoneArenaCreateRequest {
+  player1HotWallet: string;
+  player1Elo: number;
+  amount: number;
+}
+
+export interface AiWarzoneArenaJoinRequest {
+  matchId: string;
+  player2HotWallet: string;
+  player2Elo: number;
+}
+
+export interface AiWarzoneArenaMatch {
+  matchId: string;
+  player1HotWallet: string;
+  player1Elo: number;
+  player2HotWallet: string | null;
+  player2Elo?: number | null;
+  status: string;
+  warzoneMatchId: string;
+  prizeAmount: string;
+  escrowId: string;
+  startedAt?: string | null;
+  createdAt?: string;
+}
+
+export interface AiWarzoneArenaMatchesResponse {
+  total: number;
+  matches: AiWarzoneArenaMatch[];
+}
+
+/** GET /arena/match?matchId= — single match (includes outcome + timestamps) */
+export interface AiWarzoneArenaMatchDetail {
+  _id: string;
+  player1HotWallet: string;
+  player1Elo: number;
+  player2HotWallet: string | null;
+  player2Elo?: number | null;
+  status: string;
+  warzoneMatchId: string;
+  prizeAmount: string;
+  escrowId: string;
+  winnerId: string | null;
+  eloChange: number | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── GET /behavior/status/:wallet ───────────────────────────────────────────
 
 export interface AiWarzoneBehaviorStatus {
