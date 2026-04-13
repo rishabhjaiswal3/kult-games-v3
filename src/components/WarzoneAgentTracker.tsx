@@ -144,7 +144,7 @@ const WarzoneAgentTracker = () => {
           </div>
         </div>
 
-        <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
+        {/* <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
           <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/85">Agent lookup</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
             <input
@@ -171,7 +171,7 @@ const WarzoneAgentTracker = () => {
               Auto-detected from session: {shortAddr(getAddress(walletAddress))}
             </p>
           )}
-        </div>
+        </div> */}
 
         {!activeWallet && (
           <p className="text-sm text-muted-foreground text-center py-8">Connect a wallet or enter an address and scan.</p>
@@ -314,7 +314,7 @@ const WarzoneAgentTracker = () => {
 
             {/* Backend wallet */}
             <div className="w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
-              <div className="flex items-start justify-between gap-2 mb-3">
+              {/* <div className="flex items-start justify-between gap-2 mb-3">
                 <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">Backend 0G wallet</p>
                 {backend && (
                   <span
@@ -327,7 +327,7 @@ const WarzoneAgentTracker = () => {
                     {backend.funded ? "FUNDED" : "LOW"}
                   </span>
                 )}
-              </div>
+              </div> */}
               {backendQ.isLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading…
