@@ -22,12 +22,13 @@ function buildIframeUrl(playUrl: string, token: string | null): string {
 
   try {
     const url = new URL(playUrl);
-    url.searchParams.set("token", token);
+    url.searchParams.set("jwt", token);
+    url.searchParams.set("source", "browser");
     return url.toString();
   } catch {
     // Relative or non-standard URL — fall back to string concat
     const sep = playUrl.includes("?") ? "&" : "?";
-    return `${playUrl}${sep}token=${encodeURIComponent(token)}`;
+    return `${playUrl}${sep}jwt=${encodeURIComponent(token)}&source=browser`;
   }
 }
 
