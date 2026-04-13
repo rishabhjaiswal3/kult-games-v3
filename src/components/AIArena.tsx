@@ -26,6 +26,7 @@ import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
 import flowAiBattle from "@/assets/flow-ai-battle.jpg";
 import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
 import WarzoneAgentTracker from "@/components/WarzoneAgentTracker";
+import ArenaMatchmakingPanel from "@/components/ArenaMatchmakingPanel";
 
 type AIFeature = {
   icon: React.ElementType;
@@ -565,6 +566,8 @@ const AIArena = () => {
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </section>
+
+      <ArenaMatchmakingPanel />
 
       <WarzoneAgentTracker />
 
