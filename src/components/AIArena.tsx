@@ -173,34 +173,55 @@ function useLifecycleColumnCount() {
 }
 
 function AgentCoreVisual() {
+  const particles = [
+    { top: "14%", left: "22%", delay: 0, duration: 2.6 },
+    { top: "18%", left: "68%", delay: 0.35, duration: 3.1 },
+    { top: "36%", left: "14%", delay: 0.6, duration: 2.8 },
+    { top: "34%", left: "80%", delay: 0.2, duration: 3.4 },
+    { top: "58%", left: "20%", delay: 0.5, duration: 2.9 },
+    { top: "62%", left: "76%", delay: 0.1, duration: 3.2 },
+    { top: "78%", left: "38%", delay: 0.4, duration: 2.7 },
+    { top: "74%", left: "60%", delay: 0.75, duration: 3.3 },
+  ];
+
   return (
-    <div className="relative mx-auto w-full max-w-[320px] rounded-[24px] border border-white/10 bg-background/70 p-6 shadow-[0_20px_60px_hsl(220_60%_2%/0.4)] backdrop-blur-sm sm:p-8 lg:mx-0 lg:ml-auto">
-      <div className="relative mx-auto flex aspect-square w-full max-w-[260px] items-center justify-center">
+    <div className="relative mx-auto w-full max-w-[320px] sm:p-2 lg:mx-0 lg:ml-auto">
+      <div className="relative mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center">
         <div
-          className="pointer-events-none absolute inset-[6%] rounded-full border border-neon-cyan/20"
-          style={{ boxShadow: "0 0 48px hsl(195 100% 50% / 0.08)" }}
+          className="pointer-events-none absolute inset-[8%] rounded-full border border-neon-cyan/20"
+          style={{ boxShadow: "0 0 56px hsl(195 100% 50% / 0.12)" }}
         />
         <motion.div
-          className="pointer-events-none absolute inset-[16%] rounded-full border border-dashed border-neon-purple/20"
+          className="pointer-events-none absolute inset-[18%] rounded-full border border-dashed border-neon-purple/25"
           animate={{ rotate: 360 }}
-          transition={{ duration: 56, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 42, repeat: Infinity, ease: "linear" }}
         />
         <div
-          className="pointer-events-none absolute inset-[26%] rounded-full"
+          className="pointer-events-none absolute inset-[24%] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(195 100% 50% / 0.12) 0%, transparent 68%)",
-            boxShadow: "inset 0 0 32px hsl(270 80% 65% / 0.12)",
+            background: "radial-gradient(circle, hsl(195 100% 50% / 0.14) 0%, transparent 70%)",
+            boxShadow: "inset 0 0 34px hsl(270 80% 65% / 0.2)",
           }}
         />
+        {particles.map((p, i) => (
+          <motion.span
+            key={`brain-particle-${i}`}
+            className="pointer-events-none absolute z-10 h-1.5 w-1.5 rounded-full bg-neon-cyan/80"
+            style={{ top: p.top, left: p.left, boxShadow: "0 0 14px hsl(195 100% 60% / 0.7)" }}
+            animate={{ y: [0, -8, 0], opacity: [0.35, 1, 0.35], scale: [0.9, 1.2, 0.9] }}
+            transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
         <motion.div
-          className="relative z-10 flex h-[44%] w-[44%] max-h-[112px] max-w-[112px] items-center justify-center rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-card to-background/95 shadow-[inset_0_1px_0_hsl(210_20%_100%/_0.06)]"
-          animate={{ y: [0, -5, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="relative z-20 flex h-[50%] w-[50%] max-h-[138px] max-w-[138px] items-center justify-center rounded-[30%] border border-neon-cyan/30 bg-gradient-to-b from-card/95 to-background/90"
+          style={{ boxShadow: "inset 0 1px 0 hsl(210 20% 100% / 0.08), 0 0 36px hsl(195 100% 50% / 0.2)" }}
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Bot className="h-12 w-12 text-neon-cyan sm:h-14 sm:w-14" strokeWidth={1.15} />
+          <BrainCircuit className="h-16 w-16 text-neon-cyan sm:h-20 sm:w-20" strokeWidth={1.2} />
         </motion.div>
         <span className="absolute bottom-1 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-neon-cyan/15 bg-background/85 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.28em] text-neon-cyan/80">
-          Autonomous unit
+          Neural processing
         </span>
       </div>
     </div>
