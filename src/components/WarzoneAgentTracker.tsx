@@ -129,7 +129,7 @@ const WarzoneAgentTracker = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-sky-500/20 bg-card/25 backdrop-blur-md p-4 sm:p-5 mb-6">
+        <div className="rounded-2xl border border-sky-500/20 bg-card p-4 sm:p-5 mb-6">
           <p className="text-[10px] font-mono tracking-[0.2em] text-sky-400/80 uppercase mb-3">Agent lookup</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <input

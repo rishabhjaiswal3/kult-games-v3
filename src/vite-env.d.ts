@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_AI_WARZONE_URL?: string;
   /** Salt mixed into agent binding sign message; change only if you need a new agent-id namespace. */
   readonly VITE_AGENT_ID_SALT?: string;
+  /** Embedded Moments app URL (full page iframe on /moments). */
+  readonly VITE_MOMENTS_URL?: string;
 }
 
 interface ImportMeta {

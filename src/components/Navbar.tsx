@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Menu, X, LogOut, Plus, Sparkles, WalletCards } from "lucide-react";
+import { Menu, X, LogOut, Plus, Sparkles, User, Copy } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { usePrivy, useWallets, type ConnectedWallet } from "@privy-io/react-auth";
@@ -16,6 +16,14 @@ import {
   normalizeWalletAddress,
 } from "@/lib/warzoneAgentId";
 import type { AiWarzoneAgent } from "@/types/aiWarzone";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function pickEthereumWallet(wallets: ConnectedWallet[], preferred?: string | null) {
   const eth = wallets.filter((w) => w.type === "ethereum");
@@ -31,9 +39,121 @@ const navItems = [
   { label: "Home", path: "/" },
   { label: "Games", path: "/games" },
   { label: "AI Arena", path: "/ai-arena" },
+  { label: "Moments", path: "/moments" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Events", path: "/events" },
 ];
+
+type ProfileDropdownBodyProps = {
+  displayName: string;
+  walletAddress: string | null;
+  agentWalletReady: boolean;
+  agentWalletBalanceG: number;
+  walletsReady: boolean;
+  agentSigning: boolean;
+  agentGatePending: boolean;
+  agentChecking: boolean;
+  onCreateAgent: () => void;
+  onFundAgent: () => void;
+  onLogout: () => void;
+  onAfterSelect?: () => void;
+};
+
+function ProfileDropdownBody({
+  displayName,
+  walletAddress,
+  agentWalletReady,
+  agentWalletBalanceG,
+  walletsReady,
+  agentSigning,
+  agentGatePending,
+  agentChecking,
+  onCreateAgent,
+  onFundAgent,
+  onLogout,
+  onAfterSelect,
+}: ProfileDropdownBodyProps) {
+  const copyWallet = () => {
+    if (!walletAddress) return;
+    void navigator.clipboard.writeText(walletAddress);
+    toast.success("Wallet address copied");
+  };
+
+  const createLabel = agentGatePending
+    ? "Connect wallet…"
+    : agentSigning
+      ? "Sign message…"
+      : agentChecking
+        ? "Checking agent…"
+        : "Create AI Agent";
+
+  return (
+    <>
+      <DropdownMenuLabel className="font-normal space-y-1">
+        <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Username</p>
+        <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+      </DropdownMenuLabel>
+      {walletAddress ? (
+        <div className="px-2 py-2 rounded-md bg-muted/50 border border-border/40 mx-1">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Wallet</p>
+          <div className="flex items-start gap-2">
+            <span className="text-[11px] font-mono text-foreground break-all flex-1 min-w-0 leading-snug" title={walletAddress}>
+              {walletAddress}
+            </span>
+            <button
+              type="button"
+              className="shrink-0 p-1.5 rounded-md border border-border/60 bg-card hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                copyWallet();
+              }}
+              aria-label="Copy wallet address"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <DropdownMenuSeparator />
+      {!agentWalletReady ? (
+        <DropdownMenuItem
+          disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
+          className="gap-2 cursor-pointer"
+          onSelect={() => {
+            onCreateAgent();
+            onAfterSelect?.();
+          }}
+        >
+          <Plus className="w-4 h-4 text-neon-cyan shrink-0" />
+          <span>{createLabel}</span>
+        </DropdownMenuItem>
+      ) : (
+        <DropdownMenuItem
+          className="gap-2 cursor-pointer"
+          onSelect={() => {
+            onFundAgent();
+            onAfterSelect?.();
+          }}
+        >
+          <span className="text-neon-cyan font-medium">Fund AI Agent</span>
+          <span className="ml-auto text-xs font-mono text-muted-foreground tabular-nums">{agentWalletBalanceG} G</span>
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+        onSelect={() => {
+          onLogout();
+          onAfterSelect?.();
+        }}
+      >
+        <LogOut className="w-4 h-4 shrink-0" />
+        Logout
+      </DropdownMenuItem>
+    </>
+  );
+}
 
 const Navbar = () => {
   const location = useLocation();
@@ -58,7 +178,6 @@ const Navbar = () => {
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
   const { linkWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
-  const isAIArenaPage = location.pathname === "/ai-arena";
 
   const applyAgent = useCallback((agent: AiWarzoneAgent) => {
     localStorage.setItem(StorageKeys.local.warzoneHotWalletAddress, agent.hotWalletAddress);
@@ -138,7 +257,7 @@ const Navbar = () => {
   }, [agentGatePending, walletsReady, wallets, walletAddress, openAgentAfterWalletProof]);
 
   useEffect(() => {
-    if (!isAIArenaPage || !isAuthenticated || !walletAddress) return;
+    if (!isAuthenticated || !walletAddress) return;
     setAgentWalletReady(false);
     setHotWalletAddress(null);
     setAgentWalletBalanceG(0);
@@ -157,7 +276,7 @@ const Navbar = () => {
     return () => {
       cancelled = true;
     };
-  }, [isAIArenaPage, isAuthenticated, walletAddress, applyAgent]);
+  }, [isAuthenticated, walletAddress, applyAgent]);
 
   const handleAgentSetup = async () => {
     if (isSettingUpAgent) return;
@@ -267,37 +386,59 @@ const Navbar = () => {
     navigate("/?login=1");
   };
 
+  const profileDisplayName =
+    player?.name?.trim() ||
+    (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "Player");
+
+  const profileMenuProps: ProfileDropdownBodyProps = {
+    displayName: profileDisplayName,
+    walletAddress,
+    agentWalletReady,
+    agentWalletBalanceG,
+    walletsReady,
+    agentSigning,
+    agentGatePending,
+    agentChecking,
+    onCreateAgent: handleCreateAgentClick,
+    onFundAgent: () => setWalletModalOpen(true),
+    onLogout: () => {
+      logout();
+      setMobileOpen(false);
+    },
+  };
+
+  const profileTriggerClass =
+    "inline-flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full border border-border/60 bg-card text-foreground hover:border-neon-cyan/45 hover:text-neon-cyan transition-colors shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/40";
+
   return (
     <>
-      <div
-        className="fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 glass-panel-ai border-border/30"
-      >
-        <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-2 sm:gap-3 w-full min-w-0">
-          <Link to="/" className="flex items-center gap-2 shrink-0 min-w-[100px] md:min-w-[130px]">
+      <div className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-3 sm:gap-4 md:gap-5 w-full min-w-0">
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-[100px] md:min-w-[130px]">
             <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" width={120} height={40} loading="eager" decoding="async" />
             <motion.div
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "hsl(270 82% 60%)" }}
               animate={{
-                opacity: [1, 0.3, 1],
+                opacity: [1, 0.72, 1],
                 boxShadow: [
                   "0 0 4px hsl(270 82% 55%), 0 0 10px hsl(270 82% 55% / 0.5)",
-                  "0 0 12px hsl(270 82% 55%), 0 0 24px hsl(270 82% 55% / 0.5)",
+                  "0 0 10px hsl(270 82% 55%), 0 0 18px hsl(270 82% 55% / 0.45)",
                   "0 0 4px hsl(270 82% 55%), 0 0 10px hsl(270 82% 55% / 0.5)",
                 ],
               }}
-              transition={{ duration: 1.5, repeat: Infinity }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
             />
           </Link>
 
-          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-4 lg:gap-6 mx-2">
+          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-2 lg:gap-3 mx-1 md:mx-2 lg:mx-4 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
                   key={item.label}
                   to={item.path}
-                  className={`text-sm font-medium transition-colors duration-300 relative group ${
+                  className={`shrink-0 text-sm font-medium transition-colors duration-300 relative group px-2.5 py-2 md:px-3.5 rounded-md hover:bg-muted/40 ${
                     isActive
                       ? "text-[hsl(278_100%_80%)]"
                       : "text-muted-foreground hover:text-[hsl(278_100%_80%)]"
@@ -305,7 +446,7 @@ const Navbar = () => {
                 >
                   {item.label}
                   <span
-                    className={`absolute -bottom-1 left-0 h-[1px] transition-all duration-300 ${
+                    className={`absolute bottom-1 left-0 h-[1px] transition-all duration-300 ${
                       isActive ? "w-full" : "w-0 group-hover:w-full"
                     }`}
                     style={{
@@ -318,56 +459,35 @@ const Navbar = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
-            <button type="button" className="md:hidden text-foreground p-1 -mr-1" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen}>
+          <div className="flex items-center gap-3 md:gap-4 shrink-0 ml-auto pl-2">
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  type="button"
+                  className={`md:hidden ${profileTriggerClass}`}
+                  aria-label="Open account menu"
+                >
+                  <User className="w-[18px] h-[18px] md:w-5 md:h-5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-1.5rem))]">
+                  <ProfileDropdownBody {...profileMenuProps} onAfterSelect={() => setMobileOpen(false)} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+
+            <button type="button" className="md:hidden text-foreground p-2 -mr-0.5 rounded-md hover:bg-muted/50" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen}>
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-2 lg:gap-3">
-                {isAIArenaPage && (
-                  <>
-                    {!agentWalletReady ? (
-                      <button
-                        onClick={handleCreateAgentClick}
-                        disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
-                        className="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-2 lg:px-4 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-[10px] lg:text-xs font-semibold tracking-wide hover:bg-neon-cyan/20 transition-all disabled:opacity-60 disabled:pointer-events-none shrink-0"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        {agentGatePending
-                          ? "Connect wallet…"
-                          : agentSigning
-                            ? "Sign message…"
-                            : agentChecking
-                              ? "Checking agent…"
-                              : "Create AI Agent"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setWalletModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 hover:bg-neon-cyan/20 transition-all shrink-0"
-                        aria-label="Open agent wallet"
-                      >
-                        <WalletCards className="w-4 h-4 text-neon-cyan" />
-                        <span className="text-[11px] font-mono text-neon-cyan tracking-wide hidden xl:inline">Agent Wallet</span>
-                        <span className="px-1.5 py-0.5 rounded-md border border-neon-purple/40 bg-neon-purple/10 text-[10px] font-mono text-neon-purple">
-                          {agentWalletBalanceG}
-                        </span>
-                      </button>
-                    )}
-                  </>
-                )}
-                <span className="text-[10px] lg:text-xs font-mono text-muted-foreground truncate max-w-[72px] lg:max-w-[120px] hidden lg:inline" title={player?.name ?? walletAddress ?? undefined}>
-                  {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
-                </span>
-                <button
-                  onClick={logout}
-                  className="w-9 h-9 rounded-lg border border-border/45 bg-card/50 flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-all shrink-0"
-                  aria-label="Logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger type="button" className={`hidden md:inline-flex ${profileTriggerClass}`} aria-label="Open account menu">
+                  <User className="w-5 h-5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72">
+                  <ProfileDropdownBody {...profileMenuProps} />
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <button
                 onClick={handleLoginClick}
@@ -413,7 +533,7 @@ const Navbar = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden glass-panel-ai border-t border-border/30 p-4 space-y-3"
+            className="md:hidden border-t border-border bg-background p-4 space-y-3"
           >
             {navItems.map((item) => (
               <Link
@@ -425,52 +545,14 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            {isAuthenticated ? (
-              <>
-                {isAIArenaPage && !agentWalletReady && (
-                  <button
-                    onClick={() => {
-                      handleCreateAgentClick();
-                      setMobileOpen(false);
-                    }}
-                    disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
-                    className="w-full px-6 py-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wider disabled:opacity-60"
-                  >
-                    {agentGatePending
-                      ? "CONNECT WALLET…"
-                      : agentSigning
-                        ? "SIGN MESSAGE…"
-                        : agentChecking
-                          ? "CHECKING AGENT…"
-                          : "CREATE AI AGENT"}
-                  </button>
-                )}
-                {isAIArenaPage && agentWalletReady && (
-                  <button
-                    onClick={() => { setWalletModalOpen(true); setMobileOpen(false); }}
-                    className="w-full px-6 py-2 rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan text-xs font-semibold tracking-wider"
-                  >
-                    AGENT WALLET ({agentWalletBalanceG})
-                  </button>
-                )}
-                <p className="text-xs font-mono text-muted-foreground px-1">
-                  {player?.name ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "")}
-                </p>
-                <button
-                  onClick={() => { logout(); setMobileOpen(false); }}
-                  className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye-outline mt-2"
-                >
-                  LOGOUT
-                </button>
-              </>
-            ) : (
+            {!isAuthenticated ? (
               <button
                 onClick={() => { handleLoginClick(); setMobileOpen(false); }}
                 className="w-full px-6 py-2 font-display text-xs font-semibold tracking-wider btn-eye mt-2"
               >
                 LOGIN
               </button>
-            )}
+            ) : null}
           </motion.div>
         )}
       </div>

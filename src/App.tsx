@@ -14,6 +14,7 @@ import GameDetail from "./pages/GameDetail";
 import GamePlay from "./pages/GamePlay";
 import NotFound from "./pages/NotFound";
 import AIArenaPage from "./pages/AIArenaPage";
+import MomentsPage from "./pages/MomentsPage";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
 
@@ -102,6 +103,7 @@ const App = () => {
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/events" element={<Events />} />
               <Route path="/ai-arena" element={<AIArenaPage />} />
+              <Route path="/moments" element={<MomentsPage />} />
               <Route path="/game/:id" element={<GameDetail />} />
               <Route path="/game/:id/play" element={<GamePlay />} />
               <Route path="*" element={<NotFound />} />

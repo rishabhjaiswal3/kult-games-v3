@@ -75,34 +75,23 @@
 
 @layer components {
   .glass-panel {
-    @apply backdrop-blur-xl border border-border/50;
-    background: hsl(220 45% 10% / 0.7);
-    box-shadow: 
+    @apply border border-border/50;
+    background: hsl(220 45% 10% / 0.96);
+    box-shadow:
       0 0 25px hsl(195 100% 50% / 0.1),
       0 0 50px hsl(270 80% 65% / 0.04),
       inset 0 1px 0 hsl(210 20% 93% / 0.06);
   }
 
   .glass-panel-ai {
-    @apply backdrop-blur-xl border border-border/50 relative overflow-hidden;
-    background: hsl(220 45% 10% / 0.7);
-    box-shadow: 
+    @apply border border-border/50 relative overflow-hidden;
+    background: hsl(220 45% 10% / 0.96);
+    box-shadow:
       0 0 25px hsl(195 100% 50% / 0.1),
       inset 0 1px 0 hsl(210 20% 93% / 0.04);
   }
   .glass-panel-ai::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      hsl(195 100% 50% / 0) 0%,
-      hsl(195 100% 50% / 0.06) 50%,
-      hsl(195 100% 50% / 0) 100%
-    );
-    background-size: 200% 200%;
-    animation: holographic-shimmer 6s ease-in-out infinite;
-    pointer-events: none;
+    display: none;
   }
 
   .ai-grid-overlay {
