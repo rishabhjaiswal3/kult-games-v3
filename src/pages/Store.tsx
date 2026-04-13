@@ -179,7 +179,7 @@ const Store = () => {
                           src={image}
                           alt={name}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          loading={i < 6 ? "eager" : "lazy"}
+                          loading={i < 12 ? "eager" : "lazy"}
                           decoding="async"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />

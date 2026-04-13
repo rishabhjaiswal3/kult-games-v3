@@ -94,49 +94,22 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           {/* Heading */}
           <div className="text-center mb-6 md:mb-8 px-4">
             {/* Pre-heading label */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="flex items-center justify-center gap-3 mb-5"
-            >
-              <motion.div
-                className="h-[1px] w-10 rounded-full bg-gradient-to-r from-transparent to-neon-cyan/60"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              />
-              <span className="text-[9px] font-mono text-neon-cyan/65 tracking-[0.45em] uppercase">
-                Next Generation
-              </span>
-              <motion.div
-                className="h-[1px] w-10 rounded-full bg-gradient-to-l from-transparent to-neon-cyan/60"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              />
-            </motion.div>
+            <div className="mb-5 flex items-center justify-center gap-3">
+              <div className="h-[1px] w-10 rounded-full bg-gradient-to-r from-transparent to-neon-cyan/60" />
+              <span className="text-[9px] font-mono uppercase tracking-[0.45em] text-neon-cyan/65">Next Generation</span>
+              <div className="h-[1px] w-10 rounded-full bg-gradient-to-l from-transparent to-neon-cyan/60" />
+            </div>
 
             <h1
               className="font-black tracking-tight leading-[0.95] uppercase"
               style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
             >
               {/* Line 1 — word stagger */}
-              <span className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl text-foreground block font-display tracking-[0.04em]">
-                {line1Words.map((word, i) => (
-                  <motion.span
-                    key={word}
-                    initial={{ opacity: 0, y: 55, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{
-                      duration: 0.65,
-                      delay: 0.15 + i * 0.1,
-                      ease: [0.25, 0.4, 0.25, 1],
-                    }}
-                    className="inline-block mr-[0.26em] last:mr-0"
-                  >
+              <span className="block font-display text-3xl tracking-[0.04em] text-foreground sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl">
+                {line1Words.map((word) => (
+                  <span key={word} className="mr-[0.26em] inline-block last:mr-0">
                     {word}
-                  </motion.span>
+                  </span>
                 ))}
               </span>
 
@@ -148,30 +121,17 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
                   textShadow: "0 0 18px hsl(270 82% 58% / 0.75), 0 0 42px hsl(270 82% 58% / 0.4), 0 0 72px hsl(278 100% 70% / 0.22)",
                 }}
               >
-                {line2Words.map((word, i) => (
-                  <motion.span
-                    key={word}
-                    initial={{ opacity: 0, y: 55, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{
-                      duration: 0.7,
-                      delay: 0.55 + i * 0.18,
-                      ease: [0.25, 0.4, 0.25, 1],
-                    }}
-                    className="inline-block mr-[0.26em] last:mr-0"
-                  >
+                {line2Words.map((word) => (
+                  <span key={word} className="mr-[0.26em] inline-block last:mr-0">
                     {word}
-                  </motion.span>
+                  </span>
                 ))}
               </span>
             </h1>
 
             {/* Decorative accent line */}
-            <motion.div
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.95, ease: [0.25, 0.4, 0.25, 1] }}
-              className="mt-5 mx-auto w-20 h-[2px] rounded-full origin-left"
+            <div
+              className="mx-auto mt-5 h-[2px] w-20 rounded-full"
               style={{
                 background: "linear-gradient(90deg, hsl(195 100% 60%), hsl(195 60% 80%), transparent)",
                 boxShadow: "0 0 14px hsl(195 100% 60% / 0.55)",
@@ -180,12 +140,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           </div>
 
           {/* CTA buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.75 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 md:mt-8 px-4"
-          >
+          <div className="mt-6 flex flex-col items-center justify-center gap-4 px-4 sm:flex-row md:mt-8">
             <button
               onClick={onExploreGames}
               className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
@@ -199,7 +154,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
               <Swords className="w-4 h-4 relative z-10" />
               <span className="relative z-10">STAKE & BATTLE</span>
             </button>
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom neon line */}
@@ -237,13 +192,10 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
         />
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/20">
-            {liveStats.map((stat, i) => (
-              <motion.div
+            {liveStats.map((stat) => (
+              <div
                 key={stat.label}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-3 py-4 px-4 md:px-6 group hover:bg-neon-cyan/3 transition-colors"
+                className="group flex items-center gap-3 px-4 py-4 transition-colors hover:bg-neon-cyan/3 md:px-6"
               >
                 <div
                   className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -274,7 +226,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
                     transition={{ duration: 1, repeat: Infinity }}
                   />
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
