@@ -9,7 +9,7 @@ const footerLinks = [
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 border-t border-border/30 bg-card/30 backdrop-blur-sm">
+    <footer className="relative z-10 border-t border-border/30 bg-card">
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-10" />
 
       {/* Ambient glow */}

@@ -1,7 +1,6 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Swords, Flame, Users, Gamepad2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const liveStats = [
@@ -42,25 +41,15 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
   const navigate = useNavigate();
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const videoScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
     <>
       <section
-        ref={heroRef}
-        className="relative min-h-[82dvh] md:min-h-[90dvh] flex flex-col items-center justify-start md:justify-end overflow-hidden pt-24 md:pt-0 md:pb-24"
+        className="relative min-h-[82dvh] md:min-h-[90dvh] flex flex-col items-center justify-start md:justify-end overflow-hidden pt-28 sm:pt-32 md:pt-12 md:pb-24"
       >
-        <motion.div className="absolute inset-0" style={{ scale: videoScale }}>
+        <div className="absolute inset-0">
           <AutoPlayVideo src="/videos/SC_1-3.mp4" loop className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: "center center" }} />
-        </motion.div>
+        </div>
 
         {/* Mobile overlay: dark at top for text readability */}
         <div className="absolute inset-0 md:hidden bg-gradient-to-b from-background/70 via-background/20 to-background/90" />
@@ -101,11 +90,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           />
         ))}
 
-        {/* Main content with parallax */}
-        <motion.div
-          className="w-full relative z-10 flex flex-col items-center md:-translate-y-10"
-          style={{ y: contentY, opacity: contentOpacity }}
-        >
+        <div className="w-full relative z-10 flex flex-col items-center md:-translate-y-10">
           {/* Heading */}
           <div className="text-center mb-6 md:mb-8 px-4">
             {/* Pre-heading label */}
@@ -203,7 +188,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           >
             <button
               onClick={onExploreGames}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline backdrop-blur-sm"
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
             >
               EXPLORE GAMES
             </button>
@@ -211,16 +196,11 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
               onClick={() => navigate("/events")}
               className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden"
             >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
-                animate={{ x: ["-200%", "200%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
               <Swords className="w-4 h-4 relative z-10" />
               <span className="relative z-10">STAKE & BATTLE</span>
             </button>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Bottom neon line */}
         <div
@@ -230,7 +210,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
       </section>
 
       {/* Marquee strip */}
-      <div className="relative z-10 border-y border-neon-cyan/20 bg-card/60 backdrop-blur-sm overflow-hidden py-4">
+      <div className="relative z-10 border-y border-neon-cyan/20 bg-card overflow-hidden py-4">
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80 z-10 pointer-events-none" />
         <motion.div
           className="flex items-center gap-8 whitespace-nowrap"
@@ -249,7 +229,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
       </div>
 
       {/* Live Stats Strip */}
-      <div className="relative z-10 border-b border-border/30 bg-card/50 backdrop-blur-sm overflow-hidden">
+      <div className="relative z-10 border-b border-border/30 bg-card/95 overflow-hidden">
         <motion.div
           className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-neon-cyan/8 to-transparent z-10"
           animate={{ x: ["-128px", "calc(100vw + 128px)"] }}

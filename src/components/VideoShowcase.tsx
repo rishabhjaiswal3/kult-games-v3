@@ -1,5 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 interface VideoShowcaseProps {
@@ -11,6 +10,10 @@ interface VideoShowcaseProps {
   children?: React.ReactNode;
 }
 
+/**
+ * Full-width video band. Scroll-linked parallax was removed — it caused jank and
+ * constant repaints over video during scroll.
+ */
 const VideoShowcase = ({
   videoSrc,
   title,
@@ -19,42 +22,23 @@ const VideoShowcase = ({
   height = "60vh",
   children,
 }: VideoShowcaseProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.1, 1, 1.05]);
-
   return (
-    <div
-      ref={ref}
-      className="relative overflow-hidden z-10"
-      style={{ height }}
-    >
-      {/* Parallax video */}
-      <motion.div className="absolute inset-0" style={{ y, scale }}>
-        <AutoPlayVideo src={videoSrc} loop className="w-full h-[130%] object-cover" />
-      </motion.div>
+    <div className="relative overflow-hidden z-10" style={{ height }}>
+      <div className="absolute inset-0">
+        <AutoPlayVideo src={videoSrc} loop className="w-full h-full object-cover" />
+      </div>
 
-      {/* Overlay */}
       <div
         className="absolute inset-0"
-        style={{ background: `linear-gradient(to bottom, hsl(220 50% 6% / ${overlayOpacity}), hsl(220 50% 6% / ${overlayOpacity * 0.6}), hsl(220 50% 6% / ${overlayOpacity}))` }}
+        style={{
+          background: `linear-gradient(to bottom, hsl(220 50% 6% / ${overlayOpacity}), hsl(220 50% 6% / ${overlayOpacity * 0.6}), hsl(220 50% 6% / ${overlayOpacity}))`,
+        }}
       />
 
-      {/* Top/bottom borders */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />
 
-      {/* Content */}
-      <motion.div
-        className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10"
-        style={{ opacity }}
-      >
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -63,14 +47,8 @@ const VideoShowcase = ({
         >
           {subtitle.split(" • ").map((word, i, arr) => (
             <span key={word} className="flex items-center gap-2">
-              <span
-                className="text-white font-bold drop-shadow-[0_0_6px_hsl(0_0%_100%/0.4)]"
-              >
-                {word}
-              </span>
-              {i < arr.length - 1 && (
-                <span className="text-white/25">•</span>
-              )}
+              <span className="text-white font-bold drop-shadow-[0_0_6px_hsl(0_0%_100%/0.4)]">{word}</span>
+              {i < arr.length - 1 && <span className="text-white/25">•</span>}
             </span>
           ))}
         </motion.span>
@@ -95,9 +73,8 @@ const VideoShowcase = ({
             {children}
           </motion.div>
         )}
-      </motion.div>
+      </div>
 
-      {/* Corner accents */}
       <div className="absolute top-4 left-4 w-8 h-8 border-t border-l border-neon-cyan/30 pointer-events-none" />
       <div className="absolute top-4 right-4 w-8 h-8 border-t border-r border-neon-cyan/30 pointer-events-none" />
       <div className="absolute bottom-4 left-4 w-8 h-8 border-b border-l border-neon-cyan/30 pointer-events-none" />

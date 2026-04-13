@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import GameCard from "./GameCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AIScanLine from "@/components/AIScanLine";
-import { Skeleton } from "@/components/ui/skeleton";
+import { GamesCarouselSkeleton } from "@/components/skeleton";
 import { useNavigate } from "react-router-dom";
 import { gamesApi } from "@/api/gamesApi";
 import type { Game } from "@/types/api";
@@ -147,7 +147,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
               aria-label="Scroll games left"
               onClick={() => scrollCards("left")}
               disabled={!canScrollLeft}
-              className="group relative flex h-14 w-14 items-center justify-center !rounded-full border border-white/10 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--cyan-glow)/0.28),transparent_38%),linear-gradient(135deg,hsl(220_45%_16%/0.96),hsl(220_42%_10%/0.94))] text-foreground shadow-[inset_0_1px_0_hsl(210_20%_100%/0.14),0_10px_30px_hsl(220_80%_3%/0.45),0_0_28px_hsl(var(--primary)/0.12)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[inset_0_1px_0_hsl(210_20%_100%/0.22),0_14px_36px_hsl(220_80%_3%/0.55),0_0_34px_hsl(var(--primary)/0.26)] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-[linear-gradient(135deg,hsl(220_20%_14%/0.72),hsl(220_18%_10%/0.72))] disabled:text-muted-foreground disabled:shadow-none disabled:opacity-55"
+              className="group relative flex h-14 w-14 items-center justify-center !rounded-full border border-white/10 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--cyan-glow)/0.28),transparent_38%),linear-gradient(135deg,hsl(220_45%_16%/0.96),hsl(220_42%_10%/0.94))] text-foreground shadow-[inset_0_1px_0_hsl(210_20%_100%/0.14),0_10px_30px_hsl(220_80%_3%/0.45),0_0_28px_hsl(var(--primary)/0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[inset_0_1px_0_hsl(210_20%_100%/0.22),0_14px_36px_hsl(220_80%_3%/0.55),0_0_34px_hsl(var(--primary)/0.26)] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-[linear-gradient(135deg,hsl(220_20%_14%/0.72),hsl(220_18%_10%/0.72))] disabled:text-muted-foreground disabled:shadow-none disabled:opacity-55"
             >
               <span className="pointer-events-none absolute inset-[3px] !rounded-full border border-white/10 bg-[linear-gradient(180deg,hsl(210_20%_100%/0.08),transparent_42%,hsl(220_30%_6%/0.18))]" />
               <span className="pointer-events-none absolute inset-0 !rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,transparent_0deg,hsl(var(--primary)/0.18)_110deg,transparent_210deg,transparent_360deg)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -158,7 +158,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
               aria-label="Scroll games right"
               onClick={() => scrollCards("right")}
               disabled={!canScrollRight}
-              className="group relative flex h-14 w-14 items-center justify-center !rounded-full border border-white/10 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--cyan-glow)/0.28),transparent_38%),linear-gradient(135deg,hsl(220_45%_16%/0.96),hsl(220_42%_10%/0.94))] text-foreground shadow-[inset_0_1px_0_hsl(210_20%_100%/0.14),0_10px_30px_hsl(220_80%_3%/0.45),0_0_28px_hsl(var(--primary)/0.12)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[inset_0_1px_0_hsl(210_20%_100%/0.22),0_14px_36px_hsl(220_80%_3%/0.55),0_0_34px_hsl(var(--primary)/0.26)] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-[linear-gradient(135deg,hsl(220_20%_14%/0.72),hsl(220_18%_10%/0.72))] disabled:text-muted-foreground disabled:shadow-none disabled:opacity-55"
+              className="group relative flex h-14 w-14 items-center justify-center !rounded-full border border-white/10 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--cyan-glow)/0.28),transparent_38%),linear-gradient(135deg,hsl(220_45%_16%/0.96),hsl(220_42%_10%/0.94))] text-foreground shadow-[inset_0_1px_0_hsl(210_20%_100%/0.14),0_10px_30px_hsl(220_80%_3%/0.45),0_0_28px_hsl(var(--primary)/0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/55 hover:shadow-[inset_0_1px_0_hsl(210_20%_100%/0.22),0_14px_36px_hsl(220_80%_3%/0.55),0_0_34px_hsl(var(--primary)/0.26)] disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-[linear-gradient(135deg,hsl(220_20%_14%/0.72),hsl(220_18%_10%/0.72))] disabled:text-muted-foreground disabled:shadow-none disabled:opacity-55"
             >
               <span className="pointer-events-none absolute inset-[3px] !rounded-full border border-white/10 bg-[linear-gradient(180deg,hsl(210_20%_100%/0.08),transparent_42%,hsl(220_30%_6%/0.18))]" />
               <span className="pointer-events-none absolute inset-0 !rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,hsl(var(--primary)/0.18)_110deg,transparent_210deg,transparent_360deg)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -181,18 +181,10 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
             className="flex gap-5 overflow-x-auto overflow-y-hidden pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[260px] md:w-[280px] snap-start rounded-xl overflow-hidden bg-card border border-border/50">
-                    <Skeleton className="aspect-[4/3] w-full rounded-none" />
-                    <div className="p-4 space-y-3">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-1 w-full" />
-                    </div>
-                  </div>
-                ))
-              : games.map((game, i) => (
+            {isLoading ? (
+              <GamesCarouselSkeleton count={5} className="contents" />
+            ) : (
+              games.map((game, i) => (
                   <motion.div
                     key={String(game._id ?? game.identification ?? game.slug ?? `game-${i}`)}
                     initial={{ opacity: 0, y: 20 }}
@@ -214,7 +206,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
                     />
                   </motion.div>
                 ))
-            }
+            )}
           </div>
 
           {/* Fade edges for scroll indication */}

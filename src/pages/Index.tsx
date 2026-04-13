@@ -5,17 +5,28 @@ import AIConcierge from "@/components/AIConcierge";
 import Footer from "@/components/Footer";
 import VideoShowcase from "@/components/VideoShowcase";
 import AgentWalletModal from "@/components/AgentWalletModal";
+import { HomePageSkeleton } from "@/components/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { ArrowRight, Wallet } from "lucide-react";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { gamesApi } from "@/api/gamesApi";
 
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+
+  const { isPending, data: gamesBootstrap } = useQuery({
+    queryKey: ["games", "all"],
+    queryFn: () => gamesApi.getAll(1, 10),
+    staleTime: 5 * 60_000,
+  });
+
+  const showHomeSkeleton = isPending && gamesBootstrap === undefined;
 
   const handleGamesAccess = () => {
     if (isAuthenticated) {
@@ -26,32 +37,36 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative pt-2 sm:pt-3">
       <Navbar />
-      <HeroSection onExploreGames={handleGamesAccess} />
+      {showHomeSkeleton ? (
+        <HomePageSkeleton />
+      ) : (
+        <>
+          <HeroSection onExploreGames={handleGamesAccess} />
 
-      <GamesSection onViewAllGames={handleGamesAccess} />
+          <GamesSection onViewAllGames={handleGamesAccess} />
 
-      {/* Video break: Transition to AI */}
-      <VideoShowcase
-        videoSrc="/videos/SC_10.mp4"
-        title="POWERED BY AI"
-        subtitle="Intelligent • Adaptive • On-Chain"
-        height="45vh"
-        overlayOpacity={0.6}
-      >
-        <button
-          onClick={() => navigate("/events")}
-          className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye"
-        >
-          JOIN TOURNAMENTS
-        </button>
-      </VideoShowcase>
+          {/* Video break: Transition to AI */}
+          <VideoShowcase
+            videoSrc="/videos/SC_10.mp4"
+            title="POWERED BY AI"
+            subtitle="Intelligent • Adaptive • On-Chain"
+            height="45vh"
+            overlayOpacity={0.6}
+          >
+            <button
+              onClick={() => navigate("/events")}
+              className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye"
+            >
+              JOIN TOURNAMENTS
+            </button>
+          </VideoShowcase>
 
-      <AIConcierge />
+          <AIConcierge />
 
-      {/* AI Arena — Visual CTA Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+          {/* AI Arena — Visual CTA Section */}
+          <section className="relative py-16 md:py-24 overflow-hidden">
         {/* Ambient background */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -196,33 +211,35 @@ const Index = () => {
             </div>
           </motion.div>
         </div>
-      </section>
+          </section>
 
-      {/* Video break: Final CTA */}
-      <VideoShowcase
-        videoSrc="/videos/SC_12-5.mp4"
-        title="YOUR LEGACY AWAITS"
-        subtitle="Play • Compete • Earn"
-        height="40vh"
-        overlayOpacity={0.5}
-      >
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <button
-            onClick={handleGamesAccess}
-            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye relative overflow-hidden"
+          {/* Video break: Final CTA */}
+          <VideoShowcase
+            videoSrc="/videos/SC_12-5.mp4"
+            title="YOUR LEGACY AWAITS"
+            subtitle="Play • Compete • Earn"
+            height="40vh"
+            overlayOpacity={0.5}
           >
-            EXPLORE GAMES
-          </button>
-          <button
-            onClick={() => navigate("/leaderboard")}
-            className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
-          >
-            VIEW LEADERBOARD
-          </button>
-        </div>
-      </VideoShowcase>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <button
+                onClick={handleGamesAccess}
+                className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye relative overflow-hidden"
+              >
+                EXPLORE GAMES
+              </button>
+              <button
+                onClick={() => navigate("/leaderboard")}
+                className="px-8 py-3.5 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
+              >
+                VIEW LEADERBOARD
+              </button>
+            </div>
+          </VideoShowcase>
 
-      <Footer />
+          <Footer />
+        </>
+      )}
 
       {/* Agent Wallet Modal */}
       <AgentWalletModal isOpen={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
