@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAddress, isAddress } from "viem";
-import { ExternalLink, Loader2, RefreshCw, Search } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { aiWarzoneApi } from "@/api/aiWarzoneApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
@@ -21,36 +20,15 @@ function formatWhen(iso: string | null | undefined) {
 
 const WarzoneAgentTracker = () => {
   const { walletAddress } = useAuth();
-  const [draft, setDraft] = useState("");
   const [activeWallet, setActiveWallet] = useState<string | null>(null);
 
   useEffect(() => {
     if (!walletAddress || !isAddress(walletAddress)) return;
     try {
       const checksummed = getAddress(walletAddress);
-      setDraft(checksummed);
       setActiveWallet(checksummed);
-    } catch {
-      setDraft(walletAddress);
-    }
+    } catch {}
   }, [walletAddress]);
-
-  const scan = useCallback(() => {
-    const raw = draft.trim();
-    if (!raw) {
-      toast.error("Enter a wallet address");
-      return;
-    }
-    if (!isAddress(raw)) {
-      toast.error("Invalid Ethereum address");
-      return;
-    }
-    try {
-      setActiveWallet(getAddress(raw));
-    } catch {
-      toast.error("Invalid Ethereum address");
-    }
-  }, [draft]);
 
   const behaviorQ = useQuery({
     queryKey: ["aiWarzone", "behaviorStatus", activeWallet],
@@ -145,36 +123,30 @@ const WarzoneAgentTracker = () => {
         </div>
 
         <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
-          <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/85">Agent lookup</p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && scan()}
-              placeholder="0x…"
-              className="min-w-0 flex-1 rounded-xl border border-border/50 bg-background/70 px-4 py-3 font-mono text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-neon-cyan/25"
-              spellCheck={false}
-              autoComplete="off"
-            />
-            <button
-              type="button"
-              onClick={scan}
-              className="relative z-10 inline-flex shrink-0 items-center justify-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye"
-            >
-              <Search className="relative z-10 h-4 w-4" />
-              <span className="relative z-10">Scan agent</span>
-            </button>
-          </div>
-          {walletAddress && isAddress(walletAddress) && (
-            <p className="mt-2 text-[11px] font-mono text-emerald-500/90">
-              Auto-detected from session: {shortAddr(getAddress(walletAddress))}
-            </p>
+          <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/85">Session wallet</p>
+          {activeWallet ? (
+            <div className="rounded-2xl border border-neon-cyan/20 bg-neon-cyan/[0.06] p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Connected wallet</p>
+                  <p className="mt-2 break-all font-mono text-sm text-foreground sm:text-base">{activeWallet}</p>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-mono uppercase text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_hsl(150_80%_50%)]" />
+                  Active
+                </span>
+              </div>
+              <p className="mt-3 text-[11px] font-mono text-neon-cyan/90">Agent ID: {shortAddr(activeWallet)}</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-background/55 p-4 text-sm text-muted-foreground">
+              Connect your wallet to view autonomous agent telemetry.
+            </div>
           )}
         </div>
 
         {!activeWallet && (
-          <p className="text-sm text-muted-foreground text-center py-8">Connect a wallet or enter an address and scan.</p>
+          <p className="text-sm text-muted-foreground text-center py-8">Connect a wallet to see live agent status.</p>
         )}
 
         {activeWallet && (

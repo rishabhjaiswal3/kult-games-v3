@@ -518,8 +518,16 @@ const AIArena = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+              <div className="w-full lg:pt-2">
+                <AgentCoreVisual />
+              </div>
 
-                <div className="mt-4 rounded-2xl border border-white/10 bg-card/45 p-3 sm:p-4">
+             
+            </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-white/10 bg-card/45 p-3 sm:p-4">
                   <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan/85">Agent system modules</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {STACK_MODULES.map((module) => (
@@ -552,14 +560,6 @@ const AIArena = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="w-full lg:pt-2">
-                <AgentCoreVisual />
-              </div>
-
-             
-            </div>
-            </div>
           </div>
         </div>
 
