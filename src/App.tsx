@@ -18,6 +18,7 @@ import MomentsPage from "./pages/MomentsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
+import { gamesApi } from "@/api/gamesApi";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
 
@@ -42,7 +43,8 @@ const queryClient = new QueryClient({
 
 /** How long before the route tree is hinted behind the splash (blur preview). */
 const FADED_CONTENT_DELAY = 350;
-const PREVIEW_OPACITY = 0.22;
+/** Keep preview subtle — avoid `filter: blur` on the whole app (hurts scroll compositing & text clarity). */
+const PREVIEW_OPACITY = 0.35;
 
 const App = () => {
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
@@ -83,12 +85,11 @@ const App = () => {
     if (loaded) {
       gsap.to(content, {
         opacity: 1,
-        filter: "blur(0px)",
         scale: 1,
         y: 0,
-        duration: 0.5,
+        duration: 0.45,
         ease: "power2.out",
-        clearProps: "transform,filter",
+        clearProps: "transform",
       });
       return;
     }
@@ -96,10 +97,9 @@ const App = () => {
     if (showPreview) {
       gsap.to(content, {
         opacity: PREVIEW_OPACITY,
-        filter: "blur(5px)",
-        scale: 1.005,
-        y: 8,
-        duration: 0.45,
+        scale: 1,
+        y: 0,
+        duration: 0.35,
         ease: "power2.out",
       });
       return;
@@ -107,11 +107,19 @@ const App = () => {
 
     gsap.set(content, {
       opacity: 0,
-      filter: "blur(18px)",
-      scale: 1.02,
-      y: 18,
+      scale: 1,
+      y: 0,
     });
   }, [loaded, showPreview]);
+
+  /** Start loading game list + thumbnails as soon as the shell mounts (overlaps splash). */
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ["games", "all"],
+      queryFn: () => gamesApi.getAll(1, 50),
+      staleTime: 5 * 60_000,
+    });
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -124,7 +132,7 @@ const App = () => {
           <div
             ref={contentRef}
             className={loaded ? "" : "pointer-events-none"}
-            style={loaded ? { opacity: 1 } : { opacity: 0, filter: "blur(18px)", transform: "translateY(18px) scale(1.02)" }}
+            style={loaded ? { opacity: 1 } : { opacity: 0 }}
           >
             <Routes>
               <Route path="/" element={<Index />} />

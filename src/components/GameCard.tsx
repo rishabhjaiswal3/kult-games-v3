@@ -71,7 +71,7 @@ const GameCard = ({
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="eager"
           decoding="async"
-          fetchPriority={index < 4 ? "high" : "auto"}
+          fetchPriority={index < 8 ? "high" : "auto"}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         

@@ -397,12 +397,7 @@ const AIArena = () => {
         </div>
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6">
-          <motion.div
-            className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] ai-border-glow"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] ai-border-glow">
             <div
               className="relative overflow-hidden rounded-[28px] border-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12"
               style={{
@@ -419,12 +414,7 @@ const AIArena = () => {
               <div className="pointer-events-none absolute -left-16 top-0 h-[200px] w-[200px] rounded-full bg-neon-cyan/6 blur-[80px]" aria-hidden />
               <div className="relative flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-14 lg:text-left">
               <div className="w-full flex-1 text-center lg:text-left">
-                <motion.div
-                  className="mb-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12 }}
-                >
+                <div className="mb-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
                   <span className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/8 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/95">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-cyan opacity-35" />
@@ -435,37 +425,22 @@ const AIArena = () => {
                   <span className="rounded-full border border-white/10 bg-background/60 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
                     Live ops
                   </span>
-                </motion.div>
+                </div>
 
-                <motion.h1
-                  className="font-display font-black tracking-[-0.03em]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12, duration: 0.65 }}
-                >
+                <h1 className="font-display font-black tracking-[-0.03em]">
                   <span className="block text-[clamp(2.25rem,7vw,3.75rem)] leading-[0.95] text-foreground/95">
                     YOUR AI
                   </span>
                   <span className="mt-0.5 block text-[clamp(2.75rem,10vw,5rem)] font-black leading-[0.9] gradient-text">
                     AGENT
                   </span>
-                </motion.h1>
+                </h1>
 
-                <motion.p
-                  className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.28 }}
-                >
+                <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
                   Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
-                </motion.p>
+                </p>
 
-                <motion.div
-                  className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.36 }}
-                >
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
                   <Link
                     to="/games"
                     className="group relative z-10 inline-flex items-center gap-2 rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-wide btn-eye"
@@ -479,41 +454,27 @@ const AIArena = () => {
                   >
                     <span className="relative z-10">Track agent</span>
                   </a>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-2 sm:mx-0 sm:max-w-none sm:justify-start"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45 }}
-                >
-                  {HERO_PROTOCOLS.map((item, i) => (
-                    <motion.div
+                <div className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-2 sm:mx-0 sm:max-w-none sm:justify-start">
+                  {HERO_PROTOCOLS.map((item) => (
+                    <div
                       key={item.label}
-                      className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/[0.06] px-4 py-2 text-[11px] font-mono uppercase tracking-[0.14em] text-foreground/85"
-                      whileHover={{ borderColor: "hsl(195 100% 50% / 0.45)", y: -1 }}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.45 + i * 0.07 }}
+                      className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/[0.06] px-4 py-2 text-[11px] font-mono uppercase tracking-[0.14em] text-foreground/85 transition-colors hover:border-neon-cyan/45"
                     >
                       <item.icon className="h-3.5 w-3.5 shrink-0 text-neon-cyan" />
                       {item.label}
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
+                </div>
               </div>
 
-              <motion.div
-                className="w-full shrink-0 lg:w-auto lg:max-w-[340px]"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              >
+              <div className="w-full shrink-0 lg:w-auto lg:max-w-[340px]">
                 <AgentCoreVisual />
-              </motion.div>
+              </div>
             </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
