@@ -39,14 +39,8 @@ const Footer = () => {
           </div>
 
           {/* Link columns */}
-          {footerLinks.map((section, si) => (
-            <motion.div
-              key={section.heading}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: si * 0.08 }}
-            >
+          {footerLinks.map((section) => (
+            <div key={section.heading}>
               <h4 className="font-display text-xs font-bold text-foreground tracking-[0.2em] uppercase mb-4">
                 {section.heading}
               </h4>
@@ -60,7 +54,7 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           ))}
         </div>
 

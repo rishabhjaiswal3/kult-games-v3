@@ -70,11 +70,7 @@ const Store = () => {
         <div className="container mx-auto px-6 relative z-10">
           {/* Header */}
           <div className="mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] overflow-hidden backdrop-blur-md"
-            >
+            <div className="relative flex w-full flex-col justify-between overflow-hidden rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] backdrop-blur-md lg:flex-row">
               {/* Text content */}
               <div className="relative z-10 order-first px-6 py-7 md:px-8 md:py-9">
                 <div className="flex items-center gap-2 mb-3">
@@ -110,16 +106,11 @@ const Store = () => {
                   <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Search & Filter */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-xl p-4 mb-8 flex flex-col md:flex-row gap-4 border border-border/50 bg-card/50"
-          >
+          <div className="mb-8 flex flex-col gap-4 rounded-xl border border-border/50 bg-card/50 p-4 md:flex-row">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -146,7 +137,7 @@ const Store = () => {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -170,17 +161,27 @@ const Store = () => {
                   const gameId = item?.["identification"];
                   const dl = isGameDownloadable(item);
                   return (
-                    <motion.div
+                    <div
                       key={item._id ?? i}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.08 }}
-                      whileHover={{ y: -6 }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          navigate(`/game/${gameId}`);
+                        }
+                      }}
                       onClick={() => navigate(`/game/${gameId}`)}
-                      className="group cursor-pointer rounded-xl overflow-hidden bg-card/80 border border-border/50 hover:border-neon-cyan/30 transition-all duration-300"
+                      className="group cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-card/80 transition-all duration-300 hover:-translate-y-1.5 hover:border-neon-cyan/30"
                     >
                       <div className="relative aspect-[16/10] overflow-hidden">
-                        <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <img
+                          src={image}
+                          alt={name}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          loading={i < 6 ? "eager" : "lazy"}
+                          decoding="async"
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
 
                         <div className="absolute top-3 left-3">
@@ -226,7 +227,7 @@ const Store = () => {
                           )}
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })
             }

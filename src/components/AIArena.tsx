@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { gamesApi } from "@/api/gamesApi";
@@ -238,7 +238,8 @@ function LifecycleStepCard({
             style={{
               objectPosition: step.visual === "agent-spawn" ? "center 10%" : "center",
             }}
-            loading="lazy"
+            loading="eager"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full bg-card" />
@@ -523,12 +524,7 @@ const AIArena = () => {
       <section className="relative py-8 md:py-12 border-b border-white/[0.06]">
         <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
           <div className="rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-card/[0.35] via-card/[0.12] to-transparent p-5 shadow-[0_24px_80px_hsl(220_60%_2%/0.25)] backdrop-blur-sm sm:p-7 md:p-9">
-          <motion.div
-            className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3"
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="inline-flex items-center gap-2 text-[10px] font-mono text-neon-cyan/90 tracking-[0.28em] uppercase">
                 <span className="h-px w-6 bg-gradient-to-r from-neon-cyan to-transparent" />
@@ -541,9 +537,9 @@ const AIArena = () => {
             <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md sm:text-right leading-snug">
               Wallet → agent → purchases → battles → banter. {lifecycleBlurb}
             </p>
-          </motion.div>
+          </div>
 
-          <div className="relative max-w-6xl mx-auto">
+          <div className="relative mx-auto max-w-6xl">
             {maxLifecycleStart > 0 ? (
               <>
                 <button
@@ -566,25 +562,16 @@ const AIArena = () => {
             ) : null}
 
             <div className="overflow-hidden px-1 sm:px-2">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={`${lifecycleIdx}-${lifecycleCols}`}
-                  initial={{ opacity: 0, x: 28 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -28 }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
-                  className={lifecycleGridClass}
-                >
-                  {FLOW_STEPS.slice(lifecycleIdx, lifecycleIdx + lifecycleCols).map((step, off) => (
-                    <LifecycleStepCard
-                      key={`${lifecycleIdx}-${off}`}
-                      step={step}
-                      stepIndexOneBased={lifecycleIdx + off + 1}
-                      stepTotal={FLOW_STEPS.length}
-                    />
-                  ))}
-                </motion.div>
-              </AnimatePresence>
+              <div key={`${lifecycleIdx}-${lifecycleCols}`} className={lifecycleGridClass}>
+                {FLOW_STEPS.slice(lifecycleIdx, lifecycleIdx + lifecycleCols).map((step, off) => (
+                  <LifecycleStepCard
+                    key={`${lifecycleIdx}-${off}`}
+                    step={step}
+                    stepIndexOneBased={lifecycleIdx + off + 1}
+                    stepTotal={FLOW_STEPS.length}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-2.5">

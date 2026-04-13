@@ -8,7 +8,6 @@ import AgentWalletModal from "@/components/AgentWalletModal";
 import { HomePageSkeleton } from "@/components/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 import { ArrowRight, Wallet } from "lucide-react";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 import { useState } from "react";
@@ -77,23 +76,11 @@ const Index = () => {
         />
 
         <div className="container mx-auto px-6">
-          <motion.div
-            className="max-w-6xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="mx-auto max-w-6xl">
             {/* Two-column layout: image + content */}
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
               {/* Image side */}
-              <motion.div
-                className="relative rounded-2xl overflow-hidden group"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
+              <div className="group relative overflow-hidden rounded-2xl">
                 <div
                   className="relative overflow-hidden"
                   style={{
@@ -105,8 +92,9 @@ const Index = () => {
                   <img
                     src={aiArenaHero}
                     alt="AI Arena - autonomous agents battling on-chain"
-                    className="w-full aspect-[16/10] object-cover group-hover:scale-105 transition-transform duration-700"
-                    loading="lazy"
+                    className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="eager"
+                    decoding="async"
                     width={1280}
                     height={640}
                   />
@@ -126,15 +114,10 @@ const Index = () => {
                     <span className="text-[10px] font-mono uppercase tracking-widest text-foreground">Live Arena</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Content side */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
+              <div>
                 <span
                   className="text-xs font-mono tracking-[0.25em] uppercase mb-3 inline-block"
                   style={{ color: "hsl(195 100% 65%)" }}
@@ -196,20 +179,19 @@ const Index = () => {
                   </button>
 
                   {isAuthenticated && (
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                    <button
+                      type="button"
                       onClick={() => setWalletModalOpen(true)}
                       className="inline-flex items-center gap-2 px-6 py-3.5 font-display text-sm font-bold tracking-wider btn-eye-outline"
                     >
                       <Wallet className="w-4 h-4" />
                       CREATE AGENT WALLET
-                    </motion.button>
+                    </button>
                   )}
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
           </section>
 

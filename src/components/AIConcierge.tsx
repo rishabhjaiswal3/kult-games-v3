@@ -65,12 +65,7 @@ const AIConcierge = () => {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+          <div className="mb-12 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
               <motion.div
                 className="w-2 h-2 rounded-full bg-[hsl(278_100%_82%)]"
@@ -91,7 +86,7 @@ const AIConcierge = () => {
             <p className="text-[hsl(278_100%_82%/0.5)] max-w-lg mx-auto text-sm">
               Your AI-native game concierge. Discover, compare, and decide — powered by 0G Compute.
             </p>
-          </motion.div>
+          </div>
 
           {/* Chat Area */}
           <AnimatePresence>
@@ -173,13 +168,7 @@ const AIConcierge = () => {
           </AnimatePresence>
 
           {/* Search bar — leaderboard-matched card style */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="relative mb-10"
-          >
+          <div className="relative mb-10">
             <form onSubmit={handleSubmit}>
               <div className="rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 backdrop-blur-sm p-1.5 relative overflow-hidden" style={{ boxShadow: "0 0 30px hsl(270 82% 58% / 0.08)" }}>
                 <motion.div
@@ -218,20 +207,16 @@ const AIConcierge = () => {
                 {error}
               </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Prompt suggestions — leaderboard row style */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {prompts.map((prompt, i) => (
-              <motion.button
+            {prompts.map((prompt) => (
+              <button
+                type="button"
                 key={prompt.text}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 + i * 0.06 }}
-                whileHover={{ scale: 1.02, y: -2 }}
                 onClick={() => handlePromptClick(prompt.text)}
-                className="group flex items-center gap-4 p-4 rounded-[16px] border border-border/50 bg-card/50 backdrop-blur-sm hover:border-[hsl(278_100%_70%/0.3)] hover:bg-[hsl(278_100%_70%/0.05)] transition-all duration-300 text-left"
+                className="group flex w-full items-center gap-4 rounded-[16px] border border-border/50 bg-card/50 p-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.3)] hover:bg-[hsl(278_100%_70%/0.05)]"
               >
                 <div className="w-10 h-10 rounded-[16px] bg-[hsl(278_100%_70%/0.12)] flex items-center justify-center flex-shrink-0 group-hover:bg-[hsl(278_100%_70%/0.18)] transition-all">
                   <prompt.icon className="w-4 h-4 text-[hsl(278_100%_82%)]" />
@@ -241,7 +226,7 @@ const AIConcierge = () => {
                   <span className="text-xs text-muted-foreground">{prompt.description}</span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[hsl(278_100%_82%)] group-hover:translate-x-1 transition-all" />
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
