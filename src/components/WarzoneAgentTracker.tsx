@@ -328,7 +328,7 @@ const WarzoneAgentTracker = () => {
                   </span>
                 )}
               </div> */}
-              {backendQ.isLoading ? (
+              {/* {backendQ.isLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading…
                 </div>
@@ -348,7 +348,7 @@ const WarzoneAgentTracker = () => {
                     {backend.tip}
                   </div>
                 </>
-              ) : null}
+              ) : null} */}
             </div>
 
             {/* Server health */}
