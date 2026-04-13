@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import kultLogo from "@/assets/kult-logo.png";
 
-const DURATION = 5300; // 4.2 seconds
+/** Total time before handoff to the app — keep short so data and UI feel immediate. */
+const DURATION = 1800;
 
 const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [show, setShow] = useState(true);
@@ -32,9 +33,9 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     if (containerRef.current) {
       gsap.to(containerRef.current, {
         opacity: 0,
-        scale: 1.03,
-        duration: 0.7,
-        ease: "power3.out",
+        scale: 1.02,
+        duration: 0.45,
+        ease: "power2.out",
         onComplete: () => setShow(false),
       });
     } else {

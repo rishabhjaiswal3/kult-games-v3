@@ -108,47 +108,62 @@ const WarzoneAgentTracker = () => {
   const loading = behaviorQ.isFetching || zeroGQ.isFetching;
 
   return (
-    <section className="relative py-8 md:py-10 border-b border-border/30">
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <section id="warzone-agent-tracker" className="relative scroll-mt-24 border-b border-white/[0.06] py-10 md:py-14">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 50% 0%, hsl(195 100% 50% / 0.05), transparent), radial-gradient(ellipse 50% 40% at 90% 30%, hsl(270 80% 65% / 0.04), transparent)",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 neural-grid opacity-[0.07]" aria-hidden />
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[10px] font-mono tracking-[0.28em] text-sky-400/90 uppercase">Warzone AI</p>
-            <h2 className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground mt-1">
-              Autonomous agent tracker
+            <p className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/90">
+              <span className="h-px w-8 bg-gradient-to-r from-neon-cyan/80 to-transparent" />
+              Warzone AI
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-black tracking-tight text-foreground sm:text-3xl md:text-4xl">
+              Autonomous{" "}
+              <span className="gradient-text">agent tracker</span>
             </h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+              Neural training, 0G storage, and ops wallet in one view.
+            </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono">
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${
                 apisOk ? "border-emerald-500/40 text-emerald-400" : "border-border/50 text-muted-foreground"
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${apisOk ? "bg-emerald-400 shadow-[0_0_8px_hsl(150_80%_50%)]" : "bg-muted-foreground"}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${apisOk ? "bg-emerald-400 shadow-[0_0_8px_hsl(150_80%_50%)]" : "bg-muted-foreground"}`} />
               {apisOk ? "ONLINE" : loading ? "SYNCING" : "IDLE"}
             </span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-sky-500/20 bg-card p-4 sm:p-5 mb-6">
-          <p className="text-[10px] font-mono tracking-[0.2em] text-sky-400/80 uppercase mb-3">Agent lookup</p>
-          <div className="flex flex-col sm:flex-row gap-3">
+        <div className="glass-panel mb-8 overflow-hidden rounded-[24px] p-5 sm:p-6">
+          <p className="mb-3 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/85">Agent lookup</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
             <input
               type="text"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && scan()}
               placeholder="0x…"
-              className="flex-1 min-w-0 rounded-xl border border-border/50 bg-background/60 px-4 py-3 text-sm font-mono text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+              className="min-w-0 flex-1 rounded-xl border border-border/50 bg-background/70 px-4 py-3 font-mono text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-neon-cyan/25"
               spellCheck={false}
               autoComplete="off"
             />
             <button
               type="button"
               onClick={scan}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm tracking-wide text-background bg-sky-500 hover:bg-sky-400 transition-colors shrink-0"
+              className="relative z-10 inline-flex shrink-0 items-center justify-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye"
             >
-              <Search className="w-4 h-4" />
-              Scan agent
+              <Search className="relative z-10 h-4 w-4" />
+              <span className="relative z-10">Scan agent</span>
             </button>
           </div>
           {walletAddress && isAddress(walletAddress) && (
@@ -163,15 +178,15 @@ const WarzoneAgentTracker = () => {
         )}
 
         {activeWallet && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-none touch-pan-x md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 md:pb-0 md:touch-auto">
             {/* Neural / training */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-5 relative overflow-hidden">
+            <div className="relative w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
               <span
-                className={`absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded-md border uppercase ${modelBadge.className}`}
+                className={`absolute right-3 top-3 rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase ${modelBadge.className}`}
               >
                 {modelBadge.label}
               </span>
-              <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase mb-3 pr-24">Neural training status</p>
+              <p className="mb-3 pr-24 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Neural training status</p>
               {behaviorQ.isLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading…
@@ -185,7 +200,7 @@ const WarzoneAgentTracker = () => {
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Training data</p>
                   <div className="flex items-center gap-3 mb-1">
                     <Progress value={trainingPct} className="h-2 flex-1 bg-border/40" />
-                    <span className="text-[11px] font-mono text-sky-300 shrink-0">
+                    <span className="text-[11px] font-mono text-neon-cyan/90 shrink-0">
                       {behavior.sampleCount} / {behavior.sampleCount + behavior.samplesNeeded} ({trainingPct}%)
                     </span>
                   </div>
@@ -214,7 +229,7 @@ const WarzoneAgentTracker = () => {
                 <button
                   type="button"
                   onClick={() => void behaviorQ.refetch()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-sky-500/40 text-sky-300 text-xs font-semibold hover:bg-sky-500/10"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-neon-cyan/35 px-3 py-2 text-xs font-semibold text-neon-cyan hover:bg-neon-cyan/10"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Refresh
@@ -223,13 +238,13 @@ const WarzoneAgentTracker = () => {
             </div>
 
             {/* 0G storage */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-5 relative overflow-hidden">
+            <div className="relative w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
               <span
-                className={`absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded-md border uppercase ${storageBadge.className}`}
+                className={`absolute right-3 top-3 rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase ${storageBadge.className}`}
               >
                 {storageBadge.label}
               </span>
-              <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase mb-3 pr-24">Decentralized storage</p>
+              <p className="mb-3 pr-24 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Decentralized storage</p>
               {zeroGQ.isLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading…
@@ -240,9 +255,9 @@ const WarzoneAgentTracker = () => {
                 <>
                   <p className="text-[10px] uppercase text-muted-foreground mb-1">Network</p>
                   <p className="text-xs font-mono text-foreground mb-3">{zg.network ?? "—"}</p>
-                  <div className="rounded-lg border border-sky-500/25 bg-sky-500/5 px-3 py-2 mb-3">
+                  <div className="mb-3 rounded-lg border border-neon-cyan/20 bg-neon-cyan/[0.06] px-3 py-2">
                     <p className="text-[10px] uppercase text-muted-foreground">Storage type</p>
-                    <p className="text-sm font-semibold text-sky-300">{zg.storageType ?? zg.message ?? "—"}</p>
+                    <p className="text-sm font-semibold text-neon-cyan">{zg.storageType ?? zg.message ?? "—"}</p>
                   </div>
                   <p className="text-[10px] uppercase text-muted-foreground">On-chain verified</p>
                   <p className="text-sm font-mono text-emerald-400 mb-3">{zg.onZeroG ? "YES ✓" : "NO"}</p>
@@ -257,7 +272,7 @@ const WarzoneAgentTracker = () => {
                         href={zg.explorerUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border/50 text-[11px] text-sky-300 hover:bg-sky-500/10"
+                        className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 text-[11px] text-neon-cyan hover:bg-neon-cyan/10"
                       >
                         <ExternalLink className="w-3 h-3" /> 0G Explorer
                       </a>
@@ -267,7 +282,7 @@ const WarzoneAgentTracker = () => {
                         href={zg.downloadUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border/50 text-[11px] text-sky-300 hover:bg-sky-500/10"
+                        className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 text-[11px] text-neon-cyan hover:bg-neon-cyan/10"
                       >
                         <ExternalLink className="w-3 h-3" /> Download
                       </a>
@@ -277,7 +292,7 @@ const WarzoneAgentTracker = () => {
                         href={zg.indexerCheckUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border/50 text-[11px] text-sky-300 hover:bg-sky-500/10"
+                        className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 text-[11px] text-neon-cyan hover:bg-neon-cyan/10"
                       >
                         <ExternalLink className="w-3 h-3" /> Indexer
                       </a>
@@ -287,7 +302,7 @@ const WarzoneAgentTracker = () => {
                         href={behavior.zeroGExplorer}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border/50 text-[11px] text-sky-300 hover:bg-sky-500/10"
+                        className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 text-[11px] text-neon-cyan hover:bg-neon-cyan/10"
                       >
                         <ExternalLink className="w-3 h-3" /> Verify on 0G
                       </a>
@@ -298,7 +313,7 @@ const WarzoneAgentTracker = () => {
             </div>
 
             {/* Backend wallet */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-5">
+            <div className="w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase">Backend 0G wallet</p>
                 {backend && (
@@ -337,7 +352,7 @@ const WarzoneAgentTracker = () => {
             </div>
 
             {/* Server health */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-5">
+            <div className="w-[min(100%,calc(100vw-2rem))] shrink-0 snap-center rounded-2xl border border-white/10 bg-card/40 p-4 shadow-[0_12px_40px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5 md:w-auto md:min-w-0 md:snap-none">
               <p className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase mb-3">Service health</p>
               <div
                 className={`rounded-xl border px-4 py-3 mb-4 ${
@@ -385,6 +400,12 @@ const WarzoneAgentTracker = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {activeWallet && (
+          <p className="mt-2 text-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground md:hidden">
+            Swipe sideways for more panels
+          </p>
         )}
       </div>
     </section>
