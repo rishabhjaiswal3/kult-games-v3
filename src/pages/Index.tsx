@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import VideoShowcase from "@/components/VideoShowcase";
 import AgentWalletModal from "@/components/AgentWalletModal";
 import { HomePageSkeleton } from "@/components/skeleton";
+import AgentWalletModal from "@/components/AgentWalletModal";
+import { HomePageSkeleton } from "@/components/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowRight, Wallet } from "lucide-react";
