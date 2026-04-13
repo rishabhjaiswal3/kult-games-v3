@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Filter, Star, Tag, Gamepad2 } from "lucide-react";
+import { Search, Filter, Star, Tag, Gamepad2, Download } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
+import { isGameDownloadable } from "@/lib/gameDownload";
 import type { Game } from "@/types/api";
 
 function getGameName(name: Game["name"]): string {
@@ -166,7 +167,8 @@ const Store = () => {
               : filtered.map((item, i) => {
                   const name = getGameName(item.name);
                   const image = getGameImage(item);
-                  const gameId = item?.['identification'];
+                  const gameId = item?.["identification"];
+                  const dl = isGameDownloadable(item);
                   return (
                     <motion.div
                       key={item._id ?? i}
@@ -207,9 +209,21 @@ const Store = () => {
                             ))}
                           </div>
                         </div>
-                        <button className="w-full mt-3 py-2 rounded-lg text-xs font-display font-semibold tracking-wider btn-eye flex items-center justify-center gap-1.5">
-                          <Gamepad2 className="w-3.5 h-3.5" />
-                          PLAY GAME
+                        <button
+                          type="button"
+                          className="w-full mt-3 py-2 rounded-lg text-xs font-display font-semibold tracking-wider btn-eye flex items-center justify-center gap-1.5 pointer-events-none"
+                        >
+                          {dl ? (
+                            <>
+                              <Download className="w-3.5 h-3.5" />
+                              DOWNLOAD
+                            </>
+                          ) : (
+                            <>
+                              <Gamepad2 className="w-3.5 h-3.5" />
+                              PLAY GAME
+                            </>
+                          )}
                         </button>
                       </div>
                     </motion.div>

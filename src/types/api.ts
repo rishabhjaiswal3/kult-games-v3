@@ -67,6 +67,9 @@ export interface Game {
   slogan?: string;
   about?: string;
   url?: string;
+  /** When true, `url` points to an installable/downloadable build (not an in-browser play URL). */
+  isDownloadable?: boolean;
+  is_downloadable?: boolean;
   is_active?: boolean;
   metadata?: Record<string, unknown>;
 }

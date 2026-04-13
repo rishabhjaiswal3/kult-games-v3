@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Star, Clock, Users, Share2, Zap, Shield } from "lucide-react";
+import { ArrowLeft, Play, Download, Star, Clock, Users, Share2, Zap, Shield } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
@@ -8,6 +8,8 @@ import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
+import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import type { Game } from "@/types/api";
 
 function getGameName(name: Game["name"]): string {
@@ -136,6 +138,9 @@ const GameDetail = () => {
     },
   ].filter(Boolean);
 
+  const downloadable = isGameDownloadable(game);
+  const downloadHref = gameDownloadUrl(game);
+
   const handlePlayAccess = () => {
     if (isAuthenticated) {
       navigate(`/game/${id}/play`);
@@ -143,6 +148,10 @@ const GameDetail = () => {
     }
 
     navigate("/?login=1");
+  };
+
+  const handleDownloadClick = () => {
+    triggerBrowserDownload(downloadHref);
   };
 
   return (
@@ -216,15 +225,29 @@ const GameDetail = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handlePlayAccess}
-                  className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
-                >
-                  <Play className="relative z-10 h-5 w-5 fill-current" />
-                  <span className="relative z-10">PLAY FREE</span>
-                </motion.button>
+                {downloadable ? (
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleDownloadClick}
+                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                  >
+                    <Download className="relative z-10 h-5 w-5" />
+                    <span className="relative z-10">DOWNLOAD</span>
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handlePlayAccess}
+                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                  >
+                    <Play className="relative z-10 h-5 w-5 fill-current" />
+                    <span className="relative z-10">PLAY FREE</span>
+                  </motion.button>
+                )}
 
                 <button
                   onClick={() => navigator.share?.({ title, url: window.location.href })}
@@ -361,24 +384,42 @@ const GameDetail = () => {
         <div className="mx-auto max-w-7xl rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(220_45%_11%/0.92),hsl(220_42%_8%/0.96))] p-6 sm:p-8 lg:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="mb-2 text-[11px] font-mono uppercase tracking-[0.3em] text-neon-cyan/70">Ready To Jump In</p>
+              <p className="mb-2 text-[11px] font-mono uppercase tracking-[0.3em] text-neon-cyan/70">
+                {downloadable ? "Desktop build" : "Ready To Jump In"}
+              </p>
               <h3 className="font-display text-2xl font-black uppercase tracking-[-0.03em] text-foreground sm:text-3xl">
-                Start playing {title}
+                {downloadable ? `Download ${title}` : `Start playing ${title}`}
               </h3>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                No extra clutter. Just launch the game and get straight into the experience.
+                {downloadable
+                  ? "This title installs on your machine. Grab the build below — you stay on this page while the file opens or saves."
+                  : "No extra clutter. Just launch the game and get straight into the experience."}
               </p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handlePlayAccess}
-              className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
-            >
-              <Play className="relative z-10 h-5 w-5 fill-current" />
-              <span className="relative z-10">PLAY NOW</span>
-            </motion.button>
+            {downloadable ? (
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleDownloadClick}
+                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+              >
+                <Download className="relative z-10 h-5 w-5" />
+                <span className="relative z-10">DOWNLOAD</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handlePlayAccess}
+                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+              >
+                <Play className="relative z-10 h-5 w-5 fill-current" />
+                <span className="relative z-10">PLAY NOW</span>
+              </motion.button>
+            )}
           </div>
         </div>
       </section>
