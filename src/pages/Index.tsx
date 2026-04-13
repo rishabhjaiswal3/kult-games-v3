@@ -9,7 +9,6 @@ import { HomePageSkeleton } from "@/components/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowRight, Wallet } from "lucide-react";
-import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { gamesApi } from "@/api/gamesApi";
@@ -90,7 +89,7 @@ const Index = () => {
                   }}
                 >
                   <img
-                    src={aiArenaHero}
+                    src="/ai-flow/arena.jpeg"
                     alt="AI Arena - autonomous agents battling on-chain"
                     className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="eager"
