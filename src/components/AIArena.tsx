@@ -150,6 +150,63 @@ const COLOR_MAP = {
   },
 };
 
+/** Lifecycle carousel: 1 card on narrow, 2 on tablet, 3 on desktop. */
+function useLifecycleColumnCount() {
+  const [n, setN] = useState(1);
+  useEffect(() => {
+    const q2 = window.matchMedia("(min-width: 768px)");
+    const q3 = window.matchMedia("(min-width: 1024px)");
+    const sync = () => {
+      if (q3.matches) setN(3);
+      else if (q2.matches) setN(2);
+      else setN(1);
+    };
+    sync();
+    q2.addEventListener("change", sync);
+    q3.addEventListener("change", sync);
+    return () => {
+      q2.removeEventListener("change", sync);
+      q3.removeEventListener("change", sync);
+    };
+  }, []);
+  return n;
+}
+
+function AgentCoreVisual() {
+  return (
+    <div className="relative mx-auto w-full max-w-[320px] rounded-[24px] border border-white/10 bg-background/70 p-6 shadow-[0_20px_60px_hsl(220_60%_2%/0.4)] backdrop-blur-sm sm:p-8 lg:mx-0 lg:ml-auto">
+      <div className="relative mx-auto flex aspect-square w-full max-w-[260px] items-center justify-center">
+        <div
+          className="pointer-events-none absolute inset-[6%] rounded-full border border-neon-cyan/20"
+          style={{ boxShadow: "0 0 48px hsl(195 100% 50% / 0.08)" }}
+        />
+        <motion.div
+          className="pointer-events-none absolute inset-[16%] rounded-full border border-dashed border-neon-purple/20"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 56, repeat: Infinity, ease: "linear" }}
+        />
+        <div
+          className="pointer-events-none absolute inset-[26%] rounded-full"
+          style={{
+            background: "radial-gradient(circle, hsl(195 100% 50% / 0.12) 0%, transparent 68%)",
+            boxShadow: "inset 0 0 32px hsl(270 80% 65% / 0.12)",
+          }}
+        />
+        <motion.div
+          className="relative z-10 flex h-[44%] w-[44%] max-h-[112px] max-w-[112px] items-center justify-center rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-card to-background/95 shadow-[inset_0_1px_0_hsl(210_20%_100%/_0.06)]"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Bot className="h-12 w-12 text-neon-cyan sm:h-14 sm:w-14" strokeWidth={1.15} />
+        </motion.div>
+        <span className="absolute bottom-1 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-neon-cyan/15 bg-background/85 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.28em] text-neon-cyan/80">
+          Autonomous unit
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function LifecycleStepCard({
   step,
   stepIndexOneBased,
@@ -270,8 +327,13 @@ const AIArena = () => {
     return () => window.clearInterval(timer);
   }, [gamesWithFeatures.length, nextGame]);
 
+  const lifecycleCols = useLifecycleColumnCount();
   const [lifecycleIdx, setLifecycleIdx] = useState(0);
-  const maxLifecycleStart = Math.max(0, FLOW_STEPS.length - 3);
+  const maxLifecycleStart = Math.max(0, FLOW_STEPS.length - lifecycleCols);
+
+  useEffect(() => {
+    setLifecycleIdx((i) => Math.min(i, maxLifecycleStart));
+  }, [maxLifecycleStart]);
 
   const prevLifecycle = useCallback(() => {
     setLifecycleIdx((i) => (i === 0 ? maxLifecycleStart : i - 1));
@@ -287,6 +349,20 @@ const AIArena = () => {
     return () => window.clearInterval(timer);
   }, [nextLifecycle, maxLifecycleStart]);
 
+  const lifecycleGridClass =
+    lifecycleCols === 1
+      ? "grid grid-cols-1 gap-3 sm:gap-4"
+      : lifecycleCols === 2
+        ? "grid grid-cols-2 gap-3 sm:gap-4"
+        : "grid grid-cols-3 gap-3 sm:gap-4";
+
+  const lifecycleBlurb =
+    lifecycleCols === 1
+      ? "One step at a time on small screens — use arrows or dots to move through the flow."
+      : lifecycleCols === 2
+        ? "Two steps visible on tablet — arrows or dots slide the window."
+        : "Three steps at once on desktop — arrows or dots slide the window.";
+
   return (
     <div className="min-h-screen bg-background relative">
       <div
@@ -300,7 +376,7 @@ const AIArena = () => {
         }}
       />
 
-      <section className="relative min-h-[48vh] sm:min-h-[52vh] md:min-h-[56vh] pt-28 sm:pt-32 md:pt-36 pb-8 md:pb-10 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[50vh] sm:min-h-[54vh] md:min-h-[58vh] pt-28 sm:pt-32 md:pt-36 pb-10 md:pb-12 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={aiArenaHero}
@@ -319,106 +395,123 @@ const AIArena = () => {
           />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 text-center">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6">
           <motion.div
-            className="max-w-4xl mx-auto"
+            className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] ai-border-glow"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <motion.div
-              className="inline-flex items-center gap-2 mb-4 sm:mb-5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-neon-cyan/30 bg-background/95"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+            <div
+              className="relative overflow-hidden rounded-[28px] border-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12"
+              style={{
+                background: "hsl(220 45% 10% / 0.96)",
+                boxShadow:
+                  "0 0 25px hsl(195 100% 50% / 0.1), 0 0 50px hsl(270 80% 65% / 0.04), inset 0 1px 0 hsl(210 20% 93% / 0.06)",
+              }}
             >
-              <motion.div
-                className="w-2 h-2 rounded-full bg-neon-cyan"
-                animate={{
-                  opacity: [1, 0.3, 1],
-                  boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 18px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+              <div
+                className="pointer-events-none absolute inset-0 neural-grid opacity-[0.12]"
+                aria-hidden
               />
-              <span className="text-xs font-mono text-neon-cyan tracking-[0.25em] mt-2 uppercase">
-                AI Arena
-              </span>
-            </motion.div>
-
-            <motion.h1
-              className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[0.95]"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.7 }}
-            >
-              <span className="text-foreground block" style={{ textShadow: "0 0 40px hsl(195 100% 60% / 0.15)" }}>
-                YOUR AI
-              </span>
-              <span
-                className="block mt-1"
-                style={{
-                  background: "linear-gradient(90deg, hsl(195 100% 65%), hsl(278 100% 75%), hsl(195 100% 65%))",
-                  backgroundSize: "200% auto",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 30px hsl(195 100% 60% / 0.4))",
-                }}
-              >
-                AGENT
-              </span>
-            </motion.h1>
-
-            <motion.p
-              className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 px-1"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              Spawn an autonomous AI agent with its own hot wallet. Let it fight, trade, and trash-talk on your behalf.
-            </motion.p>
-
-            <motion.div
-              className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-5 sm:mb-6"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Link
-                to="/games"
-                className="group inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan text-xs sm:text-sm font-bold hover:bg-neon-cyan/20 hover:border-neon-cyan/70 transition-all"
-                style={{ boxShadow: "0 0 30px hsl(195 100% 60% / 0.15)" }}
-              >
-                Start Building Agent
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <a
-                href="#ai-game-map"
-                className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-border/60 bg-card/90 text-muted-foreground text-xs sm:text-sm font-bold hover:text-foreground hover:border-neon-purple/50 transition-all"
-              >
-                Explore AI Games
-              </a>
-            </motion.div>
-
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              {HERO_PROTOCOLS.map((item, i) => (
+              <div className="pointer-events-none absolute -right-20 top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full bg-neon-purple/8 blur-[100px]" aria-hidden />
+              <div className="pointer-events-none absolute -left-16 top-0 h-[200px] w-[200px] rounded-full bg-neon-cyan/6 blur-[80px]" aria-hidden />
+              <div className="relative flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-14 lg:text-left">
+              <div className="w-full flex-1 text-center lg:text-left">
                 <motion.div
-                  key={item.label}
-                  className="flex items-center justify-center gap-1.5 px-2 py-2 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-border/30 bg-card/90 text-[10px] sm:text-xs text-muted-foreground"
-                  whileHover={{ borderColor: "hsl(278 100% 75% / 0.4)", y: -2 }}
+                  className="mb-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 }}
+                >
+                  <span className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/8 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan/95">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-cyan opacity-35" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-neon-cyan shadow-[0_0_10px_hsl(195_100%_60%)]" />
+                    </span>
+                    AI Arena
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-background/60 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                    Live ops
+                  </span>
+                </motion.div>
+
+                <motion.h1
+                  className="font-display font-black tracking-[-0.03em]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12, duration: 0.65 }}
+                >
+                  <span className="block text-[clamp(2.25rem,7vw,3.75rem)] leading-[0.95] text-foreground/95">
+                    YOUR AI
+                  </span>
+                  <span className="mt-0.5 block text-[clamp(2.75rem,10vw,5rem)] font-black leading-[0.9] gradient-text">
+                    AGENT
+                  </span>
+                </motion.h1>
+
+                <motion.p
+                  className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.28 }}
+                >
+                  Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
+                </motion.p>
+
+                <motion.div
+                  className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.36 }}
+                >
+                  <Link
+                    to="/games"
+                    className="group relative z-10 inline-flex items-center gap-2 rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-wide btn-eye"
+                  >
+                    <span className="relative z-10">Start building</span>
+                    <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                  <a
+                    href="#warzone-agent-tracker"
+                    className="relative z-10 inline-flex items-center gap-2 rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-wide btn-eye-outline"
+                  >
+                    <span className="relative z-10">Track agent</span>
+                  </a>
+                </motion.div>
+
+                <motion.div
+                  className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-2 sm:mx-0 sm:max-w-none sm:justify-start"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + i * 0.06 }}
+                  transition={{ delay: 0.45 }}
                 >
-                  <item.icon className="w-4 h-4 text-neon-purple" />
-                  <span className="font-medium">{item.label}</span>
+                  {HERO_PROTOCOLS.map((item, i) => (
+                    <motion.div
+                      key={item.label}
+                      className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/20 bg-neon-cyan/[0.06] px-4 py-2 text-[11px] font-mono uppercase tracking-[0.14em] text-foreground/85"
+                      whileHover={{ borderColor: "hsl(195 100% 50% / 0.45)", y: -1 }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45 + i * 0.07 }}
+                    >
+                      <item.icon className="h-3.5 w-3.5 shrink-0 text-neon-cyan" />
+                      {item.label}
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </motion.div>
+              </div>
+
+              <motion.div
+                className="w-full shrink-0 lg:w-auto lg:max-w-[340px]"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <AgentCoreVisual />
+              </motion.div>
+            </div>
+            </div>
           </motion.div>
         </div>
 
@@ -427,22 +520,26 @@ const AIArena = () => {
 
       <WarzoneAgentTracker />
 
-      <section className="relative py-5 md:py-7 border-b border-border/20">
+      <section className="relative py-8 md:py-12 border-b border-white/[0.06]">
         <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+          <div className="rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-card/[0.35] via-card/[0.12] to-transparent p-5 shadow-[0_24px_80px_hsl(220_60%_2%/0.25)] backdrop-blur-sm sm:p-7 md:p-9">
           <motion.div
-            className="mb-3 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2"
+            className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3"
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
             <div>
-              <span className="text-[10px] font-mono text-neon-purple tracking-[0.25em] uppercase">Agent lifecycle</span>
-              <h2 className="font-display text-lg sm:text-xl md:text-2xl font-black tracking-tight text-foreground mt-0.5">
-                How Your <span style={{ color: "hsl(195 100% 65%)" }}>AI Agent</span> Works
+              <span className="inline-flex items-center gap-2 text-[10px] font-mono text-neon-cyan/90 tracking-[0.28em] uppercase">
+                <span className="h-px w-6 bg-gradient-to-r from-neon-cyan to-transparent" />
+                Agent lifecycle
+              </span>
+              <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground mt-1">
+                How Your <span className="bg-gradient-to-r from-[hsl(195_100%_65%)] to-[hsl(278_100%_75%)] bg-clip-text text-transparent">AI Agent</span> Works
               </h2>
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md sm:text-right leading-snug">
-              Wallet → agent → purchases → battles → banter. Three steps at a glance — arrows or dots slide the window.
+              Wallet → agent → purchases → battles → banter. {lifecycleBlurb}
             </p>
           </motion.div>
 
@@ -452,7 +549,7 @@ const AIArena = () => {
                 <button
                   type="button"
                   onClick={prevLifecycle}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 sm:-translate-x-12 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/50 bg-card flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-colors"
+                  className="absolute left-0 top-1/2 z-10 flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 -translate-x-1 sm:-translate-x-12 items-center justify-center rounded-full border border-white/12 bg-card/90 text-muted-foreground shadow-[0_8px_24px_hsl(220_60%_2%/0.4)] backdrop-blur-md transition-all hover:border-neon-cyan/45 hover:text-neon-cyan hover:shadow-[0_0_24px_hsl(195_100%_50%/_0.2)]"
                   aria-label="Previous steps"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -460,7 +557,7 @@ const AIArena = () => {
                 <button
                   type="button"
                   onClick={nextLifecycle}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 sm:translate-x-12 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/50 bg-card flex items-center justify-center text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/40 transition-colors"
+                  className="absolute right-0 top-1/2 z-10 flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 translate-x-1 sm:translate-x-12 items-center justify-center rounded-full border border-white/12 bg-card/90 text-muted-foreground shadow-[0_8px_24px_hsl(220_60%_2%/0.4)] backdrop-blur-md transition-all hover:border-neon-cyan/45 hover:text-neon-cyan hover:shadow-[0_0_24px_hsl(195_100%_50%/_0.2)]"
                   aria-label="Next steps"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -471,14 +568,14 @@ const AIArena = () => {
             <div className="overflow-hidden px-1 sm:px-2">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
-                  key={lifecycleIdx}
+                  key={`${lifecycleIdx}-${lifecycleCols}`}
                   initial={{ opacity: 0, x: 28 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -28 }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-3.5 items-stretch"
+                  className={lifecycleGridClass}
                 >
-                  {FLOW_STEPS.slice(lifecycleIdx, lifecycleIdx + 3).map((step, off) => (
+                  {FLOW_STEPS.slice(lifecycleIdx, lifecycleIdx + lifecycleCols).map((step, off) => (
                     <LifecycleStepCard
                       key={`${lifecycleIdx}-${off}`}
                       step={step}
@@ -490,23 +587,24 @@ const AIArena = () => {
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="mt-6 flex items-center justify-center gap-2.5">
               {Array.from({ length: maxLifecycleStart + 1 }, (_, page) => (
                 <button
                   key={page}
                   type="button"
                   onClick={() => setLifecycleIdx(page)}
-                  className="relative w-2.5 h-2.5 rounded-full transition-all duration-300"
+                  className="relative h-2.5 rounded-full transition-all duration-300"
                   style={{
-                    background: page === lifecycleIdx ? "hsl(195 100% 60%)" : "hsl(220 30% 28%)",
-                    boxShadow: page === lifecycleIdx ? "0 0 10px hsl(195 100% 60% / 0.55)" : "none",
-                    transform: page === lifecycleIdx ? "scale(1.25)" : "scale(1)",
+                    width: page === lifecycleIdx ? "1.75rem" : "0.625rem",
+                    background: page === lifecycleIdx ? "hsl(195 100% 55%)" : "hsl(220 25% 30%)",
+                    boxShadow: page === lifecycleIdx ? "0 0 16px hsl(195 100% 55% / 0.5)" : "none",
                   }}
-                  aria-label={`View steps ${page + 1}–${Math.min(page + 3, FLOW_STEPS.length)}`}
+                  aria-label={`View steps ${page + 1}–${Math.min(page + lifecycleCols, FLOW_STEPS.length)}`}
                   aria-current={page === lifecycleIdx ? "step" : undefined}
                 />
               ))}
             </div>
+          </div>
           </div>
         </div>
       </section>

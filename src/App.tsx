@@ -15,18 +15,47 @@ import GamePlay from "./pages/GamePlay";
 import NotFound from "./pages/NotFound";
 import AIArenaPage from "./pages/AIArenaPage";
 import MomentsPage from "./pages/MomentsPage";
+import ProfilePage from "./pages/ProfilePage";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
 
-const queryClient = new QueryClient();
-const FADED_CONTENT_DELAY = 1800;
-const PREVIEW_OPACITY = 0.2;
+const SPLASH_SEEN_KEY = "kult_splash_seen";
+
+function readSplashAlreadySeen(): boolean {
+  try {
+    return sessionStorage.getItem(SPLASH_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 15 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+/** How long before the route tree is hinted behind the splash (blur preview). */
+const FADED_CONTENT_DELAY = 350;
+const PREVIEW_OPACITY = 0.22;
 
 const App = () => {
-  const [loaded, setLoaded] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [loaded, setLoaded] = useState(readSplashAlreadySeen);
+  const [showPreview, setShowPreview] = useState(readSplashAlreadySeen);
   const contentRef = useRef<HTMLDivElement>(null);
-  const handleComplete = useCallback(() => setLoaded(true), []);
+  const handleComplete = useCallback(() => {
+    try {
+      sessionStorage.setItem(SPLASH_SEEN_KEY, "1");
+    } catch {
+      /* ignore quota / private mode */
+    }
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (loaded) {
@@ -57,8 +86,8 @@ const App = () => {
         filter: "blur(0px)",
         scale: 1,
         y: 0,
-        duration: 0.9,
-        ease: "power3.out",
+        duration: 0.5,
+        ease: "power2.out",
         clearProps: "transform,filter",
       });
       return;
@@ -67,10 +96,10 @@ const App = () => {
     if (showPreview) {
       gsap.to(content, {
         opacity: PREVIEW_OPACITY,
-        filter: "blur(6px)",
-        scale: 1.01,
-        y: 12,
-        duration: 0.7,
+        filter: "blur(5px)",
+        scale: 1.005,
+        y: 8,
+        duration: 0.45,
         ease: "power2.out",
       });
       return;
@@ -90,7 +119,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        {!loaded && <LoadingScreen onComplete={handleComplete} />}
+        {!loaded ? <LoadingScreen onComplete={handleComplete} /> : null}
         <BrowserRouter>
           <div
             ref={contentRef}
@@ -104,6 +133,7 @@ const App = () => {
               <Route path="/events" element={<Events />} />
               <Route path="/ai-arena" element={<AIArenaPage />} />
               <Route path="/moments" element={<MomentsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/game/:id" element={<GameDetail />} />
               <Route path="/game/:id/play" element={<GamePlay />} />
               <Route path="*" element={<NotFound />} />

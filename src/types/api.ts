@@ -22,6 +22,45 @@ export interface UpdateNameRequest {
   name: string;
 }
 
+/** Per-game row from GET /player/profile (Rust `PlayerProfile.game_scores_list`). */
+export interface PlayerGameScoreEntry {
+  identification: string;
+  score: number;
+  weight: number;
+  weightedScore: number;
+  rank: number | null;
+}
+
+/** Stats object inside `data.profile` for GET /player/profile (kult-browser-backend-rust). */
+export interface PlayerProfileStats {
+  walletAddress: string;
+  username: string;
+  rank: number | null;
+  totalScore: number;
+  level: number;
+  totalGamesPlayed: number;
+  completedQuests: number;
+  gameScoresList: PlayerGameScoreEntry[];
+}
+
+/** Full API envelope for GET /player/profile when backend returns `{ cached, profile }`. */
+export interface PlayerProfileApiData {
+  cached: boolean;
+  profile: PlayerProfileStats;
+}
+
+/** Normalized profile for the profile page (one GET). */
+export interface FullPlayerProfile {
+  player: Player;
+  cached: boolean;
+  rank: number | null;
+  totalScore: number;
+  level: number;
+  totalGamesPlayed: number;
+  completedQuests: number;
+  gameScoresList: PlayerGameScoreEntry[];
+}
+
 // ─── Games ────────────────────────────────────────────────────────────────────
 
 export interface GameImage {
