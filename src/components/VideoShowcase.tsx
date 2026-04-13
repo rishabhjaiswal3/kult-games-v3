@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 interface VideoShowcaseProps {
@@ -38,41 +37,22 @@ const VideoShowcase = ({
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] uppercase mb-4"
-        >
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+        <span className="mb-4 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.3em]">
           {subtitle.split(" • ").map((word, i, arr) => (
             <span key={word} className="flex items-center gap-2">
               <span className="text-white font-bold drop-shadow-[0_0_6px_hsl(0_0%_100%/0.4)]">{word}</span>
               {i < arr.length - 1 && <span className="text-white/25">•</span>}
             </span>
           ))}
-        </motion.span>
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-white drop-shadow-[0_2px_24px_hsl(220_80%_4%/0.9)]"
+        </span>
+        <h2
+          className="font-display text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_24px_hsl(220_80%_4%/0.9)] sm:text-4xl md:text-6xl lg:text-7xl"
           style={{ textShadow: "0 0 40px hsl(195 100% 60% / 0.25), 0 2px 20px hsl(220 80% 4% / 0.8)" }}
         >
           {title}
-        </motion.h2>
-        {children && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="mt-6"
-          >
-            {children}
-          </motion.div>
-        )}
+        </h2>
+        {children && <div className="mt-6">{children}</div>}
       </div>
 
       <div className="absolute top-4 left-4 w-8 h-8 border-t border-l border-neon-cyan/30 pointer-events-none" />

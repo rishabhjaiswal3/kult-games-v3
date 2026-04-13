@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ArrowLeft, Play, Download, Star, Clock, Users, Share2, Zap, Shield } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -163,24 +162,17 @@ const GameDetail = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/96 to-background" />
 
         <div className="relative mx-auto max-w-7xl px-4 pb-14 md:px-8 lg:px-12">
-          <motion.button
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
+          <button
+            type="button"
             onClick={() => navigate(-1)}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/60 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground backdrop-blur-md transition-colors hover:border-neon-cyan/30 hover:text-neon-cyan"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             BACK
-          </motion.button>
+          </button>
 
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-start">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="order-2 lg:order-1"
-            >
+            <div className="order-2 lg:order-1">
               <div className="mb-4 flex flex-wrap gap-2">
                 {highlightChips.map((item) => (
                   <span
@@ -226,27 +218,23 @@ const GameDetail = () => {
 
               <div className="flex flex-wrap items-center gap-3">
                 {downloadable ? (
-                  <motion.button
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     onClick={handleDownloadClick}
-                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <Download className="relative z-10 h-5 w-5" />
                     <span className="relative z-10">DOWNLOAD</span>
-                  </motion.button>
+                  </button>
                 ) : (
-                  <motion.button
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     onClick={handlePlayAccess}
-                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <Play className="relative z-10 h-5 w-5 fill-current" />
                     <span className="relative z-10">PLAY FREE</span>
-                  </motion.button>
+                  </button>
                 )}
 
                 <button
@@ -256,14 +244,9 @@ const GameDetail = () => {
                   <Share2 className="h-4 w-4" />
                 </button>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.08 }}
-              className="order-1 lg:order-2"
-            >
+            <div className="order-1 lg:order-2">
               <div className="rounded-[28px] border border-white/10 bg-card/55 p-3 shadow-[0_24px_80px_hsl(220_60%_2%/0.45)]">
                 <div className="rounded-[22px] bg-background/70 p-3">
                   <div className="relative overflow-visible pb-20 sm:pb-24 md:pb-28">
@@ -279,7 +262,14 @@ const GameDetail = () => {
                       <div className="absolute bottom-0 left-1/2 z-10 w-[52%] max-w-[260px] -translate-x-1/2 translate-y-[36%] sm:w-[46%] md:left-auto md:right-6 md:translate-x-0 md:translate-y-[34%]">
                         <div className="rounded-[24px] border border-white/10 bg-background/95 p-2 shadow-[0_20px_60px_hsl(220_80%_2%/0.55)]">
                           <div className="overflow-hidden rounded-[18px] ai-border-glow">
-                            <img src={image} alt={title} className="block w-full object-cover" />
+                            <img
+                              src={image}
+                              alt={title}
+                              className="block w-full object-cover"
+                              loading="eager"
+                              decoding="async"
+                              fetchPriority="high"
+                            />
                           </div>
                         </div>
                       </div>
@@ -287,7 +277,7 @@ const GameDetail = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -398,27 +388,23 @@ const GameDetail = () => {
             </div>
 
             {downloadable ? (
-              <motion.button
+              <button
                 type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={handleDownloadClick}
-                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Download className="relative z-10 h-5 w-5" />
                 <span className="relative z-10">DOWNLOAD</span>
-              </motion.button>
+              </button>
             ) : (
-              <motion.button
+              <button
                 type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={handlePlayAccess}
-                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Play className="relative z-10 h-5 w-5 fill-current" />
                 <span className="relative z-10">PLAY NOW</span>
-              </motion.button>
+              </button>
             )}
           </div>
         </div>

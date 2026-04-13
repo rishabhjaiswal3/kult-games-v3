@@ -119,12 +119,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Section header - matching reference */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6"
-        >
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <motion.div
@@ -165,16 +160,10 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
               <ChevronRight className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-primary" />
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Horizontal scrolling game cards - matching reference layout */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="relative"
-        >
+        <div className="relative">
          
           <div
             ref={scrollRef}
@@ -185,13 +174,9 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
               <GamesCarouselSkeleton count={5} className="contents" />
             ) : (
               games.map((game, i) => (
-                  <motion.div
+                  <div
                     key={String(game._id ?? game.identification ?? game.slug ?? `game-${i}`)}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-                    className="flex-shrink-0 w-[260px] md:w-[280px] snap-start"
+                    className="w-[260px] flex-shrink-0 snap-start md:w-[280px]"
                   >
                     <GameCard
                       id={game.identification ?? game.slug ?? game._id}
@@ -204,24 +189,18 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
                       skillLevel={(game.metadata?.skill_level as string) ?? "All levels"}
                       index={i}
                     />
-                  </motion.div>
+                  </div>
                 ))
             )}
           </div>
 
           {/* Fade edges for scroll indication */}
-          <div className="absolute top-0 left-0 bottom-4 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
-          <div className="absolute top-0 right-0 bottom-4 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
-        </motion.div>
+          <div className="pointer-events-none absolute bottom-4 left-0 top-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
+          <div className="pointer-events-none absolute bottom-4 right-0 top-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
+        </div>
 
         {/* View all button */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 flex justify-center"
-        >
+        <div className="mt-8 flex justify-center">
           <button
             onClick={onViewAllGames}
             className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
@@ -229,7 +208,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
             VIEW ALL GAMES
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -38,14 +38,17 @@ const GameCard = ({
   const glow = categoryGlow[category] ?? categoryGlow.Default;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      whileHover={{ y: -6, transition: { duration: 0.3 } }}
+    <div
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/game/${gameId}`);
+        }
+      }}
       onClick={() => navigate(`/game/${gameId}`)}
-      className={`group relative rounded-xl overflow-hidden cursor-pointer bg-card border border-border/50 transition-all duration-300 ${glow.border} ${glow.shadow}`}
+      className={`group relative cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-card transition-transform duration-300 hover:-translate-y-1.5 ${glow.border} ${glow.shadow}`}
     >
       {/* Holographic shimmer on hover */}
       <motion.div
@@ -62,7 +65,14 @@ const GameCard = ({
 
       {/* Image with play button */}
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+        <img
+          src={image}
+          alt={title}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="eager"
+          decoding="async"
+          fetchPriority={index < 4 ? "high" : "auto"}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         
         {/* Play button */}
@@ -93,16 +103,12 @@ const GameCard = ({
         <div className="mt-3 flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground font-mono">SKILL</span>
           <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden relative">
-            <motion.div 
-              className={`h-full bg-gradient-to-r ${glow.bar} rounded-full relative`}
-              style={{ 
+            <div
+              className={`relative h-full rounded-full bg-gradient-to-r ${glow.bar}`}
+              style={{
                 width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%",
                 boxShadow: "0 0 8px hsl(195 100% 50% / 0.5)",
               }}
-              initial={{ width: 0 }}
-              whileInView={{ width: skillLevel === "Beginner" ? "30%" : skillLevel === "Intermediate" ? "60%" : "50%" }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: index * 0.1 + 0.3 }}
             />
             {/* Pulse at the end */}
             <motion.div
@@ -114,7 +120,7 @@ const GameCard = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
