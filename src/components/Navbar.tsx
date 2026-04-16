@@ -477,9 +477,10 @@ const Navbar = () => {
             />
           </Link>
 
-          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-2 lg:gap-3 mx-1 md:mx-2 lg:mx-4 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-0 mx-1 md:mx-2 lg:mx-4 overflow-x-auto overflow-y-visible scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const isHome = item.path === "/";
               return (
                 <Link
                   key={item.label}
@@ -488,7 +489,7 @@ const Navbar = () => {
                     isActive
                       ? "text-[hsl(278_100%_80%)]"
                       : "text-muted-foreground hover:text-[hsl(278_100%_80%)]"
-                  }`}
+                  } ${isHome ? "sticky left-0 z-[2] bg-background/95 backdrop-blur-md border-r border-border/60 shadow-[8px_0_16px_-8px_rgba(0,0,0,0.85)] mr-1 lg:mr-2" : ""}`}
                 >
                   {item.label}
                   <span
