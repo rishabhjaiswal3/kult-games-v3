@@ -156,157 +156,56 @@ const GameDetail = () => {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <Navbar />
+      <section className="relative z-40 mt-[60px] px-4 py-8 md:px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl overflow-visible rounded-[30px] border border-white/10 bg-[hsl(222_30%_8%_/0.72)] shadow-[0_24px_80px_hsl(220_60%_2%/0.4)] backdrop-blur-xl">
+          <div className="relative">
+            <AutoPlayVideo src={video} loop className="absolute inset-0 h-full w-full object-cover opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />
 
-      <section className="relative overflow-hidden pt-20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(195_100%_60%/0.12),transparent_28%),radial-gradient(circle_at_85%_20%,hsl(270_80%_65%/0.14),transparent_22%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/96 to-background" />
+            <div className="relative z-10 p-5 sm:p-7 lg:p-8">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground transition hover:border-white/20 hover:text-white"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                BACK
+              </button>
 
-        <div className="relative mx-auto max-w-7xl px-4 pb-14 md:px-8 lg:px-12">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/60 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground backdrop-blur-md transition-colors hover:border-neon-cyan/30 hover:text-neon-cyan"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            BACK
-          </button>
-
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-start">
-            <div className="order-2 lg:order-1">
-              <div className="mb-4 flex flex-wrap gap-2">
-                {highlightChips.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/10 bg-card/70 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.22em] text-foreground/80"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <h1 className="mb-4 font-display text-4xl font-black uppercase leading-[0.92] tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl">
+              <p className="mb-2 text-[11px] font-mono uppercase tracking-[0.28em] text-neon-cyan/75">Game Spotlight</p>
+              <h1 className="pr-20 font-display text-2xl font-black uppercase leading-[0.95] tracking-[-0.03em] text-foreground sm:pr-0 sm:text-4xl lg:text-5xl">
                 {titleWords.map((word, i) => (
                   <span key={i} className="mr-[0.18em] inline-block last:mr-0">
                     {i < titleWords.length - 1 ? <span className="gradient-text">{word}</span> : word}
                   </span>
                 ))}
               </h1>
+              {game.slogan ? <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">{game.slogan}</p> : null}
 
-              {game.slogan && (
-                <p className="mb-4 max-w-2xl text-base leading-7 text-foreground/90 sm:text-lg">
-                  {game.slogan}
-                </p>
-              )}
-
-              {aboutPreview && (
-                <p className="mb-8 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                  {aboutPreview}
-                </p>
-              )}
-
-              <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-                {facts.map((fact) => (
-                  <div key={fact.label} className="rounded-2xl border border-white/10 bg-card/60 p-4">
-                    <div className="mb-2 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-                      {fact.icon}
-                      {fact.label}
-                    </div>
-                    <div className="text-sm font-semibold text-foreground sm:text-base">{fact.value}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                {downloadable ? (
-                  <button
-                    type="button"
-                    onClick={handleDownloadClick}
-                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Download className="relative z-10 h-5 w-5" />
-                    <span className="relative z-10">DOWNLOAD</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handlePlayAccess}
-                    className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Play className="relative z-10 h-5 w-5 fill-current" />
-                    <span className="relative z-10">PLAY FREE</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => navigator.share?.({ title, url: window.location.href })}
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-card/60 text-muted-foreground transition-colors hover:border-neon-cyan/30 hover:text-neon-cyan"
-                >
-                  <Share2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="order-1 lg:order-2">
-              <div className="rounded-[28px] border border-white/10 bg-card/55 p-3 shadow-[0_24px_80px_hsl(220_60%_2%/0.45)]">
-                <div className="rounded-[22px] bg-background/70 p-3">
-                  <div className="relative overflow-visible pb-20 sm:pb-24 md:pb-28">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] border border-white/10">
-                      <AutoPlayVideo src={video} loop className="absolute inset-0 h-full w-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/45 via-transparent to-background/10" />
-                      <div className="absolute left-4 top-4 rounded-full bg-background/75 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.22em] text-neon-cyan">
-                        Gameplay
+              <div className="relative mt-10">
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-neon-cyan/60 to-transparent" />
+                {image ? (
+                  <div className="pointer-events-none absolute -right-2 top-0 z-50 w-[54%] max-w-[360px] -translate-y-[56%] sm:-right-5 sm:max-w-[420px]">
+                    <div className="rounded-[24px] border border-white/10 bg-background/95 p-2 shadow-[0_16px_40px_hsl(220_60%_2%/0.45)]">
+                      <div className="overflow-hidden rounded-[18px] border border-cyan-400/25">
+                        <img
+                          src={image}
+                          alt={title}
+                          className="block h-auto w-full object-contain"
+                          loading="eager"
+                          decoding="async"
+                        />
                       </div>
                     </div>
-
-                    {image && (
-                      <div className="absolute bottom-0 left-1/2 z-10 w-[52%] max-w-[260px] -translate-x-1/2 translate-y-[36%] sm:w-[46%] md:left-auto md:right-6 md:translate-x-0 md:translate-y-[34%]">
-                        <div className="rounded-[24px] border border-white/10 bg-background/95 p-2 shadow-[0_20px_60px_hsl(220_80%_2%/0.55)]">
-                          <div className="overflow-hidden rounded-[18px] ai-border-glow">
-                            <img
-                              src={image}
-                              alt={title}
-                              className="block w-full object-cover"
-                              loading="eager"
-                              decoding="async"
-                              fetchPriority="high"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </div>
+                ) : null}
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {(highlightChips.length > 0 || features.length > 0) && (
-        <section className="px-4 pb-8 md:px-8 lg:px-12">
-          <div className="mx-auto flex max-w-7xl flex-wrap gap-3 rounded-[24px] border border-white/10 bg-card/45 p-4 sm:p-5">
-            {highlightChips.map((item) => (
-              <div
-                key={`${item}-chip`}
-                className="rounded-full border border-neon-cyan/20 bg-neon-cyan/8 px-4 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-neon-cyan/90"
-              >
-                {item}
-              </div>
-            ))}
-            {features.slice(0, 3).map((feature) => (
-              <div
-                key={feature}
-                className="rounded-full border border-white/10 bg-background/60 px-4 py-2 text-[11px] font-mono uppercase tracking-[0.16em] text-foreground/75"
-              >
-                {feature}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       {about && (
-        <section className="px-4 py-10 md:px-8 lg:px-12">
+        <section className="relative z-30 px-4 py-10 md:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl rounded-[28px] border border-white/10 bg-card/45 p-6 sm:p-8 lg:p-10">
             <div className="mb-8 flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -344,7 +243,7 @@ const GameDetail = () => {
       )}
 
       {features.length > 0 && (
-        <section className="px-4 py-10 md:px-8 lg:px-12">
+        <section className="relative z-30 px-4 py-10 md:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl rounded-[28px] border border-white/10 bg-card/45 p-6 sm:p-8 lg:p-10">
             <div className="mb-8 flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -370,7 +269,7 @@ const GameDetail = () => {
         </section>
       )}
 
-      <section className="px-4 py-10 pb-24 md:px-8 lg:px-12">
+      <section className="relative z-30 px-4 py-10 pb-24 md:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(220_45%_11%/0.92),hsl(220_42%_8%/0.96))] p-6 sm:p-8 lg:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
