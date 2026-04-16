@@ -8,6 +8,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import gsap from "gsap";
 import Index from "./pages/Index";
 import Store from "./pages/Store";
+import Marketplace from "./pages/Marketplace";
 import Leaderboard from "./pages/Leaderboard";
 import Events from "./pages/Events";
 import GameDetail from "./pages/GameDetail";
@@ -137,6 +138,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/games" element={<Store />} />
+              <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/events" element={<Events />} />
               <Route path="/ai-arena" element={<AIArenaPage />} />
