@@ -121,6 +121,29 @@ export interface GamesResponse {
   totalPages: number;
 }
 
+// ─── Marketplace (GET /marketplace) ───────────────────────────────────────────
+
+/** Single listing — matches kult-browser-backend-rust `ListingResponse` (camelCase JSON). */
+export interface MarketplaceListing {
+  id: string;
+  name: string;
+  shortDescription?: string | null;
+  longDescription?: string | null;
+  assetUrl?: string | null;
+  price: number;
+  category: string;
+  currency: string;
+  gameIdentification: string;
+  status: string;
+}
+
+export interface MarketplaceListingsResponse {
+  listings: MarketplaceListing[];
+  total: number;
+  page: number;
+  perPage: number;
+}
+
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
 
 export interface LeaderboardEntry {
