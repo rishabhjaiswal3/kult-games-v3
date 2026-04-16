@@ -103,6 +103,12 @@ const Marketplace = () => {
     });
   }, [listings, itemSearch]);
 
+  /** Reverse API order for grid display. */
+  const displayListings = useMemo(
+    () => [...filteredListings].reverse(),
+    [filteredListings]
+  );
+
   const showEmpty =
     Boolean(itemGame) && !listingsLoading && !listingsError && listings.length === 0;
   const showNoSearchMatches =
@@ -269,7 +275,7 @@ const Marketplace = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-                      {filteredListings.map((item) => (
+                      {displayListings.map((item) => (
                         <div
                           key={item.id}
                           className="group rounded-xl border border-white/12 bg-[linear-gradient(160deg,hsl(220_42%_15%/.9),hsl(220_46%_11%/.98))] p-2 transition-all duration-300 hover:-translate-y-1 hover:border-neon-cyan/50 hover:shadow-[0_12px_24px_hsl(195_100%_60%/0.14)]"
