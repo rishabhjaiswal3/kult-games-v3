@@ -119,17 +119,16 @@ const Marketplace = () => {
     filteredListings.length === 0;
 
   return (
-    <div className="min-h-screen bg-background relative lg:h-screen lg:overflow-hidden">
+    <div className="min-h-screen bg-transparent relative lg:h-screen lg:overflow-hidden">
       <Navbar />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AutoPlayVideo src="/videos/SC_5.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-48 saturate-[1.2] contrast-[1.08]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/52 via-background/60 to-background/72" />
+      </div>
       <section className="relative pt-24 pb-2 z-10 lg:h-[calc(100vh-5rem)] lg:overflow-hidden lg:pb-2">
         <AIScanLine />
-        <div className="absolute inset-0 pointer-events-none">
-          <AutoPlayVideo src="/videos/SC_5.mp4" loop className="h-full w-full object-cover opacity-[0.13]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,hsl(195_100%_60%/.15),transparent_40%),radial-gradient(circle_at_80%_80%,hsl(260_100%_60%/.12),transparent_45%)]" />
-          <div className="absolute inset-0 bg-background/75" />
-        </div>
         <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 relative z-10 lg:h-full">
-          <div className="rounded-3xl border border-neon-cyan/25 bg-[linear-gradient(145deg,hsl(220_42%_12%/.9),hsl(220_45%_9%/.96))] p-3 shadow-[0_20px_60px_hsl(220_70%_2%/0.45)] sm:p-4 lg:p-5 lg:h-full">
+          <div className="lg:h-full">
             <div className="grid items-stretch gap-4 xl:grid-cols-[280px_minmax(0,1fr)] lg:h-full">
               <aside className="rounded-2xl border border-neon-cyan/20 bg-[linear-gradient(155deg,hsl(220_42%_13%/.92),hsl(220_45%_10%/.88))] p-3 lg:h-full lg:min-h-full">
                 <div className="mb-2 flex items-center justify-between">
