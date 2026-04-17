@@ -20,8 +20,12 @@ const Events = () => {
   const filtered = events.filter((e) => filter === "All" || e.status === filter);
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-transparent relative">
       <Navbar />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AutoPlayVideo src="/videos/SC_12.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />
+      </div>
 
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
    

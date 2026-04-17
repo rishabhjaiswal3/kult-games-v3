@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
 import { isGameDownloadable } from "@/lib/gameDownload";
 import type { Game } from "@/types/api";
+import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 
 function getGameName(name: Game["name"]): string {
   if (typeof name === "string") return name;
@@ -36,6 +37,7 @@ function getGameDescription(desc: Game["description"]): string {
 const Store = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [videoFailed, setVideoFailed] = useState(false);
   const navigate = useNavigate();
 
   const { data: gamesData, isLoading: gamesLoading } = useQuery({
@@ -62,9 +64,29 @@ const Store = () => {
     return matchSearch && matchCat;
   });
 
+  const MARKETPLACE_VIDEO_SRC = "/videos/SC_5.mp4";
+
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-transparent relative">
       <Navbar />
+
+      {/* Full-page marketplace background video (GameDetail style) */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <AutoPlayVideo
+          src={MARKETPLACE_VIDEO_SRC}
+          loop
+          className={`absolute inset-0 w-full h-full object-cover ${videoFailed ? "opacity-0" : "opacity-20"}`}
+          onError={() => setVideoFailed(true)}
+          aria-hidden="true"
+        />
+        <img
+          src={aiArenaHero}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 w-full h-full object-cover ${videoFailed ? "opacity-20" : "opacity-0"} transition-opacity`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />
+      </div>
 
       <section className="relative pt-24 pb-20 z-10 overflow-hidden">
         <AIScanLine />
@@ -76,7 +98,7 @@ const Store = () => {
         <div className="container mx-auto px-6 relative z-10">
           {/* Header */}
           <div className="mb-12">
-            <div className="relative flex w-full flex-col justify-between overflow-hidden rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] backdrop-blur-md lg:flex-row">
+            <div className="relative flex w-full flex-col justify-between overflow-hidden rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.22),hsl(220_45%_10%/0.42),hsl(220_45%_10%/0.12))] backdrop-blur-md lg:flex-row">
               {/* Text content */}
               <div className="relative z-10 order-first px-6 py-7 md:px-8 md:py-9">
                 <div className="flex items-center gap-2 mb-3">
@@ -119,22 +141,22 @@ const Store = () => {
 
           <div>
               <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-white/10 bg-card/45 p-4">
+                <div className="rounded-xl border border-white/10 bg-card/28 p-4">
                   <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Total games</p>
                   <p className="mt-1 text-2xl font-display font-black text-neon-cyan">{allGames.length}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-card/45 p-4">
+                <div className="rounded-xl border border-white/10 bg-card/28 p-4">
                   <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Visible results</p>
                   <p className="mt-1 text-2xl font-display font-black text-foreground">{filtered.length}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-card/45 p-4">
+                <div className="rounded-xl border border-white/10 bg-card/28 p-4">
                   <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Selected category</p>
                   <p className="mt-1 text-base font-display font-bold text-foreground">{selectedCategory}</p>
                 </div>
               </div>
 
               {/* Search & Filter */}
-              <div className="mb-8 rounded-2xl border border-white/10 bg-card/55 p-4 shadow-[0_10px_30px_hsl(220_70%_2%/0.28)]">
+              <div className="mb-8 rounded-2xl border border-white/10 bg-card/35 p-4 shadow-[0_10px_30px_hsl(220_70%_2%/0.18)]">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
@@ -195,7 +217,7 @@ const Store = () => {
                             }
                           }}
                           onClick={() => navigate(`/game/${gameId}`)}
-                          className="group cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,hsl(220_40%_14%/0.92),hsl(220_45%_9%/0.95))] transition-all duration-300 hover:-translate-y-1 hover:border-neon-cyan/35 hover:shadow-[0_14px_35px_hsl(195_100%_50%/0.12)]"
+                          className="group cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,hsl(220_40%_14%/0.72),hsl(220_45%_9%/0.78))] transition-all duration-300 hover:-translate-y-1 hover:border-neon-cyan/35 hover:shadow-[0_14px_35px_hsl(195_100%_50%/0.12)]"
                         >
                           <div className="relative aspect-[16/10] overflow-hidden">
                             <img

@@ -405,7 +405,7 @@ const AIArena = () => {
         : "Three steps at once on desktop — arrows or dots slide the window.";
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-transparent relative">
       <div
         className="fixed inset-0 pointer-events-none opacity-20"
         style={{
