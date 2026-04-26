@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -8,12 +8,14 @@ import {
   Flame,
   Gamepad2,
   Loader2,
+  Pencil,
   Save,
   Sparkles,
   Swords,
   Trophy,
   UserCircle,
   Wallet,
+  X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -28,6 +30,149 @@ import { aiWarzoneApi } from "@/api/aiWarzoneApi";
 import { playerApi } from "@/api/playerApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+
+const KULT_AVATARS = [
+  {
+    id: "cyber-warrior",
+    label: "Cyber Warrior",
+    color: "hsl(195,100%,60%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <path d="M28 4L50 16V40L28 52L6 40V16L28 4Z" fill="hsl(195,100%,50%)" fillOpacity="0.12" stroke="hsl(195,100%,65%)" strokeWidth="1.5" />
+        <rect x="14" y="20" width="28" height="16" rx="4" fill="hsl(220,45%,10%)" stroke="hsl(195,100%,60%)" strokeWidth="1" />
+        <rect x="16" y="23" width="24" height="10" rx="2" fill="hsl(195,100%,55%)" fillOpacity="0.18" />
+        <rect x="16" y="23" width="10" height="10" rx="2" fill="hsl(195,100%,60%)" fillOpacity="0.6" />
+        <rect x="30" y="23" width="10" height="10" rx="2" fill="hsl(195,100%,60%)" fillOpacity="0.6" />
+        <line x1="28" y1="4" x2="28" y2="10" stroke="hsl(195,100%,75%)" strokeWidth="1.5" />
+        <line x1="28" y1="46" x2="28" y2="52" stroke="hsl(195,100%,75%)" strokeWidth="1.5" />
+        <circle cx="28" cy="40" r="2" fill="hsl(195,100%,75%)" />
+      </svg>
+    ),
+  },
+  {
+    id: "neon-hunter",
+    label: "Neon Hunter",
+    color: "hsl(40,90%,60%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <circle cx="28" cy="28" r="23" fill="hsl(40,90%,50%)" fillOpacity="0.1" stroke="hsl(40,90%,60%)" strokeWidth="1.5" />
+        <circle cx="28" cy="28" r="15" fill="hsl(220,45%,10%)" stroke="hsl(40,85%,55%)" strokeWidth="1" />
+        <ellipse cx="22" cy="27" rx="5" ry="4" fill="hsl(40,90%,60%)" fillOpacity="0.7" />
+        <ellipse cx="34" cy="27" rx="5" ry="4" fill="hsl(40,90%,60%)" fillOpacity="0.7" />
+        <line x1="27" y1="27" x2="29" y2="27" stroke="hsl(40,90%,80%)" strokeWidth="1.5" />
+        <path d="M20 33 Q28 37 36 33" stroke="hsl(40,90%,65%)" strokeWidth="1.2" fill="none" />
+        <circle cx="28" cy="8" r="2" fill="hsl(40,90%,70%)" />
+        <circle cx="8" cy="28" r="2" fill="hsl(40,90%,70%)" />
+        <circle cx="48" cy="28" r="2" fill="hsl(40,90%,70%)" />
+      </svg>
+    ),
+  },
+  {
+    id: "phantom-rogue",
+    label: "Phantom Rogue",
+    color: "hsl(278,100%,72%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <path d="M28 6L50 18V38L28 50L6 38V18L28 6Z" fill="hsl(278,100%,60%)" fillOpacity="0.1" stroke="hsl(278,100%,72%)" strokeWidth="1.5" />
+        <path d="M16 22 Q28 14 40 22 L38 36 Q28 42 18 36 Z" fill="hsl(220,45%,8%)" stroke="hsl(278,100%,65%)" strokeWidth="1" />
+        <circle cx="22" cy="27" r="4" fill="hsl(278,100%,72%)" fillOpacity="0.6" />
+        <circle cx="34" cy="27" r="4" fill="hsl(278,100%,72%)" fillOpacity="0.6" />
+        <circle cx="28" cy="29" r="3" fill="hsl(151,100%,55%)" fillOpacity="0.7" />
+        <path d="M20 35 Q28 39 36 35" stroke="hsl(278,100%,80%)" strokeWidth="1" fill="none" />
+        <line x1="12" y1="24" x2="16" y2="26" stroke="hsl(278,100%,72%)" strokeWidth="1.2" />
+        <line x1="44" y1="24" x2="40" y2="26" stroke="hsl(278,100%,72%)" strokeWidth="1.2" />
+      </svg>
+    ),
+  },
+  {
+    id: "iron-sentinel",
+    label: "Iron Sentinel",
+    color: "hsl(45,100%,55%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="6" y="6" width="44" height="44" rx="10" fill="hsl(45,100%,50%)" fillOpacity="0.1" stroke="hsl(45,100%,60%)" strokeWidth="1.5" />
+        <rect x="13" y="18" width="30" height="20" rx="5" fill="hsl(220,45%,9%)" stroke="hsl(45,95%,55%)" strokeWidth="1" />
+        <rect x="18" y="23" width="20" height="10" rx="3" fill="hsl(45,100%,55%)" fillOpacity="0.25" />
+        <ellipse cx="28" cy="28" rx="8" ry="4" fill="hsl(45,100%,60%)" fillOpacity="0.55" />
+        <circle cx="28" cy="28" r="2.5" fill="hsl(45,100%,80%)" />
+        <line x1="28" y1="6" x2="28" y2="13" stroke="hsl(45,100%,65%)" strokeWidth="1.5" />
+        <line x1="28" y1="43" x2="28" y2="50" stroke="hsl(45,100%,65%)" strokeWidth="1.5" />
+        <line x1="6" y1="28" x2="13" y2="28" stroke="hsl(45,100%,65%)" strokeWidth="1.5" />
+        <line x1="43" y1="28" x2="50" y2="28" stroke="hsl(45,100%,65%)" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
+    id: "byte-ghost",
+    label: "Byte Ghost",
+    color: "hsl(151,100%,55%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <circle cx="28" cy="28" r="22" fill="hsl(151,100%,45%)" fillOpacity="0.1" stroke="hsl(151,100%,55%)" strokeWidth="1.5" strokeDasharray="4 2" />
+        <path d="M18 20 Q28 10 38 20 L40 36 Q34 44 28 46 Q22 44 16 36 Z" fill="hsl(220,45%,9%)" stroke="hsl(151,100%,50%)" strokeWidth="1" />
+        <ellipse cx="23" cy="27" rx="4" ry="5" fill="hsl(151,100%,55%)" fillOpacity="0.65" />
+        <ellipse cx="33" cy="27" rx="4" ry="5" fill="hsl(151,100%,55%)" fillOpacity="0.65" />
+        <path d="M22 36 L24 34 L28 36 L32 34 L34 36" stroke="hsl(151,100%,65%)" strokeWidth="1" fill="none" />
+        <circle cx="14" cy="18" r="1.5" fill="hsl(151,100%,65%)" fillOpacity="0.6" />
+        <circle cx="42" cy="18" r="1.5" fill="hsl(151,100%,65%)" fillOpacity="0.6" />
+      </svg>
+    ),
+  },
+  {
+    id: "quantum-raider",
+    label: "Quantum Raider",
+    color: "hsl(220,100%,70%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <path d="M28 4L52 18V38L28 52L4 38V18L28 4Z" fill="hsl(220,100%,60%)" fillOpacity="0.1" stroke="hsl(220,100%,70%)" strokeWidth="1.5" />
+        <rect x="15" y="19" width="26" height="18" rx="6" fill="hsl(220,45%,8%)" stroke="hsl(220,100%,65%)" strokeWidth="1" />
+        <path d="M20 26 H36" stroke="hsl(220,100%,70%)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M20 30 H32" stroke="hsl(220,100%,70%)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M20 34 H28" stroke="hsl(220,100%,70%)" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="38" cy="22" r="3" fill="hsl(220,100%,75%)" fillOpacity="0.8" />
+        <circle cx="28" cy="9" r="2" fill="hsl(220,100%,75%)" />
+      </svg>
+    ),
+  },
+  {
+    id: "void-maven",
+    label: "Void Maven",
+    color: "hsl(340,100%,65%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <circle cx="28" cy="28" r="23" fill="hsl(340,100%,50%)" fillOpacity="0.1" stroke="hsl(340,100%,65%)" strokeWidth="1.5" />
+        <path d="M14 20 Q28 12 42 20 L42 36 Q28 44 14 36 Z" fill="hsl(220,45%,8%)" stroke="hsl(340,95%,60%)" strokeWidth="1" />
+        <circle cx="28" cy="27" r="8" fill="hsl(340,100%,60%)" fillOpacity="0.15" stroke="hsl(340,100%,65%)" strokeWidth="1" />
+        <circle cx="28" cy="27" r="4" fill="hsl(340,100%,65%)" fillOpacity="0.7" />
+        <circle cx="28" cy="27" r="2" fill="hsl(340,100%,90%)" />
+        <line x1="20" y1="27" x2="24" y2="27" stroke="hsl(340,100%,70%)" strokeWidth="1" />
+        <line x1="32" y1="27" x2="36" y2="27" stroke="hsl(340,100%,70%)" strokeWidth="1" />
+        <line x1="28" y1="19" x2="28" y2="23" stroke="hsl(340,100%,70%)" strokeWidth="1" />
+        <line x1="28" y1="31" x2="28" y2="35" stroke="hsl(340,100%,70%)" strokeWidth="1" />
+      </svg>
+    ),
+  },
+  {
+    id: "nova-pilot",
+    label: "Nova Pilot",
+    color: "hsl(270,80%,68%)",
+    svg: (
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <rect x="5" y="5" width="46" height="46" rx="16" fill="hsl(270,80%,60%)" fillOpacity="0.1" stroke="hsl(270,80%,70%)" strokeWidth="1.5" />
+        <ellipse cx="28" cy="26" rx="14" ry="12" fill="hsl(220,45%,9%)" stroke="hsl(270,75%,65%)" strokeWidth="1" />
+        <path d="M16 24 Q28 18 40 24" stroke="hsl(270,80%,70%)" strokeWidth="1.5" fill="none" />
+        <ellipse cx="22" cy="27" rx="5" ry="3.5" fill="hsl(270,80%,68%)" fillOpacity="0.6" />
+        <ellipse cx="34" cy="27" rx="5" ry="3.5" fill="hsl(270,80%,68%)" fillOpacity="0.6" />
+        <circle cx="28" cy="40" r="4" fill="hsl(270,80%,65%)" fillOpacity="0.5" stroke="hsl(270,80%,75%)" strokeWidth="1" />
+        <line x1="28" y1="38" x2="28" y2="44" stroke="hsl(270,80%,80%)" strokeWidth="1" />
+      </svg>
+    ),
+  },
+] as const;
+
+type AvatarId = (typeof KULT_AVATARS)[number]["id"];
+
+const AVATAR_LS_KEY = "kult_selected_avatar";
 
 function initialsFromName(name: string) {
   const t = name.trim();
@@ -47,6 +192,18 @@ const ProfilePage = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated, walletAddress, refetchProfile } = useAuth();
   const [nameDraft, setNameDraft] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarId | null>(
+    () => (typeof window !== "undefined" ? (localStorage.getItem(AVATAR_LS_KEY) as AvatarId | null) : null),
+  );
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const handleSelectAvatar = (id: AvatarId) => {
+    setSelectedAvatar(id);
+    localStorage.setItem(AVATAR_LS_KEY, id);
+    setShowAvatarPicker(false);
+  };
+
+  const currentAvatar = KULT_AVATARS.find((a) => a.id === selectedAvatar);
 
   const {
     data: full,
@@ -198,17 +355,82 @@ const ProfilePage = () => {
             />
             <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-                <div
-                  className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl text-2xl font-black tracking-tight text-background sm:h-28 sm:w-28 sm:text-3xl"
-                  style={{
-                    background: "linear-gradient(145deg, hsl(195 100% 52%), hsl(278 95% 58%))",
-                    boxShadow: "0 0 0 1px hsl(195 100% 70% / 0.35), 0 16px 48px hsl(195 100% 45% / 0.35)",
-                  }}
-                >
-                  {initialsFromName(displayName)}
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowAvatarPicker((v) => !v)}
+                    className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-28 sm:w-28"
+                    style={{
+                      background: currentAvatar
+                        ? `hsl(220 45% 9%)`
+                        : "linear-gradient(145deg, hsl(195 100% 52%), hsl(278 95% 58%))",
+                      boxShadow: currentAvatar
+                        ? `0 0 0 2px ${currentAvatar.color}, 0 16px 48px ${currentAvatar.color}55`
+                        : "0 0 0 1px hsl(195 100% 70% / 0.35), 0 16px 48px hsl(195 100% 45% / 0.35)",
+                    }}
+                  >
+                    {currentAvatar ? (
+                      <div className="h-full w-full p-2">{currentAvatar.svg}</div>
+                    ) : (
+                      <span className="text-2xl font-black tracking-tight text-background sm:text-3xl">
+                        {initialsFromName(displayName)}
+                      </span>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <Pencil className="h-5 w-5 text-white" />
+                    </div>
+                  </button>
                   <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border border-background bg-background text-neon-cyan shadow-lg">
                     <Crown className="h-4 w-4" />
                   </span>
+
+                  {/* Avatar picker panel */}
+                  <AnimatePresence>
+                    {showAvatarPicker && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 8 }}
+                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                        className="absolute left-0 top-full z-50 mt-3 w-[320px] rounded-[20px] border border-white/15 bg-[hsl(220_45%_9%)] p-4 shadow-[0_24px_60px_hsl(220_60%_2%/0.6)] backdrop-blur-xl"
+                      >
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-neon-cyan/80">Choose Avatar</p>
+                          <button
+                            type="button"
+                            onClick={() => setShowAvatarPicker(false)}
+                            className="rounded-lg p-1 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          {KULT_AVATARS.map((av) => (
+                            <button
+                              key={av.id}
+                              type="button"
+                              onClick={() => handleSelectAvatar(av.id)}
+                              className="group relative flex flex-col items-center gap-1.5 rounded-xl p-1.5 transition-all hover:bg-white/5"
+                              style={{
+                                border: selectedAvatar === av.id ? `1.5px solid ${av.color}` : "1.5px solid transparent",
+                                boxShadow: selectedAvatar === av.id ? `0 0 10px ${av.color}55` : "none",
+                              }}
+                            >
+                              <div
+                                className="h-12 w-12 rounded-lg overflow-hidden"
+                                style={{ background: "hsl(220 45% 7%)", border: `1px solid ${av.color}44` }}
+                              >
+                                {av.svg}
+                              </div>
+                              <span className="text-[9px] font-mono text-muted-foreground group-hover:text-foreground transition-colors leading-tight text-center">
+                                {av.label.split(" ")[0]}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <div className="text-center sm:text-left">
                   <p className="mb-1 text-[11px] font-mono uppercase tracking-[0.35em] text-neon-cyan/85">Kult identity</p>

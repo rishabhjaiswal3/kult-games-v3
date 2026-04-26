@@ -10,15 +10,6 @@ const liveStats = [
   { icon: Flame, label: "TRENDING", value: "Zero Dash" },
 ];
 
-const marqueeItems = [
-  "AAA QUALITY",
-  "ACTION - PACKED",
-  "MIND - BENDING",
-  "COLLECTION OF GAMES",
-  "ON-CHAIN REWARDS",
-  "AI POWERED",
-];
-
 const particles = [
   { left: "8%",  top: "22%", size: 2,   delay: 0,    dur: 4.2 },
   { left: "85%", top: "16%", size: 1.5, delay: 0.8,  dur: 5.5 },
@@ -157,31 +148,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           </div>
         </div>
 
-        {/* Bottom neon line */}
-        <div
-          className="absolute bottom-4 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"
-          style={{ boxShadow: "0 0 20px hsl(195 100% 60% / 0.3)" }}
-        />
       </section>
-
-      {/* Marquee strip */}
-      <div className="relative z-10 border-y border-neon-cyan/20 bg-card overflow-hidden py-4">
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80 z-10 pointer-events-none" />
-        <motion.div
-          className="flex items-center gap-8 whitespace-nowrap"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        >
-          {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={i} className="flex items-center gap-8">
-              <span className="text-neon-cyan text-lg">✦</span>
-              <span className="font-display text-sm md:text-base font-bold text-foreground tracking-[0.15em] uppercase">
-                {item}
-              </span>
-            </span>
-          ))}
-        </motion.div>
-      </div>
 
       {/* Live Stats Strip */}
       <div className="relative z-10 border-b border-border/30 bg-card/95 overflow-hidden">

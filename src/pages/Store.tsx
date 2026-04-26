@@ -13,6 +13,16 @@ import { isGameDownloadable } from "@/lib/gameDownload";
 import type { Game } from "@/types/api";
 import aiArenaHero from "@/assets/ai-arena-hero.jpg";
 
+const GAME_TYPE_FILTERS = ["All", "Action", "Arcade", "Puzzle", "Racing"] as const;
+
+const GAME_TYPE_GAME_KEYS: Record<(typeof GAME_TYPE_FILTERS)[number], string[]> = {
+  All: [],
+  Action: ["robowars", "warzonewarriors"],
+  Arcade: ["zerogpool", "zerodash"],
+  Puzzle: ["guesstheai"],
+  Racing: ["highwayhustle"],
+};
+
 function getGameName(name: Game["name"]): string {
   if (typeof name === "string") return name;
   return name?.en ?? Object.values(name)[0] ?? "";
@@ -36,7 +46,7 @@ function getGameDescription(desc: Game["description"]): string {
 
 const Store = () => {
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState<(typeof GAME_TYPE_FILTERS)[number]>("All");
   const [videoFailed, setVideoFailed] = useState(false);
   const navigate = useNavigate();
 
@@ -46,21 +56,19 @@ const Store = () => {
     staleTime: 5 * 60_000,
   });
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ["games", "categories"],
-    queryFn: gamesApi.getCategories,
-    staleTime: 10 * 60_000,
-  });
-
-  const apiCategories = Array.isArray(categoriesData) ? categoriesData : [];
-  const categories = ["All", ...apiCategories];
-
   const allGames = gamesData?.games ?? [];
+
+  const getGameKey = (game: Game) => {
+    const raw = game.identification ?? game.slug ?? getGameName(game.name);
+    return raw.toLowerCase().replace(/[\s_-]+/g, "");
+  };
 
   const filtered = allGames.filter((game) => {
     const name = getGameName(game.name).toLowerCase();
     const matchSearch = name.includes(search.toLowerCase());
-    const matchCat = selectedCategory === "All" || game.category === selectedCategory;
+    const key = getGameKey(game);
+    const allowedKeys = GAME_TYPE_GAME_KEYS[selectedCategory];
+    const matchCat = selectedCategory === "All" || allowedKeys.includes(key);
     return matchSearch && matchCat;
   });
 
@@ -169,7 +177,7 @@ const Store = () => {
                 </div>
                 <div className="mt-3 flex items-center gap-2 overflow-x-auto scrollbar-none">
                   <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  {categories.map((cat) => (
+                  {GAME_TYPE_FILTERS.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -177,7 +185,7 @@ const Store = () => {
                         selectedCategory === cat ? "btn-eye" : "btn-eye-outline"
                       }`}
                     >
-                      {cat?.toUpperCase()}
+                      {cat.toUpperCase()}
                     </button>
                   ))}
                 </div>

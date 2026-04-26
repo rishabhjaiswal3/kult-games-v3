@@ -1,6 +1,7 @@
-import { ArrowLeft, Play, Download, Star, Clock, Users, Share2, Zap, Shield } from "lucide-react";
+import { ArrowLeft, Play, Download, Star, Clock, Users, Zap, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
@@ -10,6 +11,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import type { Game } from "@/types/api";
+
+const GAME_FALLBACK_INTROS: Record<string, string> = {
+  "highway-hustle":
+    "Highway Hustle drops you into a neon-soaked expressway where reaction time is everything. Race through procedurally generated traffic, collect power-ups, and chain multipliers to dominate the on-chain leaderboard. Every run is recorded — your best time lives forever on 0G.",
+  "robo-wars":
+    "Robo Wars is a real-time PvP battle arena where you assemble a custom combat robot and clash with opponents worldwide. Upgrade your chassis, swap weapon modules, and unleash special abilities earned through on-chain progression. No two bots are alike — and the arena never sleeps.",
+};
 
 function getGameName(name: Game["name"]): string {
   if (!name) return "";
@@ -98,16 +106,38 @@ const GameDetail = () => {
     game.about ??
     getGameDescription(game.description) ??
     game.slogan ??
+    GAME_FALLBACK_INTROS[id ?? ""] ??
     "";
   const features: string[] = (meta.features as string[]) ?? [];
   const sessionLength = (meta.session_length as string) ?? "";
   const players = (meta.players as string) ?? "";
   const chain = (meta.chain as string) ?? "0G Chain";
   const video = (meta.video as string) ?? "/videos/SC_10.mp4";
-  const platforms = (game.platform ?? []).filter(Boolean);
-  const aboutPreview = about.split("\n\n").map((para) => para.trim()).filter(Boolean)[0] ?? "";
+  const galleryImages: string[] = [
+    ...(game.images ?? []).map((img) => img.url).filter(Boolean),
+    ...(image ? [image] : []),
+  ].filter((url, i, arr) => url && arr.indexOf(url) === i).slice(0, 8);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
-  const highlightChips = [game.category, chain, ...platforms.slice(0, 2), "Free to play"].filter(Boolean) as string[];
+  useEffect(() => {
+    setGalleryIndex(0);
+  }, [id]);
+
+  useEffect(() => {
+    if (galleryImages.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setGalleryIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 3500);
+    return () => window.clearInterval(timer);
+  }, [galleryImages.length]);
+
+  const prevGallery = () => {
+    setGalleryIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+  };
+
+  const nextGallery = () => {
+    setGalleryIndex((prev) => (prev + 1) % galleryImages.length);
+  };
   const facts = [
     game.rating != null
       ? {
@@ -263,6 +293,81 @@ const GameDetail = () => {
                   </div>
                   <p className="text-sm leading-7 text-foreground/85">{feature}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Gamer Gallery */}
+      {galleryImages.length > 0 && (
+        <section className="relative z-30 px-4 py-10 md:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl rounded-[28px] border border-white/10 bg-card/45 p-6 sm:p-8 lg:p-10">
+            <div className="mb-6 flex items-end justify-between border-b border-white/10 pb-6">
+              <div>
+                <p className="mb-2 text-[11px] font-mono uppercase tracking-[0.3em] text-neon-cyan/70">Screenshots</p>
+                <h2 className="font-display text-3xl font-black uppercase tracking-[-0.03em] text-foreground">Gamer Gallery</h2>
+              </div>
+              <p className="hidden max-w-xs text-sm leading-6 text-muted-foreground sm:block">
+                In-game captures straight from the arena.
+              </p>
+            </div>
+            <div className="relative">
+              <div className="overflow-hidden rounded-[20px] border border-white/10 bg-background/55 shadow-[0_8px_24px_hsl(220_60%_2%/0.35)]">
+                <div className="aspect-video overflow-hidden">
+                  <img
+                    src={galleryImages[galleryIndex]}
+                    alt={`${title} screenshot ${galleryIndex + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+              {galleryImages.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={prevGallery}
+                    className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/20 bg-background/70 p-2 text-foreground transition hover:border-neon-cyan/40 hover:text-neon-cyan"
+                    aria-label="Previous screenshot"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextGallery}
+                    className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/20 bg-background/70 p-2 text-foreground transition hover:border-neon-cyan/40 hover:text-neon-cyan"
+                    aria-label="Next screenshot"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </>
+              ) : null}
+            </div>
+            {galleryImages.length > 1 ? (
+              <div className="mt-3 flex items-center justify-center gap-2">
+                {galleryImages.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setGalleryIndex(i)}
+                    aria-label={`Go to screenshot ${i + 1}`}
+                    className={`h-2.5 rounded-full transition-all ${galleryIndex === i ? "w-7 bg-neon-cyan shadow-[0_0_10px_hsl(195_100%_60%/0.55)]" : "w-2.5 bg-white/25 hover:bg-white/40"}`}
+                  />
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+              {galleryImages.map((src, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setGalleryIndex(i)}
+                  className={`overflow-hidden rounded-lg border transition ${galleryIndex === i ? "border-neon-cyan/60 shadow-[0_0_18px_hsl(195_100%_60%/0.2)]" : "border-white/10 hover:border-white/25"}`}
+                >
+                  <img src={src} alt={`${title} thumbnail ${i + 1}`} className="aspect-video w-full object-cover" loading="lazy" decoding="async" />
+                </button>
               ))}
             </div>
           </div>

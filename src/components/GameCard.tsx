@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Play, Star } from "lucide-react";
+import { Play, Star, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface GameCardProps {
@@ -119,6 +119,22 @@ const GameCard = ({
             />
           </div>
         </div>
+
+        {/* AI Arena button — slides in on hover */}
+        <motion.button
+          initial={{ opacity: 0, y: 6 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className="mt-3 w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 py-2 rounded-lg border border-[hsl(278_100%_70%/0.35)] bg-[hsl(278_100%_70%/0.08)] hover:bg-[hsl(278_100%_70%/0.16)] hover:border-[hsl(278_100%_70%/0.55)] text-[hsl(278_100%_82%)] text-xs font-display font-bold tracking-wide"
+          style={{ boxShadow: "0 0 12px hsl(278 100% 70% / 0.12)" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/game/${gameId}?tab=ai-arena`);
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Compete Against AI
+        </motion.button>
       </div>
     </div>
   );
