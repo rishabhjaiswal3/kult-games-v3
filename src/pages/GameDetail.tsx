@@ -2,7 +2,6 @@ import { ArrowLeft, Play, Download, Star, Clock, Users, Zap, Shield, ChevronLeft
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +44,7 @@ const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ["game", id],
@@ -53,10 +53,31 @@ const GameDetail = () => {
     staleTime: 5 * 60_000,
   });
 
+  const image = game ? getGameImage(game) : "";
+  const galleryImages: string[] = game
+    ? [
+        ...(game.images ?? []).map((img) => img.url).filter(Boolean),
+        ...(image ? [image] : []),
+      ]
+        .filter((url, i, arr) => url && arr.indexOf(url) === i)
+        .slice(0, 8)
+    : [];
+
+  useEffect(() => {
+    setGalleryIndex(0);
+  }, [id]);
+
+  useEffect(() => {
+    if (galleryImages.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setGalleryIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 3500);
+    return () => window.clearInterval(timer);
+  }, [galleryImages.length]);
+
   if (isLoading) {
     return (
       <div className="relative min-h-screen overflow-x-hidden bg-background">
-        <Navbar />
         <section className="px-4 pb-16 pt-20 md:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl space-y-6">
             <Skeleton className="h-10 w-28 rounded-full" />
@@ -84,7 +105,6 @@ const GameDetail = () => {
   if (isError || !game) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
         <div className="flex min-h-[70vh] items-center justify-center px-6">
           <div className="text-center">
             <h1 className="mb-4 font-display text-3xl font-bold uppercase">Game Not Found</h1>
@@ -99,7 +119,6 @@ const GameDetail = () => {
 
   const title = getGameName(game.name);
   const titleWords = title.split(" ");
-  const image = getGameImage(game);
   const meta = game.metadata ?? {};
   const about =
     (meta.long_description as string) ??
@@ -113,24 +132,6 @@ const GameDetail = () => {
   const players = (meta.players as string) ?? "";
   const chain = (meta.chain as string) ?? "0G Chain";
   const video = (meta.video as string) ?? "/videos/SC_10.mp4";
-  const galleryImages: string[] = [
-    ...(game.images ?? []).map((img) => img.url).filter(Boolean),
-    ...(image ? [image] : []),
-  ].filter((url, i, arr) => url && arr.indexOf(url) === i).slice(0, 8);
-  const [galleryIndex, setGalleryIndex] = useState(0);
-
-  useEffect(() => {
-    setGalleryIndex(0);
-  }, [id]);
-
-  useEffect(() => {
-    if (galleryImages.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setGalleryIndex((prev) => (prev + 1) % galleryImages.length);
-    }, 3500);
-    return () => window.clearInterval(timer);
-  }, [galleryImages.length]);
-
   const prevGallery = () => {
     setGalleryIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
   };
@@ -185,7 +186,6 @@ const GameDetail = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <Navbar />
       <section className="relative z-40 mt-[60px] px-4 py-8 md:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl overflow-visible rounded-[30px] border border-white/10 bg-[hsl(222_30%_8%_/0.72)] shadow-[0_24px_80px_hsl(220_60%_2%/0.4)] backdrop-blur-xl">
           <div className="relative">

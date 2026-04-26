@@ -2,7 +2,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Home, Compass } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 const NotFound = () => {
   const location = useLocation();
@@ -14,8 +13,6 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-background relative flex flex-col items-center justify-center overflow-hidden">
-      <Navbar />
-
       {/* Ambient glows */}
       <div className="absolute top-1/3 left-1/4 w-[600px] h-[500px] rounded-full bg-neon-cyan/5 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[400px] rounded-full bg-neon-purple/6 blur-[130px] pointer-events-none" />

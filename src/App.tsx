@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useCallback, useEffect, useRef } from "react";
 import gsap from "gsap";
 import Index from "./pages/Index";
@@ -19,6 +19,7 @@ import MomentsPage from "./pages/MomentsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
+import Navbar from "@/components/Navbar";
 import { gamesApi } from "@/api/gamesApi";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
@@ -46,6 +47,13 @@ const queryClient = new QueryClient({
 const FADED_CONTENT_DELAY = 350;
 /** Keep preview subtle — avoid `filter: blur` on the whole app (hurts scroll compositing & text clarity). */
 const PREVIEW_OPACITY = 0.35;
+
+const AppHeader = () => {
+  const location = useLocation();
+  const hideOnRoute = location.pathname.endsWith("/play");
+  if (hideOnRoute) return null;
+  return <Navbar />;
+};
 
 const App = () => {
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
@@ -135,6 +143,7 @@ const App = () => {
             className={loaded ? "" : "pointer-events-none"}
             style={loaded ? { opacity: 1 } : { opacity: 0 }}
           >
+            <AppHeader />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/games" element={<Store />} />
