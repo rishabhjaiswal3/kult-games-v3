@@ -25,6 +25,7 @@ import flowAgentSpawn from "@/assets/flow-agent-spawn.jpg";
 import flowAiPurchases from "@/assets/flow-ai-purchases.jpg";
 import flowAiBattle from "@/assets/flow-ai-battle.jpg";
 import flowTrashTalk from "@/assets/flow-trash-talk.jpg";
+import roboLogo from "@/assets/roboLogo.png";
 import WarzoneAgentTracker from "@/components/WarzoneAgentTracker";
 import ArenaMatchmakingPanel from "@/components/ArenaMatchmakingPanel";
 
@@ -237,7 +238,13 @@ function AgentCoreVisual() {
           animate={{ y: [0, -4, 0], rotate: [0, 1.5, 0] }}
           transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <BrainCircuit className="h-16 w-16 text-neon-cyan sm:h-20 sm:w-20 lg:h-24 lg:w-24" strokeWidth={1.1} />
+          <img
+            src={roboLogo}
+            alt="Robo logo"
+            className="h-[72%] w-[72%] object-contain drop-shadow-[0_0_20px_hsl(195_100%_60%/0.4)]"
+            loading="eager"
+            decoding="async"
+          />
         </motion.div>
         <span className="absolute bottom-1 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-neon-cyan/15 bg-background/85 px-3 py-1 text-[9px] font-mono uppercase tracking-[0.28em] text-neon-cyan/80">
           Neural processing

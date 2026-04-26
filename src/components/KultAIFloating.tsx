@@ -3,6 +3,7 @@ import { Bot, Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamep
 import { useState, useRef, useEffect } from "react";
 import KultAIMessageContent from "@/components/KultAIMessageContent";
 import { useKultAIChat } from "@/hooks/useKultAIChat";
+import roboLogo from "@/assets/roboLogo.png";
 
 const quickPrompts = [
   { icon: Sparkles, text: "Find my first game" },
@@ -61,43 +62,7 @@ const KultAIFloating = () => {
                 background: "radial-gradient(circle at 50% 30%, hsl(270 82% 58% / 0.2), transparent 70%)",
               }}
             />
-            {/* Icon */}
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" className="relative z-10">
-              {/* Neural core */}
-              <circle cx="13" cy="13" r="8" fill="none" stroke="hsl(270, 80%, 65%)" strokeWidth="1" strokeOpacity="0.5" />
-              <circle cx="13" cy="13" r="4.5" fill="hsl(270, 80%, 65%)" fillOpacity="0.15" stroke="hsl(278, 100%, 82%)" strokeWidth="1" />
-              {/* Center eye */}
-              <circle cx="13" cy="13" r="2" fill="hsl(278, 100%, 82%)">
-                <animate attributeName="r" values="2;2.5;2" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" />
-              </circle>
-              {/* Orbital nodes */}
-              <circle cx="13" cy="4" r="1.2" fill="hsl(195, 100%, 65%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="20.8" cy="8.5" r="1.2" fill="hsl(270, 80%, 70%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.3s" />
-              </circle>
-              <circle cx="20.8" cy="17.5" r="1.2" fill="hsl(195, 100%, 65%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.6s" />
-              </circle>
-              <circle cx="13" cy="22" r="1.2" fill="hsl(270, 80%, 70%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="0.9s" />
-              </circle>
-              <circle cx="5.2" cy="17.5" r="1.2" fill="hsl(195, 100%, 65%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="1.2s" />
-              </circle>
-              <circle cx="5.2" cy="8.5" r="1.2" fill="hsl(270, 80%, 70%)">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite" begin="1.5s" />
-              </circle>
-              {/* Connection lines */}
-              <line x1="13" y1="5.2" x2="13" y2="8.5" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
-              <line x1="19.6" y1="9.3" x2="17" y2="11" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
-              <line x1="19.6" y1="16.7" x2="17" y2="15" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
-              <line x1="13" y1="20.8" x2="13" y2="17.5" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
-              <line x1="6.4" y1="16.7" x2="9" y2="15" stroke="hsl(195, 100%, 65%)" strokeWidth="0.5" strokeOpacity="0.4" />
-              <line x1="6.4" y1="9.3" x2="9" y2="11" stroke="hsl(270, 80%, 70%)" strokeWidth="0.5" strokeOpacity="0.4" />
-            </svg>
+            <img src={roboLogo} alt="KULT AI" className="relative z-10 h-8 w-8 object-contain drop-shadow-[0_0_14px_hsl(195_100%_60%/0.35)]" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -122,16 +87,7 @@ const KultAIFloating = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-[hsl(278_100%_70%/0.12)] via-[hsl(270_82%_52%/0.08)] to-transparent" />
               <div className="flex items-center gap-3 relative z-10">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(278_100%_70%/0.22)] to-[hsl(270_82%_52%/0.14)] flex items-center justify-center border border-[hsl(278_100%_75%/0.18)]" style={{ boxShadow: "0 0 15px hsl(270 82% 58% / 0.18)" }}>
-                  <svg width="20" height="20" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M13 2L22.5 7.5V18.5L13 24L3.5 18.5V7.5L13 2Z" stroke="hsl(278,100%,82%)" strokeWidth="1.2" strokeOpacity="0.7" fill="none"/>
-                      <line x1="13" y1="2" x2="13" y2="6" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <line x1="13" y1="20" x2="13" y2="24" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <line x1="3.5" y1="7.5" x2="7" y2="9.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <line x1="22.5" y1="7.5" x2="19" y2="9.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <line x1="3.5" y1="18.5" x2="7" y2="16.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <line x1="22.5" y1="18.5" x2="19" y2="16.5" stroke="hsl(278,100%,82%)" strokeWidth="1" strokeOpacity="0.4"/>
-                      <path d="M13 8.5L14.5 12H18L15 14.2L16 17.5L13 15.5L10 17.5L11 14.2L8 12H11.5L13 8.5Z" fill="hsl(278,100%,82%)" fillOpacity="0.95"/>
-                    </svg>
+                  <img src={roboLogo} alt="KULT AI" className="h-6 w-6 object-contain" />
                 </div>
                 <div>
                   <span className="text-sm font-display font-bold text-foreground tracking-wide block" style={{ textShadow: "0 0 18px hsl(270 82% 58% / 0.3)" }}>KULT AI</span>

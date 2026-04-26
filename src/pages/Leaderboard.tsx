@@ -9,128 +9,111 @@ import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { leaderboardApi } from "@/api/leaderboardApi";
 import type { LeaderboardEntry } from "@/types/api";
 
-// Inline human character avatars
-const AvatarCryptoKnight = () => (
+// Cyberpunk-themed avatars matching the Kult browser theme
+const AvatarGold = () => (
   <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-    {/* Background */}
-    <rect width="80" height="80" rx="40" fill="#1a1000"/>
-    {/* Shoulders / armor */}
-    <path d="M10 80 Q10 58 20 54 L30 51 Q40 56 50 51 L60 54 Q70 58 70 80Z" fill="#a07010"/>
-    {/* Neck */}
-    <rect x="34" y="44" width="12" height="10" rx="3" fill="#c8906a"/>
-    {/* Head */}
-    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#d4956e"/>
-    {/* Hair — dark, swept back */}
-    <path d="M22 28 Q22 12 40 11 Q58 12 58 28 Q55 16 40 15 Q25 16 22 28Z" fill="#1a0e00"/>
-    <path d="M22 26 Q20 20 22 15 Q26 10 40 10 Q54 10 58 15 Q60 20 58 26" fill="#1a0e00"/>
-    {/* Ears */}
-    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#c8906a"/>
-    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#c8906a"/>
-    {/* Eyes */}
-    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#3a2000"/>
-    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#3a2000"/>
-    <circle cx="34" cy="32.5" r="1" fill="white"/>
-    <circle cx="48" cy="32.5" r="1" fill="white"/>
-    {/* Eyebrows */}
-    <path d="M29 28.5 Q33 27 37 28.5" stroke="#1a0e00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-    <path d="M43 28.5 Q47 27 51 28.5" stroke="#1a0e00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-    {/* Nose */}
-    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#b07850" strokeWidth="1" fill="none" strokeLinecap="round"/>
-    {/* Mouth — confident smirk */}
-    <path d="M34 46 Q40 50 46 46" stroke="#9a5a3a" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    {/* Gold crown */}
-    <path d="M26 16 L29 10 L33 15 L40 8 L47 15 L51 10 L54 16Z" fill="#ffd700" fillOpacity="0.95"/>
-    <rect x="26" y="15" width="28" height="4" rx="1" fill="#e6c000"/>
-    {/* Armor collar */}
-    <path d="M26 54 Q30 50 40 52 Q50 50 54 54" stroke="#ffd700" strokeWidth="2" fill="none" strokeOpacity="0.8"/>
+    <rect width="80" height="80" rx="40" fill="#0d0a00"/>
+    {/* Outer hex glow */}
+    <path d="M40 6L68 22V58L40 74L12 58V22Z" fill="none" stroke="#c8960a" strokeWidth="1" strokeOpacity="0.3"/>
+    {/* Helmet base */}
+    <path d="M18 54Q18 32 40 28Q62 32 62 54L56 62H24Z" fill="#1a1400"/>
+    <path d="M18 54Q18 32 40 28Q62 32 62 54L56 62H24Z" fill="none" stroke="#d4a010" strokeWidth="1.2" strokeOpacity="0.7"/>
+    {/* Helmet top dome */}
+    <path d="M24 42Q22 24 40 20Q58 24 56 42Z" fill="#111000"/>
+    <path d="M24 42Q22 24 40 20Q58 24 56 42Z" fill="none" stroke="#c8960a" strokeWidth="1" strokeOpacity="0.5"/>
+    {/* Visor — amber glow */}
+    <path d="M26 40Q26 34 40 33Q54 34 54 40Q54 48 40 49Q26 48 26 40Z" fill="#c8780a" fillOpacity="0.18"/>
+    <path d="M26 40Q26 34 40 33Q54 34 54 40Q54 48 40 49Q26 48 26 40Z" fill="none" stroke="#e8a020" strokeWidth="1.5"/>
+    {/* Visor inner glow lines */}
+    <line x1="30" y1="39" x2="50" y2="39" stroke="#f0c040" strokeWidth="0.8" strokeOpacity="0.6"/>
+    <line x1="30" y1="42" x2="50" y2="42" stroke="#f0c040" strokeWidth="0.5" strokeOpacity="0.35"/>
+    {/* Center eye */}
+    <ellipse cx="40" cy="41" rx="4" ry="3" fill="#c88010" fillOpacity="0.9"/>
+    <ellipse cx="40" cy="41" rx="2" ry="1.8" fill="#ffe060"/>
+    <circle cx="40" cy="41" r="0.8" fill="white" fillOpacity="0.9"/>
+    {/* Circuit lines on helmet */}
+    <path d="M24 50L20 48M36 62L32 68M44 62L48 68" stroke="#d4a010" strokeWidth="0.8" strokeOpacity="0.5"/>
+    <circle cx="20" cy="48" r="1.5" fill="#d4a010" fillOpacity="0.6"/>
+    {/* Crown spikes */}
+    <path d="M28 25L26 16L32 22M40 22L40 12M52 25L54 16L48 22" fill="none" stroke="#e8c040" strokeWidth="1.2" strokeLinecap="round"/>
+    <circle cx="26" cy="16" r="2" fill="#ffd700"/>
+    <circle cx="40" cy="12" r="2.2" fill="#ffd700"/>
+    <circle cx="54" cy="16" r="2" fill="#ffd700"/>
+    {/* Neck / collar */}
+    <path d="M30 62H50L52 70H28Z" fill="#1a1400" stroke="#d4a010" strokeWidth="0.8" strokeOpacity="0.5"/>
   </svg>
 );
 
-const AvatarNeonBlaze = () => (
+const AvatarSilver = () => (
   <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-    {/* Background */}
-    <rect width="80" height="80" rx="40" fill="#060c18"/>
-    {/* Shoulders / jacket */}
-    <path d="M10 80 Q10 58 20 54 L30 51 Q40 56 50 51 L60 54 Q70 58 70 80Z" fill="#1a2a4a"/>
-    {/* Jacket collar lines */}
-    <path d="M30 54 L36 62 L40 64 L44 62 L50 54" stroke="#4a90d0" strokeWidth="1.5" fill="none" strokeOpacity="0.7"/>
-    {/* Neck */}
-    <rect x="34" y="44" width="12" height="10" rx="3" fill="#b8806a"/>
-    {/* Head */}
-    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#c4826c"/>
-    {/* Hair — light, spiky/stylish */}
-    <path d="M22 26 Q24 10 40 10 Q56 10 58 26 Q54 14 40 13 Q26 14 22 26Z" fill="#e8d080"/>
-    <path d="M22 24 Q21 16 24 12 L28 8 L32 13 Q36 8 40 9 Q44 8 48 13 L52 8 L56 12 Q59 16 58 24" fill="#e8d080"/>
-    {/* Hair highlights */}
-    <path d="M32 11 Q36 8 40 10" stroke="#fff8c0" strokeWidth="1.5" strokeOpacity="0.6" fill="none"/>
-    {/* Ears */}
-    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#b8806a"/>
-    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#b8806a"/>
-    {/* Eyes — ice blue */}
-    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#1060a0"/>
-    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#1060a0"/>
-    <circle cx="34" cy="32.5" r="1" fill="white"/>
-    <circle cx="48" cy="32.5" r="1" fill="white"/>
-    {/* Eyebrows */}
-    <path d="M29 28.5 Q33 27.5 37 28.5" stroke="#c8a840" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-    <path d="M43 28.5 Q47 27.5 51 28.5" stroke="#c8a840" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-    {/* Nose */}
-    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#a06848" strokeWidth="1" fill="none" strokeLinecap="round"/>
-    {/* Mouth — slight smile */}
-    <path d="M35 46 Q40 49 45 46" stroke="#884830" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    {/* Earring */}
-    <circle cx="22" cy="37" r="2" fill="#4a90d0" fillOpacity="0.9"/>
+    <rect width="80" height="80" rx="40" fill="#040c14"/>
+    {/* Outer ring */}
+    <circle cx="40" cy="40" r="34" fill="none" stroke="#2a8aaa" strokeWidth="0.8" strokeOpacity="0.35"/>
+    {/* Hood shape */}
+    <path d="M15 80Q14 54 22 46Q26 42 40 40Q54 42 58 46Q66 54 65 80Z" fill="#061420"/>
+    <path d="M15 80Q14 54 22 46Q26 42 40 40Q54 42 58 46Q66 54 65 80Z" fill="none" stroke="#18a0c0" strokeWidth="0.8" strokeOpacity="0.4"/>
+    {/* Face mask upper */}
+    <path d="M24 36Q24 18 40 16Q56 18 56 36Z" fill="#080e18"/>
+    {/* Visor — cyan neon */}
+    <path d="M27 38Q27 30 40 29Q53 30 53 38Q53 47 40 47.5Q27 47 27 38Z" fill="#00aacc" fillOpacity="0.12"/>
+    <path d="M27 38Q27 30 40 29Q53 30 53 38Q53 47 40 47.5Q27 47 27 38Z" fill="none" stroke="#00d4ff" strokeWidth="1.4"/>
+    {/* Scan line */}
+    <line x1="28" y1="37" x2="52" y2="37" stroke="#40e0ff" strokeWidth="1" strokeOpacity="0.7"/>
+    <line x1="30" y1="40" x2="50" y2="40" stroke="#40e0ff" strokeWidth="0.6" strokeOpacity="0.4"/>
+    {/* Dual eyes — cyan */}
+    <ellipse cx="34" cy="37" rx="3.5" ry="2.5" fill="#00aacc" fillOpacity="0.25"/>
+    <ellipse cx="34" cy="37" rx="2" ry="1.5" fill="#40e8ff"/>
+    <ellipse cx="46" cy="37" rx="3.5" ry="2.5" fill="#00aacc" fillOpacity="0.25"/>
+    <ellipse cx="46" cy="37" rx="2" ry="1.5" fill="#40e8ff"/>
+    {/* Data chip on cheek */}
+    <rect x="21" y="38" width="5" height="3" rx="0.5" fill="#0a1c2a" stroke="#18a0c0" strokeWidth="0.7"/>
+    <line x1="22" y1="39.5" x2="25" y2="39.5" stroke="#18c0e0" strokeWidth="0.6"/>
+    {/* Collar tech detail */}
+    <path d="M28 48H52L54 56H26Z" fill="#080e18" stroke="#18a0c0" strokeWidth="0.8" strokeOpacity="0.5"/>
+    <line x1="32" y1="52" x2="48" y2="52" stroke="#18c0e0" strokeWidth="0.6" strokeOpacity="0.5"/>
+    {/* Hood line down sides */}
+    <path d="M24 36Q20 44 22 50" stroke="#18a0c0" strokeWidth="1" strokeOpacity="0.4" fill="none"/>
+    <path d="M56 36Q60 44 58 50" stroke="#18a0c0" strokeWidth="1" strokeOpacity="0.4" fill="none"/>
   </svg>
 );
 
-const AvatarPhantomX = () => (
+const AvatarBronze = () => (
   <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-    {/* Background */}
-    <rect width="80" height="80" rx="40" fill="#100800"/>
-    {/* Shoulders / hoodie */}
-    <path d="M10 80 Q10 58 18 54 L28 50 Q40 56 52 50 L62 54 Q70 58 70 80Z" fill="#2a1808"/>
-    {/* Hoodie edge */}
-    <path d="M28 52 Q34 60 40 62 Q46 60 52 52" stroke="#c86820" strokeWidth="1.5" fill="none" strokeOpacity="0.6"/>
-    {/* Neck */}
-    <rect x="34" y="44" width="12" height="10" rx="3" fill="#8a5840"/>
-    {/* Head */}
-    <ellipse cx="40" cy="34" rx="18" ry="20" fill="#9a6448"/>
-    {/* Hair — dark, medium length */}
-    <path d="M22 30 Q22 12 40 11 Q58 12 58 30 Q56 16 40 14 Q24 16 22 30Z" fill="#0a0600"/>
-    <path d="M22 28 Q21 18 23 13 Q28 8 40 9 Q52 8 57 13 Q59 18 58 28" fill="#0a0600"/>
-    {/* Side hair */}
-    <path d="M22 30 Q20 36 22 40" stroke="#0a0600" strokeWidth="5" strokeLinecap="round" fill="none"/>
-    <path d="M58 30 Q60 36 58 40" stroke="#0a0600" strokeWidth="5" strokeLinecap="round" fill="none"/>
-    {/* Ears */}
-    <ellipse cx="22" cy="34" rx="3.5" ry="5" fill="#8a5840"/>
-    <ellipse cx="58" cy="34" rx="3.5" ry="5" fill="#8a5840"/>
-    {/* Eyes — amber/orange */}
-    <ellipse cx="33" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="47" cy="33" rx="4.5" ry="4" fill="white"/>
-    <ellipse cx="33" cy="33.5" rx="2.5" ry="2.8" fill="#804010"/>
-    <ellipse cx="47" cy="33.5" rx="2.5" ry="2.8" fill="#804010"/>
-    <circle cx="34" cy="32.5" r="1" fill="white"/>
-    <circle cx="48" cy="32.5" r="1" fill="white"/>
-    {/* Eyebrows — slightly furrowed */}
-    <path d="M29 28 Q33 26.5 37 27.5" stroke="#0a0600" strokeWidth="2" strokeLinecap="round" fill="none"/>
-    <path d="M43 27.5 Q47 26.5 51 28" stroke="#0a0600" strokeWidth="2" strokeLinecap="round" fill="none"/>
-    {/* Nose */}
-    <path d="M39 36 Q38 40 40 41 Q42 40 41 36" stroke="#7a4428" strokeWidth="1" fill="none" strokeLinecap="round"/>
-    {/* Mouth — neutral/serious */}
-    <path d="M35 46 Q40 47 45 46" stroke="#6a3820" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    {/* Scar / face mark */}
-    <path d="M46 28 L48 33" stroke="#c86820" strokeWidth="1" strokeOpacity="0.5" strokeLinecap="round"/>
+    <rect width="80" height="80" rx="40" fill="#0e0808"/>
+    {/* Outer diamond frame */}
+    <path d="M40 8L64 32L64 48L40 72L16 48L16 32Z" fill="none" stroke="#8040c0" strokeWidth="0.8" strokeOpacity="0.35"/>
+    {/* Neural mesh helmet */}
+    <path d="M20 52Q18 32 40 26Q62 32 60 52L52 64H28Z" fill="#120a18"/>
+    <path d="M20 52Q18 32 40 26Q62 32 60 52L52 64H28Z" fill="none" stroke="#7030a8" strokeWidth="1" strokeOpacity="0.55"/>
+    {/* Neural grid overlay on helmet */}
+    <path d="M28 34L40 30L52 34M26 40L40 36L54 40M28 46L40 43L52 46" stroke="#9050d0" strokeWidth="0.5" strokeOpacity="0.35" fill="none"/>
+    {/* Visor — purple glow */}
+    <path d="M27 40Q27 33 40 32Q53 33 53 40Q53 48 40 49Q27 48 27 40Z" fill="#7030a8" fillOpacity="0.15"/>
+    <path d="M27 40Q27 33 40 32Q53 33 53 40Q53 48 40 49Q27 48 27 40Z" fill="none" stroke="#9c50e0" strokeWidth="1.3"/>
+    {/* Tri-eye — orange / purple */}
+    <ellipse cx="33" cy="40" rx="3" ry="2.2" fill="#6020a0" fillOpacity="0.3"/>
+    <ellipse cx="33" cy="40" rx="1.8" ry="1.3" fill="#c060ff"/>
+    <ellipse cx="47" cy="40" rx="3" ry="2.2" fill="#6020a0" fillOpacity="0.3"/>
+    <ellipse cx="47" cy="40" rx="1.8" ry="1.3" fill="#c060ff"/>
+    <circle cx="40" cy="40" r="1.8" fill="#ff7020" fillOpacity="0.9"/>
+    <circle cx="40" cy="40" r="0.9" fill="white" fillOpacity="0.95"/>
+    {/* Circuit nodes on helmet */}
+    <circle cx="24" cy="44" r="1.5" fill="#7030a8" fillOpacity="0.7"/>
+    <path d="M24 44L28 46" stroke="#7030a8" strokeWidth="0.7" strokeOpacity="0.6"/>
+    <circle cx="56" cy="44" r="1.5" fill="#7030a8" fillOpacity="0.7"/>
+    <path d="M56 44L52 46" stroke="#7030a8" strokeWidth="0.7" strokeOpacity="0.6"/>
+    {/* Circuit at top */}
+    <path d="M34 27L30 20M40 26L40 18M46 27L50 20" stroke="#9050d0" strokeWidth="0.8" strokeOpacity="0.5" strokeLinecap="round"/>
+    <circle cx="40" cy="18" r="2" fill="#9050d0" fillOpacity="0.8"/>
+    {/* Lower collar */}
+    <path d="M30 64H50L52 72H28Z" fill="#120a18" stroke="#7030a8" strokeWidth="0.8" strokeOpacity="0.5"/>
   </svg>
 );
 
-const PlayerAvatar = ({ rank }: { rank: number; }) => {
-  if (rank === 1) return <AvatarCryptoKnight />;
-  if (rank === 2) return <AvatarNeonBlaze />;
-  if (rank === 3) return <AvatarPhantomX />;
+const PlayerAvatar = ({ rank }: { rank: number }) => {
+  if (rank === 1) return <AvatarGold />;
+  if (rank === 2) return <AvatarSilver />;
+  if (rank === 3) return <AvatarBronze />;
   return null;
 };
 
@@ -201,7 +184,9 @@ const Leaderboard = () => {
                 <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
                   LEADER<span className="gradient-text">BOARD</span>
                 </h1>
-                <p className="text-muted-foreground mt-3 max-w-md text-sm">Climb the ranks. Prove your dominance. Earn eternal glory on-chain.</p>
+                <p className="text-muted-foreground mt-3 text-lg md:text-xl leading-tight whitespace-nowrap">
+                  Climb the ranks. Prove your dominance. Earn eternal glory on-chain.
+                </p>
 
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex gap-2 mt-6">
                   {timeFilters.map((tf) => (

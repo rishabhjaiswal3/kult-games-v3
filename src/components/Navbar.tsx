@@ -458,7 +458,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background shadow-sm">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md shadow-[0_1px_0_hsl(220_30%_18%/0.5)]">
         <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-3 sm:gap-4 md:gap-5 w-full min-w-0">
           <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-[100px] md:min-w-[130px]">
             <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" width={120} height={40} loading="eager" decoding="async" />
@@ -506,7 +506,53 @@ const Navbar = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-3 md:gap-4 shrink-0 ml-auto pl-2">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-auto pl-2">
+            {/* AI Agent pill — desktop only, authenticated */}
+            {isAuthenticated && (
+              <motion.button
+                type="button"
+                onClick={agentWalletReady ? () => setWalletModalOpen(true) : handleCreateAgentClick}
+                disabled={agentSigning || agentGatePending || agentChecking}
+                className="hidden md:inline-flex items-center gap-1.5 relative overflow-hidden shrink-0"
+                style={{
+                  borderRadius: "12px",
+                  border: agentWalletReady
+                    ? "1px solid hsl(195 100% 50% / 0.35)"
+                    : "1px solid hsl(270 80% 60% / 0.35)",
+                  background: agentWalletReady
+                    ? "hsl(195 100% 50% / 0.08)"
+                    : "linear-gradient(135deg, hsl(265 48% 12%), hsl(220 45% 8%))",
+                  padding: "6px 12px",
+                  boxShadow: agentWalletReady
+                    ? "0 0 12px hsl(195 100% 50% / 0.12)"
+                    : "0 4px 16px hsl(270 82% 20% / 0.25)",
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                aria-label={agentWalletReady ? "Fund AI Agent" : "Create AI Agent"}
+              >
+                {agentWalletReady ? (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(195 100% 65%)" }} />
+                    <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(195 100% 65%)" }}>
+                      {agentWalletBalanceG} G
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {agentSigning || agentGatePending || agentChecking ? (
+                      <motion.div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white/80" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" style={{ color: "hsl(278 100% 82%)" }} />
+                    )}
+                    <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(278 100% 82%)" }}>
+                      {agentSigning ? "Signing…" : agentChecking ? "Checking…" : "Create AI"}
+                    </span>
+                  </>
+                )}
+              </motion.button>
+            )}
+
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger

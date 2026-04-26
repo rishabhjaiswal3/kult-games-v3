@@ -13,11 +13,22 @@ const events = [
   { id: 5, title: "Zero G Pool Masters", game: "Zero G Pool", date: "Apr 5, 2026", time: "7:00 PM UTC", prize: "4 ETH", players: "32/32", status: "Full", type: "Invitational", description: "Invitation-only pool championship in zero gravity. The best of the best." },
 ];
 
-const statusFilters = ["All", "Registering", "Full"];
+const statusFilters = [
+  { label: "All", value: "All" },
+  { label: "Active / Ongoing", value: "Registering" },
+  { label: "Full", value: "Full" },
+  { label: "Yours", value: "Yours" },
+];
+
+const YOURS_IDS = new Set<number>(); // user-participated events (populated from API when available)
 
 const Events = () => {
   const [filter, setFilter] = useState("All");
-  const filtered = events.filter((e) => filter === "All" || e.status === filter);
+  const filtered = events.filter((e) => {
+    if (filter === "All") return true;
+    if (filter === "Yours") return YOURS_IDS.has(e.id);
+    return e.status === filter;
+  });
 
   return (
     <div className="min-h-screen bg-transparent relative">
@@ -40,7 +51,7 @@ const Events = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-[hsl(278_100%_70%/0.2)] bg-[linear-gradient(135deg,hsl(265_90%_18%/0.78),hsl(220_45%_10%/0.6),hsl(220_45%_10%/0.28))] overflow-hidden backdrop-blur-md shadow-[0_0_40px_hsl(270_82%_58%/0.12)]"
+              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] bg-[linear-gradient(135deg,hsl(265_90%_18%/0.78),hsl(220_45%_10%/0.6),hsl(220_45%_10%/0.28))] overflow-hidden backdrop-blur-md shadow-[0_8px_40px_hsl(270_82%_58%/0.12)]"
             >
               <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_top_left,hsl(278_100%_70%/0.16),transparent_42%)] pointer-events-none" />
 
@@ -70,7 +81,7 @@ const Events = () => {
                 <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black leading-[0.92] tracking-tight text-foreground">
                   EVENTS
                   <span className="block mt-1 text-[hsl(278_100%_82%)] drop-shadow-[0_0_24px_hsl(270_82%_58%/0.3)]">
-                    TOURNAMENTS
+                    &amp; TOURNAMENTS
                   </span>
                 </h1>
 
@@ -171,21 +182,32 @@ const Events = () => {
           >
             {statusFilters.map((f) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
+                key={f.value}
+                onClick={() => setFilter(f.value)}
                 className={`px-5 py-2 rounded-full font-display text-xs font-semibold tracking-wider whitespace-nowrap transition-all duration-300 ${
-                  filter === f
+                  filter === f.value
                     ? "btn-eye shadow-[0_0_18px_hsl(270_82%_58%/0.35)]"
                     : "glass-panel text-muted-foreground hover:text-[hsl(278_100%_82%)] hover:border-[hsl(278_100%_70%/0.3)]"
                 }`}
               >
-                {f.toUpperCase()}
+                {f.label.toUpperCase()}
               </button>
             ))}
           </motion.div>
 
           {/* Events list */}
           <div className="space-y-4">
+            {filter === "Yours" && filtered.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-[hsl(278_100%_70%/0.15)] bg-[hsl(278_100%_70%/0.04)] py-16 text-center"
+              >
+                <Trophy className="w-10 h-10 text-[hsl(278_100%_70%/0.35)] mx-auto mb-3" />
+                <p className="font-display text-sm font-semibold text-muted-foreground">No events joined yet.</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Register for an active event to see it here.</p>
+              </motion.div>
+            )}
             <AnimatePresence mode="popLayout">
               {filtered.map((event, i) => (
                 <motion.div
