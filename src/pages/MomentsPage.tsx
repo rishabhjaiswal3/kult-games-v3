@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from "react";
-import Navbar from "@/components/Navbar";
 import { MOMENTS_IFRAME_URL } from "@/lib/momentsUrl";
 import { useAuth } from "@/contexts/AuthContext";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
@@ -38,7 +37,6 @@ const MomentsPage = () => {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Navbar />
       <iframe
         ref={iframeRef}
         title="Moments"

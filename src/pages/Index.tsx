@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import GamesSection from "@/components/GamesSection";
 import AIConcierge from "@/components/AIConcierge";
@@ -36,7 +35,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative pt-2 sm:pt-3">
-      <Navbar />
       {showHomeSkeleton ? (
         <HomePageSkeleton />
       ) : (

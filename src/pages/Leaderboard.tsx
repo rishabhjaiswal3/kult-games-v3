@@ -3,7 +3,6 @@ import { Trophy, Medal, Crown, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { leaderboardApi } from "@/api/leaderboardApi";
@@ -151,7 +150,6 @@ const Leaderboard = () => {
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      <Navbar />
       <div className="fixed inset-0 pointer-events-none z-0">
         <AutoPlayVideo src="/videos/SC_7.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />

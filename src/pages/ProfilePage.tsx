@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -263,7 +263,6 @@ const ProfilePage = () => {
             `,
           }}
         />
-        <Navbar />
         <div className="relative mx-auto flex min-h-[calc(100vh-5rem)] max-w-lg flex-col items-center justify-center px-6 pt-20 pb-16">
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -324,7 +323,6 @@ const ProfilePage = () => {
         }}
       />
 
-      <Navbar />
 
       <section className="relative pt-24 pb-20 md:pb-28">
         <div className="relative mx-auto max-w-6xl px-4 md:px-8">
@@ -343,7 +341,7 @@ const ProfilePage = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative mb-10 overflow-hidden rounded-[32px] border border-white/[0.09] bg-gradient-to-br from-card/80 via-card/40 to-background/80 p-8 shadow-[0_32px_100px_hsl(220_60%_2%/0.5)] backdrop-blur-xl md:p-10"
+            className="relative mb-10 overflow-visible rounded-[32px] border border-white/[0.09] bg-gradient-to-br from-card/80 via-card/40 to-background/80 p-8 shadow-[0_32px_100px_hsl(220_60%_2%/0.5)] backdrop-blur-xl md:p-10"
           >
             <div
               className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full blur-3xl"
@@ -355,7 +353,7 @@ const ProfilePage = () => {
             />
             <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-                <div className="relative shrink-0">
+                <div className="relative z-[60] shrink-0">
                   <button
                     type="button"
                     onClick={() => setShowAvatarPicker((v) => !v)}
@@ -376,61 +374,84 @@ const ProfilePage = () => {
                         {initialsFromName(displayName)}
                       </span>
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                      <Pencil className="h-5 w-5 text-white" />
-                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAvatarPicker((v) => !v)}
+                    className="absolute -right-1.5 -top-1.5 z-20 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neon-cyan/40 bg-background/90 text-neon-cyan shadow-[0_8px_20px_hsl(220_60%_2%/0.5)] transition hover:border-neon-cyan/70 hover:bg-neon-cyan/10"
+                    aria-label="Change avatar"
+                    title="Change avatar"
+                  >
+                    <Pencil className="h-4 w-4" />
                   </button>
                   <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border border-background bg-background text-neon-cyan shadow-lg">
                     <Crown className="h-4 w-4" />
                   </span>
 
                   {/* Avatar picker panel */}
-                  <AnimatePresence>
-                    {showAvatarPicker && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 8 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 8 }}
-                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                        className="absolute left-0 top-full z-50 mt-3 w-[320px] rounded-[20px] border border-white/15 bg-[hsl(220_45%_9%)] p-4 shadow-[0_24px_60px_hsl(220_60%_2%/0.6)] backdrop-blur-xl"
-                      >
-                        <div className="mb-3 flex items-center justify-between">
-                          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-neon-cyan/80">Choose Avatar</p>
-                          <button
-                            type="button"
-                            onClick={() => setShowAvatarPicker(false)}
-                            className="rounded-lg p-1 text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2">
-                          {KULT_AVATARS.map((av) => (
-                            <button
-                              key={av.id}
+                  {typeof document !== "undefined" &&
+                    createPortal(
+                      <AnimatePresence>
+                        {showAvatarPicker && (
+                          <>
+                            <motion.button
                               type="button"
-                              onClick={() => handleSelectAvatar(av.id)}
-                              className="group relative flex flex-col items-center gap-1.5 rounded-xl p-1.5 transition-all hover:bg-white/5"
-                              style={{
-                                border: selectedAvatar === av.id ? `1.5px solid ${av.color}` : "1.5px solid transparent",
-                                boxShadow: selectedAvatar === av.id ? `0 0 10px ${av.color}55` : "none",
-                              }}
-                            >
-                              <div
-                                className="h-12 w-12 rounded-lg overflow-hidden"
-                                style={{ background: "hsl(220 45% 7%)", border: `1px solid ${av.color}44` }}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              onClick={() => setShowAvatarPicker(false)}
+                              className="fixed inset-0 z-[9998] bg-black/55 backdrop-blur-sm"
+                              aria-label="Close avatar picker"
+                            />
+                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.92, y: 12 }}
+                                transition={{ type: "spring", damping: 22, stiffness: 260 }}
+                                className="w-[min(92vw,360px)] rounded-[20px] border border-white/15 bg-[hsl(220_45%_9%)] p-4 shadow-[0_24px_60px_hsl(220_60%_2%/0.7)] backdrop-blur-xl"
                               >
-                                {av.svg}
-                              </div>
-                              <span className="text-[9px] font-mono text-muted-foreground group-hover:text-foreground transition-colors leading-tight text-center">
-                                {av.label.split(" ")[0]}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
+                                <div className="mb-3 flex items-center justify-between">
+                                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-neon-cyan/80">Choose Avatar</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowAvatarPicker(false)}
+                                    className="rounded-lg p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <div className="grid grid-cols-4 gap-2">
+                                  {KULT_AVATARS.map((av) => (
+                                    <button
+                                      key={av.id}
+                                      type="button"
+                                      onClick={() => handleSelectAvatar(av.id)}
+                                      className="group relative flex flex-col items-center gap-1.5 rounded-xl p-1.5 transition-all hover:bg-white/5"
+                                      style={{
+                                        border: selectedAvatar === av.id ? `1.5px solid ${av.color}` : "1.5px solid transparent",
+                                        boxShadow: selectedAvatar === av.id ? `0 0 10px ${av.color}55` : "none",
+                                      }}
+                                    >
+                                      <div
+                                        className="h-12 w-12 rounded-lg overflow-hidden"
+                                        style={{ background: "hsl(220 45% 7%)", border: `1px solid ${av.color}44` }}
+                                      >
+                                        {av.svg}
+                                      </div>
+                                      <span className="text-[9px] font-mono text-muted-foreground group-hover:text-foreground transition-colors leading-tight text-center">
+                                        {av.label.split(" ")[0]}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            </div>
+                          </>
+                        )}
+                      </AnimatePresence>,
+                      document.body
                     )}
-                  </AnimatePresence>
                 </div>
                 <div className="text-center sm:text-left">
                   <p className="mb-1 text-[11px] font-mono uppercase tracking-[0.35em] text-neon-cyan/85">Kult identity</p>

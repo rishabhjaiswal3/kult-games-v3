@@ -3,7 +3,6 @@ import { Search, Filter, Star, Tag, Gamepad2, Download } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
@@ -76,8 +75,6 @@ const Store = () => {
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      <Navbar />
-
       {/* Full-page marketplace background video (GameDetail style) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <AutoPlayVideo

@@ -1,7 +1,6 @@
 import { Filter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navbar from "@/components/Navbar";
 import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -120,7 +119,6 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-transparent relative lg:h-screen lg:overflow-hidden">
-      <Navbar />
       <div className="fixed inset-0 pointer-events-none z-0">
         <AutoPlayVideo src="/videos/SC_5.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-48 saturate-[1.2] contrast-[1.08]" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/52 via-background/60 to-background/72" />
