@@ -135,6 +135,17 @@ export interface MarketplaceListing {
   currency: string;
   gameIdentification: string;
   status: string;
+  /**
+   * Optional backend-provided encoded call payload for direct on-chain purchase.
+   * When present, frontend sends this through Privy sendTransaction.
+   */
+  purchaseCalldata?: `0x${string}` | null;
+  /** Optional explicit contract override per listing. */
+  purchaseContractAddress?: `0x${string}` | null;
+  /** Optional native value in wei for payable purchase. */
+  purchaseValueWei?: string | null;
+  /** Optional chain override per listing. */
+  purchaseChainId?: number | null;
 }
 
 export interface MarketplaceListingsResponse {
@@ -142,6 +153,23 @@ export interface MarketplaceListingsResponse {
   total: number;
   page: number;
   perPage: number;
+}
+
+export interface MarketplaceCreateOrderRequest {
+  listingId: string;
+  quantity?: number;
+  txHash?: string;
+}
+
+export interface MarketplaceOrder {
+  id: string;
+  listingId: string;
+  playerId: string;
+  gameIdentification: string;
+  pricePaid: number;
+  quantity: number;
+  status: string;
+  txHash?: string;
 }
 
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
