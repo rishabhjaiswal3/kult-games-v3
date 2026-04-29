@@ -1,6 +1,8 @@
 import { Filter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { encodeFunctionData, keccak256, stringToHex } from "viem";
 import AIScanLine from "@/components/AIScanLine";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,6 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { marketplaceApi } from "@/api/marketplaceApi";
 import { gamesApi } from "@/api/gamesApi";
 import type { Game, MarketplaceListing } from "@/types/api";
+import {
+  getMarketplacePaymentConfig,
+  MARKETPLACE_PAYMENT_TOKENS,
+  normalizeMarketplacePaymentToken,
+  type MarketplacePaymentToken,
+  unifiedMarketplaceAbi,
+} from "@/lib/marketplacePayment";
+import { usePrivyWalletTools } from "@/hooks/usePrivyWalletTools";
 
 function getGameName(name: Game["name"]): string {
   if (typeof name === "string") return name;
@@ -24,11 +34,57 @@ const LISTINGS_PER_PAGE = 100;
 /** Prefer this game in the marketplace filter when the catalog includes it (matches API `identification`). */
 const DEFAULT_MARKETPLACE_GAME_ID = "warzonewarriors";
 
+function parseWei(value: string | null | undefined): bigint {
+  if (!value) return 0n;
+  try {
+    return BigInt(value);
+  } catch {
+    return 0n;
+  }
+}
+
+function buildClientOrderId(input: string): `0x${string}` {
+  return keccak256(stringToHex(input));
+}
+
+function getFriendlyPurchaseError(error: unknown): string {
+  const fallback = "Purchase failed. Please try again.";
+  const raw =
+    error instanceof Error
+      ? `${error.message} ${(error as { cause?: unknown }).cause ?? ""}`
+      : String(error ?? "");
+  const normalized = raw.toLowerCase();
+
+  if (
+    normalized.includes("user rejected") ||
+    normalized.includes("user denied") ||
+    normalized.includes("rejected the request") ||
+    normalized.includes("rejected")
+  ) {
+    return "Transaction canceled.";
+  }
+
+  if (normalized.includes("insufficient funds")) {
+    return "Insufficient balance for this transaction.";
+  }
+
+  if (normalized.includes("network") || normalized.includes("chain")) {
+    return "Wrong network selected. Please switch network and retry.";
+  }
+
+  return fallback;
+}
+
 const Marketplace = () => {
   const [itemCategory, setItemCategory] = useState("All");
   const [itemGame, setItemGame] = useState("");
   const [itemSearch, setItemSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState<MarketplaceListing | null>(null);
+  const [selectedPaymentToken, setSelectedPaymentToken] = useState<MarketplacePaymentToken>("USDC");
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const paymentConfig = useMemo(() => getMarketplacePaymentConfig(), []);
+  const { activeWallet, canUsePrivy, privyAuthenticated, privyReady, sendPrivyTransaction } = usePrivyWalletTools();
 
   const { data: gamesData, isLoading: gamesLoading } = useQuery({
     queryKey: ["games", "all", "marketplace"],
@@ -116,6 +172,17 @@ const Marketplace = () => {
     !listingsError &&
     listings.length > 0 &&
     filteredListings.length === 0;
+
+  const selectedTokenAddress = selectedItem
+    ? paymentConfig.tokenAddressBySymbol[selectedPaymentToken]
+    : "";
+  const selectedItemCalldata = selectedItem?.purchaseCalldata ?? null;
+  const canConfirmPurchase = Boolean(
+    selectedItem &&
+      paymentConfig.marketplaceContractAddress &&
+      selectedTokenAddress &&
+      canUsePrivy
+  );
 
   return (
     <div className="min-h-screen bg-transparent relative lg:h-screen lg:overflow-hidden">
@@ -301,7 +368,10 @@ const Marketplace = () => {
                           </div>
                           <button
                             type="button"
-                            onClick={() => setSelectedItem(item)}
+                            onClick={() => {
+                              setSelectedPaymentToken(normalizeMarketplacePaymentToken(item.currency));
+                              setSelectedItem(item);
+                            }}
                             className="mt-1.5 w-full rounded-lg border border-neon-cyan/35 bg-neon-cyan/12 py-1 text-[9px] font-display font-semibold tracking-[0.1em] text-neon-cyan transition-all hover:bg-neon-cyan/25 hover:shadow-[0_0_12px_hsl(195_100%_60%/0.2)]"
                           >
                             BUY
@@ -345,6 +415,49 @@ const Marketplace = () => {
               </div>
             </div>
           ) : null}
+          {selectedItem ? (
+            <div className="mt-3 rounded-xl border border-white/10 bg-background/20 p-3">
+              <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                Payment token
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {MARKETPLACE_PAYMENT_TOKENS.map((token) => {
+                  const hasAddress = Boolean(paymentConfig.tokenAddressBySymbol[token]);
+                  return (
+                    <button
+                      key={token}
+                      type="button"
+                      onClick={() => setSelectedPaymentToken(token)}
+                      className={`rounded-lg border px-2 py-2 text-[10px] font-display font-semibold tracking-[0.1em] transition-all ${
+                        selectedPaymentToken === token
+                          ? "border-neon-cyan/60 bg-neon-cyan/18 text-neon-cyan"
+                          : "border-white/20 bg-background/40 text-foreground/85 hover:border-neon-cyan/40"
+                      }`}
+                    >
+                      {token}
+                      {!hasAddress ? " (Not configured)" : ""}
+                    </button>
+                  );
+                })}
+              </div>
+              {!paymentConfig.marketplaceContractAddress ? (
+                <p className="mt-2 text-[11px] text-amber-300">
+                  Missing contract config: set `VITE_MARKETPLACE_CONTRACT_ADDRESS` in `.env`.
+                </p>
+              ) : null}
+              {!selectedTokenAddress ? (
+                <p className="mt-1 text-[11px] text-amber-300">
+                  Missing token config for {selectedPaymentToken}: set
+                  {" "}
+                  {selectedPaymentToken === "USDC"
+                    ? "`VITE_USDC_CONTRACT_ADDRESS`"
+                    : "`VITE_USDT_CONTRACT_ADDRESS`"}
+                  {" "}
+                  in `.env`.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -355,10 +468,93 @@ const Marketplace = () => {
             </button>
             <button
               type="button"
+              disabled={!canConfirmPurchase || isPurchasing}
               className="rounded-lg py-2.5 text-xs font-display font-semibold tracking-[0.1em] btn-eye"
-              onClick={() => setSelectedItem(null)}
+              onClick={async () => {
+                if (!selectedItem) return;
+                if (!canConfirmPurchase) {
+                  if (!privyReady) {
+                    toast.error("Wallet system still loading");
+                    return;
+                  }
+                  if (!privyAuthenticated || !activeWallet?.address) {
+                    toast.error("Connect wallet first");
+                    return;
+                  }
+                  toast.error("Missing contract/token configuration for selected payment token");
+                  return;
+                }
+                try {
+                  setIsPurchasing(true);
+                  let txHash: string | undefined;
+
+                  if (selectedItemCalldata || selectedTokenAddress) {
+                    const txChainId =
+                      selectedItem.purchaseChainId ?? paymentConfig.marketplaceChainId;
+                    if (typeof activeWallet.switchChain === "function") {
+                      await activeWallet.switchChain(txChainId);
+                    }
+
+                    const txTarget =
+                      selectedItem.purchaseContractAddress ??
+                      (paymentConfig.marketplaceContractAddress as `0x${string}`);
+                    const txValue = parseWei(selectedItem.purchaseValueWei);
+                    const clientOrderId = buildClientOrderId(
+                      `${activeWallet.address.toLowerCase()}:${selectedItem.id}:${Date.now()}`
+                    );
+                    const purchaseCalldata = selectedItemCalldata ?? encodeFunctionData({
+                      abi: unifiedMarketplaceAbi,
+                      functionName: "purchase",
+                      args: [
+                        selectedItem.gameIdentification,
+                        selectedItem.category,
+                        selectedItem.id,
+                        selectedTokenAddress as `0x${string}`,
+                        clientOrderId,
+                      ],
+                    });
+
+                    const receipt = await sendPrivyTransaction(
+                      {
+                        to: txTarget,
+                        value: txValue,
+                        data: purchaseCalldata,
+                        chainId: txChainId,
+                      },
+                      {
+                        address: activeWallet.address,
+                        uiOptions: { showWalletUIs: true },
+                      }
+                    );
+                    txHash =
+                      typeof receipt === "string"
+                        ? receipt
+                        : (receipt.transactionHash ?? receipt.hash ?? "");
+                    if (!txHash) {
+                      throw new Error("No transaction hash returned");
+                    }
+                  }
+
+                  await marketplaceApi.createOrder({
+                    listingId: selectedItem.id,
+                    quantity: 1,
+                    txHash,
+                  });
+
+                  toast.success(
+                    txHash
+                      ? `Purchase completed: ${txHash.slice(0, 10)}...`
+                      : "Purchase completed (order created)"
+                  );
+                  setSelectedItem(null);
+                } catch (error) {
+                  toast.error(getFriendlyPurchaseError(error));
+                } finally {
+                  setIsPurchasing(false);
+                }
+              }}
             >
-              CONFIRM
+              {isPurchasing ? "PROCESSING..." : "CONFIRM"}
             </button>
           </div>
         </DialogContent>

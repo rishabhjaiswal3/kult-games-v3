@@ -14,6 +14,7 @@ createRoot(document.getElementById("root")!).render(
         theme: "dark",
         walletChainType: "ethereum-only",
         showWalletLoginFirst: true,
+        walletList: ["metamask", "coinbase_wallet", "rainbow", "phantom"],
       },
       embeddedWallets: {
         ethereum: { createOnLogin: "users-without-wallets" },
