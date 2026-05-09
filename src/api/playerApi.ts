@@ -92,8 +92,12 @@ function parseProfilePayload(raw: unknown): FullPlayerProfile {
 }
 
 export const playerApi = {
-  login: async (walletAddress: string): Promise<LoginResponse> => {
-    const body: LoginRequest = { walletAddress };
+  login: async (
+    walletAddress: string,
+    message: string,
+    signature: string,
+  ): Promise<LoginResponse> => {
+    const body: LoginRequest = { walletAddress, message, signature };
     const { data } = await apiClient.post<any>("/player/login", body);
     const token: string = data.token ?? data.data?.token ?? "";
     const rawPlayer = data.player ?? data.data?.player ?? null;
