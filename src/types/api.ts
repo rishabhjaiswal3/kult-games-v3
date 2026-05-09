@@ -11,6 +11,10 @@ export interface Player {
 
 export interface LoginRequest {
   walletAddress: string;
+  /** EIP-4361 SIWE message that was signed */
+  message: string;
+  /** Hex-encoded secp256k1 signature from personal_sign */
+  signature: string;
 }
 
 export interface LoginResponse {

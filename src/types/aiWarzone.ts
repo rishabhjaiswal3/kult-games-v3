@@ -109,7 +109,7 @@ export interface AiWarzoneArenaMatchesResponse {
 }
 
 /** GET /arena/match?matchId= — single match (includes outcome + timestamps) */
-export interface AiWarzoneArenaMatchDetail {
+export interface AiWarzoneArenaMatchDetail extends ZgDaReceipt {
   _id: string;
   player1HotWallet: string;
   player1Elo: number;
@@ -141,9 +141,21 @@ export interface AiWarzoneBehaviorStatus {
   errorMsg: string | null;
 }
 
+// ─── 0G DA receipt (shared across Storage + Arena) ──────────────────────────
+
+export interface ZgDaReceipt {
+  daRequestId?: string | null;
+  daBatchId?: string | null;
+  daBlobIndex?: number | null;
+  daBatchHeaderHash?: string | null;
+  daConfirmationBlock?: number | null;
+  daFinalizedAt?: string | null;
+  daStatus?: string | null;
+}
+
 // ─── GET /0g/status/:wallet ─────────────────────────────────────────────────
 
-export interface AiWarzoneZeroGStatus {
+export interface AiWarzoneZeroGStatus extends ZgDaReceipt {
   wallet: string;
   sampleCount: number;
   modelStatus: string;

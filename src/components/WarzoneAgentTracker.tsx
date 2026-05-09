@@ -5,6 +5,7 @@ import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { aiWarzoneApi } from "@/api/aiWarzoneApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
+import ZgDaProofPanel from "@/components/ZgDaProofPanel";
 
 function shortAddr(a: string) {
   if (a.length < 12) return a;
@@ -280,6 +281,7 @@ const WarzoneAgentTracker = () => {
                       </a>
                     )}
                   </div>
+                  <ZgDaProofPanel receipt={zg} label="0G DA Proof" />
                 </>
               ) : null}
             </div>
