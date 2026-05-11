@@ -3,9 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import GameCard from "./GameCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import AIScanLine from "@/components/AIScanLine";
 import { GamesCarouselSkeleton } from "@/components/skeleton";
-import { useNavigate } from "react-router-dom";
 import { gamesApi } from "@/api/gamesApi";
 import type { Game } from "@/types/api";
 
@@ -36,8 +34,6 @@ interface GamesSectionProps {
 
 const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
   const [videoOpacity, setVideoOpacity] = useState(0.12);
-  const navigate = useNavigate();
-
   const { data, isLoading } = useQuery({
     queryKey: ["games", "all"],
     queryFn: () => gamesApi.getAll(1, 10),
@@ -96,7 +92,7 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
   };
 
   return (
-    <section className="relative py-16 md:py-24 z-10 overflow-hidden" >
+    <section className="relative z-10 overflow-hidden">
       {/* Background video — plays once then fades out */}
       <video
         ref={videoRef}
@@ -109,9 +105,9 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
       >
         <source src="/videos/SC_2-3.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-background/80" />
+      {/* <div className="absolute inset-0 bg-background/80" /> */}
 
-      <AIScanLine />
+      {/* <AIScanLine /> */}
 
       {/* Ambient glows */}
       <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/4 blur-[150px] pointer-events-none" />
@@ -200,10 +196,10 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
         </div>
 
         {/* View all button */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex justify-center pb-16">
           <button
             onClick={onViewAllGames}
-            className="px-8 py-3 rounded-lg font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
+            className="px-8 py-3.5 rounded-xl font-display text-xs font-semibold tracking-wider btn-eye flex items-center gap-2"
           >
             VIEW ALL GAMES
             <ChevronRight className="w-3.5 h-3.5" />

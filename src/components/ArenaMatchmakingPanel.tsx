@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const POLL_MS = 5000;
 const MAX_POLLS = 20;
@@ -313,9 +314,22 @@ const ArenaMatchmakingPanel = () => {
 
         <div className="mt-3 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-card/[0.45] to-card/[0.12] p-4 shadow-[0_20px_60px_hsl(220_60%_2%/0.2)] backdrop-blur-sm sm:p-5">
           {loadingList ? (
-            <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading matches…
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-white/[0.06] bg-background/50 px-4 py-3">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <Skeleton className="h-3 w-32" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                      <Skeleton className="h-3 w-14" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Skeleton className="h-14 rounded-lg" />
+                    <Skeleton className="h-14 rounded-lg" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : matches.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">

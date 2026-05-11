@@ -264,9 +264,7 @@ const ProfilePage = () => {
           }}
         />
         <div className="relative mx-auto flex min-h-[calc(100vh-5rem)] max-w-lg flex-col items-center justify-center px-6 pt-20 pb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+          <div
             className="w-full rounded-[28px] border border-white/10 bg-card/60 p-10 text-center shadow-[0_24px_80px_hsl(220_60%_2%/0.45)] backdrop-blur-xl"
           >
             <div
@@ -290,7 +288,7 @@ const ProfilePage = () => {
             >
               <Link to="/?login=1">Sign in</Link>
             </Button>
-          </motion.div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -326,21 +324,17 @@ const ProfilePage = () => {
 
       <section className="relative pt-24 pb-20 md:pb-28">
         <div className="relative mx-auto max-w-6xl px-4 md:px-8">
-          <motion.button
+          <button
             type="button"
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
             onClick={() => navigate(-1)}
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/50 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground backdrop-blur-md transition-colors hover:border-neon-cyan/35 hover:text-neon-cyan"
+            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/50 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground backdrop-blur-md btn-pill hover:border-neon-cyan/35 hover:text-neon-cyan"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             BACK
-          </motion.button>
+          </button>
 
           {/* Hero */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             className="relative mb-10 overflow-visible rounded-[32px] border border-white/[0.09] bg-gradient-to-br from-card/80 via-card/40 to-background/80 p-8 shadow-[0_32px_100px_hsl(220_60%_2%/0.5)] backdrop-blur-xl md:p-10"
           >
             <div
@@ -489,7 +483,7 @@ const ProfilePage = () => {
                 </div>
               ) : null}
             </div>
-          </motion.div>
+          </div>
 
           {isLoading && (
             <div className="grid gap-6 lg:grid-cols-2">
@@ -510,10 +504,7 @@ const ProfilePage = () => {
           {full && !isLoading && (
             <div className="grid gap-6 lg:grid-cols-12">
               {/* Account + name */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
+              <div
                 className="lg:col-span-5"
               >
                 <div className="h-full rounded-[28px] border border-white/[0.08] bg-card/50 p-6 shadow-[0_20px_60px_hsl(220_60%_2%/0.35)] backdrop-blur-md md:p-8">
@@ -560,13 +551,10 @@ const ProfilePage = () => {
                     </div>
                   ) : null}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Stats stack */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 }}
+              <div
                 className="lg:col-span-7"
               >
                 <div className="grid h-full gap-4 sm:grid-cols-2">
@@ -611,13 +599,10 @@ const ProfilePage = () => {
                     </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* AI Agent */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+              <div
                 className="lg:col-span-12"
               >
                 <div className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-card/60 via-card/30 to-background/80 p-1 shadow-[0_24px_80px_hsl(220_60%_2%/0.4)]">
@@ -730,15 +715,12 @@ const ProfilePage = () => {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           )}
 
           {full && full.gameScoresList.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
+            <div
               className="mt-8 overflow-hidden rounded-[28px] border border-white/[0.08] bg-card/40 shadow-[0_20px_60px_hsl(220_60%_2%/0.35)] backdrop-blur-md"
             >
               <div className="border-b border-white/10 bg-gradient-to-r from-neon-cyan/10 via-transparent to-violet-500/10 px-6 py-4 md:px-8">
@@ -779,7 +761,7 @@ const ProfilePage = () => {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </section>

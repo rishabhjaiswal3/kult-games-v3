@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAddress, isAddress } from "viem";
-import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import { aiWarzoneApi } from "@/api/aiWarzoneApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function shortAddr(a: string) {
   if (a.length < 12) return a;
@@ -160,8 +161,16 @@ const WarzoneAgentTracker = () => {
               </span>
               <p className="mb-3 pr-24 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Neural training status</p>
               {behaviorQ.isLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+                <div className="space-y-3 py-2">
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-full max-w-xs" />
+                  <Skeleton className="h-2 w-full" />
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Skeleton className="h-10 rounded-xl" />
+                    <Skeleton className="h-10 rounded-xl" />
+                    <Skeleton className="h-10 rounded-xl col-span-2" />
+                  </div>
+                  <Skeleton className="h-14 rounded-lg" />
                 </div>
               ) : behaviorQ.isError ? (
                 <p className="text-sm text-red-400/90">Could not load behavior status.</p>
@@ -218,8 +227,13 @@ const WarzoneAgentTracker = () => {
               </span>
               <p className="mb-3 pr-24 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Decentralized storage</p>
               {zeroGQ.isLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+                <div className="space-y-3 py-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-40" />
+                  <Skeleton className="h-12 rounded-lg" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-16 rounded-lg" />
                 </div>
               ) : zeroGQ.isError ? (
                 <p className="text-sm text-red-400/90">Could not load 0G status.</p>

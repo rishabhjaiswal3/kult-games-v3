@@ -139,11 +139,10 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
               EXPLORE GAMES
             </button>
             <button
-              onClick={() => navigate("/events")}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden"
+              onClick={() => navigate("/moments")}
+              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden. min-w-[250px]"
             >
-              <Swords className="w-4 h-4 relative z-10" />
-              <span className="relative z-10">STAKE & BATTLE</span>
+              <span className="relative z-10" style={{width:"100%"}}>Moments</span>
             </button>
           </div>
         </div>
@@ -151,7 +150,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
       </section>
 
       {/* Live Stats Strip */}
-      <div className="relative z-10 border-b border-border/30 bg-card/95 overflow-hidden">
+      {/* <div className="relative z-10 border-b border-border/30 bg-card/95 overflow-hidden">
         <motion.div
           className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-neon-cyan/8 to-transparent z-10"
           animate={{ x: ["-128px", "calc(100vw + 128px)"] }}
@@ -197,7 +196,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

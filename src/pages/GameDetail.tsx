@@ -196,7 +196,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground transition hover:border-white/20 hover:text-white"
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-mono tracking-[0.2em] text-muted-foreground btn-pill hover:border-neon-cyan/35 hover:text-neon-cyan"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 BACK
@@ -395,7 +395,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handleDownloadClick}
-                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                className="relative flex items-center justify-center gap-3 overflow-hidden px-8 py-3.5 font-display text-sm font-bold tracking-[0.18em] btn-eye"
               >
                 <Download className="relative z-10 h-5 w-5" />
                 <span className="relative z-10">DOWNLOAD</span>
@@ -404,7 +404,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handlePlayAccess}
-                className="relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                className="relative flex items-center justify-center gap-3 overflow-hidden px-8 py-3.5 font-display text-sm font-bold tracking-[0.18em] btn-eye"
               >
                 <Play className="relative z-10 h-5 w-5 fill-current" />
                 <span className="relative z-10">PLAY NOW</span>

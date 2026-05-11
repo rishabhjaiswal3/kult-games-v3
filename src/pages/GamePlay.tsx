@@ -76,7 +76,7 @@ const GamePlay = () => {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 text-sm text-foreground hover:text-neon-cyan hover:border-neon-cyan/50 transition-all"
+          className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 text-sm text-foreground btn-pill hover:text-neon-cyan hover:border-neon-cyan/50"
         >
           <ArrowLeft className="w-4 h-4" />
           BACK
@@ -88,7 +88,7 @@ const GamePlay = () => {
         <button
           type="button"
           onClick={() => triggerBrowserDownload(href)}
-          className="flex items-center gap-2 rounded-2xl px-8 py-4 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+          className="flex items-center gap-2 px-8 py-3.5 font-display text-sm font-bold tracking-[0.18em] btn-eye"
         >
           <Download className="h-5 w-5" />
           DOWNLOAD
@@ -121,7 +121,7 @@ const GamePlay = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 text-sm text-foreground hover:text-neon-cyan hover:border-neon-cyan/50 transition-all"
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 text-sm text-foreground btn-pill hover:text-neon-cyan hover:border-neon-cyan/50"
       >
         <ArrowLeft className="w-4 h-4" />
         BACK

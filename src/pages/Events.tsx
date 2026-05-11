@@ -157,12 +157,10 @@ const Events = () => {
                 </div>
 
                 <div className="flex-shrink-0">
-                  <button className="px-8 py-4 font-display text-sm font-semibold tracking-wider btn-eye transition-all duration-300 flex items-center gap-2 relative overflow-hidden">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                      animate={{ x: ["-200%", "200%"] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    />
+                  <button
+                    type="button"
+                    className="px-8 py-3.5 font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden"
+                  >
                     <Zap className="w-4 h-4 relative z-10" />
                     <span className="relative z-10">REGISTER NOW</span>
                   </button>
@@ -185,7 +183,7 @@ const Events = () => {
                 className={`px-5 py-2 rounded-full font-display text-xs font-semibold tracking-wider whitespace-nowrap transition-all duration-300 ${
                   filter === f.value
                     ? "btn-eye shadow-[0_0_18px_hsl(270_82%_58%/0.35)]"
-                    : "glass-panel text-muted-foreground hover:text-[hsl(278_100%_82%)] hover:border-[hsl(278_100%_70%/0.3)]"
+                    : "btn-eye-outline"
                 }`}
               >
                 {f.label.toUpperCase()}

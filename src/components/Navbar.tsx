@@ -41,7 +41,7 @@ const navItems = [
   { label: "AI Arena", path: "/ai-arena" },
   { label: "Moments", path: "/moments" },
   { label: "Leaderboard", path: "/leaderboard" },
-  { label: "Events", path: "/events" },
+  // { label: "Events", path: "/events" },
 ];
 
 type ProfileDropdownBodyProps = {
