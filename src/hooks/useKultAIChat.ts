@@ -139,5 +139,7 @@ export const useKultAIChat = () => {
     messages,
     sendMessage,
     setInput,
+    /** Current 0G Compute session ID — changes each conversation reset */
+    computeSessionId: sessionIdRef.current,
   };
 };
