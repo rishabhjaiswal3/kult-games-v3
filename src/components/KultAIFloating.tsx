@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight } from "lucide-react";
+import { Bot, Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight, Shield } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import KultAIMessageContent from "@/components/KultAIMessageContent";
 import { useKultAIChat } from "@/hooks/useKultAIChat";
@@ -15,7 +15,7 @@ const quickPrompts = [
 const KultAIFloating = () => {
   const [open, setOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { error, input, isStreaming, isWaitingForFirstChunk, messages, sendMessage, setInput } = useKultAIChat();
+  const { error, input, isStreaming, isWaitingForFirstChunk, messages, sendMessage, setInput, computeSessionId } = useKultAIChat();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -183,6 +183,16 @@ const KultAIFloating = () => {
                 <div ref={messagesEndRef} />
               </div>
             </div>
+
+            {/* 0G Compute session proof */}
+            {computeSessionId && (
+              <div className="px-4 py-2 border-t border-border/20 flex items-center gap-2 flex-shrink-0">
+                <Shield className="w-3 h-3 text-sky-400 shrink-0" />
+                <span className="text-[9px] font-mono text-muted-foreground/60 truncate">
+                  0G session: {computeSessionId}
+                </span>
+              </div>
+            )}
 
             {/* Input */}
             <form onSubmit={handleSubmit} className="p-4 border-t border-border/40 flex-shrink-0">
