@@ -162,9 +162,7 @@ const Leaderboard = () => {
 
         <div className="w-full px-6 md:px-8 xl:px-12 relative z-10">
           <div className="mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] overflow-hidden backdrop-blur-md shadow-[0_0_40px_hsl(195_100%_60%/0.1)]"
             >
               {/* Text content */}
@@ -186,7 +184,7 @@ const Leaderboard = () => {
                   Climb the ranks. Prove your dominance. Earn eternal glory on-chain.
                 </p>
 
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex gap-2 mt-6">
+                <div className="flex gap-2 mt-6">
                   {timeFilters.map((tf) => (
                     <button
                       key={tf}
@@ -198,7 +196,7 @@ const Leaderboard = () => {
                       {tf.toUpperCase()}
                     </button>
                   ))}
-                </motion.div>
+                </div>
               </div>
 
               {/* Video — bottom on mobile/tablet, right on desktop */}
@@ -209,7 +207,7 @@ const Leaderboard = () => {
                   <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Top 3 podium */}
@@ -267,11 +265,8 @@ const Leaderboard = () => {
                     };
 
               return (
-                <motion.div
+                <div
                   key={p.rank}
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
                   className={`relative rounded-2xl border backdrop-blur-xl overflow-hidden ${theme.shadow}`}
                   style={{
                     background: theme.cardBg,
@@ -353,16 +348,13 @@ const Leaderboard = () => {
                     className="h-1 w-full mt-auto"
                     style={{ background: `linear-gradient(90deg, transparent, ${theme.accentBorder}, transparent)`, opacity: 0.6 }}
                   />
-                </motion.div>
+                </div>
               );
             })}
           </div>
 
           {/* Full table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+          <div
             className="rounded-xl overflow-hidden border border-border/50 bg-card/70 backdrop-blur-md"
           >
             <div className="overflow-x-auto">
@@ -401,11 +393,8 @@ const Leaderboard = () => {
                     </tr>
                   )}
                   {players.map((p, i) => (
-                    <motion.tr
+                    <tr
                       key={p.rank}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + i * 0.04 }}
                       className="border-b border-border/10 hover:bg-neon-cyan/3 transition-colors group"
                     >
                       <td className="p-4">{getRankIcon(p.rank)}</td>
@@ -423,12 +412,12 @@ const Leaderboard = () => {
                       <td className="p-4 text-center">
                         <TrendingUp className="w-4 h-4 text-muted-foreground mx-auto" />
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 

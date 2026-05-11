@@ -490,14 +490,14 @@ const AIArena = () => {
                   <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
                     <Link
                       to="/games"
-                      className="group relative z-10 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye sm:px-7 sm:py-3.5"
+                      className="group relative z-10 inline-flex items-center gap-2 px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye sm:px-7 sm:py-3.5"
                     >
                       <span className="relative z-10">Start building</span>
                       <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                     <a
                       href="#warzone-agent-tracker"
-                      className="relative z-10 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye-outline sm:px-7 sm:py-3.5"
+                      className="relative z-10 inline-flex items-center gap-2 px-6 py-3 font-display text-sm font-semibold tracking-wide btn-eye-outline sm:px-7 sm:py-3.5"
                     >
                       <span className="relative z-10">Track agent</span>
                     </a>
