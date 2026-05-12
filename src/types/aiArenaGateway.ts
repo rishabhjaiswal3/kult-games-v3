@@ -34,6 +34,8 @@ export interface AiArenaAgentTraits {
 
 export interface AiArenaAgent {
   id: string;
+  /** Owner on gateway list responses; used client-side to filter "my" agents. */
+  userId?: string;
   name: string;
   clan: "ZEROG" | "BASE" | "SOLANA" | string;
   archetype: string;
@@ -41,11 +43,13 @@ export interface AiArenaAgent {
   eloRating: number;
   wins: number;
   losses: number;
+  draws?: number;
   status?: string;
   description?: string;
-  traits?: AiArenaAgentTraits;
+  traits?: AiArenaAgentTraits | Record<string, unknown>;
   inftTokenId?: string | null;
   createdAt?: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface AiArenaCreateAgentRequest {
@@ -62,11 +66,25 @@ export interface AiArenaListAgentsResponse {
   total?: number;
 }
 
-export interface AiArenaAuthMeResponse {
+/**
+ * Normalized current-user profile from GET /v1/auth/me or GET /v1/users/me.
+ * Gateways may return `{ user: { … } }` or a flat legacy `{ userId, walletAddress }`.
+ * Some deployments embed `agents` on the profile; when absent, callers filter `/v1/agents` by `userId`.
+ */
+export interface AiArenaProfileResponse {
   userId: string;
   walletAddress: string;
-  custodialSolanaAddress?: string;
+  custodialSolanaAddress?: string | null;
+  username?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  isActive?: boolean;
+  createdAt?: string;
+  agents?: AiArenaAgent[];
 }
+
+/** @deprecated Use {@link AiArenaProfileResponse} */
+export type AiArenaAuthMeResponse = AiArenaProfileResponse;
 
 export interface AiArenaCreateAgentResponse {
   agent: AiArenaAgent;
@@ -125,4 +143,23 @@ export interface AiArenaFinancialWithdrawalRequest {
   agentId: string;
   amount: number;
   destination: string;
+}
+
+/** GET /v1/agents/:agentId/evolution */
+export interface AiArenaAgentEvolutionResponse {
+  stage: string;
+  nextStage: string;
+  winsRequired: number;
+  winsToGo: number;
+  eligible: boolean;
+}
+
+/** GET /v1/leaderboards/global/rank/:agentId */
+export interface AiArenaAgentRankResponse {
+  rank: number;
+  agentId: string;
+  name?: string;
+  clan?: string;
+  eloRating?: number;
+  wins?: number;
 }

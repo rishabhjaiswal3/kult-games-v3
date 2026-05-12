@@ -1,18 +1,16 @@
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaLiveDuelFeed } from "@/components/arena/ArenaLiveDuelFeed";
-import { ArenaAIBanter } from "@/components/arena/ArenaAIBanter";
 import { ArenaLiveBattles } from "@/components/arena/ArenaLiveBattles";
-import { LiveArenaActivity, YourAgents } from "@/components/arena/ArenaSidePanels";
+import { LiveArenaActivity } from "@/components/arena/ArenaSidePanels";
 import { ArenaInfraStrip } from "@/components/arena/ArenaInfraStrip";
-import { ArenaTicker } from "@/components/arena/ArenaTicker";
+import { ArenaAgentsBoard } from "@/components/arena/ArenaAgentsBoard";
 import ArenaMatchmakingPanel from "@/components/ArenaMatchmakingPanel";
-import WarzoneAgentTracker from "@/components/WarzoneAgentTracker";
 
 const AIArena = () => {
   return (
-    <div className="min-h-screen bg-transparent relative">
+    <div className="relative min-h-screen bg-transparent">
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.07]"
+        className="pointer-events-none fixed inset-0 opacity-[0.07]"
         style={{
           backgroundImage: `
             linear-gradient(hsl(270 82% 58% / 0.5) 1px, transparent 1px),
@@ -22,46 +20,33 @@ const AIArena = () => {
         }}
       />
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 sm:pt-28 md:pt-32 pb-12 space-y-5">
+      <div
+        className="pointer-events-none fixed inset-0 opacity-30"
+        style={{
+          background:
+            "radial-gradient(ellipse 120% 80% at 50% -20%, hsl(270 80% 45% / 0.12), transparent 55%), radial-gradient(ellipse 80% 50% at 100% 50%, hsl(195 100% 50% / 0.06), transparent 45%)",
+        }}
+      />
 
-        {/* Scrolling ticker */}
-        <ArenaTicker />
-
-        {/* Row 1: Hero + sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className="lg:col-span-8 xl:col-span-9">
+      <main className="relative z-10 mx-auto max-w-[1600px] space-y-6 px-4 pb-12 pt-[calc(4rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 lg:space-y-8 lg:pb-20">
+        {/* Hero + live stack — aligned top, consistent gutter */}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+          <div className="min-w-0 lg:col-span-8">
             <ArenaHero />
           </div>
-          <aside className="lg:col-span-4 xl:col-span-3 flex flex-col gap-5">
+          <aside className="flex min-w-0 flex-col gap-6 lg:col-span-4">
             <ArenaLiveDuelFeed />
-            <ArenaAIBanter />
+            <LiveArenaActivity />
           </aside>
         </div>
 
-        {/* Row 2: Activity + battles + agents */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
-          <div className="md:col-span-1 lg:col-span-3">
-            <LiveArenaActivity />
-          </div>
-          <div className="md:col-span-2 lg:col-span-6">
-            <ArenaLiveBattles />
-          </div>
-          <div className="md:col-span-1 lg:col-span-3">
-            <YourAgents />
-          </div>
-        </div>
+        <ArenaAgentsBoard />
 
-        {/* 0G infra strip */}
+        <ArenaLiveBattles />
+
         <ArenaInfraStrip />
 
-        {/* Live matchmaking — real API */}
-        <div id="arena-matchmaking">
-          <ArenaMatchmakingPanel />
-        </div>
-
-        {/* Agent tracker — real API */}
-        <WarzoneAgentTracker />
-
+        <ArenaMatchmakingPanel />
       </main>
     </div>
   );

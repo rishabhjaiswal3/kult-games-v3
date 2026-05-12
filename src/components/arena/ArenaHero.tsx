@@ -31,7 +31,7 @@ export function ArenaHero() {
   ];
 
   return (
-    <section className="glass-panel rounded-2xl p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-6 relative overflow-hidden">
+    <section className="glass-panel relative grid grid-cols-1 gap-5 overflow-hidden rounded-2xl p-4 sm:p-6 sm:gap-6 lg:grid-cols-12 lg:items-stretch lg:gap-6 lg:p-7">
       <div
         className="absolute inset-0 pointer-events-none opacity-40"
         style={{ background: "radial-gradient(circle at 50% 50%, hsl(270 80% 65% / 0.35), transparent 70%)" }}
@@ -39,7 +39,7 @@ export function ArenaHero() {
       <div className="pointer-events-none absolute inset-0 neural-grid opacity-[0.12]" />
 
       {/* ── Left: copy ── */}
-      <div className="lg:col-span-7 relative z-10 flex flex-col justify-center text-center lg:text-left">
+      <div className="relative z-10 flex flex-col justify-center text-center lg:col-span-7 lg:min-h-0 lg:text-left">
         <div className="flex items-center gap-3 mb-5 justify-center lg:justify-start">
           <span className="text-neon-cyan font-display text-xs tracking-[0.3em]">AI ARENA</span>
           <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest bg-neon-green/15 text-neon-green border border-neon-green/30 flex items-center gap-1.5">
@@ -79,13 +79,12 @@ export function ArenaHero() {
         </p>
       </div>
 
-      {/* ── Right: video hero ── */}
-      <div className="lg:col-span-5 relative min-h-[320px] sm:min-h-[420px] lg:min-h-[480px] overflow-hidden rounded-xl">
-        {/* Video fills the entire box */}
+      {/* ── Right: video hero — full frame visible, no top gap; fills column height on lg ── */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black/40 lg:col-span-5 lg:aspect-auto lg:h-full lg:min-h-[clamp(260px,48svh,720px)]">
         <AutoPlayVideo
           src={heroVideo}
           loop
-          className="absolute top-5 left-0 right-0 bottom-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
         />
 
         {/* Edge fades to blend into the panel */}
