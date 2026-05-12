@@ -2,20 +2,13 @@ import { motion } from "framer-motion";
 import { Menu, X, LogOut, Plus, Sparkles, User, Copy, UserCircle } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
-import { usePrivy, useWallets, type ConnectedWallet } from "@privy-io/react-auth";
 import { toast } from "sonner";
-import { aiWarzoneApi } from "@/api/aiWarzoneApi";
-import { clearAiAgentInfo, patchAiAgentInfoCurrency, saveAiAgentInfo } from "@/lib/aiAgentStorage";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { StorageKeys } from "@/constants/storageKeys";
-import {
-  buildAgentBindingSignMessage,
-  deriveWarzoneAgentId,
-  normalizeWalletAddress,
-} from "@/lib/warzoneAgentId";
-import type { AiWarzoneAgent } from "@/types/aiWarzone";
+import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,16 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-function pickEthereumWallet(wallets: ConnectedWallet[], preferred?: string | null) {
-  const eth = wallets.filter((w) => w.type === "ethereum");
-  if (eth.length === 0) return undefined;
-  if (preferred) {
-    const match = eth.find((w) => w.address.toLowerCase() === preferred.toLowerCase());
-    if (match) return match;
-  }
-  return eth[0];
-}
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -49,10 +32,6 @@ type ProfileDropdownBodyProps = {
   walletAddress: string | null;
   agentWalletReady: boolean;
   agentWalletBalanceG: number;
-  walletsReady: boolean;
-  agentSigning: boolean;
-  agentGatePending: boolean;
-  agentChecking: boolean;
   onCreateAgent: () => void;
   onFundAgent: () => void;
   onLogout: () => void;
@@ -72,10 +51,6 @@ function ProfileDropdownBody({
   walletAddress,
   agentWalletReady,
   agentWalletBalanceG,
-  walletsReady,
-  agentSigning,
-  agentGatePending,
-  agentChecking,
   onCreateAgent,
   onFundAgent,
   onLogout,
@@ -87,13 +62,7 @@ function ProfileDropdownBody({
     toast.success("Wallet address copied");
   };
 
-  const createLabel = agentGatePending
-    ? "Connect wallet…"
-    : agentSigning
-      ? "Sign message…"
-      : agentChecking
-        ? "Checking agent…"
-        : "Create AI Agent";
+  const createLabel = "Create AI Agent";
 
   const shortWallet =
     walletAddress && walletAddress.length > 14
@@ -151,7 +120,7 @@ function ProfileDropdownBody({
 
       {!agentWalletReady ? (
         <DropdownMenuItem
-          disabled={!walletsReady || agentSigning || agentGatePending || agentChecking}
+          disabled={false}
           className="cursor-pointer focus:bg-neon-cyan/10"
           onSelect={() => {
             onCreateAgent();
@@ -211,143 +180,73 @@ const Navbar = () => {
   const [isSettingUpAgent, setIsSettingUpAgent] = useState(false);
   const [agentWalletReady, setAgentWalletReady] = useState(false);
   const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
-  const [agentGatePending, setAgentGatePending] = useState(false);
-  const [agentSigning, setAgentSigning] = useState(false);
-  const [agentChecking, setAgentChecking] = useState(false);
-  const [hotWalletAddress, setHotWalletAddress] = useState<string | null>(() =>
-    typeof localStorage !== "undefined"
-      ? localStorage.getItem(StorageKeys.local.warzoneHotWalletAddress)
-      : null
-  );
+  const [agentId, setAgentId] = useState<string | null>(null);
   const [isFunding, setIsFunding] = useState(false);
   const [fundAmountInput, setFundAmountInput] = useState("");
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
-  const { linkWallet } = usePrivy();
-  const { wallets, ready: walletsReady } = useWallets();
 
-  const applyAgent = useCallback((agent: AiWarzoneAgent) => {
-    localStorage.setItem(StorageKeys.local.warzoneHotWalletAddress, agent.hotWalletAddress);
+  const applyAgent = useCallback((agent: AiArenaAgent) => {
     saveAiAgentInfo(agent);
-    setHotWalletAddress(agent.hotWalletAddress);
-    setAgentWalletBalanceG(Number(agent.currency ?? 0));
+    setAgentId(agent.id);
     setAgentWalletReady(true);
   }, []);
 
-  const resolveAgentAfterSign = useCallback(
-    async (ownerWallet: string) => {
-      setAgentChecking(true);
-      try {
-        const res = await aiWarzoneApi.getAgentByWallet(ownerWallet);
-        if (res.found) {
-          applyAgent(res.agent);
-          setAgentModalOpen(false);
-        } else {
-          clearAiAgentInfo();
-          setAgentModalOpen(true);
-        }
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not check agent");
-        setAgentModalOpen(true);
-      } finally {
-        setAgentChecking(false);
-      }
-    },
-    [applyAgent]
-  );
-
-  const openAgentAfterWalletProof = useCallback(
-    async (wallet: ConnectedWallet) => {
-      try {
-        const addrNorm = normalizeWalletAddress(wallet.address);
-        const cachedAddr = sessionStorage.getItem(StorageKeys.session.warzoneAgentWalletVerified);
-        const cachedAgentId = sessionStorage.getItem(StorageKeys.session.warzoneAgentId);
-        if (cachedAddr === addrNorm && cachedAgentId) {
-          await resolveAgentAfterSign(wallet.address);
-          return;
-        }
-        if (cachedAddr === addrNorm && !cachedAgentId) {
-          sessionStorage.removeItem(StorageKeys.session.warzoneAgentWalletVerified);
-        }
-        setAgentSigning(true);
-        const signature = await wallet.sign(buildAgentBindingSignMessage(wallet.address));
-        const agentId = deriveWarzoneAgentId(wallet.address, signature);
-        sessionStorage.setItem(StorageKeys.session.warzoneAgentWalletVerified, addrNorm);
-        sessionStorage.setItem(StorageKeys.session.warzoneAgentId, agentId);
-        setAgentSigning(false);
-        await resolveAgentAfterSign(wallet.address);
-      } catch {
-        console.warn("[Navbar] Wallet signature cancelled or failed");
-        setAgentSigning(false);
-      }
-    },
-    [resolveAgentAfterSign]
-  );
+  const syncAgentWalletBalance = useCallback(async (currentAgentId: string) => {
+    try {
+      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(currentAgentId);
+      setAgentWalletBalanceG(Number(walletRes.wallet.balanceArena ?? 0));
+    } catch {
+      /* keep previous number */
+    }
+  }, []);
 
   const handleCreateAgentClick = useCallback(() => {
-    if (!walletsReady || agentSigning) return;
-    const eth = pickEthereumWallet(wallets, walletAddress);
-    if (!eth) {
-      setAgentGatePending(true);
-      linkWallet({ walletChainType: "ethereum-only" });
-      return;
-    }
-    void openAgentAfterWalletProof(eth);
-  }, [walletsReady, wallets, walletAddress, linkWallet, openAgentAfterWalletProof, agentSigning]);
-
-  useEffect(() => {
-    if (!agentGatePending || !walletsReady) return;
-    const eth = pickEthereumWallet(wallets, walletAddress);
-    if (!eth) return;
-    setAgentGatePending(false);
-    void openAgentAfterWalletProof(eth);
-  }, [agentGatePending, walletsReady, wallets, walletAddress, openAgentAfterWalletProof]);
+    setAgentModalOpen(true);
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || !walletAddress) return;
     setAgentWalletReady(false);
-    setHotWalletAddress(null);
+    setAgentId(null);
     setAgentWalletBalanceG(0);
-    localStorage.removeItem(StorageKeys.local.warzoneHotWalletAddress);
     clearAiAgentInfo();
     let cancelled = false;
     void (async () => {
       try {
-        const res = await aiWarzoneApi.getAgentByWallet(walletAddress);
+        const res = await aiArenaGatewayApi.getMyAgents(1, 10);
         if (cancelled) return;
-        if (res.found) applyAgent(res.agent);
+        if (res.agents?.length) {
+          const agent = res.agents[0];
+          applyAgent(agent);
+          void syncAgentWalletBalance(agent.id);
+        }
       } catch {
-        /* network / CORS — leave controls as Create AI Agent */
+        /* no AI Arena auth/token yet */
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, walletAddress, applyAgent]);
+  }, [isAuthenticated, walletAddress, applyAgent, syncAgentWalletBalance]);
 
   const handleAgentSetup = async () => {
     if (isSettingUpAgent) return;
-    const owner =
-      walletAddress ?? pickEthereumWallet(wallets, walletAddress)?.address ?? null;
-    if (!owner) {
+    if (!walletAddress) {
       toast.error("Connect a wallet first");
-      return;
-    }
-    const agentId = sessionStorage.getItem(StorageKeys.session.warzoneAgentId);
-    if (!agentId) {
-      toast.error("Sign the binding message first (Create AI Agent)");
       return;
     }
     setIsSettingUpAgent(true);
     try {
-      const agent = await aiWarzoneApi.createAgent({
-        id: agentId,
-        walletAddress: normalizeWalletAddress(owner),
-        name: player?.name?.trim() || `Agent ${owner.slice(0, 8)}`,
-        description: "Kult AI Arena autonomous agent",
+      const agent = await aiArenaGatewayApi.createAgent({
+        name: player?.name?.trim() || `Agent ${walletAddress.slice(0, 8)}`,
+        clan: "ZEROG",
+        archetype: "TACTICIAN",
+        backstory: "Autonomous AI agent initialized from Kult Browser.",
       });
       applyAgent(agent);
+      void syncAgentWalletBalance(agent.id);
       setAgentModalOpen(false);
-      toast.success("AI agent created");
+      toast.success("AI Arena agent created");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to create agent");
     } finally {
@@ -355,23 +254,25 @@ const Navbar = () => {
     }
   };
 
-  /** POST /agent/fund — server credits the agent hot wallet; amount comes from your input. */
+  /** POST /v1/financial/deposits — demo funding for AI Arena agent wallet. */
   const fundWallet = async (amount: number) => {
-    const hot =
-      hotWalletAddress ??
-      (typeof localStorage !== "undefined"
-        ? localStorage.getItem(StorageKeys.local.warzoneHotWalletAddress)
-        : null);
-    if (!hot) {
-      toast.error("No agent hot wallet — create or load your agent first");
+    const activeAgentId = agentId ?? getStoredAiAgentInfo()?.id ?? null;
+    if (!activeAgentId) {
+      toast.error("No agent selected — create or load your AI Arena agent first");
       return;
     }
     setIsFunding(true);
     try {
-      const res = await aiWarzoneApi.fundAgent({ hotWalletAddress: hot, amount });
-      setAgentWalletBalanceG(res.newBalance);
-      patchAiAgentInfoCurrency(res.newBalance);
-      toast.success(`Funded +${res.funded} (balance ${res.newBalance})`);
+      await aiArenaGatewayApi.depositToAgentWallet({
+        agentId: activeAgentId,
+        amount,
+        currency: "ARENA",
+        txHash: `demo_tx_${Date.now()}`,
+      });
+      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(activeAgentId);
+      setAgentWalletBalanceG(Number(walletRes.wallet.balanceArena ?? 0));
+      patchAiAgentInfo({});
+      toast.success(`Funded +${amount} ARENA`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Fund request failed");
     } finally {
@@ -441,10 +342,6 @@ const Navbar = () => {
     walletAddress,
     agentWalletReady,
     agentWalletBalanceG,
-    walletsReady,
-    agentSigning,
-    agentGatePending,
-    agentChecking,
     onCreateAgent: handleCreateAgentClick,
     onFundAgent: () => setWalletModalOpen(true),
     onLogout: () => {
@@ -512,7 +409,7 @@ const Navbar = () => {
               <motion.button
                 type="button"
                 onClick={agentWalletReady ? () => setWalletModalOpen(true) : handleCreateAgentClick}
-                disabled={agentSigning || agentGatePending || agentChecking}
+                disabled={false}
                 className="hidden md:inline-flex items-center gap-1.5 relative overflow-hidden shrink-0"
                 style={{
                   borderRadius: "12px",
@@ -540,13 +437,9 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    {agentSigning || agentGatePending || agentChecking ? (
-                      <motion.div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white/80" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5" style={{ color: "hsl(278 100% 82%)" }} />
-                    )}
+                    <Plus className="w-3.5 h-3.5" style={{ color: "hsl(278 100% 82%)" }} />
                     <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(278 100% 82%)" }}>
-                      {agentSigning ? "Signing…" : agentChecking ? "Checking…" : "Create AI"}
+                      Create AI
                     </span>
                   </>
                 )}
@@ -662,7 +555,7 @@ const Navbar = () => {
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">AI Agent Creation</p>
             <h3 className="font-display text-2xl font-black text-foreground mb-2">Create Your AI Agent</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Spawn your autonomous agent with hot wallet support, battle intelligence, and adaptive strategy.
+              Spawn your autonomous agent with AI Arena gateway identity and battle-ready defaults.
             </p>
             <div className="space-y-2.5 mb-4">
               {[
@@ -681,7 +574,7 @@ const Navbar = () => {
               disabled={isSettingUpAgent}
               className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/20 transition-colors disabled:opacity-70"
             >
-              {isSettingUpAgent ? "Creating agent…" : "Create agent on Warzone"}
+              {isSettingUpAgent ? "Creating agent…" : "Create agent on AI Arena"}
             </button>
           </motion.div>
         </div>
@@ -701,7 +594,7 @@ const Navbar = () => {
               <p className="text-2xl font-black text-foreground">{agentWalletBalanceG}</p>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              Enter an amount, then confirm. The app calls the Warzone fund API for your agent hot wallet (on-chain settlement is handled by the service).
+              Enter an amount, then confirm. The app calls AI Arena demo funding API for your selected agent.
             </p>
             <div className="mt-3 space-y-2">
               <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">

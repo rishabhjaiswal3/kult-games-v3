@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { aiWarzoneApi } from "@/api/aiWarzoneApi";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { playerApi } from "@/api/playerApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -218,13 +218,12 @@ const ProfilePage = () => {
   });
 
   const agentQuery = useQuery({
-    queryKey: ["aiWarzone", "profileAgent", walletAddress],
+    queryKey: ["aiArenaGateway", "profileAgentList"],
     queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await aiWarzoneApi.getAgentByWallet(walletAddress);
-      return res.found ? res.agent : null;
+      const res = await aiArenaGatewayApi.getMyAgents(1, 10);
+      return res.agents?.[0] ?? null;
     },
-    enabled: isAuthenticated && !!walletAddress,
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -280,7 +279,7 @@ const ProfilePage = () => {
               Your command center
             </h1>
             <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Sign in with your wallet to see stats, your Warzone AI agent, and customize your display name.
+              Sign in with your wallet to see stats, your AI Arena agent, and customize your display name.
             </p>
             <Button
               asChild
@@ -613,7 +612,7 @@ const ProfilePage = () => {
                           <Bot className="h-7 w-7" />
                         </div>
                         <div>
-                          <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-violet-300/90">Warzone AI</p>
+                          <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-violet-300/90">AI Arena</p>
                           <h2 className="font-display text-xl font-black uppercase tracking-tight text-foreground md:text-2xl">
                             Your AI agent
                           </h2>
@@ -638,7 +637,7 @@ const ProfilePage = () => {
                         <span className="text-sm">Loading agent…</span>
                       </div>
                     ) : agentQuery.isError ? (
-                      <p className="py-8 text-sm text-red-400/90">Could not reach AI Warzone service.</p>
+                      <p className="py-8 text-sm text-red-400/90">Could not reach AI Arena gateway.</p>
                     ) : !agent ? (
                       <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-background/30 py-12 text-center">
                         <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/50" />
@@ -657,11 +656,11 @@ const ProfilePage = () => {
                           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                             <div className="rounded-xl border border-white/10 bg-background/50 p-3">
                               <p className="text-[10px] font-mono uppercase text-muted-foreground">Elo</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums text-neon-cyan">{agent.elo}</p>
+                              <p className="mt-1 font-display text-xl font-black tabular-nums text-neon-cyan">{agent.eloRating}</p>
                             </div>
                             <div className="rounded-xl border border-white/10 bg-background/50 p-3">
                               <p className="text-[10px] font-mono uppercase text-muted-foreground">Balance</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums text-foreground">{agent.currency} G</p>
+                              <p className="mt-1 font-display text-xl font-black tabular-nums text-foreground">—</p>
                             </div>
                             <div className="rounded-xl border border-white/10 bg-background/50 p-3">
                               <p className="text-[10px] font-mono uppercase text-muted-foreground">Record</p>
@@ -673,22 +672,22 @@ const ProfilePage = () => {
                             </div>
                             <div className="rounded-xl border border-white/10 bg-background/50 p-3">
                               <p className="text-[10px] font-mono uppercase text-muted-foreground">Matches</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums">{agent.totalMatches}</p>
+                              <p className="mt-1 font-display text-xl font-black tabular-nums">{agent.wins + agent.losses}</p>
                             </div>
                           </div>
                           <div className="mt-4 space-y-2">
-                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Hot wallet</p>
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Agent ID</p>
                             <button
                               type="button"
-                              onClick={() => copyText("Hot wallet", agent.hotWalletAddress)}
+                              onClick={() => copyText("Agent ID", agent.id)}
                               className="flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-white/10 bg-background/60 px-3 py-2.5 text-left font-mono text-xs text-foreground transition-colors hover:border-neon-cyan/30"
                             >
-                              <span className="truncate">{agent.hotWalletAddress}</span>
+                              <span className="truncate">{agent.id}</span>
                               <Copy className="h-4 w-4 shrink-0 opacity-50" />
                             </button>
-                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">On-chain ID</p>
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Evolution stage</p>
                             <p className="truncate rounded-xl border border-white/5 bg-background/40 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-                              {agent.onChainId}
+                              {agent.evolutionStage}
                             </p>
                           </div>
                         </div>

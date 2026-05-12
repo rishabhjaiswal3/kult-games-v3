@@ -1,17 +1,29 @@
 import roboLogo from "@/assets/roboLogo.png";
+import { useQuery } from "@tanstack/react-query";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 
-const ITEMS = [
+const DEFAULT_ITEMS = [
   "AI Arena Season 1 is LIVE",
-  "Double $KULT rewards this weekend!",
-  "New agents drop in 2d 14h 32m",
   "Join the arena. Become legendary.",
-  "NeuralReaper-7 just hit ELO 2,000",
-  "QuantumSoul won 12 matches in a row",
 ];
 
 const SOCIALS = ["X", "YT", "TT", "IG", "TG", "DC"];
 
 export function ArenaTicker() {
+  const leaderboardQ = useQuery({
+    queryKey: ["aiArenaGateway", "leaderboardTicker"],
+    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(5),
+    staleTime: 30_000,
+    refetchInterval: 45_000,
+  });
+
+  const tickerItems =
+    leaderboardQ.data?.entries.length
+      ? leaderboardQ.data.entries.map(
+          (entry) => `#${entry.rank} ${entry.name} (${entry.clan}) • ELO ${entry.eloRating} • ${entry.wins} wins`
+        )
+      : DEFAULT_ITEMS;
+
   return (
     <div className="glass-panel rounded-2xl px-4 py-3 flex items-center gap-5 overflow-hidden">
       <div className="flex items-center gap-2.5 shrink-0">
@@ -28,7 +40,7 @@ export function ArenaTicker() {
 
       <div className="flex-1 overflow-hidden relative">
         <div className="flex gap-12 whitespace-nowrap animate-marquee text-sm text-muted-foreground">
-          {[...ITEMS, ...ITEMS].map((t, i) => (
+          {[...tickerItems, ...tickerItems].map((t, i) => (
             <span key={i} className="shrink-0">
               <span className="text-neon-cyan mr-2">◆</span>{t}
             </span>
