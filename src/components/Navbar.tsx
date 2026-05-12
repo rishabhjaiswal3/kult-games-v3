@@ -2,11 +2,13 @@ import { motion } from "framer-motion";
 import { Menu, X, LogOut, Plus, Sparkles, User, Copy, UserCircle } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
+import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import {
@@ -177,13 +179,29 @@ const Navbar = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [agentModalOpen, setAgentModalOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [isSettingUpAgent, setIsSettingUpAgent] = useState(false);
   const [agentWalletReady, setAgentWalletReady] = useState(false);
   const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isFunding, setIsFunding] = useState(false);
   const [fundAmountInput, setFundAmountInput] = useState("");
+  const [fundAgentId, setFundAgentId] = useState<string | null>(null);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
+  const queryClient = useQueryClient();
+
+  const fundAgentsPickerQ = useQuery({
+    queryKey: ["aiArenaGateway", "navbarFundAgentPicker"],
+    queryFn: () => aiArenaGatewayApi.getMyAgents(1, 50),
+    enabled: walletModalOpen && isAuthenticated,
+    staleTime: 20_000,
+    retry: 1,
+  });
+
+  const fundWalletPreviewQ = useQuery({
+    queryKey: ["aiArenaGateway", "navbarFundWalletPreview", fundAgentId],
+    queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(fundAgentId!),
+    enabled: walletModalOpen && !!fundAgentId,
+    retry: false,
+  });
 
   const applyAgent = useCallback((agent: AiArenaAgent) => {
     saveAiAgentInfo(agent);
@@ -219,8 +237,12 @@ const Navbar = () => {
   );
 
   const handleCreateAgentClick = useCallback(() => {
+    if (!walletAddress) {
+      toast.error("Connect a wallet first");
+      return;
+    }
     setAgentModalOpen(true);
-  }, []);
+  }, [walletAddress]);
 
   useEffect(() => {
     if (!isAuthenticated || !walletAddress) return;
@@ -247,57 +269,43 @@ const Navbar = () => {
     };
   }, [isAuthenticated, walletAddress, applyAgent, syncAgentWalletBalance]);
 
-  const handleAgentSetup = async () => {
-    if (isSettingUpAgent) return;
-    if (!walletAddress) {
-      toast.error("Connect a wallet first");
-      return;
-    }
-    setIsSettingUpAgent(true);
-    try {
-      const agent = await aiArenaGatewayApi.createAgent({
-        name: player?.name?.trim() || `Agent ${walletAddress.slice(0, 8)}`,
-        clan: "ZEROG",
-        archetype: "TACTICIAN",
-        backstory: "Autonomous AI agent initialized from Kult Browser.",
-      });
+  const handleAgentCreatedFromModal = useCallback(
+    async (agent: AiArenaAgent) => {
       applyAgent(agent);
       const walletOk = await syncAgentWalletBalanceWithRetry(agent.id);
-      setAgentModalOpen(false);
       toast.success("AI Arena agent created");
       if (!walletOk) {
         toast.message("Wallet not ready yet", {
-          description: "Custodial wallet may still be provisioning. Use Create AI again in a moment, or refresh the page.",
+          description:
+            "Custodial wallet may still be provisioning. Use Create AI again in a moment, or refresh the page.",
         });
       }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create agent");
-    } finally {
-      setIsSettingUpAgent(false);
-    }
-  };
+    },
+    [applyAgent, syncAgentWalletBalanceWithRetry]
+  );
 
-  /** POST /v1/financial/deposits — demo funding for AI Arena agent wallet. */
+  /** POST /v1/financial/deposits — demo funding for the selected agent custodial wallet. */
   const fundWallet = async (amount: number) => {
-    if (!agentWalletReady) {
-      toast.error("No funded wallet yet — create your AI Arena agent first.");
-      return;
-    }
-    const activeAgentId = agentId ?? getStoredAiAgentInfo()?.id ?? null;
-    if (!activeAgentId) {
-      toast.error("No agent selected — create or load your AI Arena agent first");
+    const targetAgentId = fundAgentId ?? agentId ?? getStoredAiAgentInfo()?.id ?? null;
+    if (!targetAgentId) {
+      toast.error("Select an AI agent to fund, or create one first.");
       return;
     }
     setIsFunding(true);
     try {
       await aiArenaGatewayApi.depositToAgentWallet({
-        agentId: activeAgentId,
+        agentId: targetAgentId,
         amount,
         currency: "ARENA",
         txHash: `demo_tx_${Date.now()}`,
       });
-      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(activeAgentId);
-      setAgentWalletBalanceG(Number(walletRes.wallet.balanceArena ?? 0));
+      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
+      const bal = Number(walletRes.wallet.balanceArena ?? 0);
+      if (targetAgentId === agentId) {
+        setAgentWalletBalanceG(bal);
+        setAgentWalletReady(true);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
       patchAiAgentInfo({});
       toast.success(`Funded +${amount} ARENA`);
     } catch (e) {
@@ -314,12 +322,24 @@ const Navbar = () => {
       toast.error("Enter a valid whole amount (minimum 1)");
       return;
     }
+    if (!fundAgentId && !agentId && !getStoredAiAgentInfo()?.id) {
+      toast.error("Select an AI agent to fund.");
+      return;
+    }
     await fundWallet(n);
   };
 
   useEffect(() => {
-    if (walletModalOpen) setFundAmountInput("");
-  }, [walletModalOpen]);
+    if (!walletModalOpen) return;
+    setFundAmountInput("");
+    const agents = fundAgentsPickerQ.data?.agents ?? [];
+    const preferred = agentId ?? getStoredAiAgentInfo()?.id ?? null;
+    setFundAgentId((cur) => {
+      if (cur && agents.some((a) => a.id === cur)) return cur;
+      if (preferred && agents.some((a) => a.id === preferred)) return preferred;
+      return agents[0]?.id ?? preferred ?? null;
+    });
+  }, [walletModalOpen, fundAgentsPickerQ.data?.agents, agentId]);
 
   const logLoginEvent = (message: string) => {
     if (typeof window === "undefined") return;
@@ -571,57 +591,70 @@ const Navbar = () => {
       </div>
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-      {agentModalOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setAgentModalOpen(false)} aria-label="Close AI agent modal" />
-          <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="relative w-full max-w-md rounded-2xl border border-neon-cyan/30 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
-          >
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">AI Agent Creation</p>
-            <h3 className="font-display text-2xl font-black text-foreground mb-2">Create Your AI Agent</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Spawn your autonomous agent with AI Arena gateway identity and battle-ready defaults.
-            </p>
-            <div className="space-y-2.5 mb-4">
-              {[
-                "Autonomous wallet-based actions",
-                "AI purchases and market adaptation",
-                "Arena battle strategy with voice persona",
-              ].map((p) => (
-                <div key={p} className="rounded-lg border border-border/40 bg-card/45 px-3 py-2 flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-neon-purple" />
-                  <span className="text-xs text-muted-foreground">{p}</span>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => void handleAgentSetup()}
-              disabled={isSettingUpAgent}
-              className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/20 transition-colors disabled:opacity-70"
-            >
-              {isSettingUpAgent ? "Creating agent…" : "Create agent on AI Arena"}
-            </button>
-          </motion.div>
-        </div>
-      )}
+      <CreateAiArenaAgentModal
+        open={agentModalOpen}
+        onOpenChange={setAgentModalOpen}
+        defaultName={player?.name?.trim() || (walletAddress ? `Agent ${walletAddress.slice(0, 8)}` : "")}
+        onCreated={(agent) => void handleAgentCreatedFromModal(agent)}
+      />
       {walletModalOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWalletModalOpen(false)} aria-label="Close wallet modal" />
           <motion.div
             initial={{ opacity: 0, y: 14, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="relative w-full max-w-sm rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
+            className="relative w-full max-w-md max-h-[min(90vh,640px)] overflow-y-auto rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
           >
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">Agent Wallet</p>
-            <h3 className="font-display text-xl font-black text-foreground mb-3">Wallet Balance</h3>
-            <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/10 px-4 py-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-neon-purple mb-1">Balance (API)</p>
-              <p className="text-2xl font-black text-foreground">{agentWalletBalanceG}</p>
+            <h3 className="font-display text-xl font-black text-foreground mb-1">Fund AI agent</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Choose which agent receives the demo <span className="font-mono text-neon-cyan/80">POST /v1/financial/deposits</span> credit.
+            </p>
+
+            <div className="mb-3">
+              <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Your agents</p>
+              {fundAgentsPickerQ.isLoading ? (
+                <p className="text-xs text-muted-foreground">Loading agents…</p>
+              ) : fundAgentsPickerQ.isError ? (
+                <p className="text-xs text-muted-foreground">Could not load agents (AI Arena auth required).</p>
+              ) : !(fundAgentsPickerQ.data?.agents?.length) ? (
+                <p className="text-xs text-muted-foreground">No agents yet. Create one from the header or AI Arena page.</p>
+              ) : (
+                <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-white/10 bg-background/40 p-2 [scrollbar-width:thin]">
+                  {(fundAgentsPickerQ.data?.agents ?? []).map((a) => (
+                    <li key={a.id}>
+                      <button
+                        type="button"
+                        onClick={() => setFundAgentId(a.id)}
+                        className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition ${
+                          fundAgentId === a.id
+                            ? "border border-neon-cyan/50 bg-neon-cyan/10 text-foreground"
+                            : "border border-transparent hover:bg-white/5"
+                        }`}
+                      >
+                        <span className="min-w-0 flex-1 truncate font-semibold">{a.name}</span>
+                        <span className="shrink-0 text-[10px] text-muted-foreground">{a.clan}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              Enter an amount, then confirm. The app calls AI Arena demo funding API for your selected agent.
+
+            <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/10 px-4 py-3 mb-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-neon-purple mb-1">$ARENA balance (selected)</p>
+              {fundWalletPreviewQ.isLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : fundWalletPreviewQ.isError ? (
+                <p className="text-sm text-amber-200/90">Wallet not available yet for this agent.</p>
+              ) : (
+                <p className="text-2xl font-black text-foreground">
+                  {Number(fundWalletPreviewQ.data?.wallet.balanceArena ?? 0)}
+                </p>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Enter an amount, then confirm. Uses demo tx id; custodial wallet must exist on the gateway.
             </p>
             <div className="mt-3 space-y-2">
               <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">
@@ -655,7 +688,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => void submitFundFromInput()}
-                disabled={isFunding || !fundAmountInput.trim()}
+                disabled={isFunding || !fundAmountInput.trim() || !fundAgentId}
                 className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2.5 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 transition-colors disabled:opacity-50"
               >
                 {isFunding ? "Funding…" : "Fund wallet"}
