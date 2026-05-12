@@ -14,6 +14,16 @@ export const StorageKeys = {
     warzoneHotWalletAddress: "kult_warzone_hot_wallet",
     /** Full AI Warzone agent object (JSON) from create / GET agent. */
     aiAgentInfo: "ai_agent_info",
+    /** AI Arena gateway JWT access token (Bearer for /v1/*). */
+    aiArenaAccessToken: "kult_aiarena_access_token",
+    /** AI Arena gateway refresh token for silent renewal. */
+    aiArenaRefreshToken: "kult_aiarena_refresh_token",
+    /** AI Arena gateway token expiry epoch (ms). */
+    aiArenaTokenExpiresAt: "kult_aiarena_token_expires_at",
+    /** AI Arena user id from /v1/auth/privy response. */
+    aiArenaUserId: "kult_aiarena_user_id",
+    /** AI Arena custodial solana wallet address. */
+    aiArenaCustodialSolanaAddress: "kult_aiarena_custodial_solana",
   },
   session: {
     /** Wallet address after Warzone agent binding sign. */

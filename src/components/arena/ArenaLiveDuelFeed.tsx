@@ -1,7 +1,19 @@
 import battleImg from "@/assets/battle-1.jpg";
 import { Play } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 
 export function ArenaLiveDuelFeed() {
+  const leaderboardQ = useQuery({
+    queryKey: ["aiArenaGateway", "leaderboardDuelFeed"],
+    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(2),
+    staleTime: 30_000,
+    refetchInterval: 45_000,
+  });
+
+  const left = leaderboardQ.data?.entries?.[0];
+  const right = leaderboardQ.data?.entries?.[1];
+
   return (
     <div className="glass-panel rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
@@ -29,12 +41,12 @@ export function ArenaLiveDuelFeed() {
       </div>
 
       <div className="flex items-center justify-between text-sm font-semibold mb-2">
-        <span>ShadowByte</span>
+        <span>{left?.name ?? "ShadowByte"}</span>
         <span className="text-muted-foreground text-xs font-normal">vs</span>
-        <span>NovaStrike</span>
+        <span>{right?.name ?? "NovaStrike"}</span>
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-        <span>ELO 2056</span><span>ELO 1987</span>
+        <span>ELO {left?.eloRating ?? 2056}</span><span>ELO {right?.eloRating ?? 1987}</span>
       </div>
       <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-4">
         <div className="h-full rounded-full" style={{ width: "62%", background: "linear-gradient(90deg, hsl(195 100% 60%), hsl(270 80% 65%))" }} />

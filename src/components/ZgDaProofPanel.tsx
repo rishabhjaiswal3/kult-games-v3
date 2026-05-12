@@ -1,5 +1,5 @@
 import { Shield, ExternalLink } from "lucide-react";
-import type { ZgDaReceipt } from "@/types/aiWarzone";
+import type { ZgDaReceipt } from "@/types/aiArenaGateway";
 
 interface ZgDaProofPanelProps {
   receipt: ZgDaReceipt;

@@ -3,6 +3,11 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { playerApi } from "@/api/playerApi";
 import { StorageKeys, TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
+import {
+  clearAiArenaAuthTokens,
+  exchangePrivyTokenForAiArenaToken,
+  getAiArenaAccessToken,
+} from "@/lib/aiArenaAuth";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import type { Player } from "@/types/api";
 
@@ -40,7 +45,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user, login: privyLogin, logout: privyLogout } = usePrivy();
+  const { ready, authenticated, user, getAccessToken, login: privyLogin, logout: privyLogout } = usePrivy();
   const { wallets } = useWallets();
 
   const [player, setPlayer] = useState<Player | null>(null);
@@ -52,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const walletsRef = useRef(wallets);
   useEffect(() => { walletsRef.current = wallets; }, [wallets]);
 
-  // When Privy authenticates, run the full SIWE flow to get a backend JWT
+    // When Privy authenticates, run the full SIWE flow and AI Arena token exchange.
   useEffect(() => {
     if (!ready || !authenticated) return;
 
@@ -65,6 +70,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Already logged in with the same wallet — just refresh the profile
     if (existingToken && existingWallet?.toLowerCase() === address.toLowerCase()) {
       fetchProfile();
+      if (!getAiArenaAccessToken()) {
+        void (async () => {
+          try {
+            const privyAccessToken = await getAccessToken();
+            if (privyAccessToken) {
+              await exchangePrivyTokenForAiArenaToken(privyAccessToken);
+            }
+          } catch {
+            /* non-blocking; AI Arena auth can be retried later */
+          }
+        })();
+      }
       return;
     }
 
@@ -94,6 +111,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 4. Exchange signature for a backend JWT
       const res = await playerApi.login(address, message, signature);
       setPlayer(res.player);
+
+      // 5. Exchange Privy token for AI Arena gateway JWT pair.
+      const privyAccessToken = await getAccessToken();
+      if (privyAccessToken) {
+        await exchangePrivyTokenForAiArenaToken(privyAccessToken);
+      }
     };
 
     doSiweLogin()
@@ -103,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         playerApi.logout();
       })
       .finally(() => setIsLoading(false));
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, user, getAccessToken]);
 
   const fetchProfile = async () => {
     try {
@@ -116,8 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     playerApi.logout();
+    clearAiArenaAuthTokens();
     clearAiAgentInfo();
-    localStorage.removeItem(StorageKeys.local.warzoneHotWalletAddress);
     setPlayer(null);
     await privyLogout();
   };

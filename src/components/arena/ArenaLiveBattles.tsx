@@ -3,8 +3,13 @@ import b2 from "@/assets/battle-2.jpg";
 import b3 from "@/assets/battle-3.jpg";
 import b4 from "@/assets/battle-4.jpg";
 import { Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const BATTLES = [
+const BATTLE_IMAGES = [b1, b2, b3, b4];
+
+const FALLBACK_BATTLES = [
   { img: b1, a: "ShadowByte",     b: "NovaStrike",  eloA: 2056, eloB: 1987, watch: "1.2K" },
   { img: b2, a: "QuantumSoul",    b: "VoidWalker",  eloA: 2124, eloB: 1888, watch: "956"  },
   { img: b3, a: "InfernoX",       b: "AetherX",     eloA: 2011, eloB: 1756, watch: "743"  },
@@ -12,6 +17,34 @@ const BATTLES = [
 ];
 
 export function ArenaLiveBattles() {
+  const leaderboardQ = useQuery({
+    queryKey: ["aiArenaGateway", "leaderboardLiveBattles"],
+    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(8),
+    staleTime: 30_000,
+    refetchInterval: 45_000,
+  });
+
+  const apiBattles = (() => {
+    const entries = leaderboardQ.data?.entries ?? [];
+    if (entries.length < 2) return [];
+    const out: Array<{ img: string; a: string; b: string; eloA: number; eloB: number; watch: string }> = [];
+    for (let i = 0; i < entries.length - 1; i += 2) {
+      const left = entries[i];
+      const right = entries[i + 1];
+      out.push({
+        img: BATTLE_IMAGES[(i / 2) % BATTLE_IMAGES.length],
+        a: left.name,
+        b: right.name,
+        eloA: left.eloRating,
+        eloB: right.eloRating,
+        watch: `${Math.max(100, Math.round((left.wins + right.wins) * 4))}`,
+      });
+    }
+    return out.slice(0, 4);
+  })();
+
+  const battles = apiBattles.length ? apiBattles : FALLBACK_BATTLES;
+
   return (
     <div className="glass-panel rounded-2xl p-5">
       <div className="flex items-center justify-between mb-5">
@@ -22,7 +55,16 @@ export function ArenaLiveBattles() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {BATTLES.map((b) => (
+        {leaderboardQ.isLoading
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="rounded-xl overflow-hidden border border-border/40 bg-card/40 p-3">
+                <Skeleton className="h-28 sm:h-32 w-full rounded-lg" />
+                <Skeleton className="h-3 w-3/4 mt-3" />
+                <Skeleton className="h-3 w-2/3 mt-2" />
+                <Skeleton className="h-3 w-1/2 mt-3" />
+              </div>
+            ))
+          : battles.map((b) => (
           <div key={b.a} className="rounded-xl overflow-hidden border border-border/40 bg-card/40 hover:border-neon-cyan/40 transition group cursor-pointer">
             <div className="relative">
               <img

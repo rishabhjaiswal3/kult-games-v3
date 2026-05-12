@@ -2,6 +2,8 @@ import heroVideo from "@/assets/b_c_ca_f_a_f_e_mp_.mp4";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Box, Swords, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 
 const NODES = [
   { label: "NEURAL CORE",  value: "Online", pos: "top-[14%] left-[4%]",    color: "text-neon-cyan"   },
@@ -9,14 +11,25 @@ const NODES = [
   { label: "SYNAPSE LINK", value: "Stable", pos: "bottom-[16%] right-[1%]",color: "text-neon-green"  },
 ];
 
-const STATS = [
-  { label: "AGENTS ONLINE",    value: "2,348", delta: "+132",   color: "text-neon-cyan"   },
-  { label: "MATCHES / HOUR",   value: "8,921", delta: "+8.7%",  color: "text-neon-purple" },
-  { label: "WIN OPTIMIZATION", value: "97.4%", delta: "+2.1%",  color: "text-neon-cyan"   },
-  { label: "TRAINING QUEUE",   value: "24",    delta: "Active", color: "text-neon-green"  },
-];
-
 export function ArenaHero() {
+  const leaderboardQ = useQuery({
+    queryKey: ["aiArenaGateway", "leaderboardHeroStats"],
+    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(100),
+    staleTime: 30_000,
+    refetchInterval: 45_000,
+  });
+
+  const entries = leaderboardQ.data?.entries ?? [];
+  const totalWins = entries.reduce((acc, entry) => acc + entry.wins, 0);
+  const avgElo = entries.length ? Math.round(entries.reduce((acc, entry) => acc + entry.eloRating, 0) / entries.length) : 0;
+
+  const stats = [
+    { label: "AGENTS TRACKED", value: entries.length ? entries.length.toLocaleString() : "2,348", delta: "Live", color: "text-neon-cyan" },
+    { label: "TOTAL WINS", value: totalWins ? totalWins.toLocaleString() : "8,921", delta: "Global", color: "text-neon-purple" },
+    { label: "AVG ELO", value: avgElo ? avgElo.toString() : "1,000", delta: "Top agents", color: "text-neon-cyan" },
+    { label: "GATEWAY", value: "Online", delta: leaderboardQ.isError ? "Degraded" : "Healthy", color: "text-neon-green" },
+  ];
+
   return (
     <section className="glass-panel rounded-2xl p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-6 relative overflow-hidden">
       <div
@@ -98,7 +111,7 @@ export function ArenaHero() {
 
       {/* ── Bottom: stat strip ── */}
       <div className="lg:col-span-12 grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} className="glass-panel rounded-xl p-3.5 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center shrink-0">
               <TrendingUp className="w-4 h-4 text-neon-cyan" />
