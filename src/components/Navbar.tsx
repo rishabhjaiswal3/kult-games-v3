@@ -188,17 +188,35 @@ const Navbar = () => {
   const applyAgent = useCallback((agent: AiArenaAgent) => {
     saveAiAgentInfo(agent);
     setAgentId(agent.id);
-    setAgentWalletReady(true);
+    /** Only show Fund after wallet API succeeds — agent row can exist before custodial wallet exists. */
+    setAgentWalletReady(false);
+    setAgentWalletBalanceG(0);
   }, []);
 
-  const syncAgentWalletBalance = useCallback(async (currentAgentId: string) => {
+  const syncAgentWalletBalance = useCallback(async (currentAgentId: string): Promise<boolean> => {
     try {
       const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(currentAgentId);
       setAgentWalletBalanceG(Number(walletRes.wallet.balanceArena ?? 0));
-    } catch {
-      /* keep previous number */
+      setAgentWalletReady(true);
+      return true;
+    } catch (e) {
+      setAgentWalletReady(false);
+      setAgentWalletBalanceG(0);
+      return false;
     }
   }, []);
+
+  const syncAgentWalletBalanceWithRetry = useCallback(
+    async (currentAgentId: string, attempts = 4, delayMs = 1500) => {
+      for (let i = 0; i < attempts; i++) {
+        const ok = await syncAgentWalletBalance(currentAgentId);
+        if (ok) return true;
+        if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs));
+      }
+      return false;
+    },
+    [syncAgentWalletBalance]
+  );
 
   const handleCreateAgentClick = useCallback(() => {
     setAgentModalOpen(true);
@@ -218,7 +236,7 @@ const Navbar = () => {
         if (res.agents?.length) {
           const agent = res.agents[0];
           applyAgent(agent);
-          void syncAgentWalletBalance(agent.id);
+          await syncAgentWalletBalance(agent.id);
         }
       } catch {
         /* no AI Arena auth/token yet */
@@ -244,9 +262,14 @@ const Navbar = () => {
         backstory: "Autonomous AI agent initialized from Kult Browser.",
       });
       applyAgent(agent);
-      void syncAgentWalletBalance(agent.id);
+      const walletOk = await syncAgentWalletBalanceWithRetry(agent.id);
       setAgentModalOpen(false);
       toast.success("AI Arena agent created");
+      if (!walletOk) {
+        toast.message("Wallet not ready yet", {
+          description: "Custodial wallet may still be provisioning. Use Create AI again in a moment, or refresh the page.",
+        });
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to create agent");
     } finally {
@@ -256,6 +279,10 @@ const Navbar = () => {
 
   /** POST /v1/financial/deposits — demo funding for AI Arena agent wallet. */
   const fundWallet = async (amount: number) => {
+    if (!agentWalletReady) {
+      toast.error("No funded wallet yet — create your AI Arena agent first.");
+      return;
+    }
     const activeAgentId = agentId ?? getStoredAiAgentInfo()?.id ?? null;
     if (!activeAgentId) {
       toast.error("No agent selected — create or load your AI Arena agent first");
