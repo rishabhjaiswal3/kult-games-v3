@@ -48,10 +48,10 @@ export function ArenaHero() {
         </div>
 
         <h1 className="font-display font-black leading-[0.95] mb-1 text-foreground text-[clamp(2.8rem,8vw,4.9rem)]">
-          YOUR AI
+          FORGE YOUR 
         </h1>
         <h1 className="font-display font-black leading-[0.9] mb-5 gradient-text text-[clamp(3.4rem,10vw,7.9rem)]">
-          AGENT
+          CHAMPION
         </h1>
 
         <p className="text-muted-foreground mb-7 text-sm sm:text-base leading-relaxed mx-auto lg:mx-0">
