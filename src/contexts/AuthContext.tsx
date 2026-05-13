@@ -9,6 +9,7 @@ import {
   getAiArenaAccessToken,
 } from "@/lib/aiArenaAuth";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
+import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import type { Player } from "@/types/api";
@@ -50,7 +51,7 @@ const siweInFlightByAddress = new Map<string, Promise<void>>();
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user, getAccessToken, login: privyLogin, logout: privyLogout } = usePrivy();
+  const { ready, authenticated, user, getAccessToken, logout: privyLogout } = usePrivy();
   const { wallets } = useWallets();
 
   const [player, setPlayer] = useState<Player | null>(null);
@@ -195,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         walletAddress,
         isAuthenticated: authenticated && !!localStorage.getItem(TOKEN_KEY),
         isLoading: !ready || isLoading,
-        login: privyLogin,
+        login: requestOpenLoginModal,
         logout: handleLogout,
         refetchProfile: fetchProfile,
       }}

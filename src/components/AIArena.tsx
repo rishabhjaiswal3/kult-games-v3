@@ -5,16 +5,13 @@ import { ArenaAiBanter } from "@/components/arena/ArenaAiBanter";
 import { ArenaLiveBattles } from "@/components/arena/ArenaLiveBattles";
 import { LiveArenaActivity } from "@/components/arena/ArenaSidePanels";
 import { ArenaInfraStrip } from "@/components/arena/ArenaInfraStrip";
+import { ArenaArchetypeCarousel } from "@/components/arena/ArenaArchetypeCarousel";
+import { ArenaAgentShowcase } from "@/components/arena/ArenaAgentShowcase";
 import { ArenaAgentsBoard } from "@/components/arena/ArenaAgentsBoard";
 import ArenaMatchmakingPanel from "@/components/ArenaMatchmakingPanel";
-import { AIArenaPageSkeleton } from "@/components/skeleton/AIArenaPageSkeleton";
 import LiveEcosystemLayer from "@/components/LiveEcosystemLayer";
-import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
 const AIArena = () => {
-  const leaderboardQ = useAiArenaGlobalLeaderboard();
-  const showSkeleton = leaderboardQ.isPending && leaderboardQ.data === undefined;
-
   return (
     <ArenaPageProvider>
       <div className="relative min-h-screen bg-transparent">
@@ -29,18 +26,16 @@ const AIArena = () => {
           }}
         />
         <ArenaGlow />
-        {showSkeleton ? (
-          <AIArenaPageSkeleton />
-        ) : (
-          <>
+        <>
             <LiveEcosystemLayer
               compact
               className="pt-[calc(4rem+env(safe-area-inset-top,0px))]"
             />
             <main className="relative z-10 mx-auto max-w-[1600px] space-y-6 px-4 pb-12 pt-4 sm:px-6 md:px-8 md:pb-16 lg:space-y-8 lg:pb-20">
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
-            <div className="min-w-0 lg:col-span-8">
+            <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
+            <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
               <ArenaHero />
+              <ArenaArchetypeCarousel className="flex-1" />
             </div>
             <aside className="flex min-w-0 flex-col gap-6 lg:col-span-4">
               <ArenaLiveDuelFeed />
@@ -48,13 +43,13 @@ const AIArena = () => {
               <LiveArenaActivity />
             </aside>
           </div>
+          <ArenaAgentShowcase />
           <ArenaAgentsBoard />
           <ArenaLiveBattles />
           <ArenaInfraStrip />
           <ArenaMatchmakingPanel />
             </main>
-          </>
-        )}
+        </>
       </div>
     </ArenaPageProvider>
   );

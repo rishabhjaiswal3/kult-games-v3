@@ -1,4 +1,5 @@
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import { cn } from "@/lib/utils";
 
 interface VideoShowcaseProps {
   videoSrc: string;
@@ -6,7 +7,7 @@ interface VideoShowcaseProps {
   subtitle: string;
   overlayOpacity?: number;
   height?: string;
-  contentVerticalAlign?: "center" | "lower";
+  contentVerticalAlign?: "center" | "lower" | "lower-desktop-up";
   videoObjectPosition?: string;
   children?: React.ReactNode;
 }
@@ -21,10 +22,15 @@ const VideoShowcase = ({
   videoObjectPosition = "center center",
   children,
 }: VideoShowcaseProps) => {
-  const isLower = contentVerticalAlign === "lower";
+  const isLower = contentVerticalAlign === "lower" || contentVerticalAlign === "lower-desktop-up";
+  const liftOnDesktop = contentVerticalAlign === "lower-desktop-up";
 
   const shellClass = isLower
-    ? "absolute inset-0 z-10 flex flex-col items-center justify-end px-6 pb-10 pt-[clamp(11rem,42vh,26rem)] text-center sm:pb-12 md:pb-14"
+    ? cn(
+        "absolute inset-0 z-10 flex flex-col items-center justify-end px-6 pb-10 pt-[clamp(11rem,42vh,26rem)] text-center sm:pb-12 md:pb-14",
+        liftOnDesktop &&
+          "lg:justify-center lg:pb-0 lg:pt-0 lg:translate-y-[-10%] xl:translate-y-[-12%]"
+      )
     : "absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center";
 
   const subtitleEl = (
@@ -61,7 +67,9 @@ const VideoShowcase = ({
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(to bottom, hsl(220 50% 6% / ${isLower ? overlayOpacity * 0.4 : overlayOpacity}), hsl(220 50% 6% / ${overlayOpacity * 0.6}), hsl(220 50% 6% / ${overlayOpacity}))`,
+          background: liftOnDesktop
+            ? `linear-gradient(to bottom, hsl(220 50% 6% / ${overlayOpacity * 0.22}), hsl(220 50% 6% / ${overlayOpacity * 0.3}) 42%, hsl(220 50% 6% / ${overlayOpacity * 0.72}) 100%)`
+            : `linear-gradient(to bottom, hsl(220 50% 6% / ${isLower ? overlayOpacity * 0.4 : overlayOpacity}), hsl(220 50% 6% / ${overlayOpacity * 0.6}), hsl(220 50% 6% / ${overlayOpacity}))`,
         }}
       />
 
