@@ -10,6 +10,7 @@ export function buildAppChain() {
   return defineChain({
     id: cfg.decimalChainId,
     name: cfg.chainName ?? "0G Mainnet",
+    network: "0g-mainnet",
     nativeCurrency: {
       decimals: cfg.nativeCurrency?.decimals ?? 18,
       name: cfg.nativeCurrency?.name ?? "0G",

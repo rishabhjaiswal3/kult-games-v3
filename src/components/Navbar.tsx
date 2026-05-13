@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Menu, X, LogOut, Plus, Sparkles, User, Copy, UserCircle } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
+import { subscribeOpenLoginModal } from "@/lib/loginModalBus";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -433,6 +434,13 @@ const Navbar = () => {
       { replace: true }
     );
   }, [location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    return subscribeOpenLoginModal(() => {
+      setLoginOpen(true);
+      logLoginEvent("Opening login modal from app login bus");
+    });
+  }, []);
 
   const handleLoginClick = () => {
     if (location.pathname === "/") {

@@ -1,7 +1,16 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useLoginWithEmail, useLoginWithOAuth, useLogin, usePrivy } from "@privy-io/react-auth";
+import { useEffect, useRef, useState } from "react";
+import {
+  useLogin,
+  useLoginWithEmail,
+  useLoginWithOAuth,
+  usePrivy,
+  useWallets,
+} from "@privy-io/react-auth";
+import { getAllowedChainFromEnv } from "@/lib/chain";
+import { switchAppChainViaInjectedProvider } from "@/lib/ensureWalletChain";
+import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -13,6 +22,18 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [walletFlowPending, setWalletFlowPending] = useState(false);
+  const [walletFlowBusy, setWalletFlowBusy] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const walletFlowInFlightRef = useRef(false);
+
+  const { wallets } = useWallets();
+  const activeWallet = wallets[0];
+  const targetChainId = getAllowedChainFromEnv().decimalChainId;
+
+  useEffect(() => {
+    if (!isOpen) setAuthError("");
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || typeof window === "undefined") return;
@@ -29,17 +50,69 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const { initOAuth } = useLoginWithOAuth({
     onComplete: () => { onClose(); },
   });
-  const { login } = useLogin();
   const { authenticated, ready, linkWallet } = usePrivy();
 
+  /** Warzone pattern: Privy `login({ wallet })` then switch MetaMask to app chain (0G). */
+  const { login } = useLogin({
+    onComplete: ({ loginMethod }) => {
+      walletFlowInFlightRef.current = false;
+      setWalletFlowBusy(false);
+      if (loginMethod === "siwe") {
+        setWalletFlowPending(true);
+        return;
+      }
+      setWalletFlowPending(false);
+      onClose();
+    },
+    onError: (error) => {
+      walletFlowInFlightRef.current = false;
+      setWalletFlowPending(false);
+      setWalletFlowBusy(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
+  });
+
   const handleWalletAuth = () => {
-    if (!ready) return;
+    if (!ready || walletFlowBusy) return;
     if (authenticated) {
       linkWallet({ walletChainType: "ethereum-only" });
-    } else {
-      login({ loginMethods: ["wallet"] });
+      return;
     }
+    setWalletFlowPending(false);
+    setWalletFlowBusy(true);
+    setAuthError("");
+    walletFlowInFlightRef.current = true;
+    login({ loginMethods: ["wallet"], walletChainType: "ethereum-only" });
   };
+
+  useEffect(() => {
+    if (!isOpen || !ready || !authenticated || !walletFlowPending) return;
+    if (!activeWallet?.address) return;
+    if (walletFlowInFlightRef.current) return;
+
+    walletFlowInFlightRef.current = true;
+    void (async () => {
+      try {
+        await switchAppChainViaInjectedProvider();
+        if (typeof activeWallet.switchChain === "function") {
+          try {
+            await activeWallet.switchChain(targetChainId);
+          } catch {
+            /* injected switch above is the reliable path */
+          }
+        }
+        setWalletFlowPending(false);
+        onClose();
+      } catch (err) {
+        console.error("[Auth] 0G chain switch after wallet login failed:", err);
+        setWalletFlowPending(false);
+      } finally {
+        walletFlowInFlightRef.current = false;
+        setWalletFlowBusy(false);
+      }
+    })();
+  }, [isOpen, ready, authenticated, walletFlowPending, activeWallet, targetChainId, onClose]);
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -167,6 +240,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     </p>
                   </div>
 
+                  {authError ? (
+                    <p className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/95">
+                      {authError}
+                    </p>
+                  ) : null}
+
                   {!otpSent ? (
                     <div className="space-y-4">
                       {/* Email input */}
@@ -221,6 +300,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handleWalletAuth}
+                          disabled={loading || walletFlowBusy || !ready}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all group"
                           style={{
                             borderRadius: "12px",

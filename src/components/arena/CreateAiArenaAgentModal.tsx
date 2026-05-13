@@ -22,6 +22,8 @@ export type CreateAiArenaAgentModalProps = {
   onOpenChange: (open: boolean) => void;
   /** Default agent display name (e.g. Kult player name). */
   defaultName?: string;
+  /** Pre-select archetype when opened from the roster showcase. */
+  defaultArchetype?: (typeof AI_ARENA_ARCHETYPE_OPTIONS)[number];
   onCreated?: (agent: AiArenaAgent) => void | Promise<void>;
 };
 
@@ -29,6 +31,7 @@ export function CreateAiArenaAgentModal({
   open,
   onOpenChange,
   defaultName = "",
+  defaultArchetype,
   onCreated,
 }: CreateAiArenaAgentModalProps) {
   const { walletAddress } = useAuth();
@@ -43,7 +46,8 @@ export function CreateAiArenaAgentModal({
   useEffect(() => {
     if (!open) return;
     setName((n) => (n.trim() ? n : defaultName));
-  }, [open, defaultName]);
+    if (defaultArchetype) setArchetype(defaultArchetype);
+  }, [open, defaultName, defaultArchetype]);
 
   const handleSubmit = async () => {
     if (!walletAddress) {

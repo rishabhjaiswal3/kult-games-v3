@@ -1,4 +1,5 @@
 import type { AllowedChainConfig } from "@/lib/chain";
+import { getAllowedChainFromEnv } from "@/lib/chain";
 
 type Eip1193Provider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -45,4 +46,14 @@ export async function ensureWalletOnAllowedChain(
       },
     ],
   });
+}
+
+/** Same as warzonewarrior LoginModal — switch via injected provider (most reliable). */
+export async function switchAppChainViaInjectedProvider(
+  chain = getAllowedChainFromEnv()
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  const provider = (window as Window & { ethereum?: Eip1193Provider }).ethereum;
+  if (!provider?.request) return;
+  await ensureWalletOnAllowedChain(provider, chain);
 }
