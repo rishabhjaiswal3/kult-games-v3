@@ -10,6 +10,7 @@ import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasArenaAgent, MY_ARENA_AGENTS_QUERY_KEY, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import {
   DropdownMenu,
@@ -32,6 +33,7 @@ const navItems = [
 type ProfileDropdownBodyProps = {
   displayName: string;
   walletAddress: string | null;
+  hasArenaAgent: boolean;
   agentWalletReady: boolean;
   agentWalletBalanceG: number;
   onCreateAgent: () => void;
@@ -51,6 +53,7 @@ function profileInitials(name: string) {
 function ProfileDropdownBody({
   displayName,
   walletAddress,
+  hasArenaAgent: userHasArenaAgent,
   agentWalletReady,
   agentWalletBalanceG,
   onCreateAgent,
@@ -120,7 +123,7 @@ function ProfileDropdownBody({
 
       <DropdownMenuSeparator />
 
-      {!agentWalletReady ? (
+      {!userHasArenaAgent ? (
         <DropdownMenuItem
           disabled={false}
           className="cursor-pointer focus:bg-neon-cyan/10"
@@ -191,19 +194,13 @@ const Navbar = () => {
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
   const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
   const queryClient = useQueryClient();
-
-  const fundAgentsPickerQ = useQuery({
-    queryKey: ["aiArenaGateway", "navbarFundAgentPicker"],
-    queryFn: () => aiArenaGatewayApi.getMyAgents(1, 50),
-    enabled: walletModalOpen && isAuthenticated,
-    staleTime: 20_000,
-    retry: 1,
-  });
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const userHasArenaAgent = hasArenaAgent(myAgentsQ.data);
 
   const fundWalletPreviewQ = useQuery({
     queryKey: ["aiArenaGateway", "navbarFundWalletPreview", fundAgentId],
     queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(fundAgentId!),
-    enabled: walletModalOpen && !!fundAgentId,
+    enabled: walletModalOpen && !!fundAgentId && userHasArenaAgent,
     retry: false,
   });
 
@@ -243,6 +240,7 @@ const Navbar = () => {
   const handleAgentCreatedFromModal = useCallback(
     async (agent: AiArenaAgent) => {
       applyAgent(agent);
+      await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
       const walletOk = await syncAgentWalletBalanceWithRetry(agent.id);
       if (!walletOk) {
         toast.message("Wallet provisioning", {
@@ -251,7 +249,7 @@ const Navbar = () => {
         });
       }
     },
-    [applyAgent, syncAgentWalletBalanceWithRetry]
+    [applyAgent, syncAgentWalletBalanceWithRetry, queryClient]
   );
 
   const handleCreateAgentClick = useCallback(() => {
@@ -263,29 +261,36 @@ const Navbar = () => {
   }, [subscribeAgentCreated, handleAgentCreatedFromModal]);
 
   useEffect(() => {
-    if (!isAuthenticated || !walletAddress) return;
-    setAgentWalletReady(false);
-    setAgentId(null);
-    setAgentWalletBalanceG(0);
-    clearAiAgentInfo();
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await aiArenaGatewayApi.getMyAgents(1, 10);
-        if (cancelled) return;
-        if (res.agents?.length) {
-          const agent = res.agents[0];
-          applyAgent(agent);
-          await syncAgentWalletBalance(agent.id);
-        }
-      } catch {
-        /* no AI Arena auth/token yet */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, walletAddress, applyAgent, syncAgentWalletBalance]);
+    if (!isAuthenticated || !walletAddress) {
+      setAgentWalletReady(false);
+      setAgentId(null);
+      setAgentWalletBalanceG(0);
+      clearAiAgentInfo();
+      return;
+    }
+    if (myAgentsQ.isLoading) return;
+
+    const agents = myAgentsQ.data?.agents ?? [];
+    if (!userHasArenaAgent) {
+      setAgentId(null);
+      setAgentWalletReady(false);
+      setAgentWalletBalanceG(0);
+      clearAiAgentInfo();
+      return;
+    }
+
+    const agent = agents[0];
+    applyAgent(agent);
+    void syncAgentWalletBalance(agent.id);
+  }, [
+    isAuthenticated,
+    walletAddress,
+    myAgentsQ.isLoading,
+    myAgentsQ.data,
+    userHasArenaAgent,
+    applyAgent,
+    syncAgentWalletBalance,
+  ]);
 
   /** POST /v1/wallets/deposits — credit the selected agent custodial wallet. */
   const fundWallet = async (amount: number) => {
@@ -392,14 +397,14 @@ const Navbar = () => {
     setWithdrawAmountInput("");
     setWithdrawDestination("");
     setWalletModalTab("fund");
-    const agents = fundAgentsPickerQ.data?.agents ?? [];
+    const agents = myAgentsQ.data?.agents ?? [];
     const preferred = agentId ?? getStoredAiAgentInfo()?.id ?? null;
     setFundAgentId((cur) => {
       if (cur && agents.some((a) => a.id === cur)) return cur;
       if (preferred && agents.some((a) => a.id === preferred)) return preferred;
       return agents[0]?.id ?? preferred ?? null;
     });
-  }, [walletModalOpen, fundAgentsPickerQ.data?.agents, agentId]);
+  }, [walletModalOpen, myAgentsQ.data?.agents, agentId]);
 
   const logLoginEvent = (message: string) => {
     if (typeof window === "undefined") return;
@@ -447,6 +452,7 @@ const Navbar = () => {
   const profileMenuProps: ProfileDropdownBodyProps = {
     displayName: profileDisplayName,
     walletAddress,
+    hasArenaAgent: userHasArenaAgent,
     agentWalletReady,
     agentWalletBalanceG,
     onCreateAgent: handleCreateAgentClick,
@@ -515,31 +521,31 @@ const Navbar = () => {
             {isAuthenticated && (
               <motion.button
                 type="button"
-                onClick={agentWalletReady ? () => setWalletModalOpen(true) : handleCreateAgentClick}
+                onClick={userHasArenaAgent ? () => setWalletModalOpen(true) : handleCreateAgentClick}
                 disabled={false}
                 className="hidden md:inline-flex items-center gap-1.5 relative overflow-hidden shrink-0"
                 style={{
                   borderRadius: "12px",
-                  border: agentWalletReady
+                  border: userHasArenaAgent
                     ? "1px solid hsl(195 100% 50% / 0.35)"
                     : "1px solid hsl(270 80% 60% / 0.35)",
-                  background: agentWalletReady
+                  background: userHasArenaAgent
                     ? "hsl(195 100% 50% / 0.08)"
                     : "linear-gradient(135deg, hsl(265 48% 12%), hsl(220 45% 8%))",
                   padding: "6px 12px",
-                  boxShadow: agentWalletReady
+                  boxShadow: userHasArenaAgent
                     ? "0 0 12px hsl(195 100% 50% / 0.12)"
                     : "0 4px 16px hsl(270 82% 20% / 0.25)",
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                aria-label={agentWalletReady ? "Fund AI Agent" : "Create AI Agent"}
+                aria-label={userHasArenaAgent ? "Fund AI Agent" : "Create AI Agent"}
               >
-                {agentWalletReady ? (
+                {userHasArenaAgent ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(195 100% 65%)" }} />
                     <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(195 100% 65%)" }}>
-                      {agentWalletBalanceG} G
+                      {agentWalletReady ? `${agentWalletBalanceG} G` : "Fund"}
                     </span>
                   </>
                 ) : (
@@ -665,6 +671,24 @@ const Navbar = () => {
               Fund or withdraw $ARENA for the selected agent.
             </p>
 
+            {!userHasArenaAgent ? (
+              <div className="rounded-xl border border-violet-500/25 bg-violet-500/10 p-5 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No AI agent on this wallet yet. Create one to unlock funding and arena play.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletModalOpen(false);
+                    handleCreateAgentClick();
+                  }}
+                  className="mt-4 w-full rounded-lg border border-violet-400/40 bg-violet-500/15 px-3 py-2.5 text-sm font-semibold text-violet-200 hover:bg-violet-500/25 transition-colors"
+                >
+                  Create AI Agent
+                </button>
+              </div>
+            ) : (
+              <>
             <motion.div
               className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-background/40 p-1"
               layout
@@ -689,15 +713,13 @@ const Navbar = () => {
 
             <div className="mb-3">
               <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Your agents</p>
-              {fundAgentsPickerQ.isLoading ? (
+              {myAgentsQ.isLoading ? (
                 <p className="text-xs text-muted-foreground">Loading agents…</p>
-              ) : fundAgentsPickerQ.isError ? (
-                <p className="text-xs text-muted-foreground">Could not load agents. Sign in to AI Arena first.</p>
-              ) : !(fundAgentsPickerQ.data?.agents?.length) ? (
-                <p className="text-xs text-muted-foreground">No agents yet. Use Create AI Agent in the header or on AI Arena.</p>
+              ) : !(myAgentsQ.data?.agents?.length) ? (
+                <p className="text-xs text-muted-foreground">No agents yet. Create one to continue.</p>
               ) : (
                 <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-white/10 bg-background/40 p-2 [scrollbar-width:thin]">
-                  {(fundAgentsPickerQ.data?.agents ?? []).map((a) => (
+                  {(myAgentsQ.data?.agents ?? []).map((a) => (
                     <li key={a.id}>
                       <button
                         type="button"
@@ -770,6 +792,8 @@ const Navbar = () => {
                 {isFunding ? "Funding…" : "Fund wallet"}
               </button>
             </div>
+              </>
+            )}
             <button
               onClick={() => setWalletModalOpen(false)}
               className="mt-4 w-full rounded-lg border border-border/45 bg-card/50 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-neon-cyan/35 transition-colors"

@@ -11,6 +11,8 @@ import {
   AI_ARENA_MATCH_MODES,
   type AiArenaMatchMode,
 } from "@/constants/aiArenaMatchmaking";
+import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
 
 function formatWaitTime(ms?: number | null) {
@@ -42,6 +44,7 @@ function apiErrorMessage(err: unknown, fallback: string) {
 
 const ArenaMatchmakingPanel = () => {
   const queryClient = useQueryClient();
+  const { isAiArenaReady } = useAiArenaGatewaySession();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [gameId, setGameId] = useState(AI_ARENA_DEFAULT_GAME_ID);
   const [mode, setMode] = useState<AiArenaMatchMode>("RANKED");
@@ -49,12 +52,7 @@ const ArenaMatchmakingPanel = () => {
   const [paymentTxHash, setPaymentTxHash] = useState("");
   const [opponentId, setOpponentId] = useState("");
 
-  const myAgentsQ = useQuery({
-    queryKey: ["aiArenaGateway", "matchmakingMyAgents"],
-    queryFn: () => aiArenaGatewayApi.getMyAgents(1, 50),
-    staleTime: 20_000,
-    retry: 1,
-  });
+  const myAgentsQ = useMyArenaAgents(1, 50);
 
   const agents = myAgentsQ.data?.agents ?? [];
 
@@ -82,7 +80,7 @@ const ArenaMatchmakingPanel = () => {
       );
       return enriched;
     },
-    enabled: agents.length > 0,
+    enabled: isAiArenaReady && agents.length > 0,
     staleTime: 8_000,
     refetchInterval: 10_000,
     retry: 1,

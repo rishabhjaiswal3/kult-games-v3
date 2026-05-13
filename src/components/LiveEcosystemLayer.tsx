@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { buildLiveEcosystemItems, type LiveEcosystemTone } from "@/lib/liveEcosystemFeed";
-import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
 const TONE_STYLES: Record<LiveEcosystemTone, string> = {
   live: "border-neon-green/35 bg-neon-green/10 text-neon-green",
@@ -17,11 +16,7 @@ interface LiveEcosystemLayerProps {
 }
 
 export function LiveEcosystemLayer({ className, compact = false }: LiveEcosystemLayerProps) {
-  const leaderboardQ = useAiArenaGlobalLeaderboard();
-  const items = useMemo(
-    () => buildLiveEcosystemItems(leaderboardQ.data),
-    [leaderboardQ.data]
-  );
+  const items = useMemo(() => buildLiveEcosystemItems(), []);
   const loop = [...items, ...items];
 
   return (

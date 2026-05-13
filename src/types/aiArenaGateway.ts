@@ -66,6 +66,12 @@ export interface AiArenaListAgentsResponse {
   total?: number;
 }
 
+/** Result from strict GET /v1/agents/mine (no fallback). */
+export interface MyArenaAgentsResult {
+  agents: AiArenaAgent[];
+  mineOk: boolean;
+}
+
 /**
  * Normalized current-user profile from GET /v1/auth/me or GET /v1/users/me.
  * Gateways may return `{ user: { … } }` or a flat legacy `{ userId, walletAddress }`.

@@ -28,9 +28,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { playerApi } from "@/api/playerApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
+import { hasArenaAgent, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { cn } from "@/lib/utils";
 
 const KULT_AVATARS = [
@@ -219,15 +220,8 @@ const ProfilePage = () => {
     staleTime: 60_000,
   });
 
-  const agentQuery = useQuery({
-    queryKey: ["aiArenaGateway", "profileAgentList"],
-    queryFn: async () => {
-      const res = await aiArenaGatewayApi.getMyAgents(1, 10);
-      return res.agents?.[0] ?? null;
-    },
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+  const { openCreateAgent } = useCreateAgent();
+  const myAgentsQ = useMyArenaAgents(1, 10);
 
   useEffect(() => {
     if (full?.player?.name != null) setNameDraft(full.player.name);
@@ -295,7 +289,8 @@ const ProfilePage = () => {
   }
 
   const displayName = full?.player.name?.trim() || "Player";
-  const agent = agentQuery.data;
+  const userHasArenaAgent = hasArenaAgent(myAgentsQ.data);
+  const agent = userHasArenaAgent ? myAgentsQ.data?.agents?.[0] ?? null : null;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -635,21 +630,23 @@ const ProfilePage = () => {
                       ) : null}
                     </div>
 
-                    {agentQuery.isLoading ? (
+                    {myAgentsQ.isLoading ? (
                       <div className="flex items-center gap-3 py-12 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin text-neon-cyan" />
                         <span className="text-sm">Loading agent…</span>
                       </div>
-                    ) : agentQuery.isError ? (
-                      <p className="py-8 text-sm text-red-400/90">Could not connect to AI Arena right now.</p>
-                    ) : !agent ? (
+                    ) : !userHasArenaAgent ? (
                       <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-background/30 py-12 text-center">
                         <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/50" />
                         <p className="max-w-md text-sm text-muted-foreground">
-                          No agent linked to this wallet yet. Create one from the header menu or visit AI Arena to get started.
+                          No agent linked to this wallet yet. Create one to enter AI Arena and fund your custodial agent wallet.
                         </p>
-                        <Button asChild className="mt-6 rounded-xl font-display text-xs font-bold tracking-wider">
-                          <Link to="/ai-arena">Go to AI Arena</Link>
+                        <Button
+                          type="button"
+                          onClick={openCreateAgent}
+                          className="mt-6 rounded-xl font-display text-xs font-bold tracking-wider"
+                        >
+                          Create AI Agent
                         </Button>
                       </div>
                     ) : (
