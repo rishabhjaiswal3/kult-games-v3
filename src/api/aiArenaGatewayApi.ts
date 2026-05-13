@@ -200,23 +200,23 @@ export const aiArenaGatewayApi = {
     return data.agent;
   },
 
-  /** POST /v1/financial/deposits (requires AI Arena JWT) */
+  /** POST /v1/wallets/deposits (requires AI Arena JWT) */
   depositToAgentWallet: async (body: AiArenaFinancialDepositRequest) => {
-    const { data } = await http().post("/v1/financial/deposits", body);
+    const { data } = await http().post("/v1/wallets/deposits", body);
     return data;
   },
 
-  /** GET /v1/financial/wallets/:agentId (requires AI Arena JWT) */
+  /** GET /v1/wallets/:agentId (requires AI Arena JWT) */
   getAgentWalletBalance: async (agentId: string): Promise<AiArenaAgentWalletResponse> => {
     const { data } = await http().get<AiArenaAgentWalletResponse>(
-      `/v1/financial/wallets/${encodeURIComponent(agentId)}`
+      `/v1/wallets/${encodeURIComponent(agentId)}`
     );
     return data;
   },
 
-  /** POST /v1/financial/withdrawals (requires AI Arena JWT) */
+  /** POST /v1/wallets/withdrawals (requires AI Arena JWT) */
   requestWithdrawal: async (body: AiArenaFinancialWithdrawalRequest) => {
-    const { data } = await http().post("/v1/financial/withdrawals", body);
+    const { data } = await http().post("/v1/wallets/withdrawals", body);
     return data;
   },
 

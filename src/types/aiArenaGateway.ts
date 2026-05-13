@@ -145,6 +145,26 @@ export interface AiArenaFinancialWithdrawalRequest {
   destination: string;
 }
 
+export interface AiArenaFinancialWithdrawalResponse {
+  result: {
+    withdrawalId: string;
+    status: string;
+    agentId: string;
+    amount: number;
+    destination: string;
+    note?: string;
+  };
+}
+
+export interface AiArenaFinancialDepositResponse {
+  result: {
+    success?: boolean;
+    newBalance?: number;
+    depositId?: string;
+    status?: string;
+  };
+}
+
 /** GET /v1/agents/:agentId/evolution */
 export interface AiArenaAgentEvolutionResponse {
   stage: string;
