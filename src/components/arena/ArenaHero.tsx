@@ -108,21 +108,28 @@ export function ArenaHero() {
         ))}
       </div>
 
-      {/* ── Bottom: stat strip ── */}
-      <div className="lg:col-span-12 grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
+      {/* ── Bottom: stat strip — 2×2 grid; 4-across only when hero has room ── */}
+      <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4 lg:col-span-12 xl:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="glass-panel rounded-xl p-3.5 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center shrink-0">
-              <TrendingUp className="w-4 h-4 text-neon-cyan" />
+          <div
+            key={s.label}
+            className="glass-panel flex min-w-0 items-start gap-2.5 rounded-xl p-3 sm:items-center sm:gap-3 sm:p-3.5"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-neon-cyan/20 bg-neon-cyan/10 sm:h-9 sm:w-9">
+              <TrendingUp className="h-3.5 w-3.5 text-neon-cyan sm:h-4 sm:w-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[9px] tracking-widest text-muted-foreground font-display truncate">{s.label}</div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-xl font-bold">{s.value}</span>
-                <span className={`text-[11px] ${s.color}`}>{s.delta}</span>
-              </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-display text-[9px] tracking-widest text-muted-foreground">{s.label}</div>
+              <div className="font-display text-lg font-bold leading-tight sm:text-xl">{s.value}</div>
+              <div className={`mt-0.5 text-[10px] leading-snug sm:mt-1 sm:text-[11px] ${s.color}`}>{s.delta}</div>
             </div>
-            <svg width="52" height="24" viewBox="0 0 52 24" className="text-neon-cyan shrink-0 hidden sm:block">
+            <svg
+              width="52"
+              height="24"
+              viewBox="0 0 52 24"
+              aria-hidden
+              className="hidden shrink-0 text-neon-cyan xl:block"
+            >
               <polyline points="0,18 9,13 18,16 26,7 35,10 44,4 52,9" fill="none" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           </div>

@@ -606,9 +606,9 @@ const Navbar = () => {
             className="relative w-full max-w-md max-h-[min(90vh,640px)] overflow-y-auto rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
           >
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">Agent Wallet</p>
-            <h3 className="font-display text-xl font-black text-foreground mb-1">Fund AI agent</h3>
+            <h3 className="font-display text-xl font-black text-foreground mb-1">Fund agent wallet</h3>
             <p className="text-xs text-muted-foreground mb-3">
-              Choose which agent receives the demo <span className="font-mono text-neon-cyan/80">POST /v1/financial/deposits</span> credit.
+              Choose which agent should receive demo funding.
             </p>
 
             <div className="mb-3">
@@ -616,7 +616,7 @@ const Navbar = () => {
               {fundAgentsPickerQ.isLoading ? (
                 <p className="text-xs text-muted-foreground">Loading agents…</p>
               ) : fundAgentsPickerQ.isError ? (
-                <p className="text-xs text-muted-foreground">Could not load agents (AI Arena auth required).</p>
+                <p className="text-xs text-muted-foreground">Could not load agents. Sign in to AI Arena first.</p>
               ) : !(fundAgentsPickerQ.data?.agents?.length) ? (
                 <p className="text-xs text-muted-foreground">No agents yet. Create one from the header or AI Arena page.</p>
               ) : (
@@ -654,7 +654,7 @@ const Navbar = () => {
               )}
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Enter an amount, then confirm. Uses demo tx id; custodial wallet must exist on the gateway.
+              Enter an amount, then confirm. Demo funds will be added once the agent wallet is ready.
             </p>
             <div className="mt-3 space-y-2">
               <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">

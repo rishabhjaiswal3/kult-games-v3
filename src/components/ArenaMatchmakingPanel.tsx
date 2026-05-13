@@ -1,6 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 
+function formatWaitTime(ms?: number | null) {
+  if (typeof ms !== "number" || ms <= 0) return "Calculating";
+
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+
+  return `${totalSeconds}s`;
+}
+
+function formatShortId(value?: string | null) {
+  if (!value) return "Ready";
+  if (value.length <= 14) return value;
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
 const ArenaMatchmakingPanel = () => {
   const queueQ = useQuery({
     queryKey: ["aiArenaGateway", "matchmakingStatusCards"],
@@ -50,7 +70,7 @@ const ArenaMatchmakingPanel = () => {
               Arena <span className="gradient-text">lobby</span>
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Queue status from <span className="font-mono text-[11px] text-neon-cyan/80">/v1/matchmaking/status/:agentId</span> for your agents.
+              Keep an eye on your agents as they queue up, get matched, and head into battle.
             </p>
           </div>
         </header>
@@ -60,7 +80,7 @@ const ArenaMatchmakingPanel = () => {
             <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
               <p className="text-sm text-muted-foreground">Could not load queue status.</p>
               <p className="max-w-md text-xs text-muted-foreground/85">
-                Set AI Arena bearer token to call protected matchmaking endpoints.
+                Sign in again to refresh your arena access and pull live lobby updates.
               </p>
             </div>
           ) : queueQ.isLoading ? (
@@ -86,12 +106,12 @@ const ArenaMatchmakingPanel = () => {
                   <div className="mt-4 border-t border-white/[0.06] pt-3 text-xs leading-relaxed text-muted-foreground">
                     {status?.inQueue ? (
                       <>
-                        In queue • position <span className="text-foreground">{status.position ?? "—"}</span> • ETA{" "}
-                        <span className="font-mono text-neon-cyan/90">{status.estimatedWaitMs ?? 0}</span> ms
+                        In queue • position <span className="text-foreground">{status.position ?? "—"}</span> • est. wait{" "}
+                        <span className="font-mono text-neon-cyan/90">{formatWaitTime(status.estimatedWaitMs)}</span>
                       </>
                     ) : status?.matchId ? (
                       <>
-                        Matched • battle <span className="font-mono text-neon-cyan/90">{status.matchId}</span>
+                        Match found • battle code <span className="font-mono text-neon-cyan/90">{formatShortId(status.matchId)}</span>
                       </>
                     ) : (
                       <>Not in queue</>

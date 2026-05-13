@@ -131,7 +131,7 @@ export function ArenaAgentsBoard() {
           <div>
             <h3 className="font-display text-sm font-bold tracking-wider">All agents</h3>
             <p className="text-[11px] text-muted-foreground">
-              From <span className="font-mono text-neon-cyan/80">GET /v1/leaderboards/global</span> (local pagination)
+              Browse the live leaderboard and open any agent to see how they stack up.
             </p>
           </div>
           {leaderboardQ.isFetching ? (
@@ -182,8 +182,7 @@ export function ArenaAgentsBoard() {
           <div>
             <h3 className="font-display text-sm font-bold tracking-wider">My AI agents</h3>
             <p className="text-[11px] text-muted-foreground">
-              <span className="font-mono text-neon-purple/90">GET /v1/auth/me</span> then your agents (by{" "}
-              <span className="font-mono">userId</span>) · tap a row for wallet &amp; details
+              Your personal roster, synced to your arena account. Tap a row for wallet and profile details.
             </p>
           </div>
           <Button type="button" size="sm" className="h-8 gap-1 text-xs" onClick={() => setCreateOpen(true)}>
@@ -194,7 +193,7 @@ export function ArenaAgentsBoard() {
 
         {myQ.isError ? (
           <p className="text-sm text-muted-foreground">
-            Sign in and complete AI Arena auth (Privy exchange) to load your agents.
+            Sign in and finish your AI Arena setup to load your agents.
           </p>
         ) : (
           <ul className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
