@@ -1,0 +1,48 @@
+import type { AllowedChainConfig } from "@/lib/chain";
+
+type Eip1193Provider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
+/**
+ * Switch (or add) the wallet to the app chain before SIWE / transactions.
+ * Mirrors warzonewarrior LoginModal wallet flow.
+ */
+export async function ensureWalletOnAllowedChain(
+  provider: Eip1193Provider,
+  chain: AllowedChainConfig
+): Promise<void> {
+  const targetHex = chain.hexChainId;
+  const current = await provider.request({ method: "eth_chainId" });
+  if (typeof current === "string" && current.toLowerCase() === targetHex.toLowerCase()) {
+    return;
+  }
+
+  try {
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: targetHex }],
+    });
+    return;
+  } catch (err: unknown) {
+    const code = (err as { code?: number })?.code;
+    if (code !== 4902) throw err;
+  }
+
+  await provider.request({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: targetHex,
+        chainName: chain.chainName ?? "0G Mainnet",
+        nativeCurrency: {
+          name: chain.nativeCurrency?.name ?? "0G",
+          symbol: chain.nativeCurrency?.symbol ?? "0G",
+          decimals: chain.nativeCurrency?.decimals ?? 18,
+        },
+        rpcUrls: chain.rpcUrls ?? ["https://evmrpc.0g.ai"],
+        blockExplorerUrls: chain.blockExplorerUrls ?? ["https://chainscan.0g.ai"],
+      },
+    ],
+  });
+}

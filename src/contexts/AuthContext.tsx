@@ -9,6 +9,8 @@ import {
   getAiArenaAccessToken,
 } from "@/lib/aiArenaAuth";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
+import { getAllowedChainFromEnv } from "@/lib/chain";
+import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import type { Player } from "@/types/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -135,7 +137,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!privyWallet) throw new Error("No Privy wallet available to sign");
 
+      const allowedChain = getAllowedChainFromEnv();
+      if (typeof privyWallet.switchChain === "function") {
+        try {
+          await privyWallet.switchChain(allowedChain.decimalChainId);
+        } catch {
+          /* fall through to provider switch */
+        }
+      }
+
       const provider = await privyWallet.getEthereumProvider();
+      await ensureWalletOnAllowedChain(provider, allowedChain);
       const signature = (await provider.request({
         method: "personal_sign",
         params: [message, address],

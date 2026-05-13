@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { usePrivy, useSendTransaction, useWallets } from "@privy-io/react-auth";
+import { getAllowedChainFromEnv } from "@/lib/chain";
 
 type WalletLike = {
   address?: string;
@@ -25,6 +26,8 @@ export const usePrivyWalletTools = () => {
   const { wallets } = useWallets();
   const { sendTransaction } = useSendTransaction();
 
+  const allowedChain = useMemo(() => getAllowedChainFromEnv(), []);
+
   const activeWallet = useMemo<WalletLike | null>(() => {
     const wallet = wallets?.[0] as WalletLike | undefined;
     if (wallet?.address) return wallet;
@@ -38,6 +41,7 @@ export const usePrivyWalletTools = () => {
     privyReady: ready,
     privyAuthenticated: authenticated,
     activeWallet,
+    allowedChain,
     canUsePrivy,
     sendPrivyTransaction: sendTransaction as (
       params: SendTxParams,
