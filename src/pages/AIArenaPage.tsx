@@ -1,14 +1,16 @@
 import AIArena from "@/components/AIArena";
 import Footer from "@/components/Footer";
-import AutoPlayVideo from "@/components/AutoPlayVideo";
 
 const AIArenaPage = () => {
   return (
-    <div className="relative min-h-screen bg-transparent">
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <AutoPlayVideo src="/videos/SC_10.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />
-      </div>
+    <div className="relative min-h-screen bg-background">
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 120% 80% at 50% -20%, hsl(270 80% 45% / 0.1), transparent 55%), radial-gradient(ellipse 80% 50% at 100% 50%, hsl(195 100% 50% / 0.05), transparent 45%)",
+        }}
+      />
       <AIArena />
       <Footer />
     </div>

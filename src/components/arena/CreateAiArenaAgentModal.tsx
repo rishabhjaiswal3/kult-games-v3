@@ -81,31 +81,28 @@ export function CreateAiArenaAgentModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "z-[100] max-h-[min(92vh,720px)] w-[calc(100vw-1.5rem)] max-w-lg overflow-y-auto border border-neon-cyan/25 bg-card/95 p-5 shadow-[0_0_80px_hsl(195_100%_55%/0.18)] sm:p-6"
+          "z-[100] max-h-[min(92vh,720px)] w-[calc(100vw-1.5rem)] max-w-lg overflow-y-auto border border-neon-purple/30 bg-surface-1/95 p-5 shadow-neon sm:p-6"
         )}
       >
         <DialogHeader>
-          <DialogTitle className="font-display text-xl tracking-tight sm:text-2xl">Create AI Arena agent</DialogTitle>
+          <DialogTitle className="font-display text-xl tracking-tight sm:text-2xl">
+            Create <span className="text-gradient-hero">AI Agent</span>
+          </DialogTitle>
           <DialogDescription className="text-left text-xs sm:text-sm">
-            Pick a clan and archetype, then give your agent a name and backstory. We handle the setup for you.
+            One step creates your arena agent and its custodial hot wallet. Choose clan, archetype, name, and backstory.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-1">
           <div className="space-y-2">
-            <Label className="text-xs font-display tracking-wider text-muted-foreground">Clan</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <Label className="arena-label">Clan</Label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {AI_ARENA_CLAN_OPTIONS.map((c) => (
                 <button
                   key={c.value}
                   type="button"
                   onClick={() => setClan(c.value)}
-                  className={cn(
-                    "rounded-xl border px-2 py-2 text-center transition",
-                    clan === c.value
-                      ? "border-neon-cyan/60 bg-neon-cyan/15 text-neon-cyan"
-                      : "border-border/50 bg-background/50 text-muted-foreground hover:border-neon-cyan/35"
-                  )}
+                  className={cn("arena-chip", clan === c.value && "arena-chip-active-cyan")}
                 >
                   <div className="font-display text-[11px] font-bold">{c.label}</div>
                   <div className="text-[9px] opacity-80">{c.hint}</div>
@@ -115,7 +112,7 @@ export function CreateAiArenaAgentModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-display tracking-wider text-muted-foreground">Archetype</Label>
+            <Label className="arena-label">Archetype</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {AI_ARENA_ARCHETYPE_OPTIONS.map((a) => (
                 <button
@@ -123,10 +120,8 @@ export function CreateAiArenaAgentModal({
                   type="button"
                   onClick={() => setArchetype(a)}
                   className={cn(
-                    "rounded-lg border px-2 py-2 font-display text-[10px] font-semibold tracking-wide transition sm:text-[11px]",
-                    archetype === a
-                      ? "border-neon-purple/60 bg-neon-purple/15 text-neon-purple"
-                      : "border-border/50 bg-background/50 text-muted-foreground hover:border-neon-purple/35"
+                    "arena-chip font-display text-[10px] font-semibold tracking-wide sm:text-[11px]",
+                    archetype === a && "arena-chip-active-purple"
                   )}
                 >
                   {a}
@@ -136,7 +131,7 @@ export function CreateAiArenaAgentModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="arena-agent-name" className="text-xs">
+            <Label htmlFor="arena-agent-name" className="arena-label">
               Name
             </Label>
             <input
@@ -144,14 +139,14 @@ export function CreateAiArenaAgentModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={48}
-              className="h-10 w-full rounded-lg border border-border/50 bg-background/80 px-3 text-sm outline-none ring-neon-cyan/25 focus:ring-2"
+              className="arena-input"
               placeholder="NeuralReaper-7"
               autoComplete="off"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="arena-agent-backstory" className="text-xs">
+            <Label htmlFor="arena-agent-backstory" className="arena-label">
               Backstory
             </Label>
             <Textarea
@@ -160,7 +155,7 @@ export function CreateAiArenaAgentModal({
               onChange={(e) => setBackstory(e.target.value)}
               rows={4}
               maxLength={2000}
-              className="resize-y text-sm"
+              className="arena-input min-h-[7rem] resize-y py-3"
               placeholder="Born from corrupted validator nodes…"
             />
           </div>
@@ -171,7 +166,7 @@ export function CreateAiArenaAgentModal({
             Cancel
           </Button>
           <Button type="button" onClick={() => void handleSubmit()} disabled={submitting}>
-            {submitting ? "Creating…" : "Create agent"}
+            {submitting ? "Creating…" : "Create AI Agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

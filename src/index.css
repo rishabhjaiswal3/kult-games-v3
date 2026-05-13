@@ -15,17 +15,14 @@
     --popover: 220 45% 10%;
     --popover-foreground: 210 20% 93%;
 
-    --primary: 195 100% 50%;
-    --primary-foreground: 220 50% 6%;
-
-    --secondary: 195 60% 70%;
-    --secondary-foreground: 220 50% 6%;
-
-    --muted: 220 30% 14%;
-    --muted-foreground: 210 15% 50%;
-
-    --accent: 195 100% 50%;
-    --accent-foreground: 220 50% 6%;
+    --primary: 278 88% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 268 28% 22%;
+    --secondary-foreground: 210 20% 93%;
+    --muted: 268 24% 16%;
+    --muted-foreground: 210 15% 55%;
+    --accent: 198 92% 68%;
+    --accent-foreground: 268 35% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -43,14 +40,25 @@
     --neural: 220 40% 14%;
     --glass: 220 45% 10%;
     --surface-elevated: 220 40% 12%;
+    --surface-1: 268 28% 14%;
+    --surface-2: 268 32% 18%;
     --gold: 40 85% 58%;
     --smoke: 220 15% 30%;
-    --neon-cyan: 195 100% 60%;
-    --neon-green: 150 100% 50%;
+    --neon-cyan: 198 92% 68%;
+    --neon-green: 152 78% 56%;
     --neon-magenta: 310 100% 60%;
-    --neon-purple: 270 80% 65%;
-    --cyan-glow: 195 100% 65%;
+    --neon-pink: 340 85% 62%;
+    --neon-purple: 278 88% 62%;
+    --cyan-glow: 198 92% 68%;
     --cyan-lightning: 190 100% 70%;
+
+    /* Reimagined-inspired gradients (reference: ai-arena-reimagined) */
+    --gradient-hero: linear-gradient(135deg, hsl(210 20% 96%), hsl(198 92% 68%) 40%, hsl(278 88% 62%));
+    --gradient-primary: linear-gradient(135deg, hsl(278 88% 58%), hsl(340 85% 58%));
+    --gradient-card: linear-gradient(180deg, hsl(268 32% 18% / 0.72), hsl(268 28% 12% / 0.88));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(278 88% 62% / 0.32), transparent 70%);
+    --shadow-neon: 0 0 24px hsl(278 88% 62% / 0.45);
+    --shadow-cyan: 0 0 18px hsl(198 92% 68% / 0.4);
   }
 }
 
@@ -61,11 +69,12 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased text-base font-medium;
-    background-image: 
-      radial-gradient(ellipse at 20% 50%, hsl(195 100% 50% / 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(270 80% 65% / 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, hsl(195 100% 50% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 70%, hsl(270 80% 65% / 0.03) 0%, transparent 40%);
+    background-image:
+      radial-gradient(ellipse at 20% 0%, hsl(278 88% 62% / 0.14), transparent 50%),
+      radial-gradient(ellipse at 80% 10%, hsl(198 92% 68% / 0.1), transparent 55%),
+      radial-gradient(ellipse at 50% 80%, hsl(278 88% 62% / 0.06), transparent 50%),
+      linear-gradient(180deg, hsl(268 35% 8%), hsl(268 32% 6%));
+    background-attachment: fixed;
   }
 
   button {
@@ -75,11 +84,11 @@
 
 @layer components {
   .glass-panel {
-    @apply border border-border/50;
-    background: hsl(220 45% 10% / 0.96);
+    @apply border border-border/50 backdrop-blur-md;
+    background: var(--gradient-card);
     box-shadow:
-      0 0 25px hsl(195 100% 50% / 0.1),
-      0 0 50px hsl(270 80% 65% / 0.04),
+      var(--shadow-neon),
+      0 20px 60px -24px hsl(0 0% 0% / 0.55),
       inset 0 1px 0 hsl(210 20% 93% / 0.06);
   }
 
@@ -143,7 +152,65 @@
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(195 100% 65%), hsl(270 80% 70%), hsl(195 80% 80%));
+    background-image: var(--gradient-hero);
+  }
+
+  .text-gradient-hero {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-hero);
+  }
+
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .shadow-neon {
+    box-shadow: var(--shadow-neon);
+  }
+
+  .shadow-cyan-glow {
+    box-shadow: var(--shadow-cyan);
+  }
+
+  .neon-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(278 88% 62% / 0.55), hsl(198 92% 68% / 0.55), transparent);
+  }
+
+  /* Arena forms — shared field styling */
+  .arena-label {
+    @apply block text-[10px] font-display font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .arena-input,
+  .arena-select {
+    @apply mt-2 h-11 w-full rounded-xl border border-white/10 bg-surface-elevated/90 px-3.5 text-sm text-foreground shadow-inner transition;
+    @apply placeholder:text-muted-foreground/55 focus:border-neon-purple/45 focus:outline-none focus:ring-2 focus:ring-neon-purple/25;
+  }
+
+  .arena-select {
+    @apply appearance-none bg-[length:1rem] bg-[right_0.75rem_center] bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%23a78bfa' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  .arena-panel-inner {
+    @apply rounded-xl border border-neon-purple/15 bg-gradient-to-b from-surface-elevated/80 to-background/50 p-4 sm:p-5;
+  }
+
+  .arena-chip {
+    @apply rounded-xl border border-white/10 bg-background/40 px-2.5 py-2.5 text-center text-muted-foreground transition hover:border-neon-purple/35 hover:bg-surface-elevated/60;
+  }
+
+  .arena-chip-active-cyan {
+    @apply border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan shadow-cyan-glow;
+  }
+
+  .arena-chip-active-purple {
+    @apply border-neon-purple/50 bg-neon-purple/10 text-neon-purple shadow-neon;
+  }
+
+  .arena-stat-card {
+    @apply min-w-0 overflow-hidden;
   }
 
   .gradient-text-cyan {

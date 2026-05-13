@@ -8,7 +8,7 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import kultLogo from "@/assets/kult-logo.png";
 import LoginModal from "@/components/LoginModal";
-import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import {
@@ -177,7 +177,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [agentModalOpen, setAgentModalOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [agentWalletReady, setAgentWalletReady] = useState(false);
   const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
@@ -190,6 +189,7 @@ const Navbar = () => {
   const [withdrawDestination, setWithdrawDestination] = useState("");
   const [fundAgentId, setFundAgentId] = useState<string | null>(null);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
+  const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
   const queryClient = useQueryClient();
 
   const fundAgentsPickerQ = useQuery({
@@ -240,13 +240,27 @@ const Navbar = () => {
     [syncAgentWalletBalance]
   );
 
+  const handleAgentCreatedFromModal = useCallback(
+    async (agent: AiArenaAgent) => {
+      applyAgent(agent);
+      const walletOk = await syncAgentWalletBalanceWithRetry(agent.id);
+      if (!walletOk) {
+        toast.message("Wallet provisioning", {
+          description:
+            "Your agent was created. The custodial wallet may take a moment — refresh or open Fund when ready.",
+        });
+      }
+    },
+    [applyAgent, syncAgentWalletBalanceWithRetry]
+  );
+
   const handleCreateAgentClick = useCallback(() => {
-    if (!walletAddress) {
-      toast.error("Connect a wallet first");
-      return;
-    }
-    setAgentModalOpen(true);
-  }, [walletAddress]);
+    openCreateAgent();
+  }, [openCreateAgent]);
+
+  useEffect(() => {
+    return subscribeAgentCreated((agent) => void handleAgentCreatedFromModal(agent));
+  }, [subscribeAgentCreated, handleAgentCreatedFromModal]);
 
   useEffect(() => {
     if (!isAuthenticated || !walletAddress) return;
@@ -272,21 +286,6 @@ const Navbar = () => {
       cancelled = true;
     };
   }, [isAuthenticated, walletAddress, applyAgent, syncAgentWalletBalance]);
-
-  const handleAgentCreatedFromModal = useCallback(
-    async (agent: AiArenaAgent) => {
-      applyAgent(agent);
-      const walletOk = await syncAgentWalletBalanceWithRetry(agent.id);
-      toast.success("AI Arena agent created");
-      if (!walletOk) {
-        toast.message("Wallet not ready yet", {
-          description:
-            "Custodial wallet may still be provisioning. Use Create AI again in a moment, or refresh the page.",
-        });
-      }
-    },
-    [applyAgent, syncAgentWalletBalanceWithRetry]
-  );
 
   /** POST /v1/wallets/deposits — credit the selected agent custodial wallet. */
   const fundWallet = async (amount: number) => {
@@ -652,12 +651,6 @@ const Navbar = () => {
       </div>
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-      <CreateAiArenaAgentModal
-        open={agentModalOpen}
-        onOpenChange={setAgentModalOpen}
-        defaultName={player?.name?.trim() || (walletAddress ? `Agent ${walletAddress.slice(0, 8)}` : "")}
-        onCreated={(agent) => void handleAgentCreatedFromModal(agent)}
-      />
       {walletModalOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWalletModalOpen(false)} aria-label="Close wallet modal" />
@@ -701,7 +694,7 @@ const Navbar = () => {
               ) : fundAgentsPickerQ.isError ? (
                 <p className="text-xs text-muted-foreground">Could not load agents. Sign in to AI Arena first.</p>
               ) : !(fundAgentsPickerQ.data?.agents?.length) ? (
-                <p className="text-xs text-muted-foreground">No agents yet. Create one from the header or AI Arena page.</p>
+                <p className="text-xs text-muted-foreground">No agents yet. Use Create AI Agent in the header or on AI Arena.</p>
               ) : (
                 <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-white/10 bg-background/40 p-2 [scrollbar-width:thin]">
                   {(fundAgentsPickerQ.data?.agents ?? []).map((a) => (

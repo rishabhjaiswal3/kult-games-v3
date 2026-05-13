@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useCallback, useEffect, useRef } from "react";
 import gsap from "gsap";
@@ -133,6 +134,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+      <CreateAgentProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -161,6 +163,7 @@ const App = () => {
           {loaded && <KultAIFloating />}
         </BrowserRouter>
       </TooltipProvider>
+      </CreateAgentProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
