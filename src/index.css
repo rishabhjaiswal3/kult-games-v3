@@ -559,6 +559,18 @@
   to   { left: 130%; }
 }
 
+@keyframes ecosystem-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ecosystem-marquee {
+  animation: ecosystem-marquee 42s linear infinite;
+}
+.mask-fade-x {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
 /* Hide scrollbar on mobile */
 @media (max-width: 767px) {
   html,

@@ -22,6 +22,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
+import { HubSidebar } from "@/components/hub/HubSidebar";
+import { HomeHubHero } from "@/components/hub/HomeHubHero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,12 +277,10 @@ const ProfilePage = () => {
             >
               <UserCircle className="h-10 w-10 text-neon-cyan" />
             </div>
-            <h1 className="font-display text-2xl font-black uppercase tracking-tight text-foreground sm:text-3xl">
-              Your command center
-            </h1>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Sign in with your wallet to see stats, your AI Arena agent, and customize your display name.
-            </p>
+            <HomeHubHero
+              subtitle="Sign in with your wallet to see stats, your AI Arena agent, and customize your display name."
+              className="text-center [&_h1]:text-2xl [&_p]:mx-auto"
+            />
             <Button
               asChild
               className="mt-8 h-12 rounded-xl bg-gradient-to-r from-[hsl(195_100%_45%)] to-[hsl(278_85%_50%)] px-8 font-display text-xs font-bold tracking-[0.2em] text-white shadow-[0_0_28px_hsl(195_100%_50%/_0.35)] hover:opacity-95"
@@ -322,7 +322,9 @@ const ProfilePage = () => {
 
 
       <section className="relative pt-24 pb-20 md:pb-28">
-        <div className="relative mx-auto max-w-6xl px-4 md:px-8">
+        <div className="relative mx-auto flex max-w-7xl gap-8 px-4 md:px-8">
+          <HubSidebar />
+          <div className="min-w-0 flex-1">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -331,6 +333,8 @@ const ProfilePage = () => {
             <ArrowLeft className="h-3.5 w-3.5" />
             BACK
           </button>
+
+          <HomeHubHero />
 
           {/* Hero */}
           <div
@@ -762,6 +766,7 @@ const ProfilePage = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </section>
 

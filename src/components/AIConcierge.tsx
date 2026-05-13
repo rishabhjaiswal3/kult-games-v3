@@ -84,7 +84,7 @@ const AIConcierge = () => {
               <span className="text-[hsl(278_100%_82%)]" style={{ textShadow: "0 0 30px hsl(278 100% 82% / 0.5), 0 0 60px hsl(270 82% 58% / 0.25)" }}>AI</span>
             </h2>
             <p className="text-[hsl(278_100%_82%/0.5)] max-w-lg mx-auto text-sm">
-              Your AI-native game concierge. Discover, compare, and decide — powered by 0G Compute.
+              Your game-night co-pilot — find the right match, compare titles, and jump in fast.
             </p>
           </div>
 

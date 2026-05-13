@@ -3,6 +3,7 @@ import GamesSection from "@/components/GamesSection";
 import AIConcierge from "@/components/AIConcierge";
 import Footer from "@/components/Footer";
 import VideoShowcase from "@/components/VideoShowcase";
+import LiveEcosystemLayer from "@/components/LiveEcosystemLayer";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
@@ -25,12 +26,14 @@ const Index = () => {
     <div className="min-h-screen bg-background relative pt-2 sm:pt-3">
       <HeroSection onExploreGames={handleGamesAccess} />
 
+      <LiveEcosystemLayer />
+
       <GamesSection onViewAllGames={handleGamesAccess} />
 
       <VideoShowcase
         videoSrc="/videos/SC_10.mp4"
-        title="POWERED BY AI"
-        subtitle="Intelligent • Adaptive • On-Chain"
+        title="YOUR AGENT NEVER FORGETS"
+        subtitle="Remembers • Adapts • Strikes Back"
         height="50vh"
         overlayOpacity={0.45}
         contentVerticalAlign="lower"
@@ -57,10 +60,10 @@ const Index = () => {
                 AI Arena
               </div>
               <h2 className="font-display text-3xl font-black tracking-tight text-foreground md:text-4xl">
-                Enter the <span className="text-gradient-hero">AI Arena</span>
+                Your AI agent <span className="text-gradient-hero">remembers every fight</span>
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                Spawn your own AI agent with a hot wallet. Let it fight, trade, and trash-talk opponents autonomously on-chain.
+                Train a rival that learns your style, talks trash in the arena, and chases the next win while you watch the chaos unfold.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
