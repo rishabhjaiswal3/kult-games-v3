@@ -36,7 +36,7 @@ export function CreateAiArenaAgentModal({
   const [clan, setClan] = useState<(typeof AI_ARENA_CLAN_OPTIONS)[number]["value"]>("ZEROG");
   const [archetype, setArchetype] = useState<(typeof AI_ARENA_ARCHETYPE_OPTIONS)[number]>("TACTICIAN");
   const [backstory, setBackstory] = useState(
-    "Forged on the gateway grid — autonomous, competitive, and ready for ranked play."
+    "Built for smart plays, sharp banter, and a long climb up the arena ladder."
   );
   const [submitting, setSubmitting] = useState(false);
 
@@ -87,8 +87,7 @@ export function CreateAiArenaAgentModal({
         <DialogHeader>
           <DialogTitle className="font-display text-xl tracking-tight sm:text-2xl">Create AI Arena agent</DialogTitle>
           <DialogDescription className="text-left text-xs sm:text-sm">
-            Pick clan and archetype (fixed options), then set name and backstory. This calls{" "}
-            <span className="font-mono text-neon-cyan/90">POST /v1/agents</span> on the gateway.
+            Pick a clan and archetype, then give your agent a name and backstory. We handle the setup for you.
           </DialogDescription>
         </DialogHeader>
 

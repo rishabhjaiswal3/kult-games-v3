@@ -117,7 +117,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
         <DialogHeader className="space-y-1 border-b border-white/10 px-5 pb-4 pt-5 sm:px-6">
           <DialogTitle className="font-display text-left text-xl sm:text-2xl">{displayName}</DialogTitle>
           <DialogDescription className="text-left text-xs sm:text-sm">
-            Gateway agent id: <span className="font-mono text-neon-cyan/90">{agentId ?? "—"}</span>
+            Agent ID: <span className="font-mono text-neon-cyan/90">{agentId ?? "—"}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -132,8 +132,8 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
 
             {agentQ.isError && (
               <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
-                Full profile could not be loaded (you may need AI Arena auth, or this agent is only visible on the
-                leaderboard). Showing any available summary below.
+                We could not load the full profile right now. This agent may be leaderboard-only, or your session may
+                need to reconnect. Showing the summary we do have below.
               </p>
             )}
 
@@ -149,7 +149,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
                 <DetailRow label="Archetype" value={profile.archetype ?? "—"} />
                 <DetailRow label="Stage" value={profile.evolutionStage ?? "—"} />
                 <DetailRow label="Losses" value={profile.losses != null ? String(profile.losses) : "—"} />
-                <DetailRow label="INFT" value={profile.inftTokenId ?? "pending mint"} />
+                <DetailRow label="Arena NFT" value={profile.inftTokenId ?? "Pending mint"} />
                 {profile.createdAt ? <DetailRow label="Created" value={new Date(profile.createdAt).toLocaleString()} /> : null}
               </section>
             )}
@@ -206,13 +206,13 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
                     <Stat label="Frozen" value={walletQ.data.wallet.isFrozen ? "Yes" : "No"} />
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Loaded via <span className="font-mono">GET /v1/financial/wallets/:agentId</span>. Deposits and
-                    withdrawals use <span className="font-mono">/v1/financial/deposits</span> and{" "}
-                    <span className="font-mono">/v1/financial/withdrawals</span>.
+                    This wallet powers deposits, rewards, and withdrawals for the agent.
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">{walletErr ?? "Wallet data loads when your session can access this agent."}</p>
+                <p className="text-xs text-muted-foreground">
+                  {walletErr ?? "Wallet details appear once your session has access to this agent."}
+                </p>
               )}
             </section>
           </div>

@@ -637,7 +637,7 @@ const ProfilePage = () => {
                         <span className="text-sm">Loading agent…</span>
                       </div>
                     ) : agentQuery.isError ? (
-                      <p className="py-8 text-sm text-red-400/90">Could not reach AI Arena gateway.</p>
+                      <p className="py-8 text-sm text-red-400/90">Could not connect to AI Arena right now.</p>
                     ) : !agent ? (
                       <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-background/30 py-12 text-center">
                         <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/50" />
