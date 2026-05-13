@@ -183,7 +183,11 @@ const Navbar = () => {
   const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isFunding, setIsFunding] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [walletModalTab, setWalletModalTab] = useState<"fund" | "withdraw">("fund");
   const [fundAmountInput, setFundAmountInput] = useState("");
+  const [withdrawAmountInput, setWithdrawAmountInput] = useState("");
+  const [withdrawDestination, setWithdrawDestination] = useState("");
   const [fundAgentId, setFundAgentId] = useState<string | null>(null);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
   const queryClient = useQueryClient();
@@ -284,7 +288,7 @@ const Navbar = () => {
     [applyAgent, syncAgentWalletBalanceWithRetry]
   );
 
-  /** POST /v1/financial/deposits — demo funding for the selected agent custodial wallet. */
+  /** POST /v1/wallets/deposits — credit the selected agent custodial wallet. */
   const fundWallet = async (amount: number) => {
     const targetAgentId = fundAgentId ?? agentId ?? getStoredAiAgentInfo()?.id ?? null;
     if (!targetAgentId) {
@@ -329,9 +333,66 @@ const Navbar = () => {
     await fundWallet(n);
   };
 
+  /** POST /v1/wallets/withdrawals — withdraw ARENA from the selected agent wallet. */
+  const withdrawWallet = async (amount: number, destination: string) => {
+    const targetAgentId = fundAgentId ?? agentId ?? getStoredAiAgentInfo()?.id ?? null;
+    if (!targetAgentId) {
+      toast.error("Select an AI agent to withdraw from, or create one first.");
+      return;
+    }
+    const dest = destination.trim();
+    if (!dest) {
+      toast.error("Enter a Solana destination address.");
+      return;
+    }
+    setIsWithdrawing(true);
+    try {
+      const res = await aiArenaGatewayApi.requestWithdrawal({
+        agentId: targetAgentId,
+        amount,
+        destination: dest,
+      });
+      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
+      const bal = Number(walletRes.wallet.balanceArena ?? 0);
+      if (targetAgentId === agentId) {
+        setAgentWalletBalanceG(bal);
+        setAgentWalletReady(true);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
+      const withdrawalId = res?.result?.withdrawalId;
+      toast.success(
+        withdrawalId
+          ? `Withdrawal queued (${withdrawalId.slice(0, 8)}…)`
+          : "Withdrawal queued"
+      );
+      setWithdrawAmountInput("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Withdrawal request failed");
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
+  const submitWithdrawFromInput = async () => {
+    const raw = withdrawAmountInput.trim();
+    const n = Number.parseInt(raw, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      toast.error("Enter a valid whole amount (minimum 1)");
+      return;
+    }
+    if (!fundAgentId && !agentId && !getStoredAiAgentInfo()?.id) {
+      toast.error("Select an AI agent to withdraw from.");
+      return;
+    }
+    await withdrawWallet(n, withdrawDestination);
+  };
+
   useEffect(() => {
     if (!walletModalOpen) return;
     setFundAmountInput("");
+    setWithdrawAmountInput("");
+    setWithdrawDestination("");
+    setWalletModalTab("fund");
     const agents = fundAgentsPickerQ.data?.agents ?? [];
     const preferred = agentId ?? getStoredAiAgentInfo()?.id ?? null;
     setFundAgentId((cur) => {
@@ -606,10 +667,32 @@ const Navbar = () => {
             className="relative w-full max-w-md max-h-[min(90vh,640px)] overflow-y-auto rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
           >
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">Agent Wallet</p>
-            <h3 className="font-display text-xl font-black text-foreground mb-1">Fund agent wallet</h3>
+            <h3 className="font-display text-xl font-black text-foreground mb-1">Manage agent wallet</h3>
             <p className="text-xs text-muted-foreground mb-3">
-              Choose which agent should receive demo funding.
+              Fund or withdraw $ARENA for the selected agent.
             </p>
+
+            <motion.div
+              className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-background/40 p-1"
+              layout
+            >
+              {(["fund", "withdraw"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setWalletModalTab(tab)}
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                    walletModalTab === tab
+                      ? tab === "fund"
+                        ? "bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/35"
+                        : "bg-orange-500/15 text-orange-300 border border-orange-500/35"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab === "fund" ? "Fund" : "Withdraw"}
+                </button>
+              ))}
+            </motion.div>
 
             <div className="mb-3">
               <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Your agents</p>
