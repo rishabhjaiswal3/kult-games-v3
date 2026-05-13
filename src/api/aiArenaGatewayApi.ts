@@ -18,6 +18,7 @@ import type {
   AiArenaAgentWalletResponse,
   AiArenaListAgentsResponse,
   AiArenaMatchmakingStatusResponse,
+  MyArenaAgentsResult,
   AiArenaProfileResponse,
 } from "@/types/aiArenaGateway";
 
@@ -146,6 +147,24 @@ export const aiArenaGatewayApi = {
   getUsersMe: async (): Promise<AiArenaProfileResponse> => {
     const { data } = await http().get<unknown>("/v1/users/me");
     return parseAiArenaProfilePayload(data);
+  },
+
+  /**
+   * Agents owned by the authenticated user — GET /v1/agents/mine only.
+   * On failure returns an empty list with `mineOk: false` (no fallback).
+   */
+  getMyAgentsFromMine: async (page = 1, pageSize = 20): Promise<MyArenaAgentsResult> => {
+    try {
+      const { data } = await http().get<AiArenaListAgentsResponse>("/v1/agents/mine", {
+        params: { page, pageSize },
+      });
+      return {
+        agents: data.agents ?? [],
+        mineOk: true,
+      };
+    } catch {
+      return { agents: [], mineOk: false };
+    }
   },
 
   /**

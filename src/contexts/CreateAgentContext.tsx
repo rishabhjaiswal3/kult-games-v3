@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
+import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
 import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { toast } from "sonner";
@@ -48,7 +49,7 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
   const invalidateAfterCreate = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: AI_ARENA_LEADERBOARD_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardMyAgents"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "myAgents"] });
+    await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"] });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundAgentPicker"] });

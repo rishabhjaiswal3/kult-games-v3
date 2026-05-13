@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { Button } from "@/components/ui/button";
 import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
-import { getAiArenaAccessToken } from "@/lib/aiArenaAuth";
 
 const ALL_PAGE_CHUNK = 12;
 const MY_PAGE_SIZE = 8;
@@ -81,8 +80,8 @@ function MotionPaginationBar({
 
 export function ArenaAgentsBoard() {
   const { openCreateAgent } = useArenaPage();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const [aiArenaReady, setAiArenaReady] = useState(() => !!getAiArenaAccessToken());
+  const { isAuthenticated } = useAuth();
+  const { isAiArenaReady } = useAiArenaGatewaySession();
   const [visibleCount, setVisibleCount] = useState(ALL_PAGE_CHUNK);
   const [myPage, setMyPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -90,27 +89,6 @@ export function ArenaAgentsBoard() {
   const [detailSeed, setDetailSeed] = useState<AiArenaLeaderboardEntry | AiArenaAgent | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const sentinelRef = useRef<HTMLLIElement>(null);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setAiArenaReady(false);
-      return;
-    }
-    if (getAiArenaAccessToken()) {
-      setAiArenaReady(true);
-      return;
-    }
-    const deadline = Date.now() + 12_000;
-    const id = window.setInterval(() => {
-      if (getAiArenaAccessToken()) {
-        setAiArenaReady(true);
-        window.clearInterval(id);
-      } else if (Date.now() > deadline) {
-        window.clearInterval(id);
-      }
-    }, 400);
-    return () => window.clearInterval(id);
-  }, [isAuthenticated, authLoading]);
 
   const leaderboardQ = useAiArenaGlobalLeaderboard();
   const entries = leaderboardQ.data?.entries ?? [];
@@ -136,14 +114,7 @@ export function ArenaAgentsBoard() {
     return () => observer.disconnect();
   }, [hasMoreLocal, loadMore, visibleEntries.length]);
 
-  const myQ = useQuery({
-    queryKey: ["aiArenaGateway", "arenaBoardMyAgents", myPage, MY_PAGE_SIZE],
-    queryFn: () => aiArenaGatewayApi.getMyAgents(myPage, MY_PAGE_SIZE),
-    enabled: isAuthenticated && aiArenaReady,
-    staleTime: 20_000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
+  const myQ = useMyArenaAgents(myPage, MY_PAGE_SIZE);
 
   const myAgents = myQ.data?.agents ?? [];
   const myTotal = myQ.data?.total;
@@ -234,7 +205,7 @@ export function ArenaAgentsBoard() {
           </p>
         ) : !isAuthenticated ? (
           <p className="text-sm text-muted-foreground">Log in with your wallet to see your agents.</p>
-        ) : !aiArenaReady ? (
+        ) : !isAiArenaReady ? (
           <p className="text-sm text-muted-foreground">Connecting to AI Arena…</p>
         ) : (
           <ul className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
