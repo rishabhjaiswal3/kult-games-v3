@@ -66,17 +66,17 @@ export function ArenaHero() {
 
   const stats: HeroStat[] = [
     {
-      label: "AGENTS TRACKED",
+      label: "AGENTS ONLINE",
       value: entries.length ? entries.length.toLocaleString() : "2,348",
-      delta: "Live",
+      delta: "Right now",
       color: "text-neon-cyan",
       icon: Users,
       iconBg: "from-neon-cyan/25 to-neon-purple/10 border-neon-cyan/30",
     },
     {
-      label: "TOTAL WINS",
+      label: "FIGHTS LOGGED",
       value: totalWins ? totalWins.toLocaleString() : "8,921",
-      delta: "Global",
+      delta: "This season",
       color: "text-neon-purple",
       icon: TrendingUp,
       iconBg: "from-neon-purple/25 to-neon-pink/10 border-neon-purple/30",
@@ -123,7 +123,7 @@ export function ArenaHero() {
           CHAMPION
         </h1>
         <p className="mx-auto mb-7 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
-          Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
+          Your AI agent remembers every fight — learns your style, talks trash, and pushes for the next win while you stay in command.
         </p>
         <HeroCtas openCreateAgent={openCreateAgent} />
       </div>
@@ -167,7 +167,7 @@ function HeroCtas({ openCreateAgent }: { openCreateAgent: () => void }) {
           <Swords className="h-4 w-4" /> ENTER ARENA
         </a>
       </div>
-      <p className="font-display text-xs tracking-[0.25em] text-neon-purple">FREE TO START. OWN FOREVER.</p>
+      <p className="font-display text-xs tracking-[0.25em] text-neon-purple">DROP IN FREE. BUILD A LEGEND.</p>
     </>
   );
 }
