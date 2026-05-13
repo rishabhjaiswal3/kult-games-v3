@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
-import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 import { Button } from "@/components/ui/button";
+import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
+import { getAiArenaAccessToken } from "@/lib/aiArenaAuth";
 
-const GLOBAL_FETCH_LIMIT = 400;
-const ALL_PAGE_SIZE = 12;
+const ALL_PAGE_CHUNK = 12;
 const MY_PAGE_SIZE = 8;
 
 function PaginationBar({
@@ -23,25 +24,40 @@ function PaginationBar({
   totalPages?: number;
   onPage: (p: number) => void;
   disabled?: boolean;
-  /** When `totalPages` is unknown, use this to disable the next control. */
   disableNext?: boolean;
 }) {
   const nextOff =
     disabled ||
     (typeof totalPages === "number" ? page >= totalPages : Boolean(disableNext));
+  const prevOff = disabled || page <= 1;
+
+  if (prevOff && nextOff) return null;
+
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3">
-      <span className="text-[10px] font-mono text-muted-foreground">
-        Page {page}
-        {typeof totalPages === "number" ? ` / ${totalPages}` : ""}
-      </span>
+    <MotionPaginationBar page={page} onPage={onPage} prevOff={prevOff} nextOff={nextOff} />
+  );
+}
+
+function MotionPaginationBar({
+  page,
+  onPage,
+  prevOff,
+  nextOff,
+}: {
+  page: number;
+  onPage: (p: number) => void;
+  prevOff: boolean;
+  nextOff: boolean;
+}) {
+  return (
+    <div className="mt-3 flex justify-end border-t border-white/10 pt-3">
       <div className="flex gap-1">
         <Button
           type="button"
           variant="outline"
           size="sm"
           className="h-8 w-8 p-0"
-          disabled={disabled || page <= 1}
+          disabled={prevOff}
           onClick={() => onPage(page - 1)}
           aria-label="Previous page"
         >
@@ -64,38 +80,69 @@ function PaginationBar({
 }
 
 export function ArenaAgentsBoard() {
-  const queryClient = useQueryClient();
-  const { player, walletAddress } = useAuth();
-  const [allPage, setAllPage] = useState(1);
+  const { openCreateAgent } = useArenaPage();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [aiArenaReady, setAiArenaReady] = useState(() => !!getAiArenaAccessToken());
+  const [visibleCount, setVisibleCount] = useState(ALL_PAGE_CHUNK);
   const [myPage, setMyPage] = useState(1);
-  const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailAgentId, setDetailAgentId] = useState<string | null>(null);
   const [detailSeed, setDetailSeed] = useState<AiArenaLeaderboardEntry | AiArenaAgent | null>(null);
-
-  const leaderboardQ = useQuery({
-    queryKey: ["aiArenaGateway", "arenaBoardLeaderboard", GLOBAL_FETCH_LIMIT],
-    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(GLOBAL_FETCH_LIMIT),
-    staleTime: 45_000,
-  });
-
-  const entries = leaderboardQ.data?.entries ?? [];
-  const totalPagesAll = Math.max(1, Math.ceil(entries.length / ALL_PAGE_SIZE));
-  const allPageClamped = Math.min(allPage, totalPagesAll);
+  const listRef = useRef<HTMLUListElement>(null);
+  const sentinelRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
-    setAllPage((p) => Math.min(p, totalPagesAll));
-  }, [totalPagesAll]);
-  const allSlice = useMemo(() => {
-    const start = (allPageClamped - 1) * ALL_PAGE_SIZE;
-    return entries.slice(start, start + ALL_PAGE_SIZE);
-  }, [entries, allPageClamped]);
+    if (!isAuthenticated) {
+      setAiArenaReady(false);
+      return;
+    }
+    if (getAiArenaAccessToken()) {
+      setAiArenaReady(true);
+      return;
+    }
+    const deadline = Date.now() + 12_000;
+    const id = window.setInterval(() => {
+      if (getAiArenaAccessToken()) {
+        setAiArenaReady(true);
+        window.clearInterval(id);
+      } else if (Date.now() > deadline) {
+        window.clearInterval(id);
+      }
+    }, 400);
+    return () => window.clearInterval(id);
+  }, [isAuthenticated, authLoading]);
+
+  const leaderboardQ = useAiArenaGlobalLeaderboard();
+  const entries = leaderboardQ.data?.entries ?? [];
+  const visibleEntries = entries.slice(0, visibleCount);
+  const hasMoreLocal = visibleCount < entries.length;
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((n) => Math.min(n + ALL_PAGE_CHUNK, entries.length));
+  }, [entries.length]);
+
+  useEffect(() => {
+    const root = listRef.current;
+    const target = sentinelRef.current;
+    if (!root || !target || !hasMoreLocal) return;
+
+    const observer = new IntersectionObserver(
+      (observed) => {
+        if (observed[0]?.isIntersecting) loadMore();
+      },
+      { root, rootMargin: "120px", threshold: 0 }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMoreLocal, loadMore, visibleEntries.length]);
 
   const myQ = useQuery({
     queryKey: ["aiArenaGateway", "arenaBoardMyAgents", myPage, MY_PAGE_SIZE],
     queryFn: () => aiArenaGatewayApi.getMyAgents(myPage, MY_PAGE_SIZE),
+    enabled: isAuthenticated && aiArenaReady,
     staleTime: 20_000,
     retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const myAgents = myQ.data?.agents ?? [];
@@ -117,15 +164,8 @@ export function ArenaAgentsBoard() {
     setDetailOpen(true);
   };
 
-  const invalidateAfterCreate = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardMyAgents"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "myAgents"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardLeaderboard"] });
-  };
-
   return (
-    <section className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+    <section id="arena-agents-board" className="grid scroll-mt-24 grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
       <div className="glass-panel flex flex-col rounded-2xl p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
@@ -134,7 +174,7 @@ export function ArenaAgentsBoard() {
               Browse the live leaderboard and open any agent to see how they stack up.
             </p>
           </div>
-          {leaderboardQ.isFetching ? (
+          {leaderboardQ.isFetching && !leaderboardQ.isLoading ? (
             <span className="text-[10px] text-muted-foreground">Refreshing…</span>
           ) : null}
         </div>
@@ -142,8 +182,11 @@ export function ArenaAgentsBoard() {
         {leaderboardQ.isError ? (
           <p className="text-sm text-muted-foreground">Could not load global leaderboard.</p>
         ) : (
-          <ul className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
-            {allSlice.map((e) => (
+          <ul
+            ref={listRef}
+            className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]"
+          >
+            {visibleEntries.map((e) => (
               <li key={e.agentId}>
                 <button
                   type="button"
@@ -151,30 +194,25 @@ export function ArenaAgentsBoard() {
                   className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-background/35 px-3 py-2.5 text-left text-sm transition hover:border-neon-cyan/30 hover:bg-background/50"
                 >
                   <span className="w-8 shrink-0 text-center font-mono text-xs text-neon-cyan">#{e.rank}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-semibold">{e.name}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {e.clan} · ELO {e.eloRating} · {e.wins} wins
-                    </div>
-                  </div>
+                  {motionLeaderboardRow({ entry: e })}
                 </button>
               </li>
             ))}
-            {!allSlice.length && !leaderboardQ.isLoading ? (
+            {leaderboardQ.isLoading ? (
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading leaderboard…
+              </li>
+            ) : null}
+            {!leaderboardQ.isLoading && !visibleEntries.length ? (
               <li className="text-sm text-muted-foreground">No leaderboard entries.</li>
             ) : null}
-            {leaderboardQ.isLoading ? <li className="text-sm text-muted-foreground">Loading…</li> : null}
+            {hasMoreLocal ? (
+              <li ref={sentinelRef} className="flex justify-center py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Loading more agents" />
+              </li>
+            ) : null}
           </ul>
         )}
-
-        <PaginationBar
-          page={allPageClamped}
-          totalPages={totalPagesAll}
-          disabled={leaderboardQ.isLoading}
-          onPage={(p) => {
-            setAllPage(Math.max(1, Math.min(p, totalPagesAll)));
-          }}
-        />
       </div>
 
       <div className="glass-panel flex flex-col rounded-2xl p-4 sm:p-5">
@@ -185,16 +223,19 @@ export function ArenaAgentsBoard() {
               Your personal roster, synced to your arena account. Tap a row for wallet and profile details.
             </p>
           </div>
-          <Button type="button" size="sm" className="h-8 gap-1 text-xs" onClick={() => setCreateOpen(true)}>
+          <Button type="button" size="sm" className="h-8 gap-1 text-xs" onClick={openCreateAgent}>
             <Plus className="h-3.5 w-3.5" />
             Create
           </Button>
         </div>
-
         {myQ.isError ? (
           <p className="text-sm text-muted-foreground">
             Sign in and finish your AI Arena setup to load your agents.
           </p>
+        ) : !isAuthenticated ? (
+          <p className="text-sm text-muted-foreground">Log in with your wallet to see your agents.</p>
+        ) : !aiArenaReady ? (
+          <p className="text-sm text-muted-foreground">Connecting to AI Arena…</p>
         ) : (
           <ul className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
             {myAgents.map((a) => (
@@ -207,9 +248,7 @@ export function ArenaAgentsBoard() {
                   <div className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-neon-cyan/40 to-neon-purple/40" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{a.name}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {a.archetype} · {a.clan} · ELO {a.eloRating}
-                    </div>
+                    {motionMyAgentMeta({ agent: a })}
                   </div>
                 </button>
               </li>
@@ -230,13 +269,6 @@ export function ArenaAgentsBoard() {
         />
       </div>
 
-      <CreateAiArenaAgentModal
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        defaultName={player?.name?.trim() || (walletAddress ? `Agent ${walletAddress.slice(0, 8)}` : "")}
-        onCreated={() => void invalidateAfterCreate()}
-      />
-
       <AiArenaAgentDetailModal
         open={detailOpen}
         onOpenChange={(o) => {
@@ -250,5 +282,23 @@ export function ArenaAgentsBoard() {
         seed={detailSeed}
       />
     </section>
+  );
+}
+
+function motionLeaderboardRow({ entry: e }: { entry: AiArenaLeaderboardEntry }) {
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="truncate font-semibold">{e.name}</div>
+      <div className="text-[10px] text-muted-foreground">
+        {e.clan} · ELO {e.eloRating} · {e.wins} wins
+      </div>
+    </div>
+  );
+}
+function motionMyAgentMeta({ agent: a }: { agent: AiArenaAgent }) {
+  return (
+    <div className="text-[10px] text-muted-foreground">
+      {a.archetype} · {a.clan} · ELO {a.eloRating}
+    </div>
   );
 }

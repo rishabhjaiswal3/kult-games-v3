@@ -110,13 +110,56 @@ export interface AiArenaBattleResponse {
 
 export interface AiArenaMatchmakingStatusBody {
   inQueue: boolean;
-  position: number | null;
-  estimatedWaitMs: number | null;
-  matchId: string | null;
+  /** Present when inQueue is true (from matchmaking-service). */
+  waitTimeMs?: number;
+  gameId?: string;
+  mode?: string;
+  joinedAt?: number;
+  /** Legacy / docs shape — not returned by current matchmaking-service. */
+  position?: number | null;
+  estimatedWaitMs?: number | null;
+  matchId?: string | null;
 }
 
 export interface AiArenaMatchmakingStatusResponse {
   status: AiArenaMatchmakingStatusBody;
+}
+
+export interface AiArenaJoinMatchmakingRequest {
+  agentId: string;
+  gameId: string;
+  mode: string;
+  eloRange?: number;
+  /** Required for WAGER when gateway x402 verification is enabled. */
+  paymentTxHash?: string;
+}
+
+export interface AiArenaJoinMatchmakingResponse {
+  queued: boolean;
+  agentId: string;
+}
+
+export interface AiArenaLeaveMatchmakingResponse {
+  left: boolean;
+}
+
+export interface AiArenaDirectChallengeRequest {
+  agentId: string;
+  opponentId: string;
+  gameId: string;
+  mode: string;
+}
+
+export interface AiArenaDirectChallengeMatch {
+  battleId: string;
+  agentIds: string[];
+  gameId: string;
+  mode: string;
+  status: string;
+}
+
+export interface AiArenaDirectChallengeResponse {
+  match: AiArenaDirectChallengeMatch;
 }
 
 export interface AiArenaFinancialDepositRequest {

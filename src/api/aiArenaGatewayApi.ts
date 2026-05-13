@@ -9,6 +9,11 @@ import type {
   AiArenaCreateAgentResponse,
   AiArenaFinancialDepositRequest,
   AiArenaFinancialWithdrawalRequest,
+  AiArenaJoinMatchmakingRequest,
+  AiArenaJoinMatchmakingResponse,
+  AiArenaLeaveMatchmakingResponse,
+  AiArenaDirectChallengeRequest,
+  AiArenaDirectChallengeResponse,
   AiArenaGlobalLeaderboardResponse,
   AiArenaAgentWalletResponse,
   AiArenaListAgentsResponse,
@@ -144,11 +149,26 @@ export const aiArenaGatewayApi = {
   },
 
   /**
-   * Agents owned by the current user: uses profile (GET /v1/auth/me) for `userId` and optional
-   * embedded `agents[]`; otherwise scans public GET /v1/agents and filters by `userId` (OSS agent
-   * list is not scoped to the caller).
+   * Agents owned by the authenticated user.
+   * Prefers `GET /v1/agents/mine` (JWT-scoped). Falls back to profile embed or public list scan.
    */
   getMyAgents: async (page = 1, pageSize = 20): Promise<AiArenaListAgentsResponse> => {
+    try {
+      const { data } = await http().get<AiArenaListAgentsResponse>("/v1/agents/mine", {
+        params: { page, pageSize },
+      });
+      return {
+        agents: data.agents ?? [],
+        page: data.page ?? page,
+        pageSize: data.pageSize ?? pageSize,
+        total: data.total ?? data.agents?.length ?? 0,
+      };
+    } catch (err) {
+      if (!axios.isAxiosError(err) || err.response?.status !== 404) {
+        throw err;
+      }
+    }
+
     const profile = await aiArenaGatewayApi.getAuthMe();
     let full: AiArenaAgent[];
 
@@ -220,11 +240,39 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** GET /v1/matchmaking/status/:agentId (requires AI Arena JWT) */
+  /** GET /v1/matchmaking/status/:agentId */
   getMatchmakingStatus: async (agentId: string): Promise<AiArenaMatchmakingStatusResponse> => {
     const { data } = await http().get<AiArenaMatchmakingStatusResponse>(
       `/v1/matchmaking/status/${encodeURIComponent(agentId)}`
     );
+    return data;
+  },
+
+  /** POST /v1/matchmaking — join queue (x402 headers when mode is WAGER). */
+  joinMatchmakingQueue: async (body: AiArenaJoinMatchmakingRequest): Promise<AiArenaJoinMatchmakingResponse> => {
+    const headers: Record<string, string> = {};
+    if (body.paymentTxHash) {
+      headers["X-Payment-Tx-Hash"] = body.paymentTxHash;
+      headers["X-Payment-Agent-Id"] = body.agentId;
+    }
+    const { paymentTxHash: _omit, ...payload } = body;
+    const { data } = await http().post<AiArenaJoinMatchmakingResponse>("/v1/matchmaking", payload, { headers });
+    return data;
+  },
+
+  /** DELETE /v1/matchmaking/:agentId — leave queue. */
+  leaveMatchmakingQueue: async (agentId: string): Promise<AiArenaLeaveMatchmakingResponse> => {
+    const { data } = await http().delete<AiArenaLeaveMatchmakingResponse>(
+      `/v1/matchmaking/${encodeURIComponent(agentId)}`
+    );
+    return data;
+  },
+
+  /** POST /v1/matchmaking/match/direct — skip queue and create a battle. */
+  directMatchmakingChallenge: async (
+    body: AiArenaDirectChallengeRequest
+  ): Promise<AiArenaDirectChallengeResponse> => {
+    const { data } = await http().post<AiArenaDirectChallengeResponse>("/v1/matchmaking/match/direct", body);
     return data;
   },
 };

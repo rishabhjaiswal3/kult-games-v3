@@ -3,8 +3,7 @@ import b2 from "@/assets/battle-2.jpg";
 import b3 from "@/assets/battle-3.jpg";
 import b4 from "@/assets/battle-4.jpg";
 import { Eye } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const BATTLE_IMAGES = [b1, b2, b3, b4];
@@ -17,12 +16,7 @@ const FALLBACK_BATTLES = [
 ];
 
 export function ArenaLiveBattles() {
-  const leaderboardQ = useQuery({
-    queryKey: ["aiArenaGateway", "leaderboardLiveBattles"],
-    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(8),
-    staleTime: 30_000,
-    refetchInterval: 45_000,
-  });
+  const leaderboardQ = useAiArenaGlobalLeaderboard();
 
   const apiBattles = (() => {
     const entries = leaderboardQ.data?.entries ?? [];

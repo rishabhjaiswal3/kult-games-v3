@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
 const FALLBACK_ACTIVITY = [
   { name: "ShadowByte", action: "defeated", target: "AetherX", time: "1m ago", color: "text-neon-cyan" },
@@ -8,15 +7,10 @@ const FALLBACK_ACTIVITY = [
 ];
 
 export function LiveArenaActivity() {
-  const leaderboardQ = useQuery({
-    queryKey: ["aiArenaGateway", "leaderboardActivity"],
-    queryFn: () => aiArenaGatewayApi.getGlobalLeaderboard(5),
-    staleTime: 30_000,
-    refetchInterval: 45_000,
-  });
+  const leaderboardQ = useAiArenaGlobalLeaderboard();
 
   const activity = leaderboardQ.data?.entries.length
-    ? leaderboardQ.data.entries.map((entry, idx) => ({
+    ? leaderboardQ.data.entries.slice(0, 5).map((entry, idx) => ({
         name: entry.name,
         action: "holds",
         target: `#${entry.rank} (${entry.eloRating} ELO)`,
