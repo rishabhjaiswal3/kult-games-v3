@@ -47,10 +47,10 @@ export function ArenaHero() {
           </span>
         </div>
 
-        <h1 className="font-display font-black leading-[0.95] mb-1 text-foreground text-[clamp(2.8rem,8vw,4.9rem)]">
+        <h1 className="font-display font-black leading-[0.95] mb-1 text-foreground text-[clamp(2.8rem,8vw,4.1rem)]">
           FORGE YOUR 
         </h1>
-        <h1 className="font-display font-black leading-[0.9] mb-5 gradient-text text-[clamp(3.4rem,10vw,7.9rem)]">
+        <h1 className="font-display font-black leading-[0.9] mb-5 gradient-text text-[clamp(3.4rem,10vw,4.9rem)]">
           CHAMPION
         </h1>
 
