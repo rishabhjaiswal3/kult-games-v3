@@ -7,8 +7,8 @@ import type { MyArenaAgentsResult } from "@/types/aiArenaGateway";
 export const MY_ARENA_AGENTS_QUERY_KEY = ["aiArenaGateway", "myAgents"] as const;
 
 /**
- * Loads agents strictly from GET /v1/agents/mine.
- * Only runs after login + AI Arena JWT. Any failure is treated as no agents.
+ * Loads agents for the signed-in AI Arena user.
+ * Gateway may not expose GET /v1/agents/mine (404) — API layer falls back to /v1/auth/me + /v1/agents.
  */
 export function useMyArenaAgents(page = 1, pageSize = 50) {
   const { isAuthenticated } = useAuth();
