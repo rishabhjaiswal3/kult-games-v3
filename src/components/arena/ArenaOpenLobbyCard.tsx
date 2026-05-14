@@ -8,6 +8,7 @@ type ArenaOpenLobbyCardProps = {
   agent: AiArenaAgent;
   status: AiArenaMatchmakingStatusBody;
   onJoin: () => void;
+  onViewDetails?: () => void;
   joining?: boolean;
   disabled?: boolean;
   isOwn?: boolean;
@@ -18,6 +19,7 @@ export function ArenaOpenLobbyCard({
   agent,
   status,
   onJoin,
+  onViewDetails,
   joining,
   disabled,
   isOwn,
@@ -56,7 +58,15 @@ export function ArenaOpenLobbyCard({
           <span className="font-mono text-[10px] text-neon-cyan/80">{status.gameId ?? "standard"}</span>
           <span className="text-xs text-muted-foreground">Waiting {waitLabel}</span>
           {isOwn ? (
-            <span className="text-[10px] font-mono uppercase tracking-wider text-neon-purple/90">Your lobby</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onViewDetails}
+              className="mt-1 rounded-xl border border-neon-purple/35 bg-neon-purple/10 text-neon-purple hover:bg-neon-purple/20"
+            >
+              Match details
+            </Button>
           ) : (
             <Button
               type="button"

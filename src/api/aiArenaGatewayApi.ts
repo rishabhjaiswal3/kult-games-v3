@@ -1,6 +1,8 @@
 import axios from "axios";
 import { getApiClient } from "@/lib/apiClientFactory";
 import { StorageKeys } from "@/constants/storageKeys";
+import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
+import { mergeAgentIntoMineResult } from "@/lib/mergeMyArenaAgents";
 import type {
   AiArenaAgent,
   AiArenaAgentEvolutionResponse,
@@ -203,12 +205,16 @@ export const aiArenaGatewayApi = {
   getMyAgentsFromMine: async (page = 1, pageSize = 20): Promise<MyArenaAgentsResult> => {
     try {
       const data = await aiArenaGatewayApi.getMyAgents(page, pageSize);
-      return {
+      return mergeAgentIntoMineResult({
         agents: data.agents ?? [],
         mineOk: true,
         total: data.total,
-      };
+      });
     } catch {
+      const stored = getStoredAiAgentInfo();
+      if (stored) {
+        return mergeAgentIntoMineResult({ agents: [], mineOk: false }, stored);
+      }
       return { agents: [], mineOk: false };
     }
   },

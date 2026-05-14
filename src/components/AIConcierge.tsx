@@ -144,119 +144,149 @@ const AIConcierge = () => {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-5 lg:grid-cols-2 lg:gap-6">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-5 lg:grid-cols-2 lg:gap-6">
           {/* Left — chat console */}
-          <div className="glass-panel flex flex-col rounded-2xl border border-[hsl(278_100%_70%/0.18)] p-4 sm:p-5">
-            <AnimatePresence>
-              {chatOpen && messages.length > 0 && (
-                <div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 overflow-hidden"
-                >
-                  <div className="overflow-hidden rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 backdrop-blur-sm">
-                    <div className="flex items-center justify-between border-b border-[hsl(278_100%_70%/0.15)] bg-[hsl(278_100%_70%/0.06)] px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="live-dot h-2 w-2 rounded-full bg-[hsl(278_100%_82%)]" />
-                        <KultAIIcon size={12} />
-                        <span className="font-mono text-[10px] tracking-wider text-[hsl(278_100%_82%/0.7)]">
-                          KULT AI — ONLINE
-                        </span>
+          <div className="glass-panel flex min-h-[520px] flex-col rounded-2xl border border-[hsl(278_100%_70%/0.18)] p-4 shadow-[0_0_40px_hsl(278_100%_70%/0.06)] sm:p-5">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <AnimatePresence>
+                {chatOpen && messages.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-4 flex min-h-0 flex-1 flex-col overflow-hidden"
+                  >
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 backdrop-blur-sm">
+                      <div className="flex items-center justify-between border-b border-[hsl(278_100%_70%/0.15)] bg-[hsl(278_100%_70%/0.06)] px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="live-dot h-2 w-2 rounded-full bg-[hsl(278_100%_82%)]" />
+                          <KultAIIcon size={12} />
+                          <span className="font-mono text-[10px] tracking-wider text-[hsl(278_100%_82%/0.7)]">
+                            KULT AI — ONLINE
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setChatOpen(false);
+                            clearMessages(true);
+                          }}
+                          className="text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setChatOpen(false);
-                          clearMessages(true);
-                        }}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="scrollbar-none max-h-[min(42vh,360px)] overflow-y-auto">
-                      <div className="space-y-3 p-4">
-                        {messages.map((msg, i) => (
-                          <div
-                            key={msg.id}
-                            initial={{ opacity: 0, x: msg.role === "user" ? 10 : -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                          >
-                            {msg.role === "ai" && (
-                              <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-[hsl(278_100%_75%/0.18)] bg-[hsl(278_100%_70%/0.14)]">
+                      <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
+                        <div className="space-y-3 p-4">
+                          {messages.map((msg, i) => (
+                            <motion.div
+                              key={msg.id}
+                              initial={{ opacity: 0, x: msg.role === "user" ? 10 : -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.04 }}
+                              className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                            >
+                              {msg.role === "ai" && (
+                                <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-[hsl(278_100%_75%/0.18)] bg-[hsl(278_100%_70%/0.14)]">
+                                  <KultAIIcon size={14} />
+                                </div>
+                              )}
+                              <div
+                                className={cn(
+                                  "max-w-[82%] break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                                  msg.role === "user"
+                                    ? "btn-eye rounded-br-md whitespace-pre-wrap text-white"
+                                    : "rounded-bl-md border border-[hsl(278_100%_70%/0.2)] bg-muted/30 text-foreground"
+                                )}
+                              >
+                                {msg.role === "ai" ? <KultAIMessageContent text={msg.text} /> : msg.text}
+                              </div>
+                              {msg.role === "user" && (
+                                <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-border/30 bg-muted/50">
+                                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
+                          {isWaitingForFirstChunk && (
+                            <div className="flex gap-2.5">
+                              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-[hsl(278_100%_75%/0.18)] bg-[hsl(278_100%_70%/0.14)]">
                                 <KultAIIcon size={14} />
                               </div>
-                            )}
-                            <div
-                              className={cn(
-                                "max-w-[82%] break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                                msg.role === "user"
-                                  ? "btn-eye rounded-br-md whitespace-pre-wrap text-white"
-                                  : "rounded-bl-md border border-[hsl(278_100%_70%/0.2)] bg-muted/30 text-foreground"
-                              )}
-                            >
-                              {msg.role === "ai" ? <KultAIMessageContent text={msg.text} /> : msg.text}
-                            </div>
-                            {msg.role === "user" && (
-                              <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-border/30 bg-muted/50">
-                                <User className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[hsl(278_100%_70%/0.2)] bg-muted/30 px-3.5 py-2.5">
+                                {[0, 0.2, 0.4].map((delay) => (
+                                  <motion.div
+                                    key={delay}
+                                    className="h-1.5 w-1.5 rounded-full bg-[hsl(278_100%_82%/0.7)]"
+                                    animate={{ scale: [1, 1.3, 1] }}
+                                    transition={{ duration: 0.6, repeat: Infinity, delay }}
+                                  />
+                                ))}
                               </div>
-                            )}
-                          </div>
-                        ))}
-                        {isWaitingForFirstChunk && (
-                          <div className="flex gap-2.5">
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-[hsl(278_100%_75%/0.18)] bg-[hsl(278_100%_70%/0.14)]">
-                              <KultAIIcon size={14} />
                             </div>
-                            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[hsl(278_100%_70%/0.2)] bg-muted/30 px-3.5 py-2.5">
-                              {[0, 0.2, 0.4].map((delay) => (
-                                <div
-                                  key={delay}
-                                  className="h-1.5 w-1.5 rounded-full bg-[hsl(278_100%_82%/0.7)]"
-                                  animate={{ scale: [1, 1.3, 1] }}
-                                  transition={{ duration: 0.6, repeat: Infinity, delay }}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        <div ref={messagesEndRef} />
+                          )}
+                          <div ref={messagesEndRef} />
+                        </div>
                       </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {messages.length === 0 && (
+                <div className="flex min-h-0 flex-1 flex-col gap-4">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {prompts.map((prompt) => (
+                      <button
+                        type="button"
+                        key={prompt.text}
+                        onClick={() => handlePromptClick(prompt.text)}
+                        className="group flex h-full min-h-[72px] items-start gap-2.5 rounded-xl border border-white/[0.08] bg-background/30 px-3 py-3 text-left transition-all hover:border-[hsl(278_100%_70%/0.35)] hover:bg-[hsl(278_100%_70%/0.08)]"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[hsl(278_100%_70%/0.12)] group-hover:bg-[hsl(278_100%_70%/0.18)]">
+                          <prompt.icon className="h-3.5 w-3.5 text-[hsl(278_100%_82%)]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold leading-snug text-foreground group-hover:text-[hsl(278_100%_82%)]">
+                            {prompt.text}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-muted-foreground">
+                            {prompt.description}
+                          </p>
+                        </div>
+                        <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-[hsl(278_100%_82%)]" />
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-white/[0.08] bg-background/25 p-3 sm:p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Brain className="h-3.5 w-3.5 text-neon-purple" />
+                      <span className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">
+                        SAMPLE SESSION
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center space-y-2">
+                      {previewThread.map((line, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "rounded-lg px-3 py-2.5 text-[11px] leading-relaxed sm:text-xs",
+                            line.role === "user"
+                              ? "ml-2 border border-neon-purple/20 bg-neon-purple/10 text-foreground sm:ml-6"
+                              : "mr-2 border border-white/[0.08] bg-background/50 text-muted-foreground sm:mr-4"
+                          )}
+                        >
+                          {line.role === "ai" ? <KultAIMessageContent text={line.text} /> : line.text}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               )}
-            </AnimatePresence>
+            </div>
 
-            {messages.length === 0 && (
-              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {prompts.map((prompt) => (
-                  <button
-                    type="button"
-                    key={prompt.text}
-                    onClick={() => handlePromptClick(prompt.text)}
-                    className="group flex items-center gap-2 rounded-lg border border-white/[0.08] bg-background/30 px-2.5 py-2 text-left transition-all hover:border-[hsl(278_100%_70%/0.3)] hover:bg-[hsl(278_100%_70%/0.06)]"
-                  >
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[hsl(278_100%_70%/0.1)] group-hover:bg-[hsl(278_100%_70%/0.16)]">
-                      <prompt.icon className="h-3 w-3 text-[hsl(278_100%_82%)]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[11px] font-semibold leading-tight text-foreground group-hover:text-[hsl(278_100%_82%)]">
-                        {prompt.text}
-                      </p>
-                      <p className="truncate text-[9px] leading-tight text-muted-foreground">{prompt.description}</p>
-                    </div>
-                    <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-[hsl(278_100%_82%)]" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="mt-5 shrink-0">
+            <form onSubmit={handleSubmit} className="mt-4 shrink-0">
               <div className="relative overflow-hidden rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 p-1.5 backdrop-blur-sm">
                 <div className="relative flex items-center gap-2 rounded-lg bg-muted/20 px-3 py-2.5 sm:px-4 sm:py-3">
                   <KultAIIcon size={18} />
@@ -282,31 +312,31 @@ const AIConcierge = () => {
               {error ? <p className="mt-2 px-1 text-xs text-destructive/80">{error}</p> : null}
             </form>
 
-            <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            <div className="mt-3 grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
               {capabilities.map((cap) => (
-                <div
-                  key={cap.label}
-                  className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-background/35 px-2 py-1.5"
-                >
-                  <cap.icon className="h-3 w-3 shrink-0 text-neon-cyan" />
-                  <p className="min-w-0 truncate font-display text-[8px] font-bold leading-tight tracking-wide text-foreground sm:text-[9px]">
-                    {cap.label}
-                  </p>
+                <div key={cap.label} className="rounded-lg border border-white/[0.06] bg-background/35 px-2 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <cap.icon className="h-3 w-3 shrink-0 text-neon-cyan" />
+                    <p className="min-w-0 truncate font-display text-[8px] font-bold leading-tight tracking-wide text-foreground sm:text-[9px]">
+                      {cap.label}
+                    </p>
+                  </div>
+                  <p className="mt-0.5 truncate text-[8px] text-muted-foreground">{cap.detail}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Right — live console */}
-          <aside className="flex flex-col">
-            <div className="glass-panel flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[hsl(278_100%_70%/0.18)]">
-              <div className="relative flex min-h-[200px] flex-1 flex-col bg-[hsl(268_32%_8%/0.6)] sm:min-h-[220px]">
+          <aside className="flex min-h-[520px] flex-col">
+            <div className="glass-panel flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[hsl(278_100%_70%/0.18)] shadow-[0_0_40px_hsl(278_100%_70%/0.06)]">
+              <div className="relative flex min-h-[220px] flex-1 flex-col bg-[hsl(268_32%_8%/0.6)]">
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={activePanel.src}
                     src={activePanel.src}
                     alt={activePanel.label}
-                    className="absolute inset-0 m-auto max-h-full max-w-full object-contain p-4 sm:p-6"
+                    className="absolute inset-0 m-auto max-h-full max-w-full object-contain p-5 sm:p-8"
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
@@ -318,7 +348,7 @@ const AIConcierge = () => {
                   <span className="live-dot h-1.5 w-1.5 rounded-full bg-neon-green" />
                   <span className="font-mono text-[9px] tracking-widest text-neon-green">LIVE CONSOLE</span>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_8%)] to-transparent px-4 pb-4 pt-10">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_8%)] to-transparent px-4 pb-4 pt-12">
                   <p className="font-display text-[10px] tracking-[0.28em] text-neon-cyan uppercase">
                     {activePanel.label}
                   </p>
@@ -350,60 +380,42 @@ const AIConcierge = () => {
               </div>
 
               <div className="flex shrink-0 flex-col border-t border-white/[0.06] p-3 sm:p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Brain className="h-3.5 w-3.5 text-neon-purple" />
-                  <span className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">
-                    SAMPLE SESSION
-                  </span>
+                <p className="mb-3 font-display text-[10px] tracking-[0.22em] text-muted-foreground">QUICK JUMP</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/games")}
+                    className="btn-eye-outline flex items-center justify-center gap-2 rounded-xl px-3 py-3 font-display text-[10px] font-bold tracking-wider"
+                  >
+                    <Gamepad2 className="h-4 w-4 shrink-0 text-neon-cyan" />
+                    <span>GAMES</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/ai-arena")}
+                    className="btn-eye-outline flex items-center justify-center gap-2 rounded-xl px-3 py-3 font-display text-[10px] font-bold tracking-wider"
+                  >
+                    <Swords className="h-4 w-4 shrink-0 text-neon-purple" />
+                    <span>ARENA</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/leaderboard")}
+                    className="btn-eye-outline flex items-center justify-center gap-2 rounded-xl px-3 py-3 font-display text-[10px] font-bold tracking-wider"
+                  >
+                    <Trophy className="h-4 w-4 shrink-0 text-[hsl(40_85%_62%)]" />
+                    <span>RANKS</span>
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  {previewThread.map((line, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "rounded-lg px-3 py-2 text-[11px] leading-relaxed",
-                        line.role === "user"
-                          ? "ml-4 border border-neon-purple/20 bg-neon-purple/10 text-foreground sm:ml-8"
-                          : "mr-2 border border-white/[0.08] bg-background/50 text-muted-foreground sm:mr-6"
-                      )}
-                    >
-                      {line.role === "ai" ? <KultAIMessageContent text={line.text} /> : line.text}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex shrink-0 flex-wrap gap-1.5 border-t border-white/[0.06] p-2.5">
-                <button
-                  type="button"
-                  onClick={() => navigate("/games")}
-                  className="btn-eye-outline flex flex-1 items-center justify-center gap-1 px-2.5 py-2 font-display text-[9px] font-bold tracking-wider"
-                >
-                  <Gamepad2 className="h-3.5 w-3.5" /> GAMES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/ai-arena")}
-                  className="btn-eye-outline flex flex-1 items-center justify-center gap-1 px-2.5 py-2 font-display text-[9px] font-bold tracking-wider"
-                >
-                  <Swords className="h-3.5 w-3.5" /> ARENA
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/leaderboard")}
-                  className="btn-eye-outline flex flex-1 items-center justify-center gap-1 px-2.5 py-2 font-display text-[9px] font-bold tracking-wider"
-                >
-                  <Trophy className="h-3.5 w-3.5" /> RANKS
-                </button>
               </div>
             </div>
-
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[9px] text-muted-foreground">
-              <Clock className="h-3 w-3 shrink-0" />
-              <span>Powered by 0G inference — live game & arena context</span>
-            </p>
           </aside>
         </div>
+
+        <p className="mx-auto mt-4 flex max-w-6xl items-center justify-center gap-1.5 text-center text-[10px] text-muted-foreground">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span>Powered by 0G inference — live game &amp; arena context</span>
+        </p>
       </div>
     </section>
   );

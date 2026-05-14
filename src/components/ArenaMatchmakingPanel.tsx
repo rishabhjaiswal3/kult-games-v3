@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Loader2, Swords, UserMinus } from "lucide-react";
+import { Swords } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -14,7 +14,7 @@ import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { ArenaMatchFaceoff } from "@/components/arena/ArenaMatchFaceoff";
 import { ArenaOpenLobbyCard } from "@/components/arena/ArenaOpenLobbyCard";
-import { ArenaOpenLobbyGridSkeleton, ArenaQueueAgentGridSkeleton } from "@/components/skeleton";
+import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
@@ -59,6 +59,7 @@ const ArenaMatchmakingPanel = () => {
   const queryClient = useQueryClient();
   const { isAiArenaReady } = useAiArenaGatewaySession();
   const [startModalOpen, setStartModalOpen] = useState(false);
+  const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [joiningOpponentId, setJoiningOpponentId] = useState<string | null>(null);
   const { setActiveBattleId } = useArenaLiveMatch();
@@ -68,10 +69,32 @@ const ArenaMatchmakingPanel = () => {
   const agents = myAgentsQ.data?.agents ?? [];
 
   const invalidateMatchmaking = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "openLobbies"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"] });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"], type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "openLobbies"], type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"], type: "active" });
   }, [queryClient]);
+
+  const openStatusModal = useCallback(
+    (agentId: string) => {
+      const agent = agents.find((a) => a.id === agentId) ?? null;
+      if (agent) setStatusModalAgent(agent);
+    },
+    [agents]
+  );
+
+  const handleMatchFound = useCallback(
+    async (payload: { agent: AiArenaAgent; opponent: AiArenaAgent; battleId: string; mode: string }) => {
+      setActiveBattleId(payload.battleId);
+      setFaceoff({
+        left: payload.agent,
+        right: payload.opponent,
+        battleId: payload.battleId,
+        mode: payload.mode,
+        pending: false,
+      });
+    },
+    [setActiveBattleId]
+  );
 
   const openLobbiesQ = useQuery({
     queryKey: ["aiArenaGateway", "openLobbies"],
@@ -206,6 +229,8 @@ const ArenaMatchmakingPanel = () => {
     mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
     onSuccess: async () => {
       toast.success("Left matchmaking queue");
+      setStatusModalAgent(null);
+      setFaceoff(null);
       await invalidateMatchmaking();
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Could not leave queue")),
@@ -342,6 +367,7 @@ const ArenaMatchmakingPanel = () => {
                     isOwn
                     waitLabel={formatWaitTime(status.waitTimeMs ?? status.estimatedWaitMs)}
                     onJoin={() => undefined}
+                    onViewDetails={() => openStatusModal(agent.id)}
                     disabled
                   />
                 ) : null
@@ -363,73 +389,6 @@ const ArenaMatchmakingPanel = () => {
           )}
         </div>
 
-        <div className="relative z-10 arena-panel-inner">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan/80">Your agents</p>
-
-          {myAgentsQ.isLoading ? (
-            <ArenaQueueAgentGridSkeleton count={2} />
-          ) : myAgentsQ.isError ? (
-            <p className="mt-4 text-sm text-muted-foreground">Sign in to AI Arena to use matchmaking.</p>
-          ) : agents.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">Create an agent first — only your own agents can enter the queue.</p>
-          ) : queueQ.isLoading ? (
-            <ArenaQueueAgentGridSkeleton count={2} />
-          ) : (
-            <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-              {queueQ.data?.map(({ agent, status }) => (
-                <li
-                  key={agent.id}
-                  className={`rounded-xl border bg-background/45 p-4 transition sm:p-5 ${
-                    agent.id === selectedAgentId
-                      ? "border-neon-cyan/40 ring-1 ring-neon-cyan/20"
-                      : "border-white/[0.08] hover:border-neon-cyan/25"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="min-w-0 truncate text-sm font-semibold">{agent.name}</p>
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">ELO {agent.eloRating}</span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {agent.archetype} • {agent.clan}
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      {status?.inQueue ? (
-                        <>
-                          Listed in lobby • <span className="text-foreground">{status.mode ?? "RANKED"}</span>
-                          {" • "}
-                          waiting{" "}
-                          <span className="font-mono text-neon-cyan/90">
-                            {formatWaitTime(status.waitTimeMs ?? status.estimatedWaitMs)}
-                          </span>
-                        </>
-                      ) : (
-                        <>Not in queue</>
-                      )}
-                    </p>
-                    {status?.inQueue ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={leaveMut.isPending}
-                        onClick={() => leaveMut.mutate(agent.id)}
-                        className="rounded-lg border-white/15"
-                      >
-                        {leaveMut.isPending ? (
-                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <UserMinus className="mr-2 h-3.5 w-3.5" />
-                        )}
-                        Leave
-                      </Button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
 
       <ArenaStartMatchmakingModal
@@ -437,7 +396,21 @@ const ArenaMatchmakingPanel = () => {
         onOpenChange={setStartModalOpen}
         agents={agents}
         defaultAgentId={selectedAgentId}
-        onQueued={invalidateMatchmaking}
+        onQueued={async (agentId) => {
+          await invalidateMatchmaking();
+          openStatusModal(agentId);
+        }}
+      />
+
+      <ArenaMatchStatusModal
+        open={!!statusModalAgent}
+        onOpenChange={(open) => {
+          if (!open) setStatusModalAgent(null);
+        }}
+        agent={statusModalAgent}
+        leaving={leaveMut.isPending}
+        onLeave={(agentId) => leaveMut.mutate(agentId)}
+        onMatchFound={handleMatchFound}
       />
     </section>
   );

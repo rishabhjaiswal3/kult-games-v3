@@ -12,7 +12,7 @@ import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentMo
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { ARENA_AGENTS_LIST_QUERY_KEY } from "@/hooks/useArenaAgentsList";
-import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
+import { MY_ARENA_AGENTS_QUERY_KEY, upsertMyArenaAgentCache } from "@/hooks/useMyArenaAgents";
 import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
@@ -55,18 +55,19 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const invalidateAfterCreate = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: AI_ARENA_LEADERBOARD_QUERY_KEY });
-    await queryClient.invalidateQueries({ queryKey: ARENA_AGENTS_LIST_QUERY_KEY });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardMyAgents"] });
-    await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundAgentPicker"] });
+    await queryClient.refetchQueries({ queryKey: AI_ARENA_LEADERBOARD_QUERY_KEY, type: "active" });
+    await queryClient.refetchQueries({ queryKey: ARENA_AGENTS_LIST_QUERY_KEY, type: "active" });
+    await queryClient.refetchQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY, type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"], type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "openLobbies"], type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"], type: "active" });
+    await queryClient.refetchQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview"], type: "active" });
   }, [queryClient]);
 
   const handleCreated = useCallback(
     async (agent: AiArenaAgent) => {
       saveAiAgentInfo(agent);
+      upsertMyArenaAgentCache(queryClient, agent);
       await invalidateAfterCreate();
       await Promise.all(
         [...listenersRef.current].map(async (listener) => {
@@ -78,7 +79,7 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
         })
       );
     },
-    [invalidateAfterCreate]
+    [invalidateAfterCreate, queryClient]
   );
 
   const value = useMemo(
