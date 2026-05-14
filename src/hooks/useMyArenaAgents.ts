@@ -3,10 +3,18 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useAuth } from "@/contexts/AuthContext";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
+import { mergeAgentIntoMineResult } from "@/lib/mergeMyArenaAgents";
 import { StorageKeys } from "@/constants/storageKeys";
-import type { MyArenaAgentsResult } from "@/types/aiArenaGateway";
+import type { AiArenaAgent, MyArenaAgentsResult } from "@/types/aiArenaGateway";
+import type { QueryClient } from "@tanstack/react-query";
 
 export const MY_ARENA_AGENTS_QUERY_KEY = ["aiArenaGateway", "myAgents"] as const;
+
+export function upsertMyArenaAgentCache(queryClient: QueryClient, agent: AiArenaAgent) {
+  queryClient.setQueriesData<MyArenaAgentsResult>({ queryKey: MY_ARENA_AGENTS_QUERY_KEY }, (old) =>
+    mergeAgentIntoMineResult(old ?? { agents: [], mineOk: true }, agent)
+  );
+}
 
 function hasCachedAiArenaIdentity(): boolean {
   if (typeof localStorage === "undefined") return false;
@@ -28,7 +36,18 @@ export function useMyArenaAgents(page = 1, pageSize = 50) {
 
   return useQuery({
     queryKey: [...MY_ARENA_AGENTS_QUERY_KEY, page, pageSize],
-    queryFn: () => aiArenaGatewayApi.getMyAgentsFromMine(page, pageSize),
+    queryFn: async () => {
+      try {
+        const data = await aiArenaGatewayApi.getMyAgentsFromMine(page, pageSize);
+        return mergeAgentIntoMineResult(data);
+      } catch {
+        const stored = getStoredAiAgentInfo();
+        if (stored) {
+          return mergeAgentIntoMineResult({ agents: [], mineOk: false }, stored);
+        }
+        throw new Error("Could not load your AI Arena agents");
+      }
+    },
     enabled: canLoadMine,
     staleTime: 20_000,
     retry: 1,

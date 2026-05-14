@@ -167,12 +167,12 @@ export function ArenaAgentsBoard() {
         </div>
         {!isAuthenticated ? (
           <p className="text-sm text-muted-foreground">Log in with your wallet to see your agents.</p>
-        ) : myQ.isError || (!isAiArenaReady && !myQ.isLoading && !myAgents.length) ? (
+        ) : myQ.isError ? (
           <p className="text-sm text-muted-foreground">
-            {myQ.isError
-              ? "Could not load your agents. Try refreshing after AI Arena connects."
-              : "Connecting to AI Arena…"}
+            Could not load your agents. Try refreshing after AI Arena connects.
           </p>
+        ) : !isAiArenaReady && !myQ.isLoading && myAgents.length === 0 && !getStoredAiAgentInfo() ? (
+          <p className="text-sm text-muted-foreground">Connecting to AI Arena…</p>
         ) : (
           <ul className="max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
             {myAgents.map((a) => (
