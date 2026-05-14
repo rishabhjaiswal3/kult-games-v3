@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
+import { ARENA_AGENTS_LIST_QUERY_KEY } from "@/hooks/useArenaAgentsList";
 import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
 import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
@@ -55,6 +56,7 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
 
   const invalidateAfterCreate = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: AI_ARENA_LEADERBOARD_QUERY_KEY });
+    await queryClient.invalidateQueries({ queryKey: ARENA_AGENTS_LIST_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardMyAgents"] });
     await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
