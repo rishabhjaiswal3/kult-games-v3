@@ -151,67 +151,59 @@ const Leaderboard = () => {
   return (
     <div className="min-h-screen bg-transparent relative">
       <div className="fixed inset-0 pointer-events-none z-0">
-        <AutoPlayVideo src="/videos/SC_7.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-20" />
+        <AutoPlayVideo src="/videos/SC_7.mp4" loop className="absolute inset-0 h-full w-full object-cover opacity-15" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/85 to-background/92" />
       </div>
 
-      <section className="relative pt-24 pb-20 z-10 overflow-hidden">
-        {/* Ambient glows */}
-        <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/4 blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
+      <section className="relative z-10 overflow-hidden pt-24 pb-16">
+        <div
+          className="pointer-events-none fixed inset-0 z-0 opacity-[0.05]"
+          style={{
+            backgroundImage: `
+            linear-gradient(hsl(195 100% 50% / 0.45) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(195 100% 50% / 0.45) 1px, transparent 1px)
+          `,
+            backgroundSize: "60px 60px",
+          }}
+        />
 
-        <div className="w-full px-6 md:px-8 xl:px-12 relative z-10">
-          <div className="mb-12">
-            <div
-              className="relative flex flex-col lg:flex-row justify-between w-full rounded-[28px] border border-neon-cyan/15 bg-[linear-gradient(135deg,hsl(195_100%_12%/0.36),hsl(220_45%_10%/0.62),hsl(220_45%_10%/0.2))] overflow-hidden backdrop-blur-md shadow-[0_0_40px_hsl(195_100%_60%/0.1)]"
-            >
-              {/* Text content */}
-              <div className="relative z-10 order-first px-6 py-7 md:px-8 md:py-9">
-                <div className="flex items-center gap-2 mb-3">
-                  <motion.div
-                    className="w-2 h-2 rounded-full bg-neon-cyan flex-shrink-0"
-                    animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                  <span className="text-[10px] font-mono text-neon-cyan/60 tracking-[0.2em] uppercase">
-                    <Trophy className="w-3 h-3 inline mr-1" /> Rankings
-                  </span>
-                </div>
-                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight">
-                  LEADER<span className="gradient-text">BOARD</span>
-                </h1>
-                <p className="text-muted-foreground mt-3 text-lg md:text-xl leading-tight whitespace-nowrap">
-                  Climb the ranks. Prove your dominance. Earn eternal glory on-chain.
-                </p>
-
-                <div className="flex gap-2 mt-6">
-                  {timeFilters.map((tf) => (
-                    <button
-                      key={tf}
-                      onClick={() => setTimeFilter(tf)}
-                      className={`px-4 py-1.5 rounded-full font-display text-xs font-semibold tracking-wider transition-all duration-300 ${
-                        timeFilter === tf ? "btn-eye" : "glass-panel btn-eye-outline"
-                      }`}
-                    >
-                      {tf.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
+        <div className="relative z-10 mx-auto w-full max-w-[1600px] px-4 sm:px-6 md:px-8">
+          <div className="glass-panel relative mb-10 overflow-hidden rounded-2xl p-6 sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
+            <div className="pointer-events-none absolute inset-0 opacity-35" style={{ background: "var(--gradient-glow)" }} />
+            <div className="relative z-10 max-w-2xl">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="live-dot h-2 w-2 rounded-full bg-neon-cyan" />
+                <span className="font-display text-[10px] tracking-[0.28em] text-neon-cyan">GLOBAL RANKINGS</span>
               </div>
-
-              {/* Video — bottom on mobile/tablet, right on desktop */}
-              <div className="order-last w-full lg:w-[500px] flex-shrink-0 pointer-events-none flex items-center">
-                <div className="relative overflow-hidden w-full lg:rounded-l-[32px]">
-                  <AutoPlayVideo src="/videos/SC_7.mp4" loop className="w-full aspect-[16/9] object-cover opacity-70" />
-                  <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/18 to-background/58" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/40" />
-                </div>
+              <h1 className="font-display text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                LEADER<span className="text-gradient-hero">BOARD</span>
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Climb the ranks. Prove your dominance. Earn eternal glory on-chain.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {timeFilters.map((tf) => (
+                  <button
+                    key={tf}
+                    type="button"
+                    onClick={() => setTimeFilter(tf)}
+                    className={`rounded-full px-4 py-1.5 font-display text-xs font-semibold tracking-wider transition-all ${
+                      timeFilter === tf ? "btn-eye" : "btn-eye-outline"
+                    }`}
+                  >
+                    {tf.toUpperCase()}
+                  </button>
+                ))}
               </div>
+            </div>
+            <div className="relative z-10 mt-6 hidden h-36 w-full max-w-sm overflow-hidden rounded-xl border border-white/10 bg-black/30 lg:mt-0 lg:block lg:h-40 lg:w-72">
+              <AutoPlayVideo src="/videos/SC_7.mp4" loop className="h-full w-full object-cover opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-background/40" />
             </div>
           </div>
 
           {/* Top 3 podium */}
-          <div className="grid grid-cols-3 gap-3 md:gap-5 mb-12 w-full items-end">
+          <div className="grid grid-cols-3 gap-3 md:gap-5 mb-12 w-full items-stretch">
             {isLoading
               ? [0, 1, 2].map((i) => (
                   <div key={i} className={`rounded-2xl border border-border/30 bg-card/50 p-5 flex flex-col items-center gap-3 ${i === 1 ? "pb-8" : ""}`}>
@@ -267,7 +259,7 @@ const Leaderboard = () => {
               return (
                 <div
                   key={p.rank}
-                  className={`relative rounded-2xl border backdrop-blur-xl overflow-hidden ${theme.shadow}`}
+                  className={`relative flex h-full min-h-[220px] flex-col rounded-2xl border backdrop-blur-xl overflow-hidden ${theme.shadow} ${isFirst ? "lg:-translate-y-2" : ""}`}
                   style={{
                     background: theme.cardBg,
                     borderColor: theme.accentBorder,
@@ -283,18 +275,18 @@ const Leaderboard = () => {
                     style={{ background: `radial-gradient(ellipse at 50% 0%, ${theme.accentGlow}, transparent 65%)` }}
                   />
 
-                  <div className={`relative flex flex-col items-center text-center px-3 md:px-5 pt-5 md:pt-7 pb-4 md:pb-6 ${isFirst ? "pt-6 md:pt-9" : ""}`}>
+                  <div className={`relative flex flex-1 flex-col items-center justify-center text-center px-3 md:px-5 py-5 md:py-6`}>
                     {/* Avatar */}
                     <div className="relative mb-3 md:mb-4">
                       {isFirst && (
                         <>
-                          <motion.div
+                          <div
                             className="absolute inset-[-6px] rounded-full"
                             style={{ border: `1.5px solid ${theme.accentBorder}` }}
                             animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.1, 0.6] }}
                             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
                           />
-                          <motion.div
+                          <div
                             className="absolute inset-[-12px] rounded-full"
                             style={{ border: `1px solid ${theme.accentGlow}` }}
                             animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0, 0.3] }}
@@ -355,12 +347,12 @@ const Leaderboard = () => {
 
           {/* Full table */}
           <div
-            className="rounded-xl overflow-hidden border border-border/50 bg-card/70 backdrop-blur-md"
+            className="glass-panel overflow-hidden rounded-2xl border border-white/10"
           >
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/30 bg-muted/20">
+                  <tr className="border-b border-white/10 bg-background/30">
                     <th className="text-left p-4 text-[10px] font-mono text-muted-foreground tracking-wider">RANK</th>
                     <th className="text-left p-4 text-[10px] font-mono text-muted-foreground tracking-wider">PLAYER</th>
                     <th className="text-left p-4 text-[10px] font-mono text-muted-foreground tracking-wider hidden md:table-cell">TOP GAME</th>
@@ -395,7 +387,7 @@ const Leaderboard = () => {
                   {players.map((p, i) => (
                     <tr
                       key={p.rank}
-                      className="border-b border-border/10 hover:bg-neon-cyan/3 transition-colors group"
+                      className="border-b border-white/[0.06] transition-colors hover:bg-neon-cyan/5 group"
                     >
                       <td className="p-4">{getRankIcon(p.rank)}</td>
                       <td className="p-4">

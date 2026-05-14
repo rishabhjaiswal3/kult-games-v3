@@ -83,43 +83,34 @@ function ArchetypeCarouselCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group relative h-full min-h-[220px] w-full overflow-hidden rounded-xl border border-white/[0.12] text-left shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_hsl(270_80%_20%/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:min-h-[240px]",
+        "group relative h-full min-h-[220px] w-full overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_6%/0.9)] text-left transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_hsl(270_80%_20%/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:min-h-[240px]",
         card.border
       )}
     >
       <img
         src={card.image}
-        alt=""
-        aria-hidden
-        className="absolute inset-0 h-full w-full object-cover object-[center_15%]"
+        alt={`${card.codename} — ${card.archetype}`}
+        className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
         loading="lazy"
         decoding="async"
       />
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.9)] via-[hsl(268_32%_8%/0.4)] to-transparent to-50%" />
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t opacity-75",
-          card.glow
-        )}
-      />
-      <div className="pointer-events-none absolute inset-0 bg-[hsl(268_32%_8%/0.14)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.95)] via-[hsl(268_32%_8%/0.55)] to-transparent pt-16" />
 
       <div className="relative flex h-full min-h-[220px] flex-col justify-end p-3 sm:min-h-[240px] sm:p-3.5">
-        <div className="rounded-lg border border-white/[0.12] bg-[hsl(268_32%_6%/0.42)] px-3 py-2.5 backdrop-blur-sm">
+        <div className="rounded-lg border border-white/[0.12] bg-[hsl(268_32%_6%/0.55)] px-3 py-2 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-2">
             <span className={cn("font-display text-[10px] font-bold tracking-[0.2em]", card.accent)}>
               {card.archetype}
             </span>
             <span className="text-[10px] text-foreground/75">{card.codename}</span>
           </div>
-          <p className="mt-1.5 text-xs font-semibold leading-snug text-foreground">{card.tagline}</p>
-          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{card.role}</p>
-          <span className="mt-2.5 inline-flex font-display text-[9px] tracking-[0.18em] text-neon-cyan opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-            DEPLOY {card.codename} →
+          <span className="mt-2 inline-flex font-display text-[9px] tracking-[0.18em] text-neon-cyan opacity-80 transition-opacity group-hover:opacity-100">
+            DEPLOY {card.codename.toUpperCase()} →
           </span>
         </div>
       </div>
+
     </button>
   );
 }

@@ -26,7 +26,7 @@ export function ArenaAgentThumbnail({ agent, className, size = "sm" }: ArenaAgen
       <img
         src={src}
         alt={agent.name ? `${agent.name} portrait` : "Agent portrait"}
-        className="h-full w-full object-cover object-[center_12%]"
+        className="h-full w-full object-contain object-center p-0.5"
         loading="lazy"
         decoding="async"
       />

@@ -14,7 +14,7 @@ export function ArenaAgentShowcase() {
 
   return (
     <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-background/20 shadow-[0_24px_80px_hsl(270_80%_20%/0.18)]">
-      <motion.div
+      <div
         className="pointer-events-none absolute inset-0 opacity-50"
         style={{
           background:
@@ -22,7 +22,7 @@ export function ArenaAgentShowcase() {
         }}
       />
 
-      <motion.div
+      <div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
@@ -56,7 +56,7 @@ export function ArenaAgentShowcase() {
 
         <div className="relative border-t border-white/[0.06] bg-background/30 p-4 sm:p-6 md:p-8">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <motion.div
+            <div
               initial={{ opacity: 0, x: -8 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -66,7 +66,7 @@ export function ArenaAgentShowcase() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Hover to preview — click to start creation with that class locked in.
               </p>
-            </motion.div>
+            </div>
             {hovered ? (
               <motion.span
                 key={hovered}
@@ -93,7 +93,7 @@ export function ArenaAgentShowcase() {
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
@@ -127,50 +127,33 @@ function ArchetypeCard({
       onBlur={onLeave}
       onClick={onSelect}
       className={cn(
-        "group relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-background/40 text-left transition-[border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40",
+        "group relative flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[hsl(268_32%_6%/0.85)] text-left transition-[border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40",
         card.border,
         isHovered && "shadow-[0_20px_50px_hsl(270_80%_20%/0.35)]"
       )}
     >
-      <motion.div
-        className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b opacity-0 transition-opacity duration-300 group-hover:opacity-100",
-          card.glow
-        )}
-        animate={isHovered ? { opacity: 1 } : { opacity: 0 }}
-      />
-
-      <motion.div
-        className="relative mx-auto mt-4 h-[min(52vw,220px)] w-[min(70%,200px)] sm:h-[200px] sm:w-[180px]"
-        animate={isHovered ? { scale: 1.04 } : { scale: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      >
+      <div className="relative flex flex-1 items-center justify-center p-2 pt-3 sm:p-3">
         <img
           src={card.image}
           alt={`${card.codename} — ${card.archetype} agent`}
-          className="h-full w-full object-contain object-bottom drop-shadow-[0_12px_28px_hsl(270_80%_10%/0.65)]"
+          className="h-full max-h-[240px] w-full object-contain drop-shadow-[0_16px_40px_hsl(270_80%_10%/0.5)] transition-transform duration-300 group-hover:scale-[1.02] sm:max-h-[260px]"
           loading="lazy"
           decoding="async"
         />
-      </motion.div>
+      </div>
 
-      <div className="relative mt-auto flex flex-1 flex-col p-4 pt-2">
-                <div className="mb-1 flex items-center justify-between gap-2">
+      <div className="relative border-t border-white/[0.06] bg-background/40 p-3 sm:p-4">
+        <div className="mb-1 flex items-center justify-between gap-2">
           <span className={cn("font-display text-[10px] font-bold tracking-[0.22em]", card.accent)}>
             {card.archetype}
           </span>
           <span className="text-[10px] text-muted-foreground/80">{card.codename}</span>
-                </div>
-        <p className="text-sm font-semibold leading-snug text-foreground">{card.tagline}</p>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">{card.role}</p>
-
-        <motion.span
-          className="mt-4 inline-flex items-center gap-1.5 font-display text-[10px] tracking-[0.18em] text-neon-cyan opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-          animate={isHovered ? { opacity: 1 } : { opacity: 0 }}
-        >
-          DEPLOY {card.codename}
+        </div>
+        <p className="text-[11px] font-medium text-muted-foreground">{card.tagline}</p>
+        <span className="mt-3 inline-flex items-center gap-1.5 font-display text-[10px] tracking-[0.18em] text-neon-cyan opacity-80 transition-opacity group-hover:opacity-100">
+          DEPLOY {card.codename.toUpperCase()}
           <span aria-hidden>→</span>
-        </motion.span>
+        </span>
       </div>
     </motion.button>
   );
