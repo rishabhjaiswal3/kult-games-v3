@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
+import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Button } from "@/components/ui/button";
 import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -122,7 +123,7 @@ export function ArenaAgentsBoard() {
                   onClick={() => openDetailFromAgent(a)}
                   className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-background/35 px-3 py-2.5 text-left text-sm transition hover:border-neon-cyan/30 hover:bg-background/50"
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-neon-cyan/40 to-neon-purple/40" />
+                  <ArenaAgentThumbnail agent={a} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{a.name}</div>
                     <div className="text-[10px] text-muted-foreground">
@@ -182,7 +183,7 @@ export function ArenaAgentsBoard() {
                   onClick={() => openDetailFromAgent(a)}
                   className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-background/35 px-3 py-2.5 text-left text-sm transition hover:border-neon-purple/35 hover:bg-background/50"
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-neon-cyan/40 to-neon-purple/40" />
+                  <ArenaAgentThumbnail agent={a} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{a.name}</div>
                     <div className="text-[10px] text-muted-foreground">
