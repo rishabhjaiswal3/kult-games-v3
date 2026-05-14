@@ -4,6 +4,7 @@ import { Terminal } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
+import { ArenaTerminalSkeleton } from "@/components/skeleton";
 import { cn } from "@/lib/utils";
 
 type LogLine = { id: string; ts: string; level: "info" | "ok" | "warn" | "battle"; text: string };
@@ -114,6 +115,14 @@ export function ArenaTerminalConsole({ battleId, className }: ArenaTerminalConso
       { id: `match-${battleId}`, ts: formatTs(), level: "ok", text: `[matchmaking] Battle linked — ${battleId.slice(0, 12)}…` },
     ]);
   }, [battleId]);
+
+  if (isAiArenaReady && myAgentsQ.isLoading && !myAgentsQ.data?.agents?.length) {
+    return (
+      <section className={cn("scroll-mt-24", className)}>
+        <ArenaTerminalSkeleton />
+      </section>
+    );
+  }
 
   return (
     <section className={cn("scroll-mt-24", className)}>

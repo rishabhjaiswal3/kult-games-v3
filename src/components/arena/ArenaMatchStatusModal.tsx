@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Radio, Search, Swords, UserMinus } from "lucide-react";
 import { useEffect } from "react";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaMatchFaceoff } from "@/components/arena/ArenaMatchFaceoff";
 import { Button } from "@/components/ui/button";
@@ -179,7 +179,7 @@ export function ArenaMatchStatusModal({
                 .
               </p>
               <p className="mt-3 text-xs text-muted-foreground">
-                Mode {status?.mode ?? "RANKED"} · Game {status?.gameId ?? "standard"}
+                Mode {status?.mode ?? "RANKED"} · Game {status?.gameId ?? AI_ARENA_DEFAULT_GAME_ID}
               </p>
             </div>
           ) : null}

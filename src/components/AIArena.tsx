@@ -57,11 +57,11 @@ function AIArenaContent() {
           <ArenaArchetypeCarousel />
           <ArenaAgentShowcase />
           <ArenaAgentsBoard />
+          <ArenaTerminalConsole battleId={activeBattleId} />
           <ArenaAgentsLeaderboard />
           <ArenaLiveBattles />
           <ArenaInfraStrip />
           <ArenaMatchmakingPanel />
-          <ArenaTerminalConsole battleId={activeBattleId} />
             </main>
         </>
       </div>
