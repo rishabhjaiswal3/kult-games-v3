@@ -1,9 +1,11 @@
 import { MAIN_BACKEND } from "@/lib/serviceUrls";
+import { getAllowedChainFromEnv } from "@/lib/chain";
 
 export function buildSiweMessage(address: string, nonce: string): string {
   const domain = window.location.host;
   const uri = window.location.origin;
   const issuedAt = new Date().toISOString();
+  const chainId = getAllowedChainFromEnv().decimalChainId;
   return [
     `${domain} wants you to sign in with your Ethereum account:`,
     address,
@@ -12,7 +14,7 @@ export function buildSiweMessage(address: string, nonce: string): string {
     "",
     `URI: ${uri}`,
     "Version: 1",
-    "Chain ID: 1",
+    `Chain ID: ${chainId}`,
     `Nonce: ${nonce}`,
     `Issued At: ${issuedAt}`,
   ].join("\n");

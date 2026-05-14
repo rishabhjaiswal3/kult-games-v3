@@ -1,48 +1,66 @@
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
 const FALLBACK_ACTIVITY = [
-  { name: "ShadowByte", action: "defeated", target: "AetherX", time: "1m ago", color: "text-neon-cyan" },
-  { name: "QuantumSoul", action: "climbed to", target: "#2", time: "3m ago", color: "text-neon-green" },
-  { name: "InfernoX", action: "entered", target: "Top 10", time: "4m ago", color: "text-neon-purple" },
+  { name: "NeuralReaper", action: "defeated", target: "VoidWalker", time: "1m ago", color: "text-neon-purple" },
+  { name: "ShadowByte", action: "defeated", target: "AetherX", time: "2m ago", color: "text-neon-cyan" },
+  { name: "QuantumSoul", action: "climbed to", target: "#2", time: "4m ago", color: "text-neon-green" },
 ];
 
 export function LiveArenaActivity() {
   const leaderboardQ = useAiArenaGlobalLeaderboard();
 
-  const activity = leaderboardQ.data?.entries.length
-    ? leaderboardQ.data.entries.slice(0, 5).map((entry, idx) => ({
-        name: entry.name,
-        action: "holds",
-        target: `#${entry.rank} (${entry.eloRating} ELO)`,
-        time: `${idx + 1}m ago`,
-        color: idx % 2 === 0 ? "text-neon-cyan" : "text-neon-green",
-      }))
-    : FALLBACK_ACTIVITY;
+  const entries = leaderboardQ.data?.entries ?? [];
+
+  const activity =
+    entries.length >= 2
+      ? entries.slice(0, 5).map((entry, idx) => {
+          const opponent = entries[idx + 1];
+          if (opponent && idx % 2 === 0) {
+            return {
+              name: entry.name,
+              action: "defeated",
+              target: opponent.name,
+              time: `${idx + 1}m ago`,
+              color: "text-neon-purple",
+            };
+          }
+          return {
+            name: entry.name,
+            action: "on a",
+            target: `${entry.wins}-win streak`,
+            time: `${idx + 1}m ago`,
+            color: idx % 2 === 0 ? "text-neon-cyan" : "text-neon-green",
+          };
+        })
+      : FALLBACK_ACTIVITY;
 
   return (
     <div className="glass-panel rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-bold tracking-wider text-sm">LIVE ARENA ACTIVITY</h3>
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-destructive/20 text-destructive border border-destructive/40 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-destructive live-dot" /> LIVE
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-display text-sm font-bold tracking-wider">LIVE ARENA FEED</h3>
+        <span className="flex items-center gap-1.5 rounded border border-destructive/40 bg-destructive/20 px-2 py-0.5 text-[10px] font-bold text-destructive">
+          <span className="live-dot h-1.5 w-1.5 rounded-full bg-destructive" /> LIVE
         </span>
       </div>
       <ul className="space-y-3">
         {activity.map((a, i) => (
           <li key={i} className="flex items-center gap-3 text-xs">
-            <div className="w-7 h-7 rounded-md bg-neon-cyan/10 border border-neon-cyan/20 shrink-0 flex items-center justify-center">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-neon-cyan/20 bg-neon-cyan/10">
               <span className="font-display text-[9px] font-bold text-neon-cyan">{a.name[0]}</span>
             </div>
-            <div className="flex-1 min-w-0 truncate">
+            <div className="min-w-0 flex-1 truncate">
               <span className="font-semibold">{a.name}</span>{" "}
               <span className="text-muted-foreground">{a.action}</span>{" "}
               <span className={`font-semibold ${a.color}`}>{a.target}</span>
             </div>
-            <span className="text-[10px] text-muted-foreground shrink-0">{a.time}</span>
+            <span className="shrink-0 text-[10px] text-muted-foreground">{a.time}</span>
           </li>
         ))}
       </ul>
-      <button type="button" className="w-full mt-4 text-center text-xs font-display tracking-widest text-neon-purple hover:text-neon-cyan transition">
+      <button
+        type="button"
+        className="mt-4 w-full text-center font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan"
+      >
         VIEW ALL ACTIVITY →
       </button>
     </div>

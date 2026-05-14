@@ -11,14 +11,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
+import { ARENA_AGENTS_LIST_QUERY_KEY } from "@/hooks/useArenaAgentsList";
+import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
 import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
+import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { toast } from "sonner";
 
 type AgentCreatedListener = (agent: AiArenaAgent) => void | Promise<void>;
 
+type OpenCreateAgentOptions = {
+  archetype?: AiArenaArchetype;
+};
+
 type CreateAgentContextValue = {
-  openCreateAgent: () => void;
+  openCreateAgent: (opts?: OpenCreateAgentOptions) => void;
   subscribeAgentCreated: (listener: AgentCreatedListener) => () => void;
 };
 
@@ -28,13 +35,15 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { player, walletAddress } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+  const [pendingArchetype, setPendingArchetype] = useState<AiArenaArchetype | undefined>();
   const listenersRef = useRef(new Set<AgentCreatedListener>());
 
-  const openCreateAgent = useCallback(() => {
+  const openCreateAgent = useCallback((opts?: OpenCreateAgentOptions) => {
     if (!walletAddress) {
       toast.error("Connect a wallet first.");
       return;
     }
+    setPendingArchetype(opts?.archetype);
     setCreateOpen(true);
   }, [walletAddress]);
 
@@ -47,8 +56,9 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
 
   const invalidateAfterCreate = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: AI_ARENA_LEADERBOARD_QUERY_KEY });
+    await queryClient.invalidateQueries({ queryKey: ARENA_AGENTS_LIST_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "arenaBoardMyAgents"] });
-    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "myAgents"] });
+    await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingStatusCards"] });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "matchmakingMyAgents"] });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundAgentPicker"] });
@@ -84,8 +94,12 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
       {children}
       <CreateAiArenaAgentModal
         open={createOpen}
-        onOpenChange={setCreateOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) setPendingArchetype(undefined);
+        }}
         defaultName={defaultName}
+        defaultArchetype={pendingArchetype}
         onCreated={(agent) => void handleCreated(agent)}
       />
     </CreateAgentContext.Provider>

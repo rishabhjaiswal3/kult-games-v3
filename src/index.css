@@ -559,6 +559,68 @@
   to   { left: 130%; }
 }
 
+@keyframes ecosystem-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ecosystem-marquee {
+  animation: ecosystem-marquee 42s linear infinite;
+}
+.mask-fade-x {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* ── Hero motion system ── */
+@keyframes hero-arena-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.hero-arena-marquee {
+  animation: hero-arena-marquee 28s linear infinite;
+}
+
+.hero-hologram-overlay {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 3px,
+      hsl(195 100% 60% / 0.025) 3px,
+      hsl(195 100% 60% / 0.025) 4px
+    ),
+    radial-gradient(ellipse 80% 50% at 50% 0%, hsl(270 82% 58% / 0.08), transparent 60%);
+  mix-blend-mode: screen;
+  animation: lightning-flicker 8s ease-in-out infinite;
+}
+
+.hero-hologram-flicker {
+  animation: lightning-flicker 6s ease-in-out infinite;
+}
+
+.hero-gradient-title {
+  color: hsl(278 100% 80%);
+  text-shadow:
+    0 0 18px hsl(270 82% 58% / 0.75),
+    0 0 42px hsl(270 82% 58% / 0.4),
+    0 0 72px hsl(278 100% 70% / 0.22);
+  animation: hero-title-shimmer 4.5s ease-in-out infinite;
+}
+
+@keyframes hero-title-shimmer {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.15) saturate(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-arena-marquee,
+  .hero-hologram-overlay,
+  .hero-hologram-flicker,
+  .hero-gradient-title {
+    animation: none !important;
+  }
+}
+
 /* Hide scrollbar on mobile */
 @media (max-width: 767px) {
   html,
