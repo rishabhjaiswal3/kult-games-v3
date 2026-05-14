@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, Radio, Search, Swords, UserMinus } from "lucide-react";
 import { useEffect } from "react";
 import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaMatchFaceoff } from "@/components/arena/ArenaMatchFaceoff";
 import { Button } from "@/components/ui/button";
