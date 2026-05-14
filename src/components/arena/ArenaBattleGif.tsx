@@ -1,4 +1,4 @@
-import AutoPlayVideo from "@/components/AutoplayVideo";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
 import type { ArenaBattleMediaItem } from "@/constants/arenaLiveBattleMedia";
 import { cn } from "@/lib/utils";
 
