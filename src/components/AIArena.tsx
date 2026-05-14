@@ -1,19 +1,32 @@
 import { ArenaPageProvider } from "@/contexts/ArenaPageContext";
+import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
 import { ArenaHero } from "@/components/arena/ArenaHero";
 import { ArenaLiveDuelFeed } from "@/components/arena/ArenaLiveDuelFeed";
-import { ArenaAiBanter } from "@/components/arena/ArenaAiBanter";
 import { ArenaLiveBattles } from "@/components/arena/ArenaLiveBattles";
 import { LiveArenaActivity } from "@/components/arena/ArenaSidePanels";
 import { ArenaInfraStrip } from "@/components/arena/ArenaInfraStrip";
 import { ArenaArchetypeCarousel } from "@/components/arena/ArenaArchetypeCarousel";
 import { ArenaAgentShowcase } from "@/components/arena/ArenaAgentShowcase";
 import { ArenaAgentsBoard } from "@/components/arena/ArenaAgentsBoard";
+import { ArenaAgentsLeaderboard } from "@/components/arena/ArenaAgentsLeaderboard";
+import { ArenaTerminalConsole } from "@/components/arena/ArenaTerminalConsole";
 import ArenaMatchmakingPanel from "@/components/ArenaMatchmakingPanel";
 import LiveEcosystemLayer from "@/components/LiveEcosystemLayer";
 
 const AIArena = () => {
   return (
     <ArenaPageProvider>
+      <ArenaLiveMatchProvider>
+        <AIArenaContent />
+      </ArenaLiveMatchProvider>
+    </ArenaPageProvider>
+  );
+};
+
+function AIArenaContent() {
+  const { activeBattleId } = useArenaLiveMatch();
+
+  return (
       <div className="relative min-h-screen bg-transparent">
         <div
           className="pointer-events-none fixed inset-0 opacity-[0.07]"
@@ -35,25 +48,25 @@ const AIArena = () => {
             <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
             <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
               <ArenaHero />
-              <ArenaArchetypeCarousel className="flex-1" />
             </div>
             <aside className="flex min-w-0 flex-col gap-6 lg:col-span-4">
               <ArenaLiveDuelFeed />
-              <ArenaAiBanter />
               <LiveArenaActivity />
             </aside>
           </div>
+          <ArenaArchetypeCarousel />
           <ArenaAgentShowcase />
           <ArenaAgentsBoard />
+          <ArenaAgentsLeaderboard />
           <ArenaLiveBattles />
           <ArenaInfraStrip />
           <ArenaMatchmakingPanel />
+          <ArenaTerminalConsole battleId={activeBattleId} />
             </main>
         </>
       </div>
-    </ArenaPageProvider>
   );
-};
+}
 
 function ArenaGlow() {
   return (

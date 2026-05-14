@@ -11,6 +11,7 @@ import {
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { switchAppChainViaInjectedProvider } from "@/lib/ensureWalletChain";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -25,34 +26,35 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [walletFlowPending, setWalletFlowPending] = useState(false);
   const [walletFlowBusy, setWalletFlowBusy] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [finishingSignIn, setFinishingSignIn] = useState(false);
   const walletFlowInFlightRef = useRef(false);
 
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { authenticated, ready, linkWallet } = usePrivy();
   const { wallets } = useWallets();
   const activeWallet = wallets[0];
   const targetChainId = getAllowedChainFromEnv().decimalChainId;
 
-  useEffect(() => {
-    if (!isOpen) setAuthError("");
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || typeof window === "undefined") return;
-    console.info("[Auth] LoginModal opened", {
-      url: window.location.href,
-      pathname: window.location.pathname,
-      search: window.location.search,
-    });
-  }, [isOpen]);
-
   const { sendCode, loginWithCode } = useLoginWithEmail({
-    onComplete: () => { onClose(); },
+    onComplete: () => {
+      setFinishingSignIn(true);
+    },
+    onError: (error) => {
+      setFinishingSignIn(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
   });
   const { initOAuth } = useLoginWithOAuth({
-    onComplete: () => { onClose(); },
+    onComplete: () => {
+      setFinishingSignIn(true);
+    },
+    onError: (error) => {
+      setFinishingSignIn(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
   });
-  const { authenticated, ready, linkWallet } = usePrivy();
-
-  /** Warzone pattern: Privy `login({ wallet })` then switch MetaMask to app chain (0G). */
   const { login } = useLogin({
     onComplete: ({ loginMethod }) => {
       walletFlowInFlightRef.current = false;
@@ -73,10 +75,50 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     },
   });
 
+  useEffect(() => {
+    if (!isOpen) {
+      setAuthError("");
+      setFinishingSignIn(false);
+      return;
+    }
+    if (authenticated && !isAuthenticated && !authLoading) {
+      setFinishingSignIn(true);
+    }
+    if (finishingSignIn && isAuthenticated && !authLoading) {
+      setFinishingSignIn(false);
+      onClose();
+    }
+  }, [isOpen, authenticated, isAuthenticated, authLoading, finishingSignIn, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !finishingSignIn || authLoading) return;
+    const timer = window.setTimeout(() => {
+      if (!isAuthenticated) {
+        setFinishingSignIn(false);
+        setAuthError("Sign-in started but could not complete. Please try again or use wallet login.");
+      }
+    }, 25_000);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, finishingSignIn, authLoading, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return;
+    console.info("[Auth] LoginModal opened", {
+      url: window.location.href,
+      pathname: window.location.pathname,
+      search: window.location.search,
+    });
+  }, [isOpen]);
+
   const handleWalletAuth = () => {
     if (!ready || walletFlowBusy) return;
-    if (authenticated) {
+    if (isAuthenticated) {
       linkWallet({ walletChainType: "ethereum-only" });
+      return;
+    }
+    if (authenticated) {
+      setAuthError("");
+      setFinishingSignIn(true);
       return;
     }
     setWalletFlowPending(false);
@@ -117,11 +159,13 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleSendCode = async () => {
     if (!email) return;
     setLoading(true);
+    setAuthError("");
     try {
       await sendCode({ email });
       setOtpSent(true);
-    } catch {
-      // error handled by Privy
+    } catch (err) {
+      const msg = privyAuthErrorMessage(err);
+      if (msg) setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -130,10 +174,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleVerifyCode = async () => {
     if (!otpCode) return;
     setLoading(true);
+    setAuthError("");
     try {
       await loginWithCode({ code: otpCode });
-    } catch {
-      // error handled by Privy
+    } catch (err) {
+      const msg = privyAuthErrorMessage(err);
+      if (msg) setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -246,7 +292,13 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     </p>
                   ) : null}
 
-                  {!otpSent ? (
+                  {finishingSignIn ? (
+                    <motion.div className="flex flex-col items-center gap-3 py-8 text-center">
+                      <div className="h-10 w-10 animate-spin rounded-full border-2 border-neon-cyan/30 border-t-neon-cyan" />
+                      <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
+                      <p className="text-xs text-muted-foreground/70">Creating wallet &amp; verifying with Kult backend</p>
+                    </motion.div>
+                  ) : !otpSent ? (
                     <div className="space-y-4">
                       {/* Email input */}
                       <div className="space-y-2">
@@ -324,7 +376,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => initOAuth({ provider: "google" })}
+                          onClick={() => {
+                            setAuthError("");
+                            void initOAuth({ provider: "google" });
+                          }}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"
                           style={{
                             borderRadius: "12px",

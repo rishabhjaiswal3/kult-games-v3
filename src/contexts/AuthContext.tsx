@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
@@ -12,24 +13,12 @@ import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
+import {
+  isEmbeddedPrivyConnectedWallet,
+  pickSigningWallet,
+  resolvePrivyWalletAddress,
+} from "@/lib/privyWallet";
 import type { Player } from "@/types/api";
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function getWalletAddressFromPrivyUser(user: ReturnType<typeof usePrivy>["user"]): string | undefined {
-  if (!user) return undefined;
-  if ((user as any).wallet?.address) return (user as any).wallet.address;
-  const embedded = (user as any).embeddedWallets;
-  if (Array.isArray(embedded) && embedded[0]?.address) return embedded[0].address;
-  const wallets = (user as any).wallets;
-  if (Array.isArray(wallets) && wallets[0]?.address) return wallets[0].address;
-  const linked = (user as any).linkedAccounts;
-  if (Array.isArray(linked)) {
-    const w = linked.find((a: any) => a?.type === "wallet" && a?.address);
-    if (w?.address) return w.address;
-  }
-  return undefined;
-}
 
 // ── Context type ──────────────────────────────────────────────────────────────
 
@@ -57,16 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const walletAddress = getWalletAddressFromPrivyUser(user) ?? localStorage.getItem(WALLET_KEY);
-  const linkedWalletAddress = getWalletAddressFromPrivyUser(user) ?? null;
+  const resolvedAddress = resolvePrivyWalletAddress(user, wallets);
+  const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
 
-  // Keep a stable ref to wallets so the useEffect can access them without re-running
   const walletsRef = useRef(wallets);
   useEffect(() => {
     walletsRef.current = wallets;
   }, [wallets]);
 
-  /** Privy's `getAccessToken` identity changes often; including it in deps re-fired SIWE before TOKEN_KEY was set → double `personal_sign`. */
   const getAccessTokenRef = useRef(getAccessToken);
   useEffect(() => {
     getAccessTokenRef.current = getAccessToken;
@@ -81,21 +68,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Privy may provision embedded wallets a moment after email/Google auth — wait without calling createWallet again.
+  useEffect(() => {
+    if (!ready || !authenticated || resolvedAddress) return;
+    setIsLoading(true);
+    const timer = window.setTimeout(() => setIsLoading(false), 12_000);
+    return () => window.clearTimeout(timer);
+  }, [ready, authenticated, resolvedAddress]);
+
   // When Privy authenticates, run the full SIWE flow and AI Arena token exchange.
   useEffect(() => {
     if (!ready) return;
+    if (!authenticated) return;
 
-    if (!authenticated) {
-      return;
-    }
-
-    const address = linkedWalletAddress;
+    const address = resolvedAddress;
     if (!address) return;
 
     const existingToken = localStorage.getItem(TOKEN_KEY);
     const existingWallet = localStorage.getItem(WALLET_KEY);
 
-    // Already logged in with the same wallet — just refresh the profile
     if (existingToken && existingWallet?.toLowerCase() === address.toLowerCase()) {
       void fetchProfile();
       if (!getAiArenaAccessToken()) {
@@ -106,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               await exchangePrivyTokenForAiArenaToken(privyAccessToken);
             }
           } catch {
-            /* non-blocking; AI Arena auth can be retried later */
+            /* non-blocking */
           }
         })();
       }
@@ -124,41 +115,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     const run = (async () => {
-      // 1. Get a one-time nonce from the backend
       const nonce = await fetchSiweNonce(address);
-
-      // 2. Build the EIP-4361 SIWE message
       const message = buildSiweMessage(address, nonce);
 
-      // 3. Sign via Privy wallet (EIP-191 personal_sign)
       const currentWallets = walletsRef.current;
-      const privyWallet =
-        currentWallets.find((w) => w.address.toLowerCase() === address.toLowerCase()) ??
-        currentWallets[0];
-
+      const privyWallet = pickSigningWallet(currentWallets, address);
       if (!privyWallet) throw new Error("No Privy wallet available to sign");
 
       const allowedChain = getAllowedChainFromEnv();
-      if (typeof privyWallet.switchChain === "function") {
-        try {
-          await privyWallet.switchChain(allowedChain.decimalChainId);
-        } catch {
-          /* fall through to provider switch */
+      const embedded = isEmbeddedPrivyConnectedWallet(privyWallet);
+
+      // Embedded wallets stay on Privy's default chain; forcing 0G breaks Google/email login.
+      if (!embedded) {
+        if (typeof privyWallet.switchChain === "function") {
+          try {
+            await privyWallet.switchChain(allowedChain.decimalChainId);
+          } catch {
+            /* fall through to provider switch */
+          }
         }
+        const provider = await privyWallet.getEthereumProvider();
+        await ensureWalletOnAllowedChain(provider, allowedChain);
       }
 
       const provider = await privyWallet.getEthereumProvider();
-      await ensureWalletOnAllowedChain(provider, allowedChain);
       const signature = (await provider.request({
         method: "personal_sign",
         params: [message, address],
       })) as string;
 
-      // 4. Exchange signature for a backend JWT
       const res = await playerApi.login(address, message, signature);
       setPlayer(res.player);
 
-      // 5. Exchange Privy token for AI Arena gateway JWT pair.
       const privyAccessToken = await getAccessTokenRef.current();
       if (privyAccessToken) {
         await exchangePrivyTokenForAiArenaToken(privyAccessToken);
@@ -171,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         console.error("[SIWE] Login failed:", err);
         playerApi.logout();
+        toast.error("Could not finish sign-in. Please try wallet login or refresh the page.");
       })
       .finally(() => {
         setIsLoading(false);
@@ -178,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           siweInFlightByAddress.delete(addrKey);
         }
       });
-  }, [ready, authenticated, linkedWalletAddress, fetchProfile]);
+  }, [ready, authenticated, resolvedAddress, wallets, fetchProfile]);
 
   const handleLogout = async () => {
     siweInFlightByAddress.clear();
@@ -205,8 +194,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-// ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

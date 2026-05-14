@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { AI_ARENA_ARCHETYPE_OPTIONS, AI_ARENA_CLAN_OPTIONS } from "@/constants/aiArenaAgent";
+import { getArchetypeCardByType } from "@/constants/arenaAgentArchetypes";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog } from "@/components/ui/dialog";
@@ -48,6 +49,8 @@ export function CreateAiArenaAgentModal({
     if (defaultArchetype) setArchetype(defaultArchetype);
   }, [open, defaultName, defaultArchetype]);
 
+  const selectedCard = getArchetypeCardByType(archetype);
+
   const handleSubmit = async () => {
     if (!walletAddress) {
       toast.error("Connect a wallet first.");
@@ -93,6 +96,29 @@ export function CreateAiArenaAgentModal({
         </ArenaDialogHeader>
 
         <ArenaDialogBody className="space-y-4">
+          {selectedCard ? (
+            <div className="overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_8%/0.85)]">
+              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                <div className="relative mx-auto h-36 w-36 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[hsl(268_32%_6%/0.9)] sm:mx-0 sm:h-32 sm:w-32">
+                  <img
+                    src={selectedCard.image}
+                    alt={`${selectedCard.codename} — ${selectedCard.archetype}`}
+                    className="h-full w-full object-contain p-2"
+                  />
+                </div>
+                <div className="min-w-0 flex-1 text-center sm:text-left">
+                  <p className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">SELECTED ARCHETYPE</p>
+                  <p className={cn("mt-1 font-display text-lg font-bold tracking-wide", selectedCard.accent)}>
+                    {selectedCard.archetype}
+                  </p>
+                  <p className="font-display text-sm font-semibold text-foreground">{selectedCard.codename}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{selectedCard.tagline}</p>
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground/80">{selectedCard.role}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <Label className="arena-label">Clan</Label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">

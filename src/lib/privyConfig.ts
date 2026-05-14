@@ -23,7 +23,7 @@ export function buildPrivyConfig(): PrivyClientConfig {
     ...(canUseEmbeddedWallets
       ? {
           embeddedWallets: {
-            ethereum: { createOnLogin: "users-without-wallets" },
+            ethereum: { createOnLogin: "users-without-wallets" as const },
           },
         }
       : {}),

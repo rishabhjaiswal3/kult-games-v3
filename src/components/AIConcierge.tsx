@@ -144,9 +144,9 @@ const AIConcierge = () => {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-5 lg:grid-cols-2 lg:gap-6">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-5 lg:grid-cols-2 lg:gap-6">
           {/* Left — chat console */}
-          <div className="glass-panel flex min-h-[520px] flex-col rounded-2xl border border-[hsl(278_100%_70%/0.18)] p-4 sm:min-h-[560px] sm:p-5">
+          <div className="glass-panel flex flex-col rounded-2xl border border-[hsl(278_100%_70%/0.18)] p-4 sm:p-5">
             <AnimatePresence>
               {chatOpen && messages.length > 0 && (
                 <div
@@ -232,7 +232,31 @@ const AIConcierge = () => {
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="mb-4 shrink-0">
+            {messages.length === 0 && (
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {prompts.map((prompt) => (
+                  <button
+                    type="button"
+                    key={prompt.text}
+                    onClick={() => handlePromptClick(prompt.text)}
+                    className="group flex items-center gap-2 rounded-lg border border-white/[0.08] bg-background/30 px-2.5 py-2 text-left transition-all hover:border-[hsl(278_100%_70%/0.3)] hover:bg-[hsl(278_100%_70%/0.06)]"
+                  >
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[hsl(278_100%_70%/0.1)] group-hover:bg-[hsl(278_100%_70%/0.16)]">
+                      <prompt.icon className="h-3 w-3 text-[hsl(278_100%_82%)]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[11px] font-semibold leading-tight text-foreground group-hover:text-[hsl(278_100%_82%)]">
+                        {prompt.text}
+                      </p>
+                      <p className="truncate text-[9px] leading-tight text-muted-foreground">{prompt.description}</p>
+                    </div>
+                    <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-[hsl(278_100%_82%)]" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-5 shrink-0">
               <div className="relative overflow-hidden rounded-xl border border-[hsl(278_100%_70%/0.2)] bg-card/50 p-1.5 backdrop-blur-sm">
                 <div className="relative flex items-center gap-2 rounded-lg bg-muted/20 px-3 py-2.5 sm:px-4 sm:py-3">
                   <KultAIIcon size={18} />
@@ -258,38 +282,14 @@ const AIConcierge = () => {
               {error ? <p className="mt-2 px-1 text-xs text-destructive/80">{error}</p> : null}
             </form>
 
-            <div className="mb-4 grid flex-1 auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2">
-              {prompts.map((prompt) => (
-                <button
-                  type="button"
-                  key={prompt.text}
-                  onClick={() => handlePromptClick(prompt.text)}
-                  className="group flex h-full min-h-[72px] w-full items-start gap-2.5 rounded-xl border border-border/50 bg-card/40 p-3 text-left backdrop-blur-sm transition-all hover:border-[hsl(278_100%_70%/0.35)] hover:bg-[hsl(278_100%_70%/0.06)]"
-                >
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[hsl(278_100%_70%/0.12)] group-hover:bg-[hsl(278_100%_70%/0.18)]">
-                    <prompt.icon className="h-4 w-4 text-[hsl(278_100%_82%)]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-xs font-semibold leading-snug text-foreground group-hover:text-[hsl(278_100%_82%)]">
-                      {prompt.text}
-                    </span>
-                    <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground">
-                      {prompt.description}
-                    </span>
-                  </div>
-                  <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-[hsl(278_100%_82%)]" />
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-auto grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
               {capabilities.map((cap) => (
                 <div
                   key={cap.label}
-                  className="flex min-h-[64px] flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-background/40 px-2 py-2 text-center"
+                  className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-background/35 px-2 py-1.5"
                 >
-                  <cap.icon className="mb-1 h-3.5 w-3.5 text-neon-cyan" />
-                  <p className="font-display text-[9px] font-bold leading-tight tracking-wide text-foreground">
+                  <cap.icon className="h-3 w-3 shrink-0 text-neon-cyan" />
+                  <p className="min-w-0 truncate font-display text-[8px] font-bold leading-tight tracking-wide text-foreground sm:text-[9px]">
                     {cap.label}
                   </p>
                 </div>
@@ -297,8 +297,8 @@ const AIConcierge = () => {
             </div>
           </div>
 
-          {/* Right — live console (equal height) */}
-          <aside className="flex min-h-[520px] flex-col sm:min-h-[560px]">
+          {/* Right — live console */}
+          <aside className="flex flex-col">
             <div className="glass-panel flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[hsl(278_100%_70%/0.18)]">
               <div className="relative flex min-h-[200px] flex-1 flex-col bg-[hsl(268_32%_8%/0.6)] sm:min-h-[220px]">
                 <AnimatePresence mode="wait">

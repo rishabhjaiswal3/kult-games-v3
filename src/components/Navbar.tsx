@@ -8,11 +8,14 @@ import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import kultLogo from "@/assets/kult-logo.png";
+import { ArenaTokenAmount } from "@/components/arena/ArenaTokenAmount";
 import LoginModal from "@/components/LoginModal";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasArenaAgent, MY_ARENA_AGENTS_QUERY_KEY, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import { ArenaAgentRowListSkeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +39,7 @@ type ProfileDropdownBodyProps = {
   walletAddress: string | null;
   hasArenaAgent: boolean;
   agentWalletReady: boolean;
-  agentWalletBalanceG: number;
+  agentWalletBalanceArena: number;
   onCreateAgent: () => void;
   onFundAgent: () => void;
   onLogout: () => void;
@@ -56,7 +59,7 @@ function ProfileDropdownBody({
   walletAddress,
   hasArenaAgent: userHasArenaAgent,
   agentWalletReady,
-  agentWalletBalanceG,
+  agentWalletBalanceArena,
   onCreateAgent,
   onFundAgent,
   onLogout,
@@ -152,7 +155,7 @@ function ProfileDropdownBody({
           <div className="flex flex-1 items-center justify-between gap-2">
             <span className="font-medium text-neon-cyan">Fund AI Agent</span>
             <span className="rounded-md border border-white/10 bg-background/50 px-2 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-              {agentWalletBalanceG} G
+              <ArenaTokenAmount amount={agentWalletBalanceArena} size="sm" />
             </span>
           </div>
         </DropdownMenuItem>
@@ -183,7 +186,7 @@ const Navbar = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [agentWalletReady, setAgentWalletReady] = useState(false);
-  const [agentWalletBalanceG, setAgentWalletBalanceG] = useState(0);
+  const [agentWalletBalanceArena, setAgentWalletBalanceArena] = useState(0);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isFunding, setIsFunding] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -210,18 +213,18 @@ const Navbar = () => {
     setAgentId(agent.id);
     /** Only show Fund after wallet API succeeds — agent row can exist before custodial wallet exists. */
     setAgentWalletReady(false);
-    setAgentWalletBalanceG(0);
+    setAgentWalletBalanceArena(0);
   }, []);
 
   const syncAgentWalletBalance = useCallback(async (currentAgentId: string): Promise<boolean> => {
     try {
       const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(currentAgentId);
-      setAgentWalletBalanceG(Number(walletRes.wallet.balanceArena ?? 0));
+      setAgentWalletBalanceArena(Number(walletRes.wallet.balanceArena ?? 0));
       setAgentWalletReady(true);
       return true;
     } catch (e) {
       setAgentWalletReady(false);
-      setAgentWalletBalanceG(0);
+      setAgentWalletBalanceArena(0);
       return false;
     }
   }, []);
@@ -265,7 +268,7 @@ const Navbar = () => {
     if (!isAuthenticated || !walletAddress) {
       setAgentWalletReady(false);
       setAgentId(null);
-      setAgentWalletBalanceG(0);
+      setAgentWalletBalanceArena(0);
       clearAiAgentInfo();
       return;
     }
@@ -275,7 +278,7 @@ const Navbar = () => {
     if (!userHasArenaAgent) {
       setAgentId(null);
       setAgentWalletReady(false);
-      setAgentWalletBalanceG(0);
+      setAgentWalletBalanceArena(0);
       clearAiAgentInfo();
       return;
     }
@@ -311,7 +314,7 @@ const Navbar = () => {
       const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
       const bal = Number(walletRes.wallet.balanceArena ?? 0);
       if (targetAgentId === agentId) {
-        setAgentWalletBalanceG(bal);
+        setAgentWalletBalanceArena(bal);
         setAgentWalletReady(true);
       }
       await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
@@ -360,7 +363,7 @@ const Navbar = () => {
       const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
       const bal = Number(walletRes.wallet.balanceArena ?? 0);
       if (targetAgentId === agentId) {
-        setAgentWalletBalanceG(bal);
+        setAgentWalletBalanceArena(bal);
         setAgentWalletReady(true);
       }
       await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
@@ -462,7 +465,7 @@ const Navbar = () => {
     walletAddress,
     hasArenaAgent: userHasArenaAgent,
     agentWalletReady,
-    agentWalletBalanceG,
+    agentWalletBalanceArena,
     onCreateAgent: handleCreateAgentClick,
     onFundAgent: () => setWalletModalOpen(true),
     onLogout: () => {
@@ -478,8 +481,8 @@ const Navbar = () => {
     <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md shadow-[0_1px_0_hsl(220_30%_18%/0.5)]">
         <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-3 sm:gap-4 md:gap-5 w-full min-w-0">
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-[100px] md:min-w-[130px]">
-            <img src={kultLogo} alt="Kult Games" className="h-8 md:h-10 w-auto" width={120} height={40} loading="eager" decoding="async" />
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-[88px] md:min-w-[110px]">
+            <img src={kultLogo} alt="Kult Games" className="h-7 md:h-8 w-auto" width={96} height={32} loading="eager" decoding="async" />
             <motion.div
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "hsl(270 82% 60%)" }}
@@ -553,7 +556,7 @@ const Navbar = () => {
                   <>
                     <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(195 100% 65%)" }} />
                     <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(195 100% 65%)" }}>
-                      {agentWalletReady ? `${agentWalletBalanceG} G` : "Fund"}
+                      {agentWalletReady ? <ArenaTokenAmount amount={agentWalletBalanceArena} size="sm" showLogo={false} /> : "Fund"}
                     </span>
                   </>
                 ) : (
@@ -722,7 +725,7 @@ const Navbar = () => {
             <div className="mb-3">
               <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Your agents</p>
               {myAgentsQ.isLoading ? (
-                <p className="text-xs text-muted-foreground">Loading agents…</p>
+                <ArenaAgentRowListSkeleton count={3} className="rounded-xl border border-white/10 bg-background/40 p-2" />
               ) : !(myAgentsQ.data?.agents?.length) ? (
                 <p className="text-xs text-muted-foreground">No agents yet. Create one to continue.</p>
               ) : (
@@ -748,58 +751,44 @@ const Navbar = () => {
             </div>
 
             <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/10 px-4 py-3 mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-neon-purple mb-1">$ARENA balance (selected)</p>
+              <p className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Balance</p>
               {fundWalletPreviewQ.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading…</p>
+                <Skeleton className="h-7 w-28 bg-muted/70" />
               ) : fundWalletPreviewQ.isError ? (
                 <p className="text-sm text-amber-200/90">Wallet not available yet for this agent.</p>
               ) : (
-                <p className="text-2xl font-black text-foreground">
-                  {Number(fundWalletPreviewQ.data?.wallet.balanceArena ?? 0)}
-                </p>
+                <ArenaTokenAmount amount={Number(fundWalletPreviewQ.data?.wallet.balanceArena ?? 0)} size="md" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              Enter an amount, then confirm. Demo funds will be added once the agent wallet is ready.
-            </p>
-            <div className="mt-3 space-y-2">
-              <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">
-                Amount
-              </label>
-              <input
-                id="fund-amount"
-                type="number"
-                min={1}
-                step={1}
-                inputMode="numeric"
-                value={fundAmountInput}
-                onChange={(e) => setFundAmountInput(e.target.value)}
-                placeholder="e.g. 100"
-                disabled={isFunding}
-                className="w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/30 disabled:opacity-50"
-              />
-              <div className="grid grid-cols-4 gap-2">
-                {[10, 50, 200, 500].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    disabled={isFunding}
-                    onClick={() => setFundAmountInput(String(v))}
-                    className="rounded-lg border border-border/45 bg-card/50 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/35 transition-colors disabled:opacity-50"
-                  >
-                    {v}
-                  </button>
-                ))}
+
+            {walletModalTab === "fund" ? (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Credit the agent custodial wallet with Arena tokens.</p>
+              <div className="space-y-2">
+                <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">Amount (ARENA)</label>
+                <input id="fund-amount" type="number" min={1} step={1} inputMode="numeric" value={fundAmountInput} onChange={(e) => setFundAmountInput(e.target.value)} placeholder="e.g. 100" disabled={isFunding} className="w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-neon-cyan/30 disabled:opacity-50" />
+                <div className="grid grid-cols-4 gap-2">
+                  {[10, 50, 200, 500].map((v) => (
+                    <button key={v} type="button" disabled={isFunding} onClick={() => setFundAmountInput(String(v))} className="rounded-lg border border-border/45 bg-card/50 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/35 disabled:opacity-50">{v}</button>
+                  ))}
+                </div>
+                <button type="button" onClick={() => void submitFundFromInput()} disabled={isFunding || !fundAmountInput.trim() || !fundAgentId} className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2.5 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 disabled:opacity-50">{isFunding ? "Funding…" : "Fund wallet"}</button>
               </div>
-              <button
-                type="button"
-                onClick={() => void submitFundFromInput()}
-                disabled={isFunding || !fundAmountInput.trim() || !fundAgentId}
-                className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2.5 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 transition-colors disabled:opacity-50"
-              >
-                {isFunding ? "Funding…" : "Fund wallet"}
-              </button>
             </div>
+            ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Withdraw Arena tokens to a Solana wallet.</p>
+              <div>
+                <label htmlFor="withdraw-amount" className="text-xs font-medium text-muted-foreground">Amount (ARENA)</label>
+                <input id="withdraw-amount" type="number" min={1} value={withdrawAmountInput} onChange={(e) => setWithdrawAmountInput(e.target.value)} placeholder="e.g. 50" disabled={isWithdrawing} className="mt-1 w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 disabled:opacity-50" />
+              </div>
+              <div>
+                <label htmlFor="withdraw-dest" className="text-xs font-medium text-muted-foreground">Solana destination</label>
+                <input id="withdraw-dest" value={withdrawDestination} onChange={(e) => setWithdrawDestination(e.target.value)} placeholder="Base58 address" disabled={isWithdrawing} className="mt-1 w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 disabled:opacity-50" />
+              </div>
+              <button type="button" onClick={() => void submitWithdrawFromInput()} disabled={isWithdrawing || !withdrawAmountInput.trim() || !withdrawDestination.trim() || !fundAgentId} className="w-full rounded-lg border border-orange-500/40 bg-orange-500/12 px-3 py-2.5 text-sm font-semibold text-orange-200 hover:bg-orange-500/22 disabled:opacity-50">{isWithdrawing ? "Withdrawing…" : "Withdraw Arena tokens"}</button>
+            </div>
+            )}
               </>
             )}
             <button

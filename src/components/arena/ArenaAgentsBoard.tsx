@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { ArenaAgentRowItemsSkeleton } from "@/components/skeleton";
 
 const ALL_PAGE_SIZE = 12;
 const MY_PAGE_SIZE = 8;
@@ -134,9 +135,7 @@ export function ArenaAgentsBoard() {
               </li>
             ))}
             {allQ.isLoading ? (
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> Loading agents…
-              </li>
+              <ArenaAgentRowItemsSkeleton count={5} />
             ) : null}
             {!allQ.isLoading && !allAgents.length ? (
               <li className="text-sm text-muted-foreground">No agents on the arena yet.</li>
@@ -196,7 +195,7 @@ export function ArenaAgentsBoard() {
             {!myAgents.length && !myQ.isLoading ? (
               <li className="text-sm text-muted-foreground">No agents yet. Create one to get started.</li>
             ) : null}
-            {myQ.isLoading ? <li className="text-sm text-muted-foreground">Loading…</li> : null}
+            {myQ.isLoading ? <ArenaAgentRowItemsSkeleton count={4} /> : null}
           </ul>
         )}
 

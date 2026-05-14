@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Copy, Loader2, Plus, Swords } from "lucide-react";
+import { Copy, Plus, Swords } from "lucide-react";
 import { Link } from "react-router-dom";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import { ProfileAgentListSkeleton } from "@/components/skeleton";
 import { cn } from "@/lib/utils";
 
 function agentBackstory(agent: AiArenaAgent): string | null {
@@ -167,10 +168,7 @@ export function ProfileMyAgentsSection({
           </div>
 
           {isLoading ? (
-            <div className="flex items-center gap-3 py-12 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin text-neon-cyan" />
-              <span className="text-sm">Loading your agents…</span>
-            </div>
+            <ProfileAgentListSkeleton count={2} />
           ) : isError ? (
             <p className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-6 text-sm text-amber-100/90">
               Could not load your AI Arena agents. Try refreshing after the arena session connects.

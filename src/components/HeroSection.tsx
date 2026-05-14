@@ -1,7 +1,10 @@
-import { motion } from "framer-motion";
+import type { ReactNode } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Swords, Flame, Users, Gamepad2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
+import { HeroMotionLayer } from "@/components/hero/HeroMotionLayer";
+import { HeroArenaTicker } from "@/components/hero/HeroArenaTicker";
 
 const liveStats = [
   { icon: Users, label: "PLAYERS ONLINE", value: "12,847", accent: true },
@@ -10,193 +13,271 @@ const liveStats = [
   { icon: Flame, label: "TRENDING", value: "Zero Dash" },
 ];
 
-const particles = [
-  { left: "8%",  top: "22%", size: 2,   delay: 0,    dur: 4.2 },
-  { left: "85%", top: "16%", size: 1.5, delay: 0.8,  dur: 5.5 },
-  { left: "22%", top: "68%", size: 2.5, delay: 1.2,  dur: 3.8 },
-  { left: "72%", top: "62%", size: 1,   delay: 0.3,  dur: 6.0 },
-  { left: "48%", top: "28%", size: 2,   delay: 1.8,  dur: 4.6 },
-  { left: "92%", top: "45%", size: 1.5, delay: 0.6,  dur: 5.2 },
-  { left: "5%",  top: "52%", size: 1,   delay: 1.4,  dur: 4.0 },
-  { left: "58%", top: "78%", size: 2,   delay: 2.0,  dur: 3.6 },
-  { left: "38%", top: "42%", size: 1,   delay: 0.5,  dur: 7.0 },
-  { left: "65%", top: "85%", size: 1.5, delay: 1.7,  dur: 4.8 },
-];
-
 const line1Words = ["SHAPING", "THE", "FUTURE", "OF"];
 const line2Words = ["ON-CHAIN", "GAMING"];
+
+const wordStagger = {
+  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { delay: 0.15 + i * 0.07, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
 
 interface HeroSectionProps {
   onExploreGames: () => void;
 }
 
+function HeroGlowButton({
+  children,
+  onClick,
+  variant = "outline",
+  className = "",
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  variant?: "outline" | "primary";
+  className?: string;
+}) {
+  const reduceMotion = useReducedMotion();
+  const isPrimary = variant === "primary";
+
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-lg px-10 py-4 font-display text-sm font-semibold tracking-wider ${
+        isPrimary ? "btn-eye" : "btn-eye-outline"
+      } ${className}`}
+      whileHover={reduceMotion ? undefined : { scale: 1.03, y: -2 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 420, damping: 22 }}
+    >
+      <motion.span
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
+        style={{
+          background: isPrimary
+            ? "radial-gradient(circle at 50% 50%, hsl(270 82% 58% / 0.35), transparent 65%)"
+            : "radial-gradient(circle at 50% 50%, hsl(195 100% 60% / 0.22), transparent 65%)",
+        }}
+        animate={reduceMotion ? undefined : { opacity: [0.15, 0.45, 0.15] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.span
+        className="pointer-events-none absolute -inset-px rounded-lg opacity-0 group-hover:opacity-100"
+        style={{
+          boxShadow: isPrimary
+            ? "0 0 28px hsl(270 82% 58% / 0.45), inset 0 0 20px hsl(278 100% 82% / 0.08)"
+            : "0 0 24px hsl(195 100% 60% / 0.35), inset 0 0 16px hsl(195 100% 60% / 0.06)",
+        }}
+      />
+      <span className="relative z-10">{children}</span>
+    </motion.button>
+  );
+}
+
 const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
 
   return (
     <>
-      <section
-        className="relative min-h-[82dvh] md:min-h-[90dvh] flex flex-col items-center justify-start md:justify-end overflow-hidden pt-28 sm:pt-32 md:pt-12 md:pb-24"
-      >
+      <section className="relative flex min-h-[82dvh] flex-col items-center justify-start overflow-hidden pt-28 sm:pt-32 md:min-h-[90dvh] md:justify-end md:pb-24 md:pt-12">
+        {/* Video */}
         <div className="absolute inset-0">
-          <AutoPlayVideo src="/videos/SC_1-3.mp4" loop className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: "center center" }} />
-        </div>
-
-        {/* Mobile overlay: dark at top for text readability */}
-        <div className="absolute inset-0 md:hidden bg-gradient-to-b from-background/70 via-background/20 to-background/90" />
-
-        {/* Desktop overlay: transparent at top (show character eyes), dark at bottom for text */}
-        <div className="absolute inset-0 hidden md:block bg-gradient-to-b from-background/15 via-background/5 to-background/88" />
-
-        {/* Side vignette */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/45 via-transparent to-background/45" />
-
-        {/* Ambient glows */}
-        <div className="absolute top-40 left-1/4 w-[500px] h-[400px] rounded-full bg-neon-cyan/6 blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-20 right-1/4 w-[400px] h-[300px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/2 right-0 w-[300px] h-[300px] rounded-full bg-neon-purple/5 blur-[120px] pointer-events-none" />
-
-        {/* Floating particles */}
-        {particles.map((p, i) => (
+          <AutoPlayVideo
+            src="/videos/SC_1-3.mp4"
+            loop
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: "center center" }}
+          />
           <motion.div
-            key={i}
-            className="absolute rounded-full bg-neon-cyan pointer-events-none"
+            className="hero-hologram-flicker absolute inset-0 mix-blend-overlay"
+            animate={reduceMotion ? undefined : { opacity: [0.04, 0.12, 0.06, 0.14, 0.04] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             style={{
-              left: p.left,
-              top: p.top,
-              width: p.size,
-              height: p.size,
-              boxShadow: `0 0 ${p.size * 4}px hsl(195 100% 60% / 0.8)`,
-            }}
-            animate={{
-              y: [0, -18, 0],
-              opacity: [0.25, 0.75, 0.25],
-            }}
-            transition={{
-              duration: p.dur,
-              delay: p.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
+              background:
+                "linear-gradient(115deg, transparent 30%, hsl(195 100% 70% / 0.15) 48%, transparent 62%)",
             }}
           />
-        ))}
+        </div>
 
-        <div className="w-full relative z-10 flex flex-col items-center md:-translate-y-10">
-          {/* Heading */}
-          <div className="text-center mb-6 md:mb-8 px-4">
-            {/* Pre-heading label */}
-            <div className="mb-5 flex items-center justify-center gap-3">
-              <div className="h-[1px] w-10 rounded-full bg-gradient-to-r from-transparent to-neon-cyan/60" />
-              <span className="text-[9px] font-mono uppercase tracking-[0.45em] text-neon-cyan/65">Next Generation</span>
-              <div className="h-[1px] w-10 rounded-full bg-gradient-to-l from-transparent to-neon-cyan/60" />
-            </div>
+        <HeroMotionLayer />
+
+        {/* Overlays */}
+        <div className="absolute inset-0 z-[2] bg-gradient-to-b from-background/70 via-background/20 to-background/90 md:hidden" />
+        <motion.div
+          className="absolute inset-0 z-[2] hidden bg-gradient-to-b from-background/15 via-background/5 to-background/88 md:block"
+          animate={reduceMotion ? undefined : { opacity: [0.92, 1, 0.94, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-background/45 via-transparent to-background/45" />
+
+        {/* Breathing ambient glows */}
+        <motion.div
+          className="pointer-events-none absolute top-40 left-1/4 z-[2] h-[400px] w-[500px] rounded-full bg-neon-cyan/6 blur-[150px]"
+          animate={reduceMotion ? undefined : { scale: [1, 1.12, 1], opacity: [0.5, 0.85, 0.5] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="pointer-events-none absolute right-1/4 bottom-20 z-[2] h-[300px] w-[400px] rounded-full bg-primary/8 blur-[120px]"
+          animate={reduceMotion ? undefined : { scale: [1, 1.08, 1], opacity: [0.45, 0.75, 0.45] }}
+          transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+        <motion.div
+          className="pointer-events-none absolute top-1/2 right-0 z-[2] h-[300px] w-[300px] rounded-full bg-neon-purple/5 blur-[120px]"
+          animate={reduceMotion ? undefined : { x: [0, -20, 0], opacity: [0.35, 0.65, 0.35] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 flex w-full -translate-y-0 flex-col items-center md:-translate-y-10">
+          <motion.div
+            className="mb-6 px-4 text-center md:mb-8"
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div
+              className="mb-5 flex items-center justify-center gap-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.5 }}
+            >
+              <motion.div
+                className="h-px w-10 rounded-full bg-gradient-to-r from-transparent to-neon-cyan/60"
+                animate={reduceMotion ? undefined : { scaleX: [0.6, 1, 0.6], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <span className="text-[9px] font-mono uppercase tracking-[0.45em] text-neon-cyan/65">
+                Next Generation
+              </span>
+              <motion.div
+                className="h-px w-10 rounded-full bg-gradient-to-l from-transparent to-neon-cyan/60"
+                animate={reduceMotion ? undefined : { scaleX: [0.6, 1, 0.6], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+              />
+            </motion.div>
 
             <h1
-              className="font-black tracking-tight leading-[0.95] uppercase"
+              className="font-black uppercase leading-[0.95] tracking-tight"
               style={{ fontFamily: "'Rajdhani', 'Orbitron', sans-serif" }}
             >
-              {/* Line 1 — word stagger */}
               <span className="block font-display text-3xl tracking-[0.04em] text-foreground sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl">
-                {line1Words.map((word) => (
-                  <span key={word} className="mr-[0.26em] inline-block last:mr-0">
+                {line1Words.map((word, i) => (
+                  <motion.span
+                    key={word}
+                    custom={i}
+                    variants={wordStagger}
+                    className="mr-[0.26em] inline-block last:mr-0"
+                  >
                     {word}
-                  </span>
+                  </motion.span>
                 ))}
               </span>
 
-              {/* Line 2 — gradient + stagger */}
-              <span
-                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl block mt-1 md:mt-2 font-display"
-                style={{
-                  color: "hsl(278 100% 80%)",
-                  textShadow: "0 0 18px hsl(270 82% 58% / 0.75), 0 0 42px hsl(270 82% 58% / 0.4), 0 0 72px hsl(278 100% 70% / 0.22)",
-                }}
+              <motion.span
+                className="hero-gradient-title relative mt-1 block font-display text-3xl sm:text-4xl md:mt-2 md:text-6xl lg:text-7xl xl:text-7xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.65 }}
               >
-                {line2Words.map((word) => (
-                  <span key={word} className="mr-[0.26em] inline-block last:mr-0">
+                {line2Words.map((word, i) => (
+                  <motion.span
+                    key={word}
+                    custom={i + line1Words.length}
+                    variants={wordStagger}
+                    className="mr-[0.26em] inline-block last:mr-0"
+                  >
                     {word}
-                  </span>
+                  </motion.span>
                 ))}
-              </span>
+              </motion.span>
             </h1>
 
-            {/* Decorative accent line */}
-            <div
+            <motion.div
               className="mx-auto mt-5 h-[2px] w-20 rounded-full"
               style={{
                 background: "linear-gradient(90deg, hsl(195 100% 60%), hsl(195 60% 80%), transparent)",
                 boxShadow: "0 0 14px hsl(195 100% 60% / 0.55)",
               }}
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
             />
-          </div>
+          </motion.div>
 
-          {/* CTA buttons */}
-          <div className="mt-6 flex flex-col items-center justify-center gap-4 px-4 sm:flex-row md:mt-8">
-            <button
-              onClick={onExploreGames}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye-outline"
-            >
+          <motion.div
+            className="mt-6 flex flex-col items-center justify-center gap-4 px-4 sm:flex-row md:mt-8"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.5 }}
+          >
+            <HeroGlowButton onClick={onExploreGames} variant="outline">
               EXPLORE GAMES
-            </button>
-            <button
-              onClick={() => navigate("/moments")}
-              className="px-10 py-4 rounded-lg font-display text-sm font-semibold tracking-wider btn-eye flex items-center gap-2 relative overflow-hidden. min-w-[250px]"
-            >
-              <span className="relative z-10" style={{width:"100%"}}>Moments</span>
-            </button>
-          </div>
+            </HeroGlowButton>
+            <HeroGlowButton onClick={() => navigate("/moments")} variant="primary" className="min-w-[250px]">
+              Moments
+            </HeroGlowButton>
+          </motion.div>
         </div>
 
+        <HeroArenaTicker />
       </section>
 
-      {/* Live Stats Strip */}
-      {/* <div className="relative z-10 border-b border-border/30 bg-card/95 overflow-hidden">
+      {/* Live stats — animated strip */}
+      <div className="relative z-10 overflow-hidden border-b border-border/30 bg-card/95">
         <motion.div
-          className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-neon-cyan/8 to-transparent z-10"
-          animate={{ x: ["-128px", "calc(100vw + 128px)"] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          className="pointer-events-none absolute inset-y-0 z-10 w-32 bg-gradient-to-r from-transparent via-neon-cyan/10 to-transparent"
+          animate={reduceMotion ? undefined : { x: ["-128px", "calc(100vw + 128px)"] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
         />
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/20">
-            {liveStats.map((stat) => (
-              <div
+          <div className="grid grid-cols-2 divide-x divide-border/20 md:grid-cols-4">
+            {liveStats.map((stat, i) => (
+              <motion.div
                 key={stat.label}
-                className="group flex items-center gap-3 px-4 py-4 transition-colors hover:bg-neon-cyan/3 md:px-6"
+                className="group flex items-center gap-3 px-4 py-4 transition-colors hover:bg-neon-cyan/[0.04] md:px-6"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.08, duration: 0.45 }}
+                whileHover={reduceMotion ? undefined : { backgroundColor: "hsl(195 100% 60% / 0.06)" }}
               >
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                <motion.div
+                  className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${
                     stat.accent
                       ? "bg-neon-cyan/15 text-neon-cyan"
-                      : "bg-muted/50 text-muted-foreground group-hover:text-neon-cyan group-hover:bg-neon-cyan/10"
+                      : "bg-muted/50 text-muted-foreground group-hover:bg-neon-cyan/10 group-hover:text-neon-cyan"
                   }`}
+                  whileHover={reduceMotion ? undefined : { scale: 1.08, boxShadow: "0 0 18px hsl(195 100% 60% / 0.25)" }}
                 >
-                  <stat.icon className="w-4 h-4" />
-                </div>
+                  <stat.icon className="h-4 w-4" />
+                </motion.div>
                 <div>
-                  <p className="text-[10px] font-mono text-muted-foreground tracking-wider">
-                    {stat.label}
-                  </p>
+                  <p className="text-[10px] font-mono tracking-wider text-muted-foreground">{stat.label}</p>
                   <p
                     className={`font-display text-sm font-bold tracking-wide ${
-                      stat.accent ? "text-neon-cyan text-glow-cyan" : "text-foreground"
+                      stat.accent ? "text-glow-cyan text-neon-cyan" : "text-foreground"
                     }`}
                   >
                     {stat.value}
                   </p>
                 </div>
-                {stat.accent && (
+                {stat.accent ? (
                   <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-neon-green ml-auto flex-shrink-0"
+                    className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neon-green"
                     style={{ boxShadow: "0 0 6px hsl(150 100% 50%)" }}
-                    animate={{ opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
+                    animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
                   />
-                )}
-              </div>
+                ) : null}
+              </motion.div>
             ))}
           </div>
         </div>
-      </div> */}
+      </div>
     </>
   );
 };
