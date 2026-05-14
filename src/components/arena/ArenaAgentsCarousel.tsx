@@ -52,11 +52,11 @@ function ArenaAgentCarouselCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "group mx-auto flex h-full w-full max-w-[6.75rem] flex-col overflow-hidden rounded-xl border border-white/[0.1] bg-[hsl(268_32%_7%/0.92)] text-left transition duration-300 hover:-translate-y-0.5 sm:max-w-[7.25rem] md:max-w-[7.75rem]",
+        "group mx-auto flex h-full w-full max-w-[12.5rem] flex-col overflow-hidden rounded-xl border border-white/[0.1] bg-[hsl(268_32%_7%/0.92)] text-left transition duration-300 hover:-translate-y-0.5 sm:max-w-[13.5rem] md:max-w-[15rem]",
         borderAccent
       )}
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[hsl(268_32%_6%/0.95)]">
+      <div className="relative aspect-[5/4] w-full overflow-hidden bg-[hsl(268_32%_6%/0.95)]">
         <ArenaAgentThumbnail
           agent={agent}
           className="h-full w-full rounded-none border-0 bg-transparent [&_img]:object-cover [&_img]:p-0"
@@ -66,7 +66,7 @@ function ArenaAgentCarouselCard({
           ELO {agent.eloRating}
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-0.5 p-2">
+      <div className="flex flex-1 flex-col gap-0.5 p-1.5">
         <h4 className={cn("truncate font-display text-[11px] font-bold leading-tight text-foreground transition", nameHover)}>
           {agent.name}
         </h4>
@@ -74,7 +74,7 @@ function ArenaAgentCarouselCard({
           {agent.archetype}
           {agent.clan ? ` · ${agent.clan}` : ""}
         </p>
-        <p className="mt-auto pt-1 font-mono text-[8px] text-muted-foreground">
+        <p className="mt-auto pt-0.5 font-mono text-[8px] text-muted-foreground">
           {agent.wins}W · {agent.losses}L
         </p>
       </div>
@@ -88,10 +88,10 @@ function CarouselSkeleton({ accent }: { accent: "cyan" | "purple" }) {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="min-w-[72%] shrink-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-background/30 sm:min-w-[46%] md:min-w-[32%] lg:min-w-[24%]"
+          className="min-w-[12.5rem] shrink-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-background/30 sm:min-w-[13.5rem] md:min-w-[15rem]"
         >
-          <Skeleton className={cn("aspect-[4/5] w-full rounded-none", accent === "purple" ? "bg-muted/55" : "bg-muted/50")} />
-          <div className="space-y-2 p-3">
+          <Skeleton className={cn("aspect-[5/4] w-full rounded-none", accent === "purple" ? "bg-muted/55" : "bg-muted/50")} />
+          <div className="space-y-1.5 p-2">
             <Skeleton className="h-3.5 w-24 bg-muted/70" />
             <Skeleton className="h-2.5 w-32 bg-muted/55" />
           </div>
@@ -195,14 +195,14 @@ export function ArenaAgentsCarousel({
             {agents.map((agent) => (
               <CarouselItem
                 key={agent.id}
-                className="basis-auto pl-2"
+                className="basis-auto pl-2 sm:pl-3"
               >
                 <ArenaAgentCarouselCard agent={agent} accent={accent} onClick={() => onAgentClick(agent)} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-0 border-white/15 bg-background/85 text-foreground hover:bg-background" />
-          <CarouselNext className="right-0 border-white/15 bg-background/85 text-foreground hover:bg-background" />
+          <CarouselPrevious className="left-0 h-10 w-10 border-white/15 bg-background/90 text-foreground shadow-md hover:bg-background [&_svg]:h-5 [&_svg]:w-5" />
+          <CarouselNext className="right-0 h-10 w-10 border-white/15 bg-background/90 text-foreground shadow-md hover:bg-background [&_svg]:h-5 [&_svg]:w-5" />
         </Carousel>
       )}
 
