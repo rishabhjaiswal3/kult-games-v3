@@ -19,13 +19,17 @@ function attachAuthHeader(client: AxiosInstance) {
     (config) => {
       const isAiArenaRequest =
         typeof config.baseURL === "string" && config.baseURL.includes("aiarena-gateway.onrender.com");
-      const aiArenaTokenFromEnv = import.meta.env.VITE_AI_ARENA_BEARER_TOKEN as string | undefined;
-      const aiArenaTokenFromStorage = getAiArenaAccessToken();
-      const token = isAiArenaRequest
-        ? aiArenaTokenFromStorage || aiArenaTokenFromEnv || localStorage.getItem(TOKEN_KEY)
-        : localStorage.getItem(TOKEN_KEY);
-      if (token && token !== "undefined" && token !== "null") {
-        config.headers.Authorization = `Bearer ${token}`;
+
+      if (isAiArenaRequest) {
+        const arenaToken = getAiArenaAccessToken();
+        if (arenaToken) {
+          config.headers.Authorization = `Bearer ${arenaToken}`;
+        }
+      } else {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token && token !== "undefined" && token !== "null") {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
       return config;
     },

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getApiClient } from "@/lib/apiClientFactory";
+import { StorageKeys } from "@/constants/storageKeys";
 import type {
   AiArenaAgent,
   AiArenaAgentEvolutionResponse,
@@ -18,10 +19,38 @@ import type {
   AiArenaAgentWalletResponse,
   AiArenaListAgentsResponse,
   AiArenaMatchmakingStatusResponse,
+  AiArenaFinancialTransactionsResponse,
+  AiArenaReplayResponse,
+  MyArenaAgentsResult,
   AiArenaProfileResponse,
 } from "@/types/aiArenaGateway";
 
 const http = () => getApiClient("aiArenaGateway");
+
+function getCachedAiArenaUserId(): string | null {
+  if (typeof localStorage === "undefined") return null;
+  return localStorage.getItem(StorageKeys.local.aiArenaUserId);
+}
+
+async function resolveAiArenaUserId(): Promise<string> {
+  try {
+    const client = http();
+    try {
+      const { data } = await client.get<unknown>("/v1/auth/me");
+      return parseAiArenaProfilePayload(data).userId;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) {
+        const { data } = await client.get<unknown>("/v1/users/me");
+        return parseAiArenaProfilePayload(data).userId;
+      }
+      throw err;
+    }
+  } catch {
+    const cached = getCachedAiArenaUserId();
+    if (cached) return cached;
+    throw new Error("AI Arena user session unavailable");
+  }
+}
 
 const AGENTS_LIST_PAGE_SIZE = 100;
 /** Safety cap when scanning public GET /v1/agents to build "mine" by userId. */
@@ -110,12 +139,31 @@ async function collectAgentsForUserId(userId: string): Promise<AiArenaAgent[]> {
 }
 
 export const aiArenaGatewayApi = {
+  /** GET /v1/agents — public paginated agent roster */
+  listAgents: async (page = 1, pageSize = 20): Promise<AiArenaListAgentsResponse> => {
+    const { data } = await http().get<AiArenaListAgentsResponse>("/v1/agents", {
+      params: { page, pageSize, limit: pageSize },
+    });
+    return {
+      agents: data.agents ?? [],
+      page: data.page ?? page,
+      pageSize: data.pageSize ?? pageSize,
+      total: data.total ?? data.agents?.length ?? 0,
+    };
+  },
+
   /** GET /v1/leaderboards/global?limit= */
   getGlobalLeaderboard: async (limit = 20): Promise<AiArenaGlobalLeaderboardResponse> => {
     const { data } = await http().get<AiArenaGlobalLeaderboardResponse>("/v1/leaderboards/global", {
       params: { limit },
     });
-    return data;
+    return {
+      ...data,
+      entries: (data.entries ?? []).map((e) => ({
+        ...e,
+        score: Number((e as { score?: number; eloRating?: number }).score ?? (e as { eloRating?: number }).eloRating ?? 0),
+      })),
+    };
   },
 
   /** GET /v1/battles/:battleId */
@@ -150,6 +198,23 @@ export const aiArenaGatewayApi = {
 
   /**
    * Agents owned by the authenticated user.
+   * Tries GET /v1/agents/mine; on 404 falls back to profile embed or public list filtered by userId.
+   */
+  getMyAgentsFromMine: async (page = 1, pageSize = 20): Promise<MyArenaAgentsResult> => {
+    try {
+      const data = await aiArenaGatewayApi.getMyAgents(page, pageSize);
+      return {
+        agents: data.agents ?? [],
+        mineOk: true,
+        total: data.total,
+      };
+    } catch {
+      return { agents: [], mineOk: false };
+    }
+  },
+
+  /**
+   * Agents owned by the authenticated user.
    * Prefers `GET /v1/agents/mine` (JWT-scoped). Falls back to profile embed or public list scan.
    */
   getMyAgents: async (page = 1, pageSize = 20): Promise<AiArenaListAgentsResponse> => {
@@ -169,14 +234,18 @@ export const aiArenaGatewayApi = {
       }
     }
 
-    const profile = await aiArenaGatewayApi.getAuthMe();
-    let full: AiArenaAgent[];
-
-    if (profile.agents?.length) {
-      full = profile.agents;
-    } else {
-      full = await collectAgentsForUserId(profile.userId);
+    let userId: string;
+    let embedded: AiArenaAgent[] | undefined;
+    try {
+      const profile = await aiArenaGatewayApi.getAuthMe();
+      userId = profile.userId;
+      embedded = profile.agents;
+    } catch {
+      userId = await resolveAiArenaUserId();
+      embedded = undefined;
     }
+
+    const full = embedded?.length ? embedded : await collectAgentsForUserId(userId);
 
     const start = (page - 1) * pageSize;
     return {
@@ -273,6 +342,25 @@ export const aiArenaGatewayApi = {
     body: AiArenaDirectChallengeRequest
   ): Promise<AiArenaDirectChallengeResponse> => {
     const { data } = await http().post<AiArenaDirectChallengeResponse>("/v1/matchmaking/match/direct", body);
+    return data;
+  },
+
+  /** GET /v1/financial/transactions/:agentId */
+  getAgentTransactions: async (
+    agentId: string,
+    page = 1,
+    limit = 30
+  ): Promise<AiArenaFinancialTransactionsResponse> => {
+    const { data } = await http().get<AiArenaFinancialTransactionsResponse>(
+      `/v1/financial/transactions/${encodeURIComponent(agentId)}`,
+      { params: { page, limit } }
+    );
+    return { transactions: data.transactions ?? [], total: data.total };
+  },
+
+  /** GET /v1/replays/:battleId */
+  getReplay: async (battleId: string): Promise<AiArenaReplayResponse> => {
+    const { data } = await http().get<AiArenaReplayResponse>(`/v1/replays/${encodeURIComponent(battleId)}`);
     return data;
   },
 };

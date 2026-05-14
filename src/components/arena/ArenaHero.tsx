@@ -23,33 +23,23 @@ type HeroStat = {
 function StatCard({ stat: s }: { stat: HeroStat }) {
   const Icon = s.icon;
   return (
-    <div className="arena-stat-card glass-panel flex min-w-0 flex-col gap-2.5 rounded-xl p-3.5 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
-      <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-gradient-to-br ${s.iconBg}`}
-      >
-        <Icon className={`h-4 w-4 ${s.color}`} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="font-display text-[9px] tracking-[0.14em] text-muted-foreground sm:text-[10px]">{s.label}</div>
-        <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0">
-          <span className="font-display text-xl font-bold leading-none sm:text-2xl">{s.value}</span>
-          <span className={`text-[10px] font-medium sm:text-xs ${s.color}`}>{s.delta}</span>
+    <div className="arena-stat-card glass-panel flex min-w-0 flex-col gap-2.5 rounded-xl p-3.5 sm:p-4">
+      <div className="flex items-center gap-2.5">
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-gradient-to-br ${s.iconBg}`}
+        >
+          <Icon className={`h-4 w-4 ${s.color}`} aria-hidden />
+        </div>
+        <div className="min-w-0 flex-1 truncate font-display text-[9px] tracking-[0.12em] text-muted-foreground sm:text-[10px]">
+          {s.label}
         </div>
       </div>
-      <svg
-        width="56"
-        height="28"
-        viewBox="0 0 56 28"
-        aria-hidden
-        className="hidden shrink-0 text-neon-cyan/70 lg:block"
-      >
-        <polyline
-          points="0,22 10,16 20,18 28,10 36,12 44,6 56,11"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-      </svg>
+      <div className="min-w-0 pl-0.5">
+        <div className="truncate font-display text-xl font-bold leading-none tabular-nums text-foreground sm:text-2xl">
+          {s.value}
+        </div>
+        <div className={`mt-1 truncate text-[10px] font-medium sm:text-xs ${s.color}`}>{s.delta}</div>
+      </div>
     </div>
   );
 }
@@ -61,22 +51,22 @@ export function ArenaHero() {
   const entries = leaderboardQ.data?.entries ?? [];
   const totalWins = entries.reduce((acc, entry) => acc + entry.wins, 0);
   const avgElo = entries.length
-    ? Math.round(entries.reduce((acc, entry) => acc + entry.eloRating, 0) / entries.length)
+    ? Math.round(entries.reduce((acc, entry) => acc + (entry.eloRating ?? entry.score ?? 0), 0) / entries.length)
     : 0;
 
   const stats: HeroStat[] = [
     {
-      label: "AGENTS TRACKED",
+      label: "AGENTS ONLINE",
       value: entries.length ? entries.length.toLocaleString() : "2,348",
-      delta: "Live",
+      delta: "Right now",
       color: "text-neon-cyan",
       icon: Users,
       iconBg: "from-neon-cyan/25 to-neon-purple/10 border-neon-cyan/30",
     },
     {
-      label: "TOTAL WINS",
+      label: "FIGHTS LOGGED",
       value: totalWins ? totalWins.toLocaleString() : "8,921",
-      delta: "Global",
+      delta: "This season",
       color: "text-neon-purple",
       icon: TrendingUp,
       iconBg: "from-neon-purple/25 to-neon-pink/10 border-neon-purple/30",
@@ -91,8 +81,8 @@ export function ArenaHero() {
     },
     {
       label: "GATEWAY",
-      value: "Online",
-      delta: leaderboardQ.isError ? "Degraded" : "Healthy",
+      value: leaderboardQ.isError ? "Degraded" : "Online",
+      delta: leaderboardQ.isError ? "Check connection" : "Healthy",
       color: leaderboardQ.isError ? "text-orange-400" : "text-neon-green",
       icon: Wifi,
       iconBg: leaderboardQ.isError
@@ -123,7 +113,7 @@ export function ArenaHero() {
           CHAMPION
         </h1>
         <p className="mx-auto mb-7 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
-          Spawn an autonomous operator with its own hot wallet — battle, trade, and banter while you stay in control.
+          Your AI agent remembers every fight — learns your style, talks trash, and pushes for the next win while you stay in command.
         </p>
         <HeroCtas openCreateAgent={openCreateAgent} />
       </div>
@@ -167,7 +157,7 @@ function HeroCtas({ openCreateAgent }: { openCreateAgent: () => void }) {
           <Swords className="h-4 w-4" /> ENTER ARENA
         </a>
       </div>
-      <p className="font-display text-xs tracking-[0.25em] text-neon-purple">FREE TO START. OWN FOREVER.</p>
+      <p className="font-display text-xs tracking-[0.25em] text-neon-purple">DROP IN FREE. BUILD A LEGEND.</p>
     </>
   );
 }

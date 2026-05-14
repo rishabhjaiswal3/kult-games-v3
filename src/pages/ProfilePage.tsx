@@ -2,16 +2,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Bot,
   Copy,
   Crown,
-  Flame,
   Gamepad2,
   Loader2,
   Pencil,
   Save,
-  Sparkles,
-  Swords,
   Trophy,
   UserCircle,
   Wallet,
@@ -22,13 +18,15 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
-import { Badge } from "@/components/ui/badge";
+import { HomeHubHero } from "@/components/hub/HomeHubHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { playerApi } from "@/api/playerApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
+import { ProfileMyAgentsSection } from "@/components/profile/ProfileMyAgentsSection";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { cn } from "@/lib/utils";
 
 const KULT_AVATARS = [
@@ -217,15 +215,8 @@ const ProfilePage = () => {
     staleTime: 60_000,
   });
 
-  const agentQuery = useQuery({
-    queryKey: ["aiArenaGateway", "profileAgentList"],
-    queryFn: async () => {
-      const res = await aiArenaGatewayApi.getMyAgents(1, 10);
-      return res.agents?.[0] ?? null;
-    },
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+  const { openCreateAgent } = useCreateAgent();
+  const myAgentsQ = useMyArenaAgents(1, 50);
 
   useEffect(() => {
     if (full?.player?.name != null) setNameDraft(full.player.name);
@@ -275,12 +266,10 @@ const ProfilePage = () => {
             >
               <UserCircle className="h-10 w-10 text-neon-cyan" />
             </div>
-            <h1 className="font-display text-2xl font-black uppercase tracking-tight text-foreground sm:text-3xl">
-              Your command center
-            </h1>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Sign in with your wallet to see stats, your AI Arena agent, and customize your display name.
-            </p>
+            <HomeHubHero
+              subtitle="Sign in with your wallet to see stats, your AI Arena agent, and customize your display name."
+              className="text-center [&_h1]:text-2xl [&_p]:mx-auto"
+            />
             <Button
               asChild
               className="mt-8 h-12 rounded-xl bg-gradient-to-r from-[hsl(195_100%_45%)] to-[hsl(278_85%_50%)] px-8 font-display text-xs font-bold tracking-[0.2em] text-white shadow-[0_0_28px_hsl(195_100%_50%/_0.35)] hover:opacity-95"
@@ -295,7 +284,7 @@ const ProfilePage = () => {
   }
 
   const displayName = full?.player.name?.trim() || "Player";
-  const agent = agentQuery.data;
+  const myAgents = myAgentsQ.data?.agents ?? [];
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -322,7 +311,7 @@ const ProfilePage = () => {
 
 
       <section className="relative pt-24 pb-20 md:pb-28">
-        <div className="relative mx-auto max-w-6xl px-4 md:px-8">
+        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -331,6 +320,8 @@ const ProfilePage = () => {
             <ArrowLeft className="h-3.5 w-3.5" />
             BACK
           </button>
+
+          <HomeHubHero />
 
           {/* Hero */}
           <div
@@ -600,121 +591,13 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* AI Agent */}
-              <div
-                className="lg:col-span-12"
-              >
-                <div className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-card/60 via-card/30 to-background/80 p-1 shadow-[0_24px_80px_hsl(220_60%_2%/0.4)]">
-                  <div className="rounded-[26px] border border-violet-500/15 bg-background/40 p-6 backdrop-blur-md md:p-8">
-                    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/30 to-neon-cyan/20 text-violet-200">
-                          <Bot className="h-7 w-7" />
-                        </div>
-                        <div>
-                          <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-violet-300/90">AI Arena</p>
-                          <h2 className="font-display text-xl font-black uppercase tracking-tight text-foreground md:text-2xl">
-                            Your AI agent
-                          </h2>
-                        </div>
-                      </div>
-                      {agent ? (
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "w-fit border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
-                            agent.status?.toLowerCase() === "inactive" && "border-amber-500/40 bg-amber-500/10 text-amber-200",
-                          )}
-                        >
-                          {agent.status || "Active"}
-                        </Badge>
-                      ) : null}
-                    </div>
-
-                    {agentQuery.isLoading ? (
-                      <div className="flex items-center gap-3 py-12 text-muted-foreground">
-                        <Loader2 className="h-5 w-5 animate-spin text-neon-cyan" />
-                        <span className="text-sm">Loading agent…</span>
-                      </div>
-                    ) : agentQuery.isError ? (
-                      <p className="py-8 text-sm text-red-400/90">Could not connect to AI Arena right now.</p>
-                    ) : !agent ? (
-                      <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-background/30 py-12 text-center">
-                        <Sparkles className="mb-3 h-10 w-10 text-muted-foreground/50" />
-                        <p className="max-w-md text-sm text-muted-foreground">
-                          No agent linked to this wallet yet. Create one from the header menu or visit AI Arena to get started.
-                        </p>
-                        <Button asChild className="mt-6 rounded-xl font-display text-xs font-bold tracking-wider">
-                          <Link to="/ai-arena">Go to AI Arena</Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="grid gap-6 lg:grid-cols-[1fr_minmax(0,280px)]">
-                        <div>
-                          <h3 className="font-display text-lg font-bold text-foreground">{agent.name}</h3>
-                          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{agent.description}</p>
-                          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            <div className="rounded-xl border border-white/10 bg-background/50 p-3">
-                              <p className="text-[10px] font-mono uppercase text-muted-foreground">Elo</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums text-neon-cyan">{agent.eloRating}</p>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-background/50 p-3">
-                              <p className="text-[10px] font-mono uppercase text-muted-foreground">Balance</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums text-foreground">—</p>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-background/50 p-3">
-                              <p className="text-[10px] font-mono uppercase text-muted-foreground">Record</p>
-                              <p className="mt-1 flex items-center gap-1 font-mono text-sm">
-                                <span className="text-emerald-400">{agent.wins}W</span>
-                                <span className="text-muted-foreground">/</span>
-                                <span className="text-red-400/90">{agent.losses}L</span>
-                              </p>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-background/50 p-3">
-                              <p className="text-[10px] font-mono uppercase text-muted-foreground">Matches</p>
-                              <p className="mt-1 font-display text-xl font-black tabular-nums">{agent.wins + agent.losses}</p>
-                            </div>
-                          </div>
-                          <div className="mt-4 space-y-2">
-                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Agent ID</p>
-                            <button
-                              type="button"
-                              onClick={() => copyText("Agent ID", agent.id)}
-                              className="flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-white/10 bg-background/60 px-3 py-2.5 text-left font-mono text-xs text-foreground transition-colors hover:border-neon-cyan/30"
-                            >
-                              <span className="truncate">{agent.id}</span>
-                              <Copy className="h-4 w-4 shrink-0 opacity-50" />
-                            </button>
-                            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Evolution stage</p>
-                            <p className="truncate rounded-xl border border-white/5 bg-background/40 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-                              {agent.evolutionStage}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-orange-500/20 bg-gradient-to-b from-orange-500/[0.07] to-transparent p-5">
-                          <div>
-                            <div className="mb-2 flex items-center gap-2 text-orange-300/90">
-                              <Flame className="h-5 w-5" />
-                              <span className="text-xs font-mono uppercase tracking-wider">Combat ready</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Fund your agent from the header menu to keep it stocked for arena matches and in-game actions.
-                            </p>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <Button asChild variant="secondary" className="rounded-xl border border-white/10 bg-background/60">
-                              <Link to="/ai-arena">
-                                <Swords className="mr-2 h-4 w-4" />
-                                Arena &amp; training
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <ProfileMyAgentsSection
+                agents={myAgents}
+                isLoading={myAgentsQ.isLoading}
+                isError={myAgentsQ.isError}
+                onCreateAgent={openCreateAgent}
+                onCopyId={copyText}
+              />
             </div>
           )}
 

@@ -1,7 +1,17 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useLoginWithEmail, useLoginWithOAuth, useLogin, usePrivy } from "@privy-io/react-auth";
+import { useEffect, useRef, useState } from "react";
+import {
+  useLogin,
+  useLoginWithEmail,
+  useLoginWithOAuth,
+  usePrivy,
+  useWallets,
+} from "@privy-io/react-auth";
+import { getAllowedChainFromEnv } from "@/lib/chain";
+import { switchAppChainViaInjectedProvider } from "@/lib/ensureWalletChain";
+import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -13,6 +23,83 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [walletFlowPending, setWalletFlowPending] = useState(false);
+  const [walletFlowBusy, setWalletFlowBusy] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [finishingSignIn, setFinishingSignIn] = useState(false);
+  const walletFlowInFlightRef = useRef(false);
+
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { authenticated, ready, linkWallet } = usePrivy();
+  const { wallets } = useWallets();
+  const activeWallet = wallets[0];
+  const targetChainId = getAllowedChainFromEnv().decimalChainId;
+
+  const { sendCode, loginWithCode } = useLoginWithEmail({
+    onComplete: () => {
+      setFinishingSignIn(true);
+    },
+    onError: (error) => {
+      setFinishingSignIn(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
+  });
+  const { initOAuth } = useLoginWithOAuth({
+    onComplete: () => {
+      setFinishingSignIn(true);
+    },
+    onError: (error) => {
+      setFinishingSignIn(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
+  });
+  const { login } = useLogin({
+    onComplete: ({ loginMethod }) => {
+      walletFlowInFlightRef.current = false;
+      setWalletFlowBusy(false);
+      if (loginMethod === "siwe") {
+        setWalletFlowPending(true);
+        return;
+      }
+      setWalletFlowPending(false);
+      onClose();
+    },
+    onError: (error) => {
+      walletFlowInFlightRef.current = false;
+      setWalletFlowPending(false);
+      setWalletFlowBusy(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
+  });
+
+  useEffect(() => {
+    if (!isOpen) {
+      setAuthError("");
+      setFinishingSignIn(false);
+      return;
+    }
+    if (authenticated && !isAuthenticated && !authLoading) {
+      setFinishingSignIn(true);
+    }
+    if (finishingSignIn && isAuthenticated && !authLoading) {
+      setFinishingSignIn(false);
+      onClose();
+    }
+  }, [isOpen, authenticated, isAuthenticated, authLoading, finishingSignIn, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !finishingSignIn || authLoading) return;
+    const timer = window.setTimeout(() => {
+      if (!isAuthenticated) {
+        setFinishingSignIn(false);
+        setAuthError("Sign-in started but could not complete. Please try again or use wallet login.");
+      }
+    }, 25_000);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, finishingSignIn, authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (!isOpen || typeof window === "undefined") return;
@@ -23,32 +110,62 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     });
   }, [isOpen]);
 
-  const { sendCode, loginWithCode } = useLoginWithEmail({
-    onComplete: () => { onClose(); },
-  });
-  const { initOAuth } = useLoginWithOAuth({
-    onComplete: () => { onClose(); },
-  });
-  const { login } = useLogin();
-  const { authenticated, ready, linkWallet } = usePrivy();
-
   const handleWalletAuth = () => {
-    if (!ready) return;
-    if (authenticated) {
+    if (!ready || walletFlowBusy) return;
+    if (isAuthenticated) {
       linkWallet({ walletChainType: "ethereum-only" });
-    } else {
-      login({ loginMethods: ["wallet"] });
+      return;
     }
+    if (authenticated) {
+      setAuthError("");
+      setFinishingSignIn(true);
+      return;
+    }
+    setWalletFlowPending(false);
+    setWalletFlowBusy(true);
+    setAuthError("");
+    walletFlowInFlightRef.current = true;
+    login({ loginMethods: ["wallet"], walletChainType: "ethereum-only" });
   };
+
+  useEffect(() => {
+    if (!isOpen || !ready || !authenticated || !walletFlowPending) return;
+    if (!activeWallet?.address) return;
+    if (walletFlowInFlightRef.current) return;
+
+    walletFlowInFlightRef.current = true;
+    void (async () => {
+      try {
+        await switchAppChainViaInjectedProvider();
+        if (typeof activeWallet.switchChain === "function") {
+          try {
+            await activeWallet.switchChain(targetChainId);
+          } catch {
+            /* injected switch above is the reliable path */
+          }
+        }
+        setWalletFlowPending(false);
+        onClose();
+      } catch (err) {
+        console.error("[Auth] 0G chain switch after wallet login failed:", err);
+        setWalletFlowPending(false);
+      } finally {
+        walletFlowInFlightRef.current = false;
+        setWalletFlowBusy(false);
+      }
+    })();
+  }, [isOpen, ready, authenticated, walletFlowPending, activeWallet, targetChainId, onClose]);
 
   const handleSendCode = async () => {
     if (!email) return;
     setLoading(true);
+    setAuthError("");
     try {
       await sendCode({ email });
       setOtpSent(true);
-    } catch {
-      // error handled by Privy
+    } catch (err) {
+      const msg = privyAuthErrorMessage(err);
+      if (msg) setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -57,10 +174,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleVerifyCode = async () => {
     if (!otpCode) return;
     setLoading(true);
+    setAuthError("");
     try {
       await loginWithCode({ code: otpCode });
-    } catch {
-      // error handled by Privy
+    } catch (err) {
+      const msg = privyAuthErrorMessage(err);
+      if (msg) setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -167,7 +286,19 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     </p>
                   </div>
 
-                  {!otpSent ? (
+                  {authError ? (
+                    <p className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/95">
+                      {authError}
+                    </p>
+                  ) : null}
+
+                  {finishingSignIn ? (
+                    <motion.div className="flex flex-col items-center gap-3 py-8 text-center">
+                      <div className="h-10 w-10 animate-spin rounded-full border-2 border-neon-cyan/30 border-t-neon-cyan" />
+                      <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
+                      <p className="text-xs text-muted-foreground/70">Creating wallet &amp; verifying with Kult backend</p>
+                    </motion.div>
+                  ) : !otpSent ? (
                     <div className="space-y-4">
                       {/* Email input */}
                       <div className="space-y-2">
@@ -221,6 +352,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handleWalletAuth}
+                          disabled={loading || walletFlowBusy || !ready}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all group"
                           style={{
                             borderRadius: "12px",
@@ -244,7 +376,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => initOAuth({ provider: "google" })}
+                          onClick={() => {
+                            setAuthError("");
+                            void initOAuth({ provider: "google" });
+                          }}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"
                           style={{
                             borderRadius: "12px",
