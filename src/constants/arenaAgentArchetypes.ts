@@ -82,3 +82,26 @@ export const ARENA_AGENT_ARCHETYPE_CARDS: ArenaAgentArchetypeCard[] = [
     border: "group-hover:border-fuchsia-400/50",
   },
 ];
+
+const ARCHETYPE_PORTRAIT_BY_TYPE = Object.fromEntries(
+  ARENA_AGENT_ARCHETYPE_CARDS.map((card) => [card.archetype, card.image])
+) as Record<string, string>;
+
+const PORTRAIT_POOL = ARENA_AGENT_ARCHETYPE_CARDS.map((card) => card.image);
+
+function portraitIndexFromAgentId(agentId: string): number {
+  let hash = 0;
+  for (let i = 0; i < agentId.length; i += 1) {
+    hash = (hash * 31 + agentId.charCodeAt(i)) >>> 0;
+  }
+  return hash % PORTRAIT_POOL.length;
+}
+
+/** Archetype portrait when known; otherwise a stable pick from the six roster characters. */
+export function getArenaAgentPortrait(agent: { id: string; archetype?: string | null }): string {
+  const normalized = agent.archetype?.trim().toUpperCase();
+  if (normalized && ARCHETYPE_PORTRAIT_BY_TYPE[normalized]) {
+    return ARCHETYPE_PORTRAIT_BY_TYPE[normalized];
+  }
+  return PORTRAIT_POOL[portraitIndexFromAgentId(agent.id)] ?? PORTRAIT_POOL[0];
+}
