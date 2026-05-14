@@ -105,3 +105,19 @@ export function getArenaAgentPortrait(agent: { id: string; archetype?: string | 
   }
   return PORTRAIT_POOL[portraitIndexFromAgentId(agent.id)] ?? PORTRAIT_POOL[0];
 }
+
+export function getArchetypeCardByType(archetype: AiArenaArchetype): ArenaAgentArchetypeCard | undefined {
+  return ARENA_AGENT_ARCHETYPE_CARDS.find((card) => card.archetype === archetype);
+}
+
+/** Stable robot portrait + codename for wallet-based global leaderboard rows. */
+export function getLeaderboardPlayerVisual(wallet: string) {
+  const seed = wallet?.trim() || "player";
+  const card = ARENA_AGENT_ARCHETYPE_CARDS[portraitIndexFromAgentId(seed)] ?? ARENA_AGENT_ARCHETYPE_CARDS[0];
+  return {
+    portrait: card.image,
+    archetype: card.archetype,
+    codename: card.codename,
+    role: card.role,
+  };
+}

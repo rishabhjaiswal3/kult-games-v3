@@ -1,10 +1,14 @@
 export interface AiArenaLeaderboardEntry {
   rank: number;
   agentId: string;
-  name: string;
-  clan: "ZEROG" | "BASE" | "SOLANA" | string;
-  eloRating: number;
-  wins: number;
+  /** ELO from Redis — gateway returns `score`. */
+  score: number;
+  /** Enriched client-side from GET /v1/agents/:id */
+  name?: string;
+  clan?: string;
+  eloRating?: number;
+  wins?: number;
+  archetype?: string;
 }
 
 export interface AiArenaGlobalLeaderboardResponse {
@@ -102,11 +106,15 @@ export interface AiArenaBattleResult {
   loserId: string;
   rounds: number;
   eloChange?: Record<string, number>;
+  log?: Array<string | Record<string, unknown>>;
 }
 
 export interface AiArenaBattle {
   id: string;
   status: "PENDING" | "INITIALIZING" | "IN_PROGRESS" | "COMPLETED" | string;
+  agentIds?: string[];
+  gameId?: string;
+  mode?: string;
   result?: AiArenaBattleResult;
   endedAt?: string;
 }
@@ -228,8 +236,43 @@ export interface AiArenaAgentEvolutionResponse {
 export interface AiArenaAgentRankResponse {
   rank: number;
   agentId: string;
+  score?: number;
   name?: string;
   clan?: string;
   eloRating?: number;
   wins?: number;
+}
+
+export interface AiArenaFinancialTransaction {
+  id?: string;
+  type?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  createdAt?: string;
+  txHash?: string;
+  note?: string;
+}
+
+export interface AiArenaFinancialTransactionsResponse {
+  transactions: AiArenaFinancialTransaction[];
+  total?: number;
+}
+
+export interface AiArenaReplayAction {
+  tick?: number;
+  agentId?: string;
+  action?: Record<string, unknown> | string;
+}
+
+export interface AiArenaReplayResponse {
+  rootHash?: string;
+  battleId: string;
+  replay?: {
+    actionLog?: AiArenaReplayAction[];
+    seed?: string;
+    initialState?: unknown;
+    finalStateHash?: string;
+  };
+  storedAt?: string;
 }

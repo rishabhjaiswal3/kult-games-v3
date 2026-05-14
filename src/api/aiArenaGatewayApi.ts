@@ -19,6 +19,8 @@ import type {
   AiArenaAgentWalletResponse,
   AiArenaListAgentsResponse,
   AiArenaMatchmakingStatusResponse,
+  AiArenaFinancialTransactionsResponse,
+  AiArenaReplayResponse,
   MyArenaAgentsResult,
   AiArenaProfileResponse,
 } from "@/types/aiArenaGateway";
@@ -155,7 +157,13 @@ export const aiArenaGatewayApi = {
     const { data } = await http().get<AiArenaGlobalLeaderboardResponse>("/v1/leaderboards/global", {
       params: { limit },
     });
-    return data;
+    return {
+      ...data,
+      entries: (data.entries ?? []).map((e) => ({
+        ...e,
+        score: Number((e as { score?: number; eloRating?: number }).score ?? (e as { eloRating?: number }).eloRating ?? 0),
+      })),
+    };
   },
 
   /** GET /v1/battles/:battleId */
@@ -334,6 +342,25 @@ export const aiArenaGatewayApi = {
     body: AiArenaDirectChallengeRequest
   ): Promise<AiArenaDirectChallengeResponse> => {
     const { data } = await http().post<AiArenaDirectChallengeResponse>("/v1/matchmaking/match/direct", body);
+    return data;
+  },
+
+  /** GET /v1/financial/transactions/:agentId */
+  getAgentTransactions: async (
+    agentId: string,
+    page = 1,
+    limit = 30
+  ): Promise<AiArenaFinancialTransactionsResponse> => {
+    const { data } = await http().get<AiArenaFinancialTransactionsResponse>(
+      `/v1/financial/transactions/${encodeURIComponent(agentId)}`,
+      { params: { page, limit } }
+    );
+    return { transactions: data.transactions ?? [], total: data.total };
+  },
+
+  /** GET /v1/replays/:battleId */
+  getReplay: async (battleId: string): Promise<AiArenaReplayResponse> => {
+    const { data } = await http().get<AiArenaReplayResponse>(`/v1/replays/${encodeURIComponent(battleId)}`);
     return data;
   },
 };

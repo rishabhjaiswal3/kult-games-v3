@@ -6,6 +6,7 @@ import { StorageKeys } from "@/constants/storageKeys";
 import { useAuth } from "@/contexts/AuthContext";
 import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
+import { GamePlaySkeleton } from "@/components/skeleton";
 
 /**
  * Append ?walletAddress= to any play URL so games that implement
@@ -49,11 +50,7 @@ const GamePlay = () => {
   const token = localStorage.getItem(StorageKeys.local.authToken);
   const playUrl = buildIframeUrl(rawPlayUrl, token);
   if (isLoading) {
-    return (
-      <div className="w-screen h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin" />
-      </div>
-    );
+    return <GamePlaySkeleton />;
   }
 
   if (isError || !game) {

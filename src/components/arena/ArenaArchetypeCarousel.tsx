@@ -23,7 +23,7 @@ export function ArenaArchetypeCarousel({ className }: ArenaArchetypeCarouselProp
   return (
     <section
       className={cn(
-        "glass-panel relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl p-4 sm:p-5",
+        "glass-panel relative flex w-full flex-col overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6",
         className
       )}
     >
@@ -56,7 +56,7 @@ export function ArenaArchetypeCarousel({ className }: ArenaArchetypeCarouselProp
       >
         <CarouselContent className="-ml-3 flex-1 pb-1">
           {ARENA_AGENT_ARCHETYPE_CARDS.map((card) => (
-            <CarouselItem key={card.archetype} className="basis-[78%] pl-3 sm:basis-[48%] lg:basis-[38%] xl:basis-[32%]">
+            <CarouselItem key={card.archetype} className="basis-[88%] pl-3 sm:basis-[52%] md:basis-[38%] lg:basis-[28%] xl:basis-[22%]">
               <ArchetypeCarouselCard
                 card={card}
                 onSelect={() => openCreateAgent({ archetype: card.archetype })}
@@ -83,7 +83,7 @@ function ArchetypeCarouselCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group relative h-full min-h-[220px] w-full overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_6%/0.9)] text-left transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_hsl(270_80%_20%/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:min-h-[240px]",
+        "group relative h-full min-h-[280px] w-full overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_6%/0.9)] text-left transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_hsl(270_80%_20%/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:min-h-[320px] md:min-h-[360px]",
         card.border
       )}
     >
@@ -97,7 +97,7 @@ function ArchetypeCarouselCard({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.95)] via-[hsl(268_32%_8%/0.55)] to-transparent pt-16" />
 
-      <div className="relative flex h-full min-h-[220px] flex-col justify-end p-3 sm:min-h-[240px] sm:p-3.5">
+      <div className="relative flex h-full min-h-[280px] flex-col justify-end p-3 sm:min-h-[320px] sm:p-4 md:min-h-[360px]">
         <div className="rounded-lg border border-white/[0.12] bg-[hsl(268_32%_6%/0.55)] px-3 py-2 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-2">
             <span className={cn("font-display text-[10px] font-bold tracking-[0.2em]", card.accent)}>

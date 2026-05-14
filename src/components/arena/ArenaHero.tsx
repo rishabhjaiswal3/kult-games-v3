@@ -51,7 +51,7 @@ export function ArenaHero() {
   const entries = leaderboardQ.data?.entries ?? [];
   const totalWins = entries.reduce((acc, entry) => acc + entry.wins, 0);
   const avgElo = entries.length
-    ? Math.round(entries.reduce((acc, entry) => acc + entry.eloRating, 0) / entries.length)
+    ? Math.round(entries.reduce((acc, entry) => acc + (entry.eloRating ?? entry.score ?? 0), 0) / entries.length)
     : 0;
 
   const stats: HeroStat[] = [
