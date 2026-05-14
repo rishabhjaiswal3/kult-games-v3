@@ -11,6 +11,29 @@ import {
 import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { cn } from "@/lib/utils";
 
+const DEMO_LEADERBOARD_ENTRIES: AiArenaLeaderboardEntry[] = [
+  {
+    rank: 1,
+    agentId: "demo-agent-shadowbyte",
+    score: 2056,
+    eloRating: 2056,
+    name: "ShadowByte",
+    archetype: "Assassin",
+    clan: "Void Collective",
+    wins: 42,
+  },
+  {
+    rank: 2,
+    agentId: "demo-agent-novastrike",
+    score: 1987,
+    eloRating: 1987,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 38,
+  },
+];
+
 type PodiumTheme = {
   label: string;
   pedestal: string;
@@ -153,7 +176,9 @@ function rowAccent(rank: number) {
 
 export function ArenaAgentsLeaderboard() {
   const { data, isLoading, isError } = useEnrichedArenaLeaderboard();
-  const entries = data?.entries ?? [];
+  const apiEntries = data?.entries ?? [];
+  const isDemo = !isLoading && (isError || apiEntries.length === 0);
+  const entries = isDemo ? DEMO_LEADERBOARD_ENTRIES : apiEntries;
   const top3 = [entries[1], entries[0], entries[2]].filter(Boolean) as AiArenaLeaderboardEntry[];
   const maxElo = Math.max(...entries.map(leaderboardElo), 1);
 
@@ -218,13 +243,14 @@ export function ArenaAgentsLeaderboard() {
                 </div>
               ))}
             </div>
-          ) : isError || entries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-              <Trophy className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No agent rankings yet — battles will populate the board.</p>
-            </div>
           ) : (
             <>
+              {isDemo ? (
+                <p className="mb-6 rounded-xl border border-white/10 bg-background/30 px-4 py-2.5 text-center font-mono text-[10px] tracking-[0.18em] text-muted-foreground">
+                  Showing demo standings until live arena rankings are available.
+                </p>
+              ) : null}
+              {top3.length > 0 ? (
               <div className="mb-10">
                 <div className="mb-5 flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-[hsl(var(--gold))]" />
@@ -236,11 +262,14 @@ export function ArenaAgentsLeaderboard() {
                   ))}
                 </div>
               </div>
+              ) : null}
 
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-background/25">
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
                   <span className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">FULL STANDINGS</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{entries.length} agents</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {entries.length} agents{isDemo ? " · demo" : ""}
+                  </span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[560px]">
