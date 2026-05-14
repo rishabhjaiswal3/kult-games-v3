@@ -18,3 +18,10 @@ export {
 } from "@/components/skeleton/ArenaAgentSkeletons";
 export { ArenaLiveDuelFeedSkeleton } from "@/components/skeleton/ArenaLiveDuelFeedSkeleton";
 export { GamePlaySkeleton } from "@/components/skeleton/GamePlaySkeleton";
+export {
+  ArenaPodiumSkeleton,
+  ArenaLeaderboardTableSkeleton,
+  ArenaHeroStatsSkeleton,
+  ArenaActivitySkeleton,
+  ArenaTerminalSkeleton,
+} from "@/components/skeleton/ArenaLeaderboardSkeletons";

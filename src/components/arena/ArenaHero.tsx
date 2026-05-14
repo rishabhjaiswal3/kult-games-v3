@@ -2,6 +2,7 @@ import heroVideo from "@/assets/b_c_ca_f_a_f_e_mp_.mp4";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Activity, Box, Swords, TrendingUp, Users, Wifi } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { ArenaHeroStatsSkeleton } from "@/components/skeleton";
 import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
@@ -49,7 +50,9 @@ export function ArenaHero() {
   const leaderboardQ = useAiArenaGlobalLeaderboard();
 
   const entries = leaderboardQ.data?.entries ?? [];
+  const statsLoading = leaderboardQ.isFetching && entries.length === 0;
   const totalWins = entries.reduce((acc, entry) => acc + entry.wins, 0);
+
   const avgElo = entries.length
     ? Math.round(entries.reduce((acc, entry) => acc + (entry.eloRating ?? entry.score ?? 0), 0) / entries.length)
     : 0;
@@ -129,9 +132,11 @@ export function ArenaHero() {
       </div>
 
       <div className="relative z-10 mt-1 grid grid-cols-1 gap-3 sm:mt-0 sm:grid-cols-2 sm:gap-4 lg:col-span-12 lg:mt-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <StatCard key={s.label} stat={s} />
-        ))}
+        {statsLoading ? (
+          <ArenaHeroStatsSkeleton />
+        ) : (
+          stats.map((s) => <StatCard key={s.label} stat={s} />)
+        )}
       </div>
     </section>
   );

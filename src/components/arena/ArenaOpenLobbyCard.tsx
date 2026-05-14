@@ -1,6 +1,7 @@
 import { Loader2, Swords } from "lucide-react";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Button } from "@/components/ui/button";
+import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
 import type { AiArenaAgent, AiArenaMatchmakingStatusBody } from "@/types/aiArenaGateway";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export function ArenaOpenLobbyCard({
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             {status.mode ?? "RANKED"}
           </span>
-          <span className="font-mono text-[10px] text-neon-cyan/80">{status.gameId ?? "standard"}</span>
+          <span className="font-mono text-[10px] text-neon-cyan/80">{status.gameId ?? AI_ARENA_DEFAULT_GAME_ID}</span>
           <span className="text-xs text-muted-foreground">Waiting {waitLabel}</span>
           {isOwn ? (
             <Button

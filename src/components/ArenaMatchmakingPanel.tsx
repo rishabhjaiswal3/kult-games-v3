@@ -14,6 +14,7 @@ import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { ArenaMatchFaceoff } from "@/components/arena/ArenaMatchFaceoff";
 import { ArenaOpenLobbyCard } from "@/components/arena/ArenaOpenLobbyCard";
+import { ArenaOpenLobbyGridSkeleton } from "@/components/skeleton";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
@@ -351,7 +352,7 @@ const ArenaMatchmakingPanel = () => {
           </div>
 
           {openLobbiesQ.isLoading && queueQ.isLoading ? (
-            <p className="mt-4 text-sm text-muted-foreground">Scanning open lobbies…</p>
+            <ArenaOpenLobbyGridSkeleton count={2} />
           ) : myQueuedLobbies.length === 0 && otherOpenLobbies.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
               No open lobbies yet. Hit <span className="text-foreground">Start matching</span> to list your agent.

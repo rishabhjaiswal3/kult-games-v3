@@ -1,3 +1,4 @@
+import { ArenaActivitySkeleton } from "@/components/skeleton";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
 const FALLBACK_ACTIVITY = [
@@ -10,6 +11,10 @@ export function LiveArenaActivity() {
   const leaderboardQ = useAiArenaGlobalLeaderboard();
 
   const entries = leaderboardQ.data?.entries ?? [];
+
+  if (leaderboardQ.isFetching && entries.length === 0) {
+    return <ArenaActivitySkeleton />;
+  }
 
   const activity =
     entries.length >= 2

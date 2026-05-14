@@ -1,5 +1,12 @@
-/** Default game id used by AI Arena matchmaking examples (`0g-aiarena/docs/INTEGRATION.md`). */
-export const AI_ARENA_DEFAULT_GAME_ID = "standard";
+/** Default game id for AI Arena matchmaking queues. */
+export const AI_ARENA_DEFAULT_GAME_ID = "warzone";
+
+export const AI_ARENA_GAME_IDS = [
+  { value: "warzone", label: "Warzone" },
+  { value: "robowar", label: "Robowar" },
+] as const;
+
+export type AiArenaGameId = (typeof AI_ARENA_GAME_IDS)[number]["value"];
 
 export const AI_ARENA_MATCH_MODES = [
   { value: "RANKED", label: "Ranked", hint: "ELO matchmaking" },
