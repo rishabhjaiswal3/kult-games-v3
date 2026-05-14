@@ -9,7 +9,7 @@ interface ApiEnvelope<T> {
 export const gamesApi = {
   getAll: async (page = 1, limit = 20): Promise<GamesResponse> => {
     const { data } = await apiClient.get<ApiEnvelope<GamesResponse>>("/games/all", {
-      params: { page, limit },
+      params: { page, page_size: limit, limit },
     });
     return data.data;
   },
