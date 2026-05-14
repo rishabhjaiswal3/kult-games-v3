@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { StorageKeys } from "@/constants/storageKeys";
+import { buildCatalogGroundedPrompt } from "@/lib/kultAiGameContext";
 import { streamKultAIReply } from "@/lib/kultAiChat";
 
 export interface KultAIMessage {
@@ -85,8 +86,9 @@ export const useKultAIChat = () => {
     setIsStreaming(true);
 
     try {
+      const agentMessage = await buildCatalogGroundedPrompt(query);
       const result = await streamKultAIReply({
-        message: query,
+        message: agentMessage,
         userId: userIdRef.current,
         sessionId: sessionIdRef.current,
         signal: abortController.signal,
