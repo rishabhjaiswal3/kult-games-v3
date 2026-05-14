@@ -66,10 +66,11 @@ export interface AiArenaListAgentsResponse {
   total?: number;
 }
 
-/** Result from strict GET /v1/agents/mine (no fallback). */
+/** Result from loading the current user's agents (mine endpoint or fallback). */
 export interface MyArenaAgentsResult {
   agents: AiArenaAgent[];
   mineOk: boolean;
+  total?: number;
 }
 
 /**

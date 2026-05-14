@@ -150,17 +150,16 @@ export const aiArenaGatewayApi = {
   },
 
   /**
-   * Agents owned by the authenticated user — GET /v1/agents/mine only.
-   * On failure returns an empty list with `mineOk: false` (no fallback).
+   * Agents owned by the authenticated user.
+   * Tries GET /v1/agents/mine; on 404 falls back to profile embed or public list filtered by userId.
    */
   getMyAgentsFromMine: async (page = 1, pageSize = 20): Promise<MyArenaAgentsResult> => {
     try {
-      const { data } = await http().get<AiArenaListAgentsResponse>("/v1/agents/mine", {
-        params: { page, pageSize },
-      });
+      const data = await aiArenaGatewayApi.getMyAgents(page, pageSize);
       return {
         agents: data.agents ?? [],
         mineOk: true,
+        total: data.total,
       };
     } catch {
       return { agents: [], mineOk: false };
