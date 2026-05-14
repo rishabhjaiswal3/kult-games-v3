@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const DEMO_LEADERBOARD_ENTRIES: AiArenaLeaderboardEntry[] = [
   {
     rank: 1,
-    agentId: "demo-agent-shadowbyte",
+    agentId: "agent-shadowbyte",
     score: 2056,
     eloRating: 2056,
     name: "ShadowByte",
@@ -24,13 +24,43 @@ const DEMO_LEADERBOARD_ENTRIES: AiArenaLeaderboardEntry[] = [
   },
   {
     rank: 2,
-    agentId: "demo-agent-novastrike",
-    score: 1987,
-    eloRating: 1987,
+    agentId: "agent-novastrike",
+    score: 821,
+    eloRating: 821,
     name: "NovaStrike",
     archetype: "Berserker",
     clan: "Neon Vanguard",
     wins: 38,
+  },
+    {
+    rank: 3,
+    agentId: "agent-cyberclaw",
+    score: 287,
+    eloRating: 287,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 34,
+  },
+    {
+    rank: 4,
+    agentId: "my-agent",
+    score: 198,
+    eloRating: 198,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 31,
+  },
+    {
+    rank: 5,
+    agentId: "agent-novastrike",
+    score: 197,
+    eloRating: 197,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 30,
   },
 ];
 
@@ -177,7 +207,8 @@ function rowAccent(rank: number) {
 export function ArenaAgentsLeaderboard() {
   const { data, isLoading, isError } = useEnrichedArenaLeaderboard();
   const apiEntries = data?.entries ?? [];
-  const isDemo = !isLoading && (isError || apiEntries.length === 0);
+  // const isDemo = !isLoading && (isError || apiEntries.length === 0);
+  const isDemo = true;
   const entries = isDemo ? DEMO_LEADERBOARD_ENTRIES : apiEntries;
   const top3 = [entries[1], entries[0], entries[2]].filter(Boolean) as AiArenaLeaderboardEntry[];
   const maxElo = Math.max(...entries.map(leaderboardElo), 1);
