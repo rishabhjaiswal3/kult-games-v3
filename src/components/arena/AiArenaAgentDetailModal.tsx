@@ -3,16 +3,15 @@ import { Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
+import { Dialog } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ArenaDialogBody,
+  ArenaDialogContent,
+  ArenaDialogDescription,
+  ArenaDialogHeader,
+  ArenaDialogTitle,
+} from "@/components/ui/arena-dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 
 export type AiArenaAgentDetailSeed = Partial<AiArenaAgent> & {
   rank?: number;
@@ -22,7 +21,6 @@ export type AiArenaAgentDetailModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   agentId: string | null;
-  /** When full agent GET fails (e.g. not your agent), show this summary. */
   seed?: AiArenaAgentDetailSeed | AiArenaLeaderboardEntry | null;
 };
 
@@ -109,20 +107,16 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn(
-          "z-[100] max-h-[min(92vh,800px)] w-[calc(100vw-1.5rem)] max-w-2xl overflow-hidden border border-white/10 bg-card/95 p-0 shadow-[0_0_80px_hsl(270_80%_45%/0.15)]"
-        )}
-      >
-        <DialogHeader className="space-y-1 border-b border-white/10 px-5 pb-4 pt-5 sm:px-6">
-          <DialogTitle className="font-display text-left text-xl sm:text-2xl">{displayName}</DialogTitle>
-          <DialogDescription className="text-left text-xs sm:text-sm">
+      <ArenaDialogContent size="lg">
+        <ArenaDialogHeader>
+          <ArenaDialogTitle className="font-display text-left text-xl sm:text-2xl">{displayName}</ArenaDialogTitle>
+          <ArenaDialogDescription className="text-left text-xs sm:text-sm">
             Agent ID: <span className="font-mono text-neon-cyan/90">{agentId ?? "—"}</span>
-          </DialogDescription>
-        </DialogHeader>
+          </ArenaDialogDescription>
+        </ArenaDialogHeader>
 
-        <ScrollArea className="max-h-[min(70vh,620px)] px-5 py-4 sm:px-6">
-          <div className="space-y-5 pr-3">
+        <ArenaDialogBody>
+          <div className="space-y-5 pr-1">
             {agentQ.isLoading && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -132,8 +126,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
 
             {agentQ.isError && (
               <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
-                We could not load the full profile right now. This agent may be leaderboard-only, or your session may
-                need to reconnect. Showing the summary we do have below.
+                We could not load the full profile right now. Showing the summary we have below.
               </p>
             )}
 
@@ -150,7 +143,9 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
                 <DetailRow label="Stage" value={profile.evolutionStage ?? "—"} />
                 <DetailRow label="Losses" value={profile.losses != null ? String(profile.losses) : "—"} />
                 <DetailRow label="Arena NFT" value={profile.inftTokenId ?? "Pending mint"} />
-                {profile.createdAt ? <DetailRow label="Created" value={new Date(profile.createdAt).toLocaleString()} /> : null}
+                {profile.createdAt ? (
+                  <DetailRow label="Created" value={new Date(profile.createdAt).toLocaleString()} />
+                ) : null}
               </section>
             )}
 
@@ -188,7 +183,9 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
               {walletQ.isSuccess ? (
                 <div className="space-y-3 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="break-all font-mono text-[11px] text-foreground">{walletQ.data.wallet.solanaAddress}</span>
+                    <span className="break-all font-mono text-[11px] text-foreground">
+                      {walletQ.data.wallet.solanaAddress}
+                    </span>
                     <Button
                       type="button"
                       variant="outline"
@@ -216,8 +213,8 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
               )}
             </section>
           </div>
-        </ScrollArea>
-      </DialogContent>
+        </ArenaDialogBody>
+      </ArenaDialogContent>
     </Dialog>
   );
 }

@@ -73,13 +73,13 @@ export function HomeArenaPromoBanner() {
 
           <Carousel
             opts={{ align: "start", loop: true, dragFree: true }}
-            className="relative mt-5 md:mt-6"
+            className="relative mt-6 md:mt-8"
           >
-            <CarouselContent className="-ml-2.5">
+            <CarouselContent className="-ml-3">
               {ARENA_AGENT_ARCHETYPE_CARDS.map((card) => (
                 <CarouselItem
                   key={card.archetype}
-                  className="basis-[52%] pl-2.5 sm:basis-[38%] md:basis-[calc(100%/3.2)] lg:basis-[calc(100%/4.2)]"
+                  className="basis-[70%] pl-3 sm:basis-1/2 md:basis-1/4"
                 >
                   <AgentPortraitCard card={card} onSelect={() => navigate("/ai-arena")} />
                 </CarouselItem>
@@ -106,37 +106,29 @@ function AgentPortraitCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group relative h-[132px] w-full overflow-hidden rounded-lg border border-white/[0.12] text-left shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_hsl(270_80%_20%/0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:h-[140px]",
+        "group relative h-[200px] w-full overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_6%/0.9)] text-left transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_hsl(270_80%_20%/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 sm:h-[220px] md:h-[236px]",
         card.border
       )}
     >
       <img
         src={card.image}
-        alt=""
-        aria-hidden
-        className="absolute inset-0 h-full w-full object-cover object-[center_12%]"
+        alt={`${card.codename} — ${card.archetype}`}
+        className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
         loading="lazy"
         decoding="async"
       />
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.92)] via-[hsl(268_32%_8%/0.42)] to-transparent to-55%" />
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t opacity-70",
-          card.glow
-        )}
-      />
-      <div className="pointer-events-none absolute inset-0 bg-[hsl(268_32%_8%/0.1)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.92)] via-[hsl(268_32%_8%/0.45)] to-transparent pt-14" />
 
-      <div className="relative flex h-full flex-col justify-end p-2 sm:p-2.5">
-        <div className="rounded-md border border-white/[0.1] bg-[hsl(268_32%_6%/0.4)] px-2 py-1.5 backdrop-blur-sm">
-          <div className="flex items-center justify-between gap-1">
-            <span className={cn("font-display text-[8px] font-bold tracking-[0.16em] sm:text-[9px]", card.accent)}>
+      <div className="relative flex h-full flex-col justify-end p-2.5 sm:p-3">
+        <div className="rounded-lg border border-white/[0.1] bg-[hsl(268_32%_6%/0.55)] px-2.5 py-2 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-2">
+            <span className={cn("font-display text-[9px] font-bold tracking-[0.16em] sm:text-[10px]", card.accent)}>
               {card.archetype}
             </span>
-            <span className="text-[8px] text-foreground/70 sm:text-[9px]">{card.codename}</span>
+            <span className="text-[9px] text-foreground/75 sm:text-[10px]">{card.codename}</span>
           </div>
-          <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-snug text-foreground sm:text-[11px]">
+          <p className="mt-1 line-clamp-1 text-[10px] font-medium text-muted-foreground sm:text-[11px]">
             {card.tagline}
           </p>
         </div>
