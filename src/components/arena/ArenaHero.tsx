@@ -123,8 +123,12 @@ export function ArenaHero() {
         <HeroCtas openCreateAgent={openCreateAgent} />
       </div>
 
-      <div className="relative mt-1 aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-black/40 sm:mt-0 lg:col-span-5 lg:mt-0 lg:aspect-auto lg:h-full lg:min-h-[clamp(240px,42svh,640px)] lg:pl-1 xl:min-h-[clamp(260px,48svh,720px)] xl:pl-2">
-        <AutoPlayVideo src={heroVideo} loop className="absolute inset-0 h-full w-full object-contain" />
+      <div className="relative mt-1 aspect-[4/5] w-full min-h-[280px] min-w-0 self-center overflow-hidden rounded-xl bg-[hsl(268_28%_9%)] sm:mt-0 sm:min-h-[340px] sm:aspect-[3/4] lg:col-span-5 lg:mt-0 lg:min-h-[min(560px,52svh)] lg:max-h-[min(680px,58svh)] lg:aspect-[4/5] lg:justify-self-end">
+        <AutoPlayVideo
+          src={heroVideo}
+          loop
+          className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+        />
         <HeroVideoFade />
         {NODES.map((n) => (
           <HeroNode key={n.label} node={n} />
@@ -173,16 +177,17 @@ function HeroVideoFade() {
   return (
     <>
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(to right, hsl(268 32% 12% / 0.55) 0%, transparent 20%, transparent 80%, hsl(268 32% 12% / 0.55) 100%)",
+            "linear-gradient(to right, hsl(268 32% 12% / 0.45) 0%, transparent 22%, transparent 78%, hsl(268 32% 12% / 0.45) 100%)",
         }}
       />
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
-          background: "linear-gradient(to bottom, transparent 60%, hsl(268 32% 12% / 0.8) 100%)",
+          background:
+            "linear-gradient(to bottom, transparent 72%, hsl(268 32% 12% / 0.55) 100%)",
         }}
       />
     </>
