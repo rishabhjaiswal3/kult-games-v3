@@ -9,8 +9,6 @@ interface VideoShowcaseProps {
   height?: string;
   contentVerticalAlign?: "center" | "lower" | "lower-desktop-up";
   videoObjectPosition?: string;
-  /** Merged onto the title `<h2>` (e.g. smaller responsive type for one showcase). */
-  titleClassName?: string;
   children?: React.ReactNode;
 }
 
@@ -22,7 +20,6 @@ const VideoShowcase = ({
   height = "60vh",
   contentVerticalAlign = "center",
   videoObjectPosition = "center center",
-  titleClassName,
   children,
 }: VideoShowcaseProps) => {
   const isLower = contentVerticalAlign === "lower" || contentVerticalAlign === "lower-desktop-up";
@@ -49,10 +46,7 @@ const VideoShowcase = ({
 
   const titleEl = (
     <h2
-      className={cn(
-        "font-display text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_24px_hsl(220_80%_4%/0.9)] sm:text-4xl md:text-6xl lg:text-7xl",
-        titleClassName
-      )}
+      className="font-display text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_24px_hsl(220_80%_4%/0.9)] sm:text-4xl md:text-6xl lg:text-7xl"
       style={{ textShadow: "0 0 40px hsl(195 100% 60% / 0.25), 0 2px 20px hsl(220 80% 4% / 0.8)" }}
     >
       {title}

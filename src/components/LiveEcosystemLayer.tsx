@@ -31,10 +31,10 @@ export function LiveEcosystemLayer({ className, compact = false }: LiveEcosystem
       <div className={cn("container mx-auto px-4 sm:px-6", compact ? "space-y-2" : "space-y-3")}>
         <div className="flex items-center gap-2.5">
           <span className="live-dot h-1.5 w-1.5 shrink-0 rounded-full bg-neon-green" />
-          <span className="font-display text-[10px] font-bold uppercase tracking-[0.28em] text-neon-purple drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)] sm:text-xs">
+          <span className="font-display text-[10px] font-bold uppercase tracking-[0.28em] text-neon-cyan sm:text-xs">
             Live Ecosystem
           </span>
-          <div className="h-px flex-1 bg-gradient-to-r from-neon-purple/40 to-transparent" />
+          <div className="h-px flex-1 bg-gradient-to-r from-neon-cyan/40 to-transparent" />
         </div>
 
         <div className="relative overflow-hidden mask-fade-x">
