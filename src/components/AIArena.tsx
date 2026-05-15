@@ -45,7 +45,7 @@ function AIArenaContent() {
               className="pt-[calc(4rem+env(safe-area-inset-top,0px))]"
             />
             <main className="relative z-10 mx-auto max-w-[1600px] space-y-6 px-4 pb-12 pt-4 sm:px-6 md:px-8 md:pb-16 lg:space-y-8 lg:pb-20">
-            <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
+            <div className="grid grid-cols-1 items-stretch gap-6 md:gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
               <ArenaHero />
             </div>
@@ -57,11 +57,11 @@ function AIArenaContent() {
           <ArenaArchetypeCarousel />
           <ArenaAgentShowcase />
           <ArenaAgentsBoard />
+          <ArenaTerminalConsole battleId={activeBattleId} />
+          <ArenaMatchmakingPanel />
           <ArenaAgentsLeaderboard />
           <ArenaLiveBattles />
           <ArenaInfraStrip />
-          <ArenaMatchmakingPanel />
-          <ArenaTerminalConsole battleId={activeBattleId} />
             </main>
         </>
       </div>

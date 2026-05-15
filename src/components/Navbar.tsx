@@ -7,7 +7,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
-import kultLogo from "@/assets/kult-logo.png";
+import zeroGLogo from "@/assets/0G Logo.png";
+import kultBrandLogo from "@/assets/Kult Logo.png";
 import { ArenaTokenAmount } from "@/components/arena/ArenaTokenAmount";
 import LoginModal from "@/components/LoginModal";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
@@ -481,20 +482,25 @@ const Navbar = () => {
     <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md shadow-[0_1px_0_hsl(220_30%_18%/0.5)]">
         <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-3 sm:gap-4 md:gap-5 w-full min-w-0">
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-[88px] md:min-w-[110px]">
-            <img src={kultLogo} alt="Kult Games" className="h-7 md:h-8 w-auto" width={96} height={32} loading="eager" decoding="async" />
-            <motion.div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: "hsl(270 82% 60%)" }}
-              animate={{
-                opacity: [1, 0.72, 1],
-                boxShadow: [
-                  "0 0 4px hsl(270 82% 55%), 0 0 10px hsl(270 82% 55% / 0.5)",
-                  "0 0 10px hsl(270 82% 55%), 0 0 18px hsl(270 82% 55% / 0.45)",
-                  "0 0 4px hsl(270 82% 55%), 0 0 10px hsl(270 82% 55% / 0.5)",
-                ],
-              }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-[120px] md:min-w-[180px]">
+            <img
+              src={zeroGLogo}
+              alt="0G"
+              className="h-6 w-auto sm:h-7 md:h-8"
+              width={32}
+              height={32}
+              loading="eager"
+              decoding="async"
+            />
+            <span className="h-4 w-px shrink-0 bg-border/60" aria-hidden />
+            <img
+              src={kultBrandLogo}
+              alt="Kult Games"
+              className="h-5 w-auto sm:h-6 md:h-7"
+              width={112}
+              height={28}
+              loading="eager"
+              decoding="async"
             />
           </Link>
 

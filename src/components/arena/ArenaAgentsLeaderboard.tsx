@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
 import { Crown, Medal, Sparkles, Swords, Trophy, TrendingUp } from "lucide-react";
 import { type ReactNode } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArenaLeaderboardTableSkeleton,
+  ArenaPodiumSkeleton,
+} from "@/components/skeleton";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import {
   leaderboardElo,
@@ -10,6 +13,59 @@ import {
 } from "@/hooks/useEnrichedArenaLeaderboard";
 import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { cn } from "@/lib/utils";
+
+const DEMO_LEADERBOARD_ENTRIES: AiArenaLeaderboardEntry[] = [
+  {
+    rank: 1,
+    agentId: "agent-shadowbyte",
+    score: 2056,
+    eloRating: 2056,
+    name: "ShadowByte",
+    archetype: "Assassin",
+    clan: "Void Collective",
+    wins: 42,
+  },
+  {
+    rank: 2,
+    agentId: "agent-novastrike",
+    score: 821,
+    eloRating: 821,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 38,
+  },
+    {
+    rank: 3,
+    agentId: "agent-cyberclaw",
+    score: 287,
+    eloRating: 287,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 34,
+  },
+    {
+    rank: 4,
+    agentId: "my-agent",
+    score: 198,
+    eloRating: 198,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 31,
+  },
+    {
+    rank: 5,
+    agentId: "agent-novastrike",
+    score: 197,
+    eloRating: 197,
+    name: "NovaStrike",
+    archetype: "Berserker",
+    clan: "Neon Vanguard",
+    wins: 30,
+  },
+];
 
 type PodiumTheme = {
   label: string;
@@ -68,20 +124,20 @@ function agentMeta(entry: AiArenaLeaderboardEntry) {
 
 function PodiumCard({ entry, elevated }: { entry: AiArenaLeaderboardEntry; elevated?: boolean }) {
   const theme = podiumTheme(entry.rank);
-  const thumbSize = elevated ? "h-20 w-20 md:h-24 md:w-24" : "h-16 w-16 md:h-[4.5rem] md:w-[4.5rem]";
+  const thumbSize = elevated ? "h-16 w-16 md:h-20 md:w-20" : "h-14 w-14 md:h-16 md:w-16";
 
   return (
-    <div className={cn("flex flex-col items-center", elevated && "md:-mt-5")}>
+    <div className={cn("flex w-full max-w-[11rem] flex-col items-center sm:max-w-[12.5rem] lg:max-w-[13rem]", elevated && "md:-mt-4")}>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.45, delay: elevated ? 0.1 : 0 }}
         className={cn(
-          "relative w-full rounded-2xl border px-4 pb-4 pt-5 backdrop-blur-md",
+          "relative w-full rounded-2xl border px-3 pb-3 pt-4 backdrop-blur-md",
           theme.card,
           theme.glow,
-          elevated && "md:px-5 md:pb-5 md:pt-6"
+          elevated && "md:px-4 md:pb-4 md:pt-5"
         )}
       >
         <motion.div
@@ -115,7 +171,7 @@ function PodiumCard({ entry, elevated }: { entry: AiArenaLeaderboardEntry; eleva
             {leaderboardName(entry)}
           </h3>
           <p className="mt-0.5 max-w-full truncate font-mono text-[10px] text-muted-foreground">{agentMeta(entry)}</p>
-          <p className={cn("mt-2 font-display text-2xl font-black tabular-nums md:text-3xl", theme.score)}>
+          <p className={cn("mt-2 font-display text-xl font-black tabular-nums md:text-2xl", theme.score)}>
             {leaderboardElo(entry).toLocaleString()}
           </p>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground">ELO RATING</p>
@@ -153,7 +209,9 @@ function rowAccent(rank: number) {
 
 export function ArenaAgentsLeaderboard() {
   const { data, isLoading, isError } = useEnrichedArenaLeaderboard();
-  const entries = data?.entries ?? [];
+  const apiEntries = data?.entries ?? [];
+  const isDemo = !isLoading && (isError || apiEntries.length === 0);
+  const entries = isDemo ? DEMO_LEADERBOARD_ENTRIES : apiEntries;
   const top3 = [entries[1], entries[0], entries[2]].filter(Boolean) as AiArenaLeaderboardEntry[];
   const maxElo = Math.max(...entries.map(leaderboardElo), 1);
 
@@ -206,41 +264,33 @@ export function ArenaAgentsLeaderboard() {
           </header>
 
           {isLoading ? (
-            <div className="mb-10 grid grid-cols-1 items-end gap-4 sm:grid-cols-3 sm:gap-5">
-              {[2, 1, 3].map((rank) => (
-                <div key={rank} className="flex flex-col items-center">
-                  <div className="w-full rounded-2xl border border-white/10 bg-background/30 p-5">
-                    <Skeleton className={cn("mx-auto rounded-2xl", rank === 1 ? "h-20 w-20" : "h-16 w-16")} />
-                    <Skeleton className="mx-auto mt-4 h-4 w-28" />
-                    <Skeleton className="mx-auto mt-2 h-8 w-20" />
-                  </div>
-                  <Skeleton className={cn("mt-3 w-full rounded-t-xl", rank === 1 ? "h-28" : rank === 2 ? "h-20" : "h-16")} />
-                </div>
-              ))}
-            </div>
-          ) : isError || entries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-              <Trophy className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No agent rankings yet — battles will populate the board.</p>
-            </div>
+            <>
+              <ArenaPodiumSkeleton />
+              <ArenaLeaderboardTableSkeleton rows={5} />
+            </>
           ) : (
             <>
+          
+              {top3.length > 0 ? (
               <div className="mb-10">
                 <div className="mb-5 flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-[hsl(var(--gold))]" />
                   <span className="font-display text-[10px] tracking-[0.28em] text-muted-foreground">TOP CHAMPIONS</span>
                 </div>
-                <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-3 sm:gap-5">
+                <div className="mx-auto grid max-w-3xl grid-cols-1 items-end justify-items-center gap-4 sm:grid-cols-3 sm:gap-4 lg:max-w-4xl">
                   {top3.map((entry, i) => (
                     <PodiumCard key={entry.agentId} entry={entry} elevated={i === 1} />
                   ))}
                 </div>
               </div>
+              ) : null}
 
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-background/25">
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
                   <span className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">FULL STANDINGS</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{entries.length} agents</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {entries.length} agents{isDemo ? " · demo" : ""}
+                  </span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[560px]">

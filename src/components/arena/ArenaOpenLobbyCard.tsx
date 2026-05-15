@@ -1,6 +1,7 @@
 import { Loader2, Swords } from "lucide-react";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Button } from "@/components/ui/button";
+import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
 import type { AiArenaAgent, AiArenaMatchmakingStatusBody } from "@/types/aiArenaGateway";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ type ArenaOpenLobbyCardProps = {
   agent: AiArenaAgent;
   status: AiArenaMatchmakingStatusBody;
   onJoin: () => void;
+  onViewDetails?: () => void;
   joining?: boolean;
   disabled?: boolean;
   isOwn?: boolean;
@@ -18,6 +20,7 @@ export function ArenaOpenLobbyCard({
   agent,
   status,
   onJoin,
+  onViewDetails,
   joining,
   disabled,
   isOwn,
@@ -53,10 +56,18 @@ export function ArenaOpenLobbyCard({
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-background/50 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
             {status.mode ?? "RANKED"}
           </span>
-          <span className="font-mono text-[10px] text-neon-cyan/80">{status.gameId ?? "standard"}</span>
+          <span className="font-mono text-[10px] text-neon-cyan/80">{status.gameId ?? AI_ARENA_DEFAULT_GAME_ID}</span>
           <span className="text-xs text-muted-foreground">Waiting {waitLabel}</span>
           {isOwn ? (
-            <span className="text-[10px] font-mono uppercase tracking-wider text-neon-purple/90">Your lobby</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onViewDetails}
+              className="mt-1 rounded-xl border border-neon-purple/35 bg-neon-purple/10 text-neon-purple hover:bg-neon-purple/20"
+            >
+              Match details
+            </Button>
           ) : (
             <Button
               type="button"

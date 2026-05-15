@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
 import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
@@ -9,18 +10,18 @@ import {
   exchangePrivyTokenForAiArenaToken,
   getAiArenaAccessToken,
 } from "@/lib/aiArenaAuth";
+import { getPrivyIdentityToken, getTonWalletAddressFromPrivyUser } from "@/lib/privyAccounts";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
+import { getTelegramDisplayName, isTelegramMiniApp } from "@/lib/telegramMiniApp";
 import {
   isEmbeddedPrivyConnectedWallet,
   pickSigningWallet,
   resolvePrivyWalletAddress,
 } from "@/lib/privyWallet";
 import type { Player } from "@/types/api";
-
-// ── Context type ──────────────────────────────────────────────────────────────
 
 interface AuthContextValue {
   player: Player | null;
@@ -37,17 +38,19 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 /** Dedupes SIWE across React Strict Mode remounts (refs reset; a second `personal_sign` was still fired). */
 const siweInFlightByAddress = new Map<string, Promise<void>>();
 
-// ── Provider ──────────────────────────────────────────────────────────────────
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user, getAccessToken, logout: privyLogout } = usePrivy();
+  const privy = usePrivy();
+  const { ready, authenticated, user, getAccessToken, logout: privyLogout } = privy;
   const { wallets } = useWallets();
+  const { createWallet } = useCreateWallet();
 
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const attemptedTonWalletCreateRef = useRef(false);
 
+  const tonAddress = getTonWalletAddressFromPrivyUser(user);
   const resolvedAddress = resolvePrivyWalletAddress(user, wallets);
-  const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
+  const walletAddress = tonAddress ?? resolvedAddress ?? localStorage.getItem(WALLET_KEY);
 
   const walletsRef = useRef(wallets);
   useEffect(() => {
@@ -70,16 +73,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Privy may provision embedded wallets a moment after email/Google auth — wait without calling createWallet again.
   useEffect(() => {
-    if (!ready || !authenticated || resolvedAddress) return;
+    if (!ready || !authenticated || resolvedAddress || tonAddress) return;
     setIsLoading(true);
     const timer = window.setTimeout(() => setIsLoading(false), 12_000);
     return () => window.clearTimeout(timer);
-  }, [ready, authenticated, resolvedAddress]);
+  }, [ready, authenticated, resolvedAddress, tonAddress]);
 
-  // When Privy authenticates, run the full SIWE flow and AI Arena token exchange.
+  // In Telegram, prefer a Privy TON embedded wallet and exchange a verified identity token for the Kult JWT.
+  useEffect(() => {
+    if (!ready || !authenticated || !isTelegramMiniApp()) return;
+
+    if (!tonAddress && !attemptedTonWalletCreateRef.current) {
+      attemptedTonWalletCreateRef.current = true;
+      setIsLoading(true);
+      void createWallet({ chainType: "ton" as const })
+        .catch((err) => {
+          console.error("[TON] Wallet creation failed:", err);
+          toast.error("Could not create TON wallet. Please try again.");
+        })
+        .finally(() => setIsLoading(false));
+      return;
+    }
+
+    if (!tonAddress) return;
+
+    const existingToken = localStorage.getItem(TOKEN_KEY);
+    const existingWallet = localStorage.getItem(WALLET_KEY);
+
+    if (existingToken && existingWallet === tonAddress) {
+      void fetchProfile();
+      return;
+    }
+
+    setIsLoading(true);
+
+    void (async () => {
+      const identityToken = await getPrivyIdentityToken(privy);
+      if (!identityToken) {
+        throw new Error("Privy identity token is unavailable. Enable identity tokens in the Privy dashboard.");
+      }
+
+      const res = await playerApi.loginWithPrivyTon(tonAddress, identityToken, {
+        name: getTelegramDisplayName(),
+      });
+      setPlayer(res.player);
+
+      const privyAccessToken = await getAccessTokenRef.current();
+      if (privyAccessToken) {
+        await exchangePrivyTokenForAiArenaToken(privyAccessToken);
+      }
+    })()
+      .catch((err) => {
+        console.error("[TON] Login failed:", err);
+        playerApi.logout();
+        toast.error("Could not finish Telegram sign-in. Please refresh and try again.");
+      })
+      .finally(() => setIsLoading(false));
+  }, [ready, authenticated, tonAddress, createWallet, fetchProfile, privy]);
+
+  // When Privy authenticates outside Telegram, run the full SIWE flow and AI Arena token exchange.
   useEffect(() => {
     if (!ready) return;
     if (!authenticated) return;
+    if (isTelegramMiniApp() && tonAddress) return;
 
     const address = resolvedAddress;
     if (!address) return;
@@ -167,7 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           siweInFlightByAddress.delete(addrKey);
         }
       });
-  }, [ready, authenticated, resolvedAddress, wallets, fetchProfile]);
+  }, [ready, authenticated, resolvedAddress, wallets, fetchProfile, tonAddress]);
 
   const handleLogout = async () => {
     siweInFlightByAddress.clear();
