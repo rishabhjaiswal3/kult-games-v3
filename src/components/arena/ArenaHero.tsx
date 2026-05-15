@@ -2,6 +2,7 @@ import heroVideo from "@/assets/b_c_ca_f_a_f_e_mp_.mp4";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import { Activity, Box, Swords, TrendingUp, Users, Wifi } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { ArenaHeroStatsSkeleton } from "@/components/skeleton";
 import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
@@ -49,7 +50,9 @@ export function ArenaHero() {
   const leaderboardQ = useAiArenaGlobalLeaderboard();
 
   const entries = leaderboardQ.data?.entries ?? [];
+  const statsLoading = leaderboardQ.isFetching && entries.length === 0;
   const totalWins = entries.reduce((acc, entry) => acc + entry.wins, 0);
+
   const avgElo = entries.length
     ? Math.round(entries.reduce((acc, entry) => acc + (entry.eloRating ?? entry.score ?? 0), 0) / entries.length)
     : 0;
@@ -92,44 +95,52 @@ export function ArenaHero() {
   ];
 
   return (
-    <section className="glass-panel relative grid grid-cols-1 gap-5 overflow-hidden rounded-2xl p-4 sm:gap-6 sm:p-6 lg:grid-cols-12 lg:items-stretch lg:gap-6 lg:p-7">
+    <section className="glass-panel relative grid grid-cols-1 gap-6 overflow-hidden rounded-2xl p-4 sm:gap-7 sm:p-6 lg:grid-cols-12 lg:items-stretch lg:gap-8 lg:p-7">
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{ background: "var(--gradient-glow)" }}
       />
       <div className="pointer-events-none absolute inset-0 neural-grid opacity-[0.12]" />
 
-      <div className="relative z-10 flex flex-col justify-center text-center lg:col-span-7 lg:min-h-0 lg:text-left">
-        <div className="mb-5 flex items-center justify-center gap-3 lg:justify-start">
+      <div className="relative z-10 flex min-w-0 flex-col justify-center text-center lg:col-span-7 lg:min-w-0 lg:pr-3 lg:text-left xl:pr-5">
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5 sm:mb-5 sm:gap-3 lg:justify-start">
           <span className="font-display text-xs tracking-[0.3em] text-neon-cyan">AI ARENA</span>
           <span className="flex items-center gap-1.5 rounded-full border border-neon-green/30 bg-neon-green/15 px-3 py-1 text-[10px] font-bold tracking-widest text-neon-green">
             <span className="live-dot h-1.5 w-1.5 rounded-full bg-neon-green" /> LIVE OPS
           </span>
         </div>
-        <h1 className="mb-1 font-display text-[clamp(2.8rem,8vw,4.1rem)] font-black leading-[0.95] text-foreground">
-          FORGE YOUR
+        <h1 className="mb-5 font-display font-black tracking-tight text-foreground sm:mb-6">
+          <span className="block text-[clamp(2rem,6vw,3.5rem)] leading-[1.1] sm:text-5xl md:text-6xl lg:text-[2.35rem] lg:leading-[1.12] xl:text-5xl 2xl:text-6xl">
+            FORGE YOUR
+          </span>
+          <span className="text-gradient-hero mt-1 block text-[clamp(2.35rem,7vw,4rem)] leading-[1.08] sm:mt-1.5 sm:text-6xl md:text-7xl lg:mt-1 lg:text-[2.75rem] lg:leading-[1.1] xl:text-6xl 2xl:text-7xl">
+            CHAMPION
+          </span>
         </h1>
-        <h1 className="text-gradient-hero mb-5 font-display text-[clamp(3.4rem,10vw,4.9rem)] font-black leading-[0.9]">
-          CHAMPION
-        </h1>
-        <p className="mx-auto mb-7 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0">
+        <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mb-7 sm:text-base lg:mx-0">
           Your AI agent remembers every fight — learns your style, talks trash, and pushes for the next win while you stay in command.
         </p>
         <HeroCtas openCreateAgent={openCreateAgent} />
       </div>
 
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black/40 lg:col-span-5 lg:aspect-auto lg:h-full lg:min-h-[clamp(260px,48svh,720px)]">
-        <AutoPlayVideo src={heroVideo} loop className="absolute inset-0 h-full w-full object-contain" />
+      <div className="relative mt-1 aspect-[4/5] w-full min-h-[280px] min-w-0 self-center overflow-hidden rounded-xl bg-[hsl(268_28%_9%)] sm:mt-0 sm:min-h-[340px] sm:aspect-[3/4] lg:col-span-5 lg:mt-0 lg:min-h-[min(560px,52svh)] lg:max-h-[min(680px,58svh)] lg:aspect-[4/5] lg:justify-self-end">
+        <AutoPlayVideo
+          src={heroVideo}
+          loop
+          className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+        />
         <HeroVideoFade />
         {NODES.map((n) => (
           <HeroNode key={n.label} node={n} />
         ))}
       </div>
 
-      <div className="relative z-10 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:col-span-12 lg:grid-cols-4">
-        {stats.map((s) => (
-          <StatCard key={s.label} stat={s} />
-        ))}
+      <div className="relative z-10 mt-1 grid grid-cols-1 gap-3 sm:mt-0 sm:grid-cols-2 sm:gap-4 lg:col-span-12 lg:mt-2 lg:grid-cols-4">
+        {statsLoading ? (
+          <ArenaHeroStatsSkeleton />
+        ) : (
+          stats.map((s) => <StatCard key={s.label} stat={s} />)
+        )}
       </div>
     </section>
   );
@@ -166,16 +177,17 @@ function HeroVideoFade() {
   return (
     <>
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(to right, hsl(268 32% 12% / 0.55) 0%, transparent 20%, transparent 80%, hsl(268 32% 12% / 0.55) 100%)",
+            "linear-gradient(to right, hsl(268 32% 12% / 0.45) 0%, transparent 22%, transparent 78%, hsl(268 32% 12% / 0.45) 100%)",
         }}
       />
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
-          background: "linear-gradient(to bottom, transparent 60%, hsl(268 32% 12% / 0.8) 100%)",
+          background:
+            "linear-gradient(to bottom, transparent 72%, hsl(268 32% 12% / 0.55) 100%)",
         }}
       />
     </>

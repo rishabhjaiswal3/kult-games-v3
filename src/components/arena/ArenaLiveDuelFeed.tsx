@@ -1,5 +1,5 @@
 import { ArenaBattleGif } from "@/components/arena/ArenaBattleGif";
-import { ARENA_LIVE_FEED_GIF } from "@/constants/arenaLiveBattleMedia";
+import { ARENA_LIVE_FEED_MEDIA } from "@/constants/arenaLiveBattleMedia";
 import { ArenaLiveDuelFeedSkeleton } from "@/components/skeleton";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
@@ -42,7 +42,7 @@ function DuelFeedContent({
   return (
     <>
       <div className="relative mb-4 overflow-hidden rounded-xl">
-        <ArenaBattleGif src={ARENA_LIVE_FEED_GIF} alt="Live arena battle" className="h-44 w-full" />
+        <ArenaBattleGif media={ARENA_LIVE_FEED_MEDIA} alt="Live arena battle" className="h-44 w-full" />
         <span className="absolute right-3 top-3 z-20 rounded bg-background/70 px-2 py-1 font-display text-xs backdrop-blur-sm">02:45</span>
         <span className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded bg-destructive/80 px-1.5 py-0.5 text-[9px] font-bold text-white">
           <span className="live-dot h-1 w-1 rounded-full bg-white" /> LIVE

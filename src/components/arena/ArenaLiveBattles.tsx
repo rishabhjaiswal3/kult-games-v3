@@ -1,6 +1,6 @@
 import { Eye } from "lucide-react";
 import { ArenaBattleGif } from "@/components/arena/ArenaBattleGif";
-import { pickArenaBattleGif } from "@/constants/arenaLiveBattleMedia";
+import { pickArenaBattleMedia } from "@/constants/arenaLiveBattleMedia";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -60,7 +60,7 @@ export function ArenaLiveBattles() {
               >
                 <div className="relative">
                   <ArenaBattleGif
-                    src={pickArenaBattleGif(idx)}
+                    media={pickArenaBattleMedia(idx)}
                     alt={`${b.a} vs ${b.b} live battle`}
                     className="h-28 w-full transition duration-300 group-hover:scale-105 sm:h-32"
                   />

@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/arena-dialog";
 import {
   AI_ARENA_DEFAULT_GAME_ID,
+  AI_ARENA_GAME_IDS,
   AI_ARENA_MATCH_MODES,
+  type AiArenaGameId,
   type AiArenaMatchMode,
 } from "@/constants/aiArenaMatchmaking";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
@@ -26,7 +28,7 @@ export type ArenaStartMatchmakingModalProps = {
   onOpenChange: (open: boolean) => void;
   agents: AiArenaAgent[];
   defaultAgentId?: string | null;
-  onQueued?: () => void | Promise<void>;
+  onQueued?: (agentId: string) => void | Promise<void>;
 };
 
 function apiErrorMessage(err: unknown, fallback: string) {
@@ -49,7 +51,7 @@ export function ArenaStartMatchmakingModal({
   onQueued,
 }: ArenaStartMatchmakingModalProps) {
   const [agentId, setAgentId] = useState<string | null>(defaultAgentId ?? null);
-  const [gameId, setGameId] = useState(AI_ARENA_DEFAULT_GAME_ID);
+  const [gameId, setGameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
   const [mode, setMode] = useState<AiArenaMatchMode>("RANKED");
   const [eloRange, setEloRange] = useState("200");
   const [paymentTxHash, setPaymentTxHash] = useState("");
@@ -62,6 +64,7 @@ export function ArenaStartMatchmakingModal({
       if (defaultAgentId && agents.some((a) => a.id === defaultAgentId)) return defaultAgentId;
       return agents[0]?.id ?? null;
     });
+    setGameId(AI_ARENA_DEFAULT_GAME_ID);
   }, [open, agents, defaultAgentId]);
 
   const selectedAgent = agents.find((a) => a.id === agentId) ?? null;
@@ -77,13 +80,13 @@ export function ArenaStartMatchmakingModal({
     try {
       await aiArenaGatewayApi.joinMatchmakingQueue({
         agentId,
-        gameId: gameId.trim() || AI_ARENA_DEFAULT_GAME_ID,
+        gameId,
         mode,
         eloRange: Number.isFinite(elo) ? elo : 200,
         paymentTxHash: mode === "WAGER" && paymentTxHash.trim() ? paymentTxHash.trim() : undefined,
       });
       toast.success("Your agent is listed — waiting for a challenger.");
-      await onQueued?.();
+      await onQueued?.(agentId);
       onOpenChange(false);
     } catch (err) {
       toast.error(apiErrorMessage(err, "Could not start matchmaking"));
@@ -173,13 +176,18 @@ export function ArenaStartMatchmakingModal({
 
               <div>
                 <label className="arena-label">Game ID</label>
-                <input
+                <select
                   value={gameId}
-                  onChange={(e) => setGameId(e.target.value)}
+                  onChange={(e) => setGameId(e.target.value as AiArenaGameId)}
                   disabled={submitting}
-                  placeholder={AI_ARENA_DEFAULT_GAME_ID}
-                  className="arena-input font-mono disabled:opacity-50"
-                />
+                  className="arena-select disabled:opacity-50"
+                >
+                  {AI_ARENA_GAME_IDS.map((game) => (
+                    <option key={game.value} value={game.value}>
+                      {game.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {mode === "WAGER" ? (
