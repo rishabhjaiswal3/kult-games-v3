@@ -17,6 +17,14 @@ export interface LoginRequest {
   signature: string;
 }
 
+export interface PrivyTonLoginRequest {
+  walletAddress: string;
+  identityToken: string;
+  name?: string;
+  metadata?: Record<string, unknown>;
+  referralCode?: string;
+}
+
 export interface LoginResponse {
   token: string;
   player: Player;

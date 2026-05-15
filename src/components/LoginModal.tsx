@@ -5,6 +5,7 @@ import {
   useLogin,
   useLoginWithEmail,
   useLoginWithOAuth,
+  useLoginWithTelegram,
   usePrivy,
   useWallets,
 } from "@privy-io/react-auth";
@@ -12,6 +13,7 @@ import { getAllowedChainFromEnv } from "@/lib/chain";
 import { switchAppChainViaInjectedProvider } from "@/lib/ensureWalletChain";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
+import { isTelegramMiniApp } from "@/lib/telegramMiniApp";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -70,6 +72,16 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       walletFlowInFlightRef.current = false;
       setWalletFlowPending(false);
       setWalletFlowBusy(false);
+      const msg = privyAuthErrorMessage(error);
+      if (msg) setAuthError(msg);
+    },
+  });
+  const { login: loginWithTelegram } = useLoginWithTelegram({
+    onComplete: () => {
+      setFinishingSignIn(true);
+    },
+    onError: (error) => {
+      setFinishingSignIn(false);
       const msg = privyAuthErrorMessage(error);
       if (msg) setAuthError(msg);
     },
@@ -155,6 +167,16 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       }
     })();
   }, [isOpen, ready, authenticated, walletFlowPending, activeWallet, targetChainId, onClose]);
+
+  const handleTelegramAuth = async () => {
+    setAuthError("");
+    try {
+      await loginWithTelegram();
+    } catch (err) {
+      const msg = privyAuthErrorMessage(err);
+      if (msg) setAuthError(msg);
+    }
+  };
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -348,6 +370,21 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
                       {/* Alt methods */}
                       <div className="grid grid-cols-2 gap-3">
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={handleTelegramAuth}
+                          disabled={isTelegramMiniApp()}
+                          className="h-12 font-display font-semibold text-sm tracking-wide flex items-center justify-center gap-2 disabled:opacity-60"
+                          style={{
+                            borderRadius: "14px",
+                            border: "1px solid hsl(195 100% 65% / 0.35)",
+                            background: "hsl(195 100% 50% / 0.08)",
+                          }}
+                        >
+                          <Globe className="w-4 h-4" />
+                          Telegram
+                        </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}

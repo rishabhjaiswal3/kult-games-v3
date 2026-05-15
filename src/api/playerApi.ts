@@ -7,6 +7,7 @@ import type {
   Player,
   PlayerGameScoreEntry,
   PlayerProfileStats,
+  PrivyTonLoginRequest,
   UpdateNameRequest,
 } from "@/types/api";
 
@@ -99,6 +100,33 @@ export const playerApi = {
   ): Promise<LoginResponse> => {
     const body: LoginRequest = { walletAddress, message, signature };
     const { data } = await apiClient.post<any>("/player/login", body);
+    const token: string = data.token ?? data.data?.token ?? "";
+    const rawPlayer = data.player ?? data.data?.player ?? null;
+    const player: Player | null = rawPlayer
+      ? {
+          _id: rawPlayer._id ?? rawPlayer.id ?? "",
+          wallet_address: rawPlayer.wallet_address ?? rawPlayer.walletAddress ?? "",
+          name: rawPlayer.name ?? "",
+          referral_code: rawPlayer.referral_code ?? rawPlayer.referralCode,
+        }
+      : null;
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(WALLET_KEY, walletAddress);
+    }
+    return {
+      token,
+      player: player ?? { _id: "", wallet_address: walletAddress, name: "" },
+    };
+  },
+
+  loginWithPrivyTon: async (
+    walletAddress: string,
+    identityToken: string,
+    options?: Omit<PrivyTonLoginRequest, "walletAddress" | "identityToken">,
+  ): Promise<LoginResponse> => {
+    const body: PrivyTonLoginRequest = { walletAddress, identityToken, ...options };
+    const { data } = await apiClient.post<any>("/player/privy-login", body);
     const token: string = data.token ?? data.data?.token ?? "";
     const rawPlayer = data.player ?? data.data?.player ?? null;
     const player: Player | null = rawPlayer
