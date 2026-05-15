@@ -35,19 +35,20 @@ export function ArenaArchetypeCarousel({ className }: ArenaArchetypeCarouselProp
         }}
       />
 
-      <div className="relative mb-4 flex items-end justify-between gap-3">
-        <div>
+      <div className="relative flex flex-col gap-3">
+        <div className="mb-3">
           <div className="mb-1.5 flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-neon-cyan" aria-hidden />
+            <Sparkles className="h-3.5 w-3.5 shrink-0 text-neon-cyan" aria-hidden  />
             <span className="font-display text-[10px] tracking-[0.28em] text-neon-cyan">ARCHETYPE ROSTER</span>
           </div>
           <h3 className="font-display text-base font-bold tracking-wide text-foreground sm:text-lg">
             Pick your <span className="text-gradient-hero">fighting spirit</span>
           </h3>
         </div>
-        <p className="hidden max-w-[220px] text-right text-[11px] leading-relaxed text-muted-foreground sm:block">
-          Swipe through six combat personalities — click to deploy.
-        </p>
+        {/* <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mb-7 sm:text-base lg:mx-0">
+          <span className="block">Your AI agent learns, remembers, and grows alongside your gameplay.</span>
+          <span className="mt-1.5 block">Smarter decisions. Faster actions. Still powered by you.</span>
+        </p> */}
       </div>
 
       <Carousel

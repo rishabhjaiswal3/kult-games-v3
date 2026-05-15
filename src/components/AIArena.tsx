@@ -54,7 +54,7 @@ function AIArenaContent() {
               <LiveArenaActivity />
             </aside>
           </div>
-          <ArenaArchetypeCarousel />
+          {/* <ArenaArchetypeCarousel /> */}
           <ArenaAgentShowcase />
           <ArenaAgentsBoard />
           <ArenaTerminalConsole battleId={activeBattleId} />

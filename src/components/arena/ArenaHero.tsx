@@ -118,7 +118,7 @@ export function ArenaHero() {
           </span>
         </h1>
         <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mb-7 sm:text-base lg:mx-0">
-          Your AI agent remembers every fight — learns your style, talks trash, and pushes for the next win while you stay in command.
+        Your AI agent learns, remembers, and grows alongside your gameplay. Smarter decisions. Faster actions.
         </p>
         <HeroCtas openCreateAgent={openCreateAgent} />
       </div>
