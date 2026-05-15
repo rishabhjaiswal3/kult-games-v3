@@ -117,17 +117,17 @@ const GamesSection = ({ onViewAllGames }: GamesSectionProps) => {
         {/* Section header - matching reference */}
         <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 mt-4 flex items-center gap-2.5 sm:mt-5">
               <motion.div
-                className="w-2 h-2 rounded-full bg-neon-cyan"
+                className="h-2 w-2 shrink-0 rounded-full bg-neon-cyan"
                 animate={{ opacity: [1, 0.3, 1], boxShadow: ["0 0 4px hsl(195 100% 60%)", "0 0 15px hsl(195 100% 60%)", "0 0 4px hsl(195 100% 60%)"] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
-              <span className="text-xs font-mono text-neon-cyan tracking-[0.2em] uppercase">
+              <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-neon-purple drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)]">
                 A CURATED GAMES COLLECTION
               </span>
             </div>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
+            <h2 className="font-display text-2xl font-black tracking-tight text-foreground md:text-3xl lg:text-4xl">
               We Believe In Quality Over{" "}
               <span className="gradient-text glow-text">Quantity</span>
             </h2>

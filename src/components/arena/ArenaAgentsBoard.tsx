@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import {
@@ -8,32 +8,41 @@ import {
 import { useArenaPage } from "@/contexts/ArenaPageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
-import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
+import { useArenaAgentsListInfinite } from "@/hooks/useArenaAgentsList";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
 
 const ALL_PAGE_SIZE = 12;
 const MY_PAGE_SIZE = 12;
 
+function flattenAgentPages(pages: { agents: AiArenaAgent[] }[]): AiArenaAgent[] {
+  const seen = new Set<string>();
+  const out: AiArenaAgent[] = [];
+  for (const p of pages) {
+    for (const a of p.agents) {
+      if (!seen.has(a.id)) {
+        seen.add(a.id);
+        out.push(a);
+      }
+    }
+  }
+  return out;
+}
+
 export function ArenaAgentsBoard() {
   const { openCreateAgent } = useArenaPage();
   const { isAuthenticated } = useAuth();
   const { isAiArenaReady } = useAiArenaGatewaySession();
-  const [allPage, setAllPage] = useState(1);
   const [myPage, setMyPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailAgentId, setDetailAgentId] = useState<string | null>(null);
   const [detailSeed, setDetailSeed] = useState<AiArenaLeaderboardEntry | AiArenaAgent | null>(null);
 
-  const allQ = useArenaAgentsList(allPage, ALL_PAGE_SIZE);
-  const allAgents = allQ.data?.agents ?? [];
-  const allTotal = allQ.data?.total;
-  const allTotalPages =
-    typeof allTotal === "number" && allTotal > 0
-      ? Math.max(1, Math.ceil(allTotal / ALL_PAGE_SIZE))
-      : undefined;
-  const allDisableNext =
-    typeof allTotalPages === "number" ? false : allAgents.length < ALL_PAGE_SIZE;
+  const allQ = useArenaAgentsListInfinite(ALL_PAGE_SIZE);
+  const allAgents = useMemo(
+    () => (allQ.data?.pages?.length ? flattenAgentPages(allQ.data.pages) : []),
+    [allQ.data?.pages]
+  );
 
   const myQ = useMyArenaAgents(myPage, MY_PAGE_SIZE);
   const myAgents = myQ.data?.agents ?? [];
@@ -57,25 +66,26 @@ export function ArenaAgentsBoard() {
   return (
     <section id="arena-agents-board" className="scroll-mt-24 space-y-6">
       <ArenaAgentsCarousel
+        layout="live-feed"
         title="All agents"
-        subtitle="Live roster from the arena gateway. Swipe through fighters and tap a card for full details."
         agents={allAgents}
         loading={allQ.isLoading}
         error={allQ.isError}
         errorMessage="Could not load agents from the arena API."
         emptyMessage="No agents on the arena yet."
         accent="cyan"
+        headerAction={isAuthenticated ? <CreateAgentHeaderButton onClick={openCreateAgent} /> : undefined}
         onAgentClick={openDetailFromAgent}
-        page={allPage}
-        totalPages={allTotalPages}
-        disableNext={allDisableNext}
-        paginationDisabled={allQ.isLoading || allQ.isError}
-        onPage={(p) => setAllPage(Math.max(1, p))}
+        fetchNextPage={() => void allQ.fetchNextPage()}
+        hasNextPage={Boolean(allQ.hasNextPage)}
+        isFetchingNextPage={allQ.isFetchingNextPage}
       />
 
       <ArenaAgentsCarousel
+        layout="carousel"
         title="My AI agents"
-        subtitle="Your personal roster, synced to your arena account. Swipe your agents or create a new champion."
+        // subtitle="Your personal roster, synced to your arena account. Swipe your agents or create a new champion."
+        subtitle=""
         agents={myAgents}
         loading={myLoading}
         error={isAuthenticated && myQ.isError}

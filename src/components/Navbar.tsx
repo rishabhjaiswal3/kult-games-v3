@@ -482,13 +482,13 @@ const Navbar = () => {
     <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md shadow-[0_1px_0_hsl(220_30%_18%/0.5)]">
         <div className="container mx-auto px-4 sm:px-6 min-h-16 flex items-center gap-3 sm:gap-4 md:gap-5 w-full min-w-0">
-          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-[120px] md:min-w-[180px]">
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-[120px] md:min-w-[180px]" style={{ display:'flex',justifyContent:'center',alignItems:'center'}}>
             <img
               src={zeroGLogo}
               alt="0G"
-              className="h-6 w-auto sm:h-7 md:h-8"
-              width={32}
-              height={32}
+              className="h-5 w-auto sm:h-6 md:h-6"
+              width={20}
+              height={20}
               loading="eager"
               decoding="async"
             />
@@ -501,7 +501,7 @@ const Navbar = () => {
               height={28}
               loading="eager"
               decoding="async"
-            />
+            /> 
           </Link>
 
           <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-0 mx-1 md:mx-2 lg:mx-4 overflow-x-auto overflow-y-visible scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
