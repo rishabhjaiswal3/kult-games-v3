@@ -17,6 +17,14 @@ export interface LoginRequest {
   signature: string;
 }
 
+export interface PrivyTonLoginRequest {
+  walletAddress: string;
+  identityToken: string;
+  name?: string;
+  metadata?: Record<string, unknown>;
+  referralCode?: string;
+}
+
 export interface LoginResponse {
   token: string;
   player: Player;
@@ -114,6 +122,7 @@ export interface Game {
   isDownloadable?: boolean;
   is_downloadable?: boolean;
   is_active?: boolean;
+  play_count?: number;
   metadata?: Record<string, unknown>;
 }
 

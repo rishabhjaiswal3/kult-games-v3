@@ -27,7 +27,7 @@ export function buildPrivyConfig(): PrivyClientConfig {
           },
         }
       : {}),
-    loginMethods: ["wallet", "email", "google"],
+    loginMethods: ["telegram", "wallet", "email", "google"],
     supportedChains: [mainnet, zeroGChain],
     defaultChain: mainnet,
   };
