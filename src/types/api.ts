@@ -114,6 +114,7 @@ export interface Game {
   isDownloadable?: boolean;
   is_downloadable?: boolean;
   is_active?: boolean;
+  play_count?: number;
   metadata?: Record<string, unknown>;
 }
 
