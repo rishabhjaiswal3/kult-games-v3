@@ -5,7 +5,6 @@ import {
   ArenaLeaderboardTableSkeleton,
   ArenaPodiumSkeleton,
 } from "@/components/skeleton";
-import { AgentNameKeyChip } from "@/components/arena/AgentNameKeyChip";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import {
   leaderboardElo,
@@ -14,9 +13,6 @@ import {
 } from "@/hooks/useEnrichedArenaLeaderboard";
 import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { cn } from "@/lib/utils";
-
-/** Anchor for in-page scroll (e.g. sidebar “more activity” affordance). */
-export const ARENA_LEADERBOARD_SECTION_ID = "arena-leaderboard";
 
 const DEMO_LEADERBOARD_ENTRIES: AiArenaLeaderboardEntry[] = [
   {
@@ -126,19 +122,9 @@ function agentMeta(entry: AiArenaLeaderboardEntry) {
   return "AI Arena agent";
 }
 
-function PodiumCard({
-  entry,
-  elevated,
-  maxElo,
-}: {
-  entry: AiArenaLeaderboardEntry;
-  elevated?: boolean;
-  maxElo: number;
-}) {
+function PodiumCard({ entry, elevated }: { entry: AiArenaLeaderboardEntry; elevated?: boolean }) {
   const theme = podiumTheme(entry.rank);
   const thumbSize = elevated ? "h-16 w-16 md:h-20 md:w-20" : "h-14 w-14 md:h-16 md:w-16";
-  const eloScore = leaderboardElo(entry);
-  const powerPct = Math.round((eloScore / Math.max(maxElo, 1)) * 100);
 
   return (
     <div className={cn("flex w-full max-w-[11rem] flex-col items-center sm:max-w-[12.5rem] lg:max-w-[13rem]", elevated && "md:-mt-4")}>
@@ -181,43 +167,14 @@ function PodiumCard({
           </div>
 
           <span className="mb-1 font-display text-[9px] tracking-[0.22em] text-muted-foreground">{theme.label}</span>
-          <motion.span
-            className="group mb-0 inline-flex max-w-full justify-center"
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 520, damping: 32 }}
-          >
-            <AgentNameKeyChip
-              name={leaderboardName(entry)}
-              accent="cyan"
-              size="comfortable"
-              className="max-w-full"
-            />
-          </motion.span>
+          <h3 className={cn("max-w-full truncate font-display text-sm font-bold md:text-base", theme.text)}>
+            {leaderboardName(entry)}
+          </h3>
           <p className="mt-0.5 max-w-full truncate font-mono text-[10px] text-muted-foreground">{agentMeta(entry)}</p>
           <p className={cn("mt-2 font-display text-xl font-black tabular-nums md:text-2xl", theme.score)}>
-            {eloScore.toLocaleString()}
+            {leaderboardElo(entry).toLocaleString()}
           </p>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground">ELO RATING</p>
-          <div className="mt-3 w-full px-0.5">
-            <div className="mb-1 flex items-center justify-between gap-2 font-mono text-[9px] tracking-[0.14em] text-muted-foreground">
-              <span>POWER</span>
-              <span className="font-semibold tabular-nums text-neon-green drop-shadow-[0_0_10px_hsl(142_76%_48%/0.65)]">
-                {powerPct}%
-              </span>
-            </div>
-            <div
-              className="relative h-2 w-full overflow-hidden rounded-full border border-neon-green/40 bg-black/60 shadow-[inset_0_1px_4px_rgba(0,0,0,0.75)]"
-              role="presentation"
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[hsl(138_72%_38%)] via-neon-green to-[hsl(158_76%_54%)] shadow-[0_0_16px_hsl(142_76%_52%/0.9),0_0_28px_hsl(142_76%_52%/0.35)]"
-                style={{
-                  width: `${powerPct}%`,
-                  minWidth: powerPct > 0 ? "8px" : undefined,
-                }}
-              />
-            </div>
-          </div>
           {entry.wins != null ? (
             <p className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-background/40 px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               <Swords className="h-3 w-3 text-neon-cyan/80" />
@@ -259,7 +216,7 @@ export function ArenaAgentsLeaderboard() {
   const maxElo = Math.max(...entries.map(leaderboardElo), 1);
 
   return (
-    <section id={ARENA_LEADERBOARD_SECTION_ID} className="scroll-mt-28">
+    <section id="arena-leaderboard" className="scroll-mt-24">
       <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[hsl(268_28%_6%/0.72)] backdrop-blur-xl">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
@@ -286,8 +243,8 @@ export function ArenaAgentsLeaderboard() {
               <h2 className="font-display text-3xl font-black tracking-tight text-foreground sm:text-4xl">
                 Agents <span className="text-gradient-hero">leaderboard</span>
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Watch autonomous AI agents battle, adapt, and climb the global leaderboard.
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Top AI agents ranked by global ELO on the arena gateway — updated as battles resolve.
               </p>
             </div>
 
@@ -322,7 +279,7 @@ export function ArenaAgentsLeaderboard() {
                 </div>
                 <div className="mx-auto grid max-w-3xl grid-cols-1 items-end justify-items-center gap-4 sm:grid-cols-3 sm:gap-4 lg:max-w-4xl">
                   {top3.map((entry, i) => (
-                    <PodiumCard key={entry.agentId} entry={entry} elevated={i === 1} maxElo={maxElo} />
+                    <PodiumCard key={entry.agentId} entry={entry} elevated={i === 1} />
                   ))}
                 </div>
               </div>
@@ -344,9 +301,7 @@ export function ArenaAgentsLeaderboard() {
                         <th className="hidden p-4 text-[10px] font-mono tracking-wider text-muted-foreground md:table-cell">ARCHETYPE</th>
                         <th className="p-4 text-right text-[10px] font-mono tracking-wider text-muted-foreground">ELO</th>
                         <th className="hidden p-4 text-right text-[10px] font-mono tracking-wider text-muted-foreground sm:table-cell">WINS</th>
-                        <th className="hidden p-4 text-center text-[10px] font-mono tracking-wider text-neon-green lg:table-cell">
-                          POWER
-                        </th>
+                        <th className="hidden p-4 text-center text-[10px] font-mono tracking-wider text-muted-foreground lg:table-cell">POWER</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -367,17 +322,9 @@ export function ArenaAgentsLeaderboard() {
                                   className="h-10 w-10 rounded-xl ring-1 ring-white/10 transition group-hover:ring-neon-cyan/30"
                                 />
                                 <div className="min-w-0">
-                                  <button
-                                    type="button"
-                                    className="group mb-0.5 inline-flex max-w-full min-w-0 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(268_28%_6%/0.72)]"
-                                  >
-                                    <AgentNameKeyChip
-                                      name={leaderboardName(entry)}
-                                      accent="cyan"
-                                      size="table"
-                                      className="max-w-full"
-                                    />
-                                  </button>
+                                  <p className="truncate font-display text-sm font-semibold text-foreground transition group-hover:text-neon-cyan">
+                                    {leaderboardName(entry)}
+                                  </p>
                                   {entry.clan ? (
                                     <p className="truncate font-mono text-[10px] text-muted-foreground">{entry.clan}</p>
                                   ) : null}
@@ -399,24 +346,13 @@ export function ArenaAgentsLeaderboard() {
                             </td>
                             <td className="hidden p-4 lg:table-cell">
                               <div className="flex items-center justify-center gap-2">
-                                <div className="relative flex flex-col items-stretch gap-1">
-                                  <div className="h-2.5 w-[5.5rem] overflow-hidden rounded-full border border-neon-green/35 bg-black/55 shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]">
-                                    <div
-                                      className="h-full rounded-full bg-gradient-to-r from-[hsl(138_72%_38%)] via-neon-green to-[hsl(158_76%_54%)] shadow-[0_0_14px_hsl(142_76%_52%/0.85),0_0_22px_hsl(142_76%_52%/0.3)]"
-                                      style={{
-                                        width: `${powerPct}%`,
-                                        minWidth: powerPct > 0 ? "8px" : undefined,
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="text-center font-mono text-[9px] font-semibold tabular-nums text-neon-green drop-shadow-[0_0_8px_hsl(142_76%_48%/0.45)]">
-                                    {powerPct}%
-                                  </span>
+                                <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/10">
+                                  <div
+                                    className="h-full rounded-full bg-gradient-to-r from-neon-cyan/60 to-neon-cyan"
+                                    style={{ width: `${powerPct}%` }}
+                                  />
                                 </div>
-                                <TrendingUp
-                                  className="h-4 w-4 shrink-0 text-neon-green drop-shadow-[0_0_10px_hsl(142_76%_52%/0.65)]"
-                                  aria-hidden
-                                />
+                                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/60" />
                               </div>
                             </td>
                           </tr>

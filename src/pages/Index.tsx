@@ -36,7 +36,6 @@ const Index = () => {
         overlayOpacity={0.45}
         contentVerticalAlign="lower-desktop-up"
         videoObjectPosition="center top"
-        titleClassName="text-2xl sm:text-3xl md:text-5xl lg:text-6xl"
       >
         <button
           onClick={() => navigate("/ai-arena")}
@@ -54,7 +53,6 @@ const Index = () => {
         subtitle="Play • Compete • Earn"
         height="40vh"
         overlayOpacity={0.5}
-        titleClassName="text-2xl sm:text-3xl md:text-5xl lg:text-6xl"
       >
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
