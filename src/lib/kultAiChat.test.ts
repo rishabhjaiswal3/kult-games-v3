@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getKultAIChatUrl, parseSseEventDataLines } from "@/lib/kultAiChat";
+import { getKultAIChatUrl, parseSseEventDataLines, streamKultAIReply } from "@/lib/kultAiChat";
 
 describe("getKultAIChatUrl", () => {
   afterEach(() => {
@@ -45,5 +45,35 @@ describe("getKultAIChatUrl", () => {
   it("preserves leading spaces in SSE chunks", () => {
     expect(parseSseEventDataLines("data: Hello")).toEqual(["Hello"]);
     expect(parseSseEventDataLines("data:  world")).toEqual([" world"]);
+  });
+
+  it("keeps the current session id when the stream omits a replacement header", async () => {
+    vi.stubEnv("VITE_KULT_AI_API_URL", "https://example.com/chat");
+    const encoder = new TextEncoder();
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode("data: Hello\n\n"));
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          },
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "text/event-stream" },
+        },
+      ),
+    );
+
+    const result = await streamKultAIReply({
+      message: "Compare games for me",
+      userId: "user-1",
+      sessionId: "session-1",
+    });
+
+    expect(result).toEqual({ reply: "Hello", sessionId: "session-1" });
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    fetchSpy.mockRestore();
   });
 });

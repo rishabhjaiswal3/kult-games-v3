@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
+import { playerApi } from "@/api/playerApi";
 import { StorageKeys } from "@/constants/storageKeys";
+import { useAuth } from "@/contexts/AuthContext";
 import { buildCatalogGroundedPrompt } from "@/lib/kultAiGameContext";
 import { streamKultAIReply } from "@/lib/kultAiChat";
+import {
+  formatProfileForChat,
+  isPersonalProfileQuestion,
+  PROFILE_LOGIN_REQUIRED_MESSAGE,
+} from "@/lib/kultAiProfileContext";
 
 export interface KultAIMessage {
   id: string;
@@ -38,7 +45,10 @@ const getErrorMessage = (error: unknown) => {
   return "KULT AI is unavailable right now.";
 };
 
+const EMPTY_REPLY_MESSAGE = "KULT AI is taking a little longer than expected. Please try again.";
+
 export const useKultAIChat = () => {
+  const { isAuthenticated, walletAddress } = useAuth();
   const [messages, setMessages] = useState<KultAIMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -86,35 +96,84 @@ export const useKultAIChat = () => {
     setIsStreaming(true);
 
     try {
+      if (isPersonalProfileQuestion(query)) {
+        if (!isAuthenticated || !walletAddress) {
+          setMessages((current) => [
+            ...current,
+            { id: assistantMessageId, role: "ai", text: PROFILE_LOGIN_REQUIRED_MESSAGE },
+          ]);
+          return;
+        }
+
+        let profileAnswer = PROFILE_LOGIN_REQUIRED_MESSAGE;
+
+        try {
+          const profile = await playerApi.getFullProfile();
+          const profileWallet = profile.player.wallet_address;
+          const hasConnectedProfile =
+            profileWallet && profileWallet.toLowerCase() === walletAddress.toLowerCase();
+          profileAnswer = hasConnectedProfile ? formatProfileForChat(profile) : PROFILE_LOGIN_REQUIRED_MESSAGE;
+        } catch {
+          profileAnswer = PROFILE_LOGIN_REQUIRED_MESSAGE;
+        }
+
+        setMessages((current) => [
+          ...current,
+          {
+            id: assistantMessageId,
+            role: "ai",
+            text: profileAnswer,
+          },
+        ]);
+        return;
+      }
+
+      const appendToken = (token: string) => {
+        if (!token) {
+          return;
+        }
+
+        if (!assistantMessageStarted) {
+          assistantMessageStarted = true;
+          setIsWaitingForFirstChunk(false);
+          setMessages((current) => [...current, { id: assistantMessageId, role: "ai", text: token }]);
+          return;
+        }
+
+        setIsWaitingForFirstChunk(false);
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantMessageId ? { ...message, text: `${message.text}${token}` } : message,
+          ),
+        );
+      };
+
       const agentMessage = await buildCatalogGroundedPrompt(query);
-      const result = await streamKultAIReply({
+      let result = await streamKultAIReply({
         message: agentMessage,
         userId: userIdRef.current,
         sessionId: sessionIdRef.current,
         signal: abortController.signal,
-        onToken: (token) => {
-          if (!assistantMessageStarted) {
-            assistantMessageStarted = true;
-            setIsWaitingForFirstChunk(false);
-            setMessages((current) => [...current, { id: assistantMessageId, role: "ai", text: token }]);
-            return;
-          }
-
-          setIsWaitingForFirstChunk(false);
-          setMessages((current) =>
-            current.map((message) =>
-              message.id === assistantMessageId ? { ...message, text: `${message.text}${token}` } : message,
-            ),
-          );
-        },
+        onToken: appendToken,
       });
+
+      if (!result.reply.trim() && sessionIdRef.current && !abortController.signal.aborted) {
+        sessionIdRef.current = null;
+        result = await streamKultAIReply({
+          message: agentMessage,
+          userId: userIdRef.current,
+          sessionId: null,
+          signal: abortController.signal,
+          onToken: appendToken,
+        });
+      }
 
       sessionIdRef.current = result.sessionId;
 
-      if (!result.reply.trim()) {
+      if (!result.reply.trim() && !assistantMessageStarted) {
         setMessages((current) => [
           ...current,
-          { id: assistantMessageId, role: "ai", text: "KULT AI returned an empty reply." },
+          { id: assistantMessageId, role: "ai", text: EMPTY_REPLY_MESSAGE },
         ]);
       }
     } catch (error) {
