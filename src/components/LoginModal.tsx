@@ -101,15 +101,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     return () => window.clearTimeout(timer);
   }, [isOpen, finishingSignIn, authLoading, isAuthenticated]);
 
-  useEffect(() => {
-    if (!isOpen || typeof window === "undefined") return;
-    console.info("[Auth] LoginModal opened", {
-      url: window.location.href,
-      pathname: window.location.pathname,
-      search: window.location.search,
-    });
-  }, [isOpen]);
-
   const handleWalletAuth = () => {
     if (!ready || walletFlowBusy) return;
     if (isAuthenticated) {
@@ -295,8 +286,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   {finishingSignIn ? (
                     <motion.div className="flex flex-col items-center gap-3 py-8 text-center">
                       <div className="h-10 w-10 animate-spin rounded-full border-2 border-neon-cyan/30 border-t-neon-cyan" />
-                      <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
-                      <p className="text-xs text-muted-foreground/70">Creating wallet &amp; verifying with Kult backend</p>
+                      <p className="text-sm text-muted-foreground">Signing you in…</p>
+                      <p className="text-xs text-muted-foreground/70">
+                        If a wallet prompt appears, approve it to verify with SIWE.
+                      </p>
                     </motion.div>
                   ) : !otpSent ? (
                     <div className="space-y-4">
