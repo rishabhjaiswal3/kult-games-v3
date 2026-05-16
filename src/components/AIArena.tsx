@@ -5,7 +5,6 @@ import { ArenaLiveDuelFeed } from "@/components/arena/ArenaLiveDuelFeed";
 import { ArenaLiveBattles } from "@/components/arena/ArenaLiveBattles";
 import { LiveArenaActivity } from "@/components/arena/ArenaSidePanels";
 import { ArenaInfraStrip } from "@/components/arena/ArenaInfraStrip";
-import { ArenaArchetypeCarousel } from "@/components/arena/ArenaArchetypeCarousel";
 import { ArenaAgentShowcase } from "@/components/arena/ArenaAgentShowcase";
 import { ArenaAgentsBoard } from "@/components/arena/ArenaAgentsBoard";
 import { ArenaAgentsLeaderboard } from "@/components/arena/ArenaAgentsLeaderboard";
@@ -54,7 +53,7 @@ function AIArenaContent() {
               <LiveArenaActivity />
             </aside>
           </div>
-          <ArenaArchetypeCarousel />
+          {/* <ArenaArchetypeCarousel /> */}
           <ArenaAgentShowcase />
           <ArenaAgentsBoard />
           <ArenaTerminalConsole battleId={activeBattleId} />

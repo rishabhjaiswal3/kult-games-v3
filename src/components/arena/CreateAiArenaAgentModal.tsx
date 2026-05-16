@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
-import { AI_ARENA_ARCHETYPE_OPTIONS, AI_ARENA_CLAN_OPTIONS } from "@/constants/aiArenaAgent";
+import {
+  AI_ARENA_ARCHETYPE_OPTIONS,
+  AI_ARENA_CLAN_OPTIONS,
+  randomAiArenaArchetype,
+} from "@/constants/aiArenaAgent";
 import { getArchetypeCardByType } from "@/constants/arenaAgentArchetypes";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,16 +41,32 @@ export function CreateAiArenaAgentModal({
   const { walletAddress } = useAuth();
   const [name, setName] = useState(defaultName);
   const [clan, setClan] = useState<(typeof AI_ARENA_CLAN_OPTIONS)[number]["value"]>("ZEROG");
-  const [archetype, setArchetype] = useState<(typeof AI_ARENA_ARCHETYPE_OPTIONS)[number]>("TACTICIAN");
+  const [archetype, setArchetype] = useState<(typeof AI_ARENA_ARCHETYPE_OPTIONS)[number]>(() =>
+    randomAiArenaArchetype()
+  );
   const [backstory, setBackstory] = useState(
     "Built for smart plays, sharp banter, and a long climb up the arena ladder."
   );
   const [submitting, setSubmitting] = useState(false);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      wasOpenRef.current = false;
+      return;
+    }
+
     setName((n) => (n.trim() ? n : defaultName));
-    if (defaultArchetype) setArchetype(defaultArchetype);
+
+    if (!wasOpenRef.current) {
+      wasOpenRef.current = true;
+      setArchetype(defaultArchetype ?? randomAiArenaArchetype());
+      return;
+    }
+
+    if (defaultArchetype) {
+      setArchetype(defaultArchetype);
+    }
   }, [open, defaultName, defaultArchetype]);
 
   const selectedCard = getArchetypeCardByType(archetype);
