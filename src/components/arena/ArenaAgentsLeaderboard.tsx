@@ -159,7 +159,7 @@ function PodiumCard({ entry, elevated }: { entry: AiArenaLeaderboardEntry; eleva
                 agent={{ id: entry.agentId, archetype: entry.archetype, name: entry.name }}
                 className="h-full w-full rounded-2xl border-0"
               />
-              <div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/10 bg-background/95 px-2 py-0.5 text-[10px] font-mono font-semibold tracking-wider shadow-lg">
+              <div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-md border border-white/10 bg-background/95 px-2 py-0.5 text-[10px] font-mono font-semibold tracking-wider shadow-lg">
                 {theme.icon}
                 <span>#{entry.rank}</span>
               </div>
@@ -176,7 +176,7 @@ function PodiumCard({ entry, elevated }: { entry: AiArenaLeaderboardEntry; eleva
           </p>
           <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground">ELO RATING</p>
           {entry.wins != null ? (
-            <p className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-background/40 px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <p className="mt-2 inline-flex items-center gap-1 rounded-md border border-white/10 bg-background/40 px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               <Swords className="h-3 w-3 text-neon-cyan/80" />
               {entry.wins} wins
             </p>
@@ -332,7 +332,7 @@ export function ArenaAgentsLeaderboard() {
                               </div>
                             </td>
                             <td className="hidden p-4 md:table-cell">
-                              <span className="inline-flex rounded-full border border-white/10 bg-background/50 px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                              <span className="inline-flex rounded-md border border-white/10 bg-background/50 px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
                                 {entry.archetype ?? "—"}
                               </span>
                             </td>
