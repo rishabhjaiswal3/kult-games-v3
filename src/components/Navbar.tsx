@@ -562,7 +562,7 @@ const Navbar = () => {
                   <>
                     <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(195 100% 65%)" }} />
                     <span className="text-[11px] font-mono font-semibold tracking-wide" style={{ color: "hsl(195 100% 65%)" }}>
-                      {agentWalletReady ? <ArenaTokenAmount amount={agentWalletBalanceArena} size="sm" showLogo={false} /> : "Fund"}
+                      {agentWalletReady ? <ArenaTokenAmount amount={agentWalletBalanceArena} size="sm" /> : "Fund"}
                     </span>
                   </>
                 ) : (
