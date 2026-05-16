@@ -6,10 +6,7 @@ import {
   useLoginWithEmail,
   useLoginWithOAuth,
   usePrivy,
-  useWallets,
 } from "@privy-io/react-auth";
-import { getAllowedChainFromEnv } from "@/lib/chain";
-import { switchAppChainViaInjectedProvider } from "@/lib/ensureWalletChain";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,7 +20,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [walletFlowPending, setWalletFlowPending] = useState(false);
   const [walletFlowBusy, setWalletFlowBusy] = useState(false);
   const [authError, setAuthError] = useState("");
   const [finishingSignIn, setFinishingSignIn] = useState(false);
@@ -31,9 +27,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { authenticated, ready, linkWallet } = usePrivy();
-  const { wallets } = useWallets();
-  const activeWallet = wallets[0];
-  const targetChainId = getAllowedChainFromEnv().decimalChainId;
 
   const { sendCode, loginWithCode } = useLoginWithEmail({
     onComplete: () => {
@@ -56,19 +49,14 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     },
   });
   const { login } = useLogin({
-    onComplete: ({ loginMethod }) => {
+    onComplete: () => {
       walletFlowInFlightRef.current = false;
       setWalletFlowBusy(false);
-      if (loginMethod === "siwe") {
-        setWalletFlowPending(true);
-        return;
-      }
-      setWalletFlowPending(false);
+      /* Chain switch + Kult SIWE run only in AuthContext — avoids duplicate wallet prompts after Privy SIWE. */
       onClose();
     },
     onError: (error) => {
       walletFlowInFlightRef.current = false;
-      setWalletFlowPending(false);
       setWalletFlowBusy(false);
       const msg = privyAuthErrorMessage(error);
       if (msg) setAuthError(msg);
@@ -112,40 +100,11 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       setFinishingSignIn(true);
       return;
     }
-    setWalletFlowPending(false);
     setWalletFlowBusy(true);
     setAuthError("");
     walletFlowInFlightRef.current = true;
     login({ loginMethods: ["wallet"], walletChainType: "ethereum-only" });
   };
-
-  useEffect(() => {
-    if (!isOpen || !ready || !authenticated || !walletFlowPending) return;
-    if (!activeWallet?.address) return;
-    if (walletFlowInFlightRef.current) return;
-
-    walletFlowInFlightRef.current = true;
-    void (async () => {
-      try {
-        await switchAppChainViaInjectedProvider();
-        if (typeof activeWallet.switchChain === "function") {
-          try {
-            await activeWallet.switchChain(targetChainId);
-          } catch {
-            /* injected switch above is the reliable path */
-          }
-        }
-        setWalletFlowPending(false);
-        onClose();
-      } catch (err) {
-        console.error("[Auth] 0G chain switch after wallet login failed:", err);
-        setWalletFlowPending(false);
-      } finally {
-        walletFlowInFlightRef.current = false;
-        setWalletFlowBusy(false);
-      }
-    })();
-  }, [isOpen, ready, authenticated, walletFlowPending, activeWallet, targetChainId, onClose]);
 
   const handleSendCode = async () => {
     if (!email) return;
