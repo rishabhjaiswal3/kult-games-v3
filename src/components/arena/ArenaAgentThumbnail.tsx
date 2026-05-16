@@ -18,7 +18,7 @@ export function ArenaAgentThumbnail({ agent, className, size = "sm" }: ArenaAgen
   return (
     <div
       className={cn(
-        "relative shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[hsl(268_32%_8%/0.65)]",
+        "relative shrink-0 overflow-hidden rounded-md border border-white/10 bg-[hsl(268_32%_8%/0.65)]",
         sizeClass[size],
         className
       )}
