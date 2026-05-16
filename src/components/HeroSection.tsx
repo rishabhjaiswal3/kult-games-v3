@@ -151,7 +151,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
                 animate={reduceMotion ? undefined : { scaleX: [0.6, 1, 0.6], opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
-              <span className="text-[9px] font-mono uppercase tracking-[0.45em] text-neon-cyan/65">
+              <span className="text-[10px] font-mono font-medium uppercase tracking-[0.42em] text-neon-purple drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
                 Next Generation
               </span>
               <motion.div
@@ -224,7 +224,7 @@ const HeroSection = ({ onExploreGames }: HeroSectionProps) => {
           </motion.div>
         </div>
 
-        <HeroArenaTicker />
+        {/* <HeroArenaTicker /> */}
       </section>
 
       {/* Live stats — animated strip */}

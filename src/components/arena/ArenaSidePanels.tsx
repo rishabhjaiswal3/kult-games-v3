@@ -1,3 +1,4 @@
+import { ARENA_LEADERBOARD_SECTION_ID } from "@/components/arena/ArenaAgentsLeaderboard";
 import { ArenaActivitySkeleton } from "@/components/skeleton";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 
@@ -64,9 +65,15 @@ export function LiveArenaActivity() {
       </ul>
       <button
         type="button"
-        className="mt-4 w-full text-center font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan"
+        className="mt-4 w-full rounded-sm text-center font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        onClick={() =>
+          document.getElementById(ARENA_LEADERBOARD_SECTION_ID)?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          })
+        }
       >
-        VIEW ALL ACTIVITY →
+        SEE FULL STANDINGS →
       </button>
     </div>
   );

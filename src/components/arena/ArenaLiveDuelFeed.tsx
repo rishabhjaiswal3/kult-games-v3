@@ -1,4 +1,5 @@
 import { ArenaBattleGif } from "@/components/arena/ArenaBattleGif";
+import { ARENA_LIVE_BATTLES_SECTION_ID } from "@/components/arena/ArenaLiveBattles";
 import { ARENA_LIVE_FEED_MEDIA } from "@/constants/arenaLiveBattleMedia";
 import { ArenaLiveDuelFeedSkeleton } from "@/components/skeleton";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
@@ -57,7 +58,16 @@ function DuelFeedContent({
       <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/10">
         <DuelFeedBar />
       </div>
-      <button type="button" className="w-full text-center font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan">
+      <button
+        type="button"
+        className="w-full rounded-sm text-center font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-purple/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        onClick={() =>
+          document.getElementById(ARENA_LIVE_BATTLES_SECTION_ID)?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          })
+        }
+      >
         WATCH LIVE BATTLE →
       </button>
     </>

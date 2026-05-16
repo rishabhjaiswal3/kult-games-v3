@@ -41,7 +41,7 @@ export function agentNameKeyChipClassName(
         : "text-[11px] leading-snug sm:text-xs";
 
   const shell =
-    "rounded-md border font-display font-bold tracking-wide transition-all duration-200 ease-out";
+    "rounded-full border font-display font-bold tracking-wide transition-all duration-200 ease-out";
   const layout = "inline-flex min-w-0 max-w-full items-center truncate";
 
   const interactive = (border: string, bg: string, textC: string, shadow: string, hoverBorder: string, hoverBg: string, hoverShadow: string) =>

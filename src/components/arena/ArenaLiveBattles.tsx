@@ -4,6 +4,8 @@ import { pickArenaBattleMedia } from "@/constants/arenaLiveBattleMedia";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const ARENA_LIVE_BATTLES_SECTION_ID = "arena-live-battles";
+
 const FALLBACK_BATTLES = [
   { a: "ShadowByte", b: "NovaStrike", eloA: 2056, eloB: 1987, watch: "1.2K" },
   { a: "QuantumSoul", b: "VoidWalker", eloA: 2124, eloB: 1888, watch: "956" },
@@ -35,12 +37,9 @@ export function ArenaLiveBattles() {
   const battles = apiBattles.length ? apiBattles : FALLBACK_BATTLES;
 
   return (
-    <div className="glass-panel rounded-2xl p-5">
+    <div id={ARENA_LIVE_BATTLES_SECTION_ID} className="glass-panel scroll-mt-28 rounded-2xl p-5">
       <div className="mb-5 flex items-center justify-between">
         <h3 className="font-display text-sm font-bold tracking-wider">LIVE BATTLES</h3>
-        <button type="button" className="font-display text-xs tracking-widest text-neon-purple transition hover:text-neon-cyan">
-          VIEW ALL →
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
