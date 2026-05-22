@@ -134,7 +134,7 @@ const Games = () => {
               return (
                 <article
                   key={game._id ?? game.identification}
-                  className="arena-panel relative min-h-[200px] overflow-hidden"
+                  className="arena-panel relative min-h-[240px] overflow-hidden"
                 >
                   {image ? (
                     <img
@@ -144,7 +144,7 @@ const Games = () => {
                     />
                   ) : null}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/75 to-[#050913]/35" />
-                  <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-between p-5">
+                  <div className="relative z-10 flex h-full min-h-[240px] flex-col justify-between p-6">
                     <div>
                       <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
                         {game.category ?? "Arena Game"}
@@ -177,7 +177,7 @@ const Games = () => {
         <span className="font-tech text-[10px] text-white/40">{filtered.length} titles</span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {gamesLoading
           ? Array.from({ length: 8 }).map((_, i) => <GameListingCardSkeleton key={i} />)
           : filtered.map((game) => (

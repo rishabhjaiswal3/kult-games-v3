@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import type { CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -13,7 +15,7 @@ import {
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
-import heroTrio from "@/assets/hero-trio.png";
+import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 
@@ -29,6 +31,7 @@ const quickLinks = [
 export function HomePage() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
+  const featuredScrollerRef = useRef<HTMLDivElement | null>(null);
 
   const { data: gamesData, isLoading } = useQuery({
     queryKey: ["games", "all", "home"],
@@ -36,7 +39,24 @@ export function HomePage() {
     staleTime: 5 * 60_000,
   });
 
-  const featuredGames = gamesData?.games?.slice(0, 4) ?? [];
+  const featuredGames = gamesData?.games?.slice(0, 6) ?? [];
+
+  useEffect(() => {
+    const scroller = featuredScrollerRef.current;
+    if (!scroller || featuredGames.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+      const nextLeft = scroller.scrollLeft + scroller.clientWidth * 0.9;
+
+      scroller.scrollTo({
+        left: nextLeft >= maxScrollLeft - 8 ? 0 : nextLeft,
+        behavior: "smooth",
+      });
+    }, 3500);
+
+    return () => window.clearInterval(interval);
+  }, [featuredGames.length]);
 
   const handleExploreGames = () => {
     if (isAuthenticated) {
@@ -48,10 +68,21 @@ export function HomePage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="arena-panel relative min-h-[280px] overflow-hidden border-white/8">
-        <img src={heroTrio} alt="" className="absolute inset-0 h-full w-full object-cover object-right opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050913] via-[#050913]/92 to-[#050913]/25" />
-        <div className="relative z-10 flex flex-col justify-between gap-8 p-6 sm:p-8 lg:min-h-[280px]">
+      <section className="arena-panel relative min-h-[500px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px]">
+        <video
+          aria-hidden
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover object-right-bottom opacity-100 saturate-125 contrast-110"
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
+        <div className="relative z-10 flex min-h-[500px] flex-col justify-start gap-8 p-6 sm:min-h-[520px] sm:p-8 lg:min-h-[560px]">
           <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50">
             <span className="flex items-center gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain" />
@@ -117,18 +148,27 @@ export function HomePage() {
             <Link
               key={link.path}
               to={link.path}
-              className="arena-panel group flex items-center justify-between border-white/8 bg-[#04080f]/95 p-4 transition hover:border-[#9a35ff]/30"
+              className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+              style={
+                {
+                  "--quick-link-color": link.color,
+                  "--quick-link-glow": `${link.color}33`,
+                } as CSSProperties
+              }
             >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="flex items-center gap-3">
                 <div
-                  className="grid h-10 w-10 place-items-center rounded-md bg-white/[0.04]"
+                  className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
                   style={{ color: link.color }}
                 >
                   <link.icon className="h-5 w-5" />
                 </div>
-                <span className="font-tech text-sm font-bold uppercase tracking-wide text-white">{link.label}</span>
+                <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
+                  {link.label}
+                </span>
               </div>
-              <ArrowUpRight className="h-4 w-4 text-white/30 transition group-hover:text-[#c78aff]" />
+              <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
             </Link>
           ))}
         </div>
@@ -144,10 +184,17 @@ export function HomePage() {
             View all →
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          ref={featuredScrollerRef}
+          className="flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-visible pb-3 scrollbar-none"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="arena-panel aspect-[16/9] animate-pulse border-white/8 bg-white/5" />
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="arena-panel aspect-[16/10] min-w-[82vw] animate-pulse snap-start border-white/8 bg-white/5 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
+                />
               ))
             : featuredGames.map((game) => {
                 const id = game.identification ?? game.slug ?? game._id;
@@ -156,14 +203,14 @@ export function HomePage() {
                   <Link
                     key={game._id ?? id}
                     to={`/game/${id}`}
-                    className="group flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35"
+                    className="group flex min-w-[82vw] snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
                   >
-                    <div className="relative aspect-[16/9] overflow-hidden bg-[#0a0f18]">
+                    <div className="relative aspect-[16/10] overflow-hidden bg-[#0a0f18]">
                       {image ? (
                         <img
                           src={image}
                           alt={getGameName(game.name)}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] to-transparent" />
