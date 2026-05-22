@@ -2,6 +2,8 @@ import { ChevronLeft, ChevronRight, Hexagon } from "lucide-react";
 import { ClanIcon } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
 import { Button } from "@/components/ui/button";
+import AutoPlayVideo from "@/components/AutoPlayVideo";
+import leaderboardBackgroundVideo from "@/assets/leaderboard_background.mp4";
 
 type LeaderboardTablePanelProps = {
   rows: DisplayPlayer[];
@@ -73,8 +75,15 @@ export function LeaderboardTablePanel({
   const showUserGap = userRow && !rows.some((r) => r.wallet === userRow.wallet);
 
   return (
-    <div className="arena-panel overflow-hidden border border-white/8">
-      <div className="overflow-x-auto">
+    <div className="arena-panel relative overflow-hidden border border-white/8">
+      <AutoPlayVideo
+        src={leaderboardBackgroundVideo}
+        loop
+        className="absolute inset-0 h-full w-full object-cover pointer-events-none opacity-25"
+      />
+      <div className="absolute inset-0 bg-[#04080f]/15 pointer-events-none" />
+
+      <div className="relative z-10 overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-white/8 bg-white/[0.01] font-tech text-[10px] uppercase tracking-wider text-white/45">
@@ -119,7 +128,7 @@ export function LeaderboardTablePanel({
         </table>
       </div>
 
-      <div className="flex items-center justify-center gap-2 border-t border-white/8 px-4 py-3">
+      <div className="relative z-10 flex items-center justify-center gap-2 border-t border-white/8 px-4 py-3">
         <Button
           type="button"
           variant="outline"

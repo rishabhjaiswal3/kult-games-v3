@@ -152,7 +152,7 @@ function ChainLogo({ name, className = "h-3.5 w-auto" }: { name: string; classNa
 
 const AIArenaPage = () => {
   return (
-    <div className="min-h-full text-foreground overflow-x-hidden bg-background">
+    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-[1284px]">
       <Hero />
       <StatsBar />
       <FeaturesBlock />
@@ -192,7 +192,7 @@ function Logo({
 }
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   return (
     <div className={compact ? "mx-auto max-w-sm text-center" : "max-w-xl"}>
@@ -226,18 +226,32 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
             : "mt-8 flex flex-col items-start gap-3"
         }
       >
-        <button
-          type="button"
-          onClick={login}
-          className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-            compact
-              ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
-              : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-          }`}
-        >
-          <span className="leading-tight text-center whitespace-nowrap">CONNECT WALLET</span>{" "}
-          <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
-        </button>
+        {isAuthenticated ? (
+          <Link
+            to="/dashboard"
+            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
+              compact
+                ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
+                : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
+            }`}
+          >
+            <span className="leading-tight text-center whitespace-nowrap">OPEN DASHBOARD</span>{" "}
+            <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={login}
+            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
+              compact
+                ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
+                : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
+            }`}
+          >
+            <span className="leading-tight text-center whitespace-nowrap">CONNECT WALLET</span>{" "}
+            <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
+          </button>
+        )}
         <Link
           to="/my-agents"
           className={`min-w-0 rounded-md font-tech border border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 hover:border-primary/80 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(143,39,255,0.15)] hover:shadow-[0_0_25px_rgba(143,39,255,0.35)] whitespace-nowrap ${
@@ -256,7 +270,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
+    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]">
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden
@@ -782,7 +796,7 @@ function ArenaLandingFooter() {
   ];
 
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-[hsl(278_100%_70%/0.24)] bg-[#040812]">
+    <footer className="arena-panel relative mt-20 mb-6 border border-white/8 bg-[#04080f] overflow-hidden">
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.09]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[hsl(278_100%_74%/0.85)] to-transparent" />
       <div className="pointer-events-none absolute -left-28 top-8 h-56 w-56 rounded-full bg-[hsl(278_100%_60%/0.16)] blur-3xl" />
