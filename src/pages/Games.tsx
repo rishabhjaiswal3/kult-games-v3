@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
+  ArrowUpRight,
   ChevronRight,
   Download,
   Gamepad2,
@@ -15,8 +16,8 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { GameListingCard, GameListingCardSkeleton } from "@/components/games/GameListingCard";
 import { gamesApi } from "@/api/gamesApi";
 import { isGameDownloadable } from "@/lib/gameDownload";
+import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
 import type { Game } from "@/types/api";
-import dashboardLiveCard from "@/assets/dashboard-live-card.png";
 
 const GAME_TYPE_FILTERS = ["All", "Action", "Arcade", "Puzzle", "Racing"] as const;
 
@@ -27,32 +28,6 @@ const GAME_TYPE_GAME_KEYS: Record<(typeof GAME_TYPE_FILTERS)[number], string[]> 
   Puzzle: ["guesstheai"],
   Racing: ["highwayhustle"],
 };
-
-function getGameName(name: Game["name"]): string {
-  if (typeof name === "string") return name;
-  return name?.en ?? Object.values(name)[0] ?? "";
-}
-
-function getGameImage(game: Game): string {
-  return (
-    game.thumbnail?.horizontal?.url ??
-    game.thumbnail?.vertical?.url ??
-    game.image_url ??
-    game.images?.[0]?.url ??
-    ""
-  );
-}
-
-function getGameDescription(desc: Game["description"]): string {
-  if (!desc) return "";
-  if (typeof desc === "string") return desc;
-  return desc?.en ?? Object.values(desc)[0] ?? "";
-}
-
-function getGameKey(game: Game): string {
-  const raw = game.identification ?? game.slug ?? getGameName(game.name);
-  return raw.toLowerCase().replace(/[\s_-]+/g, "");
-}
 
 const Games = () => {
   const [search, setSearch] = useState("");
@@ -78,6 +53,8 @@ const Games = () => {
     });
   }, [allGames, search, selectedCategory]);
 
+  const featuredGames = useMemo(() => filtered.slice(0, 2), [filtered]);
+
   const instantPlayCount = useMemo(
     () => allGames.filter((g) => !isGameDownloadable(g)).length,
     [allGames],
@@ -96,36 +73,6 @@ const Games = () => {
         <p className="mt-1 text-[11px] font-medium text-white/55">
           Browse and play on-chain games across the Kult platform.
         </p>
-      </div>
-
-      <div className="arena-panel relative min-h-[120px] overflow-hidden border-white/8">
-        <img
-          src={dashboardLiveCard}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-55"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050913] via-[#050913]/88 to-[#050913]/35" />
-        <div className="relative z-10 flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center">
-          <div className="max-w-xl space-y-2">
-            <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
-              Kult Games Library
-            </span>
-            <h2 className="font-tech text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
-              Play. Compete. Dominate.
-            </h2>
-            <p className="text-xs leading-relaxed text-white/65">
-              Curated Web3 titles with instant play and downloadable builds — all in one arena hub.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <span className="rounded border border-white/10 bg-black/35 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/70">
-              Web + Mobile
-            </span>
-            <span className="rounded border border-[#9a35ff]/35 bg-[#9a35ff]/15 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#c78aff]">
-              Free To Play
-            </span>
-          </div>
-        </div>
       </div>
 
       <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
@@ -164,40 +111,86 @@ const Games = () => {
             </button>
           ))}
         </div>
-        <div className="flex max-sm:w-full items-center gap-2">
-          <div className="relative max-sm:flex-1 sm:min-w-[220px]">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
-            <input
-              type="text"
-              placeholder="Search games..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full rounded border border-white/8 bg-[#0a0f1b]/80 pl-9 pr-3 font-tech text-[10px] uppercase tracking-wider text-white placeholder:text-white/30 focus:border-[#9a35ff]/45 focus:outline-none"
-            />
-          </div>
+        <div className="relative max-sm:w-full sm:min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+          <input
+            type="text"
+            placeholder="Search games..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 w-full rounded border border-white/8 bg-[#0a0f1b]/80 pl-9 pr-3 font-tech text-[10px] uppercase tracking-wider text-white placeholder:text-white/30 focus:border-[#9a35ff]/45 focus:outline-none"
+          />
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {gamesLoading
-          ? Array.from({ length: 6 }).map((_, i) => <GameListingCardSkeleton key={i} />)
-          : filtered.map((game) => {
+      {!gamesLoading && featuredGames.length > 0 ? (
+        <div className="space-y-3">
+          <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Featured titles</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {featuredGames.map((game) => {
               const name = getGameName(game.name);
               const image = getGameImage(game);
-              const desc = getGameDescription(game.description);
               const downloadable = isGameDownloadable(game);
               return (
-                <GameListingCard
+                <article
                   key={game._id ?? game.identification}
-                  game={game}
-                  name={name}
-                  image={image}
-                  description={desc}
-                  downloadable={downloadable}
-                  onOpen={() => openGame(game)}
-                />
+                  className="arena-panel relative min-h-[200px] overflow-hidden"
+                >
+                  {image ? (
+                    <img
+                      src={image}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover opacity-70"
+                    />
+                  ) : null}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/75 to-[#050913]/35" />
+                  <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-between p-5">
+                    <div>
+                      <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
+                        {game.category ?? "Arena Game"}
+                      </span>
+                      <h3 className="mt-3 font-tech text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
+                        {name}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 max-w-md text-xs text-white/65">
+                        {getGameDescription(game.description) || "Jump in and compete on the Kult leaderboard."}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => openGame(game)}
+                      className="mt-4 flex h-10 w-fit items-center gap-2 rounded border border-[#9b32ff]/70 bg-[#170d26]/75 px-4 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6acff] transition hover:border-[#9a35ff]"
+                    >
+                      {downloadable ? "View & Download" : "Enter Game"}
+                      <ArrowUpRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </article>
               );
             })}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="flex items-center justify-between pt-1">
+        <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">All games</h2>
+        <span className="font-tech text-[10px] text-white/40">{filtered.length} titles</span>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {gamesLoading
+          ? Array.from({ length: 8 }).map((_, i) => <GameListingCardSkeleton key={i} />)
+          : filtered.map((game) => (
+              <GameListingCard
+                key={game._id ?? game.identification}
+                game={game}
+                name={getGameName(game.name)}
+                image={getGameImage(game)}
+                description={getGameDescription(game.description)}
+                downloadable={isGameDownloadable(game)}
+                onOpen={() => openGame(game)}
+              />
+            ))}
       </div>
 
       {!gamesLoading && filtered.length === 0 ? (

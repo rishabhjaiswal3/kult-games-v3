@@ -63,7 +63,7 @@ export function AppTopbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 border-white/10 bg-[#060b15]">
                   <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile & agents</Link>
+                    <Link to="/dashboard">Dashboard & agents</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/ai-arena">AI Arena</Link>

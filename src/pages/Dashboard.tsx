@@ -1,36 +1,89 @@
-import { AgentPanel } from "@/components/dashboard/AgentPanel";
+import { useQuery } from "@tanstack/react-query";
+import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { AutonomousPanel } from "@/components/dashboard/AutonomousPanel";
 import { BalancePanel } from "@/components/dashboard/BalancePanel";
 import { BattleStrip } from "@/components/dashboard/BattleStrip";
+import { DashboardAccountPanel } from "@/components/dashboard/DashboardAccountPanel";
 import { DashboardFooter } from "@/components/dashboard/DashboardFooter";
-import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
-import { HeroStats } from "@/components/dashboard/HeroStats";
+import { DashboardGameScoresPanel } from "@/components/dashboard/DashboardGameScoresPanel";
+import { DashboardLiveAgentPanel } from "@/components/dashboard/DashboardLiveAgentPanel";
+import { DashboardProfileHeader } from "@/components/dashboard/DashboardProfileHeader";
+import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { Quests } from "@/components/dashboard/Quests";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { TraitsPanel } from "@/components/dashboard/TraitsPanel";
+import { playerApi } from "@/api/playerApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 
-/** AI Arena dashboard — pixel-perfect-pages layout with shared Kult Games sidebar. */
 const Dashboard = () => {
+  const { isAuthenticated, walletAddress } = useAuth();
+  const { openCreateAgent } = useCreateAgent();
+
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError: profileError,
+    refetch: refetchProfile,
+  } = useQuery({
+    queryKey: ["player", "full-profile"],
+    queryFn: () => playerApi.getFullProfile(),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const primaryAgent = myAgentsQ.data?.agents?.[0] ?? null;
+
+  if (!isAuthenticated) {
+    return <DashboardSignInGate />;
+  }
+
   return (
     <ArenaPageLayout>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
-          <div className="min-w-0 space-y-4">
-            <HeroStats />
-            <AgentPanel />
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.07fr)_minmax(0,0.93fr)]">
-              <RecentActivity />
-              <Quests />
-            </div>
-            <BattleStrip />
-          </div>
-          <aside className="space-y-4">
-            <BalancePanel />
-            <TraitsPanel />
-            <AutonomousPanel />
-            <QuickActions />
-          </aside>
+      <DashboardProfileHeader
+        profile={profile}
+        isLoading={profileLoading}
+        walletAddress={walletAddress}
+      />
+
+      {profileError ? (
+        <div className="arena-panel border-red-500/30 bg-red-950/20 px-6 py-8 text-center text-sm text-white/60">
+          Could not load profile.{" "}
+          <button type="button" className="text-[#c78aff] underline" onClick={() => refetchProfile()}>
+            Retry
+          </button>
         </div>
+      ) : null}
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
+        <div className="min-w-0 space-y-4">
+          <DashboardLiveAgentPanel
+            agent={primaryAgent}
+            isLoading={myAgentsQ.isLoading}
+            onCreateAgent={openCreateAgent}
+          />
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.07fr)_minmax(0,0.93fr)]">
+            <RecentActivity />
+            <Quests />
+          </div>
+          <BattleStrip />
+          {profile?.gameScoresList?.length ? (
+            <DashboardGameScoresPanel rows={profile.gameScoresList} />
+          ) : null}
+        </div>
+
+        <aside className="space-y-4">
+          {profile ? <DashboardAccountPanel profile={profile} /> : null}
+          <BalancePanel />
+          <TraitsPanel />
+          <AutonomousPanel />
+          <QuickActions />
+        </aside>
+      </div>
+
       <DashboardFooter />
     </ArenaPageLayout>
   );

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { ZeroGBadge } from "@/components/hub/ZeroGBadge";
 
 const LINKS = [
-  { label: "Home Hub", path: "/profile", icon: Home },
+  { label: "Home Hub", path: "/dashboard", icon: Home },
   { label: "Games", path: "/games", icon: Gamepad2 },
   { label: "AI Arena", path: "/ai-arena", icon: Swords },
   { label: "Leaderboard", path: "/leaderboard", icon: Trophy },

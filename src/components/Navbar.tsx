@@ -115,7 +115,7 @@ function ProfileDropdownBody({
       </div>
 
       <DropdownMenuItem asChild className="cursor-pointer focus:bg-neon-cyan/10">
-        <Link to="/profile" onClick={() => onAfterSelect?.()} className="flex items-center gap-2">
+        <Link to="/dashboard" onClick={() => onAfterSelect?.()} className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neon-cyan/10 text-neon-cyan">
             <UserCircle className="h-4 w-4" />
           </span>

@@ -503,6 +503,48 @@
     background: rgba(154, 53, 255, 0.65);
   }
 
+  /* Inventory assets: transparent stage + screen blend lifts white-backed images on dark UI */
+  .inventory-asset-stage {
+    background: transparent;
+  }
+  .inventory-asset-img {
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45));
+  }
+
+  .inventory-listing-card {
+    background: linear-gradient(165deg, rgba(10, 15, 24, 0.98) 0%, rgba(4, 8, 15, 0.98) 100%);
+  }
+  @supports not (mix-blend-mode: screen) {
+    .inventory-asset-img {
+      mix-blend-mode: normal;
+    }
+  }
+
+  .inventory-hero {
+    background: linear-gradient(to bottom, hsl(220 35% 4% / 0.98) 85%, hsl(220 35% 4% / 0.92));
+    backdrop-filter: blur(10px);
+  }
+
+  .inventory-sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(154, 53, 255, 0.45) rgba(255, 255, 255, 0.05);
+    scroll-behavior: smooth;
+  }
+  .inventory-sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .inventory-sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .inventory-sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(154, 53, 255, 0.4);
+    border-radius: 4px;
+  }
+  .inventory-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(154, 53, 255, 0.6);
+  }
+
   .scrollbar-market::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, hsl(195 100% 68% / 1), hsl(270 80% 70% / 0.95));
     box-shadow: 0 0 14px hsl(195 100% 60% / 0.5);

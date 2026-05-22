@@ -9,7 +9,6 @@ import {
   Package,
   Sparkles,
   Swords,
-  UserRound,
   UserRoundCog,
 } from "lucide-react";
 
@@ -31,7 +30,6 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles, tag: "Live" },
   { label: "Moments", path: "/moments", icon: FileText },
   { label: "Leaderboard", path: "/leaderboard", icon: Crown },
-  { label: "Profile", path: "/profile", icon: UserRound },
 ];
 
 export function navLabelForPath(pathname: string): string {
