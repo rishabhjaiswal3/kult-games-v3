@@ -16,10 +16,12 @@ export function AppShell() {
   const isArenaLayout = usesArenaLayout(pathname);
   const isHome = pathname === "/";
   const isLeaderboard = pathname === "/leaderboard";
+  const isAutonomous = pathname === "/autonomous";
+  const isAchievements = pathname === "/achievements";
   
-  const showDashboardTopbar = isHome || isAIArenaLanding || isLeaderboard;
-  const hideAppTopbar = isMoments || isArenaLayout || showDashboardTopbar;
-  const scrollableMain = isMoments || isAIArenaLanding || isArenaLayout || isHome || isLeaderboard;
+  const showDashboardTopbar = isHome || isAIArenaLanding || isLeaderboard || isAutonomous || isAchievements || isMoments;
+  const hideAppTopbar = isArenaLayout || showDashboardTopbar;
+  const scrollableMain = isAIArenaLanding || isArenaLayout || showDashboardTopbar;
 
   return (
     <div className="arena-app-shell h-dvh min-h-0 overflow-hidden bg-[#03070d] text-white">
