@@ -218,9 +218,9 @@ const Inventory = () => {
   );
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+    <div className="flex w-full flex-col">
       <DashboardTopbar />
-      <section className="mx-auto flex h-full min-h-0 w-full max-w-[1284px] flex-1 flex-col overflow-hidden px-4 pb-4 pt-3 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-[1284px] space-y-3 px-4 pb-8 pt-3 sm:px-6 lg:px-8">
       <div className="shrink-0 space-y-3">
       <div>
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">INVENTORY</h1>
@@ -342,8 +342,8 @@ const Inventory = () => {
       </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden lg:flex-row">
-        <div className="arena-panel flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-white/8 bg-[#04080f]/95 lg:min-h-0">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
+        <div className="arena-panel flex min-w-0 flex-1 flex-col border-white/8 bg-[#04080f]/95">
           <div className="shrink-0 border-b border-white/8 px-4 py-2.5">
             <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Available items</h2>
             <p className="mt-0.5 text-[10px] text-white/45">
@@ -351,17 +351,15 @@ const Inventory = () => {
               {itemSearch.trim() ? ` · matching "${itemSearch.trim()}"` : ""}
             </p>
           </div>
-          <div className="arena-scroll h-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4">
-            {itemsPanel}
-          </div>
+          <div className="p-3 sm:p-4">{itemsPanel}</div>
         </div>
 
-        <aside className="arena-panel flex min-h-0 w-full shrink-0 flex-col overflow-hidden border-white/8 bg-[#04080f]/95 max-lg:max-h-[40vh] lg:w-[376px] lg:min-h-0 lg:max-h-none">
+        <aside className="arena-panel w-full shrink-0 border-white/8 bg-[#04080f]/95 lg:w-[376px]">
           <div className="shrink-0 border-b border-white/8 px-4 py-3">
             <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Details</h2>
             <p className="mt-0.5 text-[10px] text-white/45">Overview, filters &amp; tips</p>
           </div>
-          <div className="arena-scroll h-0 min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-4">
+          <div className="space-y-4 p-3 sm:p-4">
           <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5">
             <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">
               INVENTORY OVERVIEW

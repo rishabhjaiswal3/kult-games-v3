@@ -4,7 +4,6 @@ import {
   Eye,
   Heart,
   Hexagon,
-  Play,
   Share2,
   ShoppingCart,
 } from "lucide-react";
@@ -88,12 +87,6 @@ export function InventoryListingCard({ item, gameLabel, onBuy }: InventoryListin
 
         <div className="absolute right-3 top-3 rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">
           {priceLabel}
-        </div>
-
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]">
-            <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
-          </div>
         </div>
       </button>
 
