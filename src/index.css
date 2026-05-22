@@ -570,6 +570,62 @@
   }
 }
 
+/* ── Sidebar styles ── */
+.sidebar-shell {
+  --sb-glow: rgba(154, 53, 255, 0.15);
+}
+
+.sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(154, 53, 255, 0.3) transparent;
+}
+.sidebar-nav::-webkit-scrollbar {
+  width: 3px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(154, 53, 255, 0.3);
+  border-radius: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(154, 53, 255, 0.55);
+}
+
+.sidebar-nav-item {
+  position: relative;
+}
+.sidebar-nav-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(ellipse at 20% 50%, rgba(154, 53, 255, 0.08), transparent 70%);
+  pointer-events: none;
+}
+.sidebar-nav-item:hover::before {
+  opacity: 1;
+}
+
+.sidebar-nav-active {
+  border: 1px solid rgba(154, 53, 255, 0.18);
+  box-shadow:
+    0 0 16px rgba(154, 53, 255, 0.08),
+    inset 0 0 20px rgba(154, 53, 255, 0.04);
+}
+
+.sidebar-promo {
+  background: linear-gradient(165deg, rgba(8, 12, 22, 0.95), rgba(4, 6, 14, 0.92));
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.sidebar-promo:hover {
+  border-color: rgba(154, 53, 255, 0.25);
+  box-shadow: 0 0 20px rgba(154, 53, 255, 0.1);
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }

@@ -18,7 +18,7 @@ export function DashboardTopbar() {
   };
 
   return (
-    <header className="z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
+    <header className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
       <div className="relative mx-auto flex min-h-[68px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:gap-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
           <button
