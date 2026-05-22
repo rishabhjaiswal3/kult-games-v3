@@ -18,8 +18,6 @@ export function ArenaAgentsPosterBanner({
   onCta,
   ctaLabel = "CREATE AGENT",
 }: ArenaAgentsPosterBannerProps) {
-  const heroImage = ARENA_AGENT_ARCHETYPE_CARDS[0]?.image;
-
   return (
     <section
       className={cn(

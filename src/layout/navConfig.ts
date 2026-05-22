@@ -1,0 +1,42 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Crown,
+  Cuboid,
+  FileText,
+  Gamepad2,
+  Home,
+  LayoutDashboard,
+  Package,
+  Sparkles,
+  Swords,
+  UserRound,
+  UserRoundCog,
+} from "lucide-react";
+
+export type NavItem = {
+  label: string;
+  path: string;
+  icon: LucideIcon;
+  tag?: string;
+};
+
+export const APP_NAV_ITEMS: NavItem[] = [
+  { label: "Home", path: "/", icon: Home },
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Games", path: "/games", icon: Gamepad2 },
+  { label: "My Agents", path: "/my-agents", icon: UserRoundCog },
+  { label: "Training", path: "/training", icon: Cuboid },
+  { label: "Battles", path: "/battles", icon: Swords },
+  { label: "Inventory", path: "/inventory", icon: Package },
+  { label: "AI Arena", path: "/ai-arena", icon: Sparkles, tag: "Live" },
+  { label: "Moments", path: "/moments", icon: FileText },
+  { label: "Leaderboard", path: "/leaderboard", icon: Crown },
+  { label: "Profile", path: "/profile", icon: UserRound },
+];
+
+export function navLabelForPath(pathname: string): string {
+  if (pathname.startsWith("/game/")) return "Games";
+  if (pathname === "/") return "Home";
+  const item = APP_NAV_ITEMS.find((n) => n.path === pathname);
+  return item?.label ?? "Dashboard";
+}

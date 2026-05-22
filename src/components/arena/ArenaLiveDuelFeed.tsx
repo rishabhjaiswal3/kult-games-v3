@@ -1,3 +1,5 @@
+import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
+
 import { ArenaBattleGif } from "@/components/arena/ArenaBattleGif";
 import { ARENA_LIVE_BATTLES_SECTION_ID } from "@/components/arena/ArenaLiveBattles";
 import { ARENA_LIVE_FEED_MEDIA } from "@/constants/arenaLiveBattleMedia";
@@ -37,8 +39,8 @@ function DuelFeedContent({
   left,
   right,
 }: {
-  left?: { name: string; eloRating: number };
-  right?: { name: string; eloRating: number };
+  left?: AiArenaLeaderboardEntry;
+  right?: AiArenaLeaderboardEntry;
 }) {
   return (
     <>
@@ -78,8 +80,8 @@ function DuelFeedRowNames({
   left,
   right,
 }: {
-  left?: { name: string; eloRating: number };
-  right?: { name: string; eloRating: number };
+  left?: AiArenaLeaderboardEntry;
+  right?: AiArenaLeaderboardEntry;
 }) {
   return (
     <div className="mb-2 flex items-center justify-between text-sm font-semibold">

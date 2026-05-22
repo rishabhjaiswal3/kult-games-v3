@@ -310,7 +310,7 @@ const ProfilePage = () => {
       />
 
 
-      <section className="relative pt-24 pb-20 md:pb-28">
+      <section className="relative pt-6 pb-20 md:pb-28">
         <div className="relative mx-auto max-w-7xl px-4 md:px-8">
           <button
             type="button"
