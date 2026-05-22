@@ -8,6 +8,11 @@ export const ARENA_LAYOUT_PATHS = [
   "/inventory",
 ] as const;
 
+/** Game detail pages use arena shell (not play route). */
+export function isGameDetailPath(pathname: string): boolean {
+  return /^\/game\/[^/]+$/.test(pathname);
+}
+
 export function usesArenaLayout(pathname: string): boolean {
-  return (ARENA_LAYOUT_PATHS as readonly string[]).includes(pathname);
+  return (ARENA_LAYOUT_PATHS as readonly string[]).includes(pathname) || isGameDetailPath(pathname);
 }

@@ -1,174 +1,129 @@
-import { useState, type MouseEvent } from "react";
-import {
-  Bookmark,
-  Eye,
-  Heart,
-  Hexagon,
-  Share2,
-  ShoppingCart,
-} from "lucide-react";
+import { type MouseEvent } from "react";
+import { ShoppingCart } from "lucide-react";
+import { InventoryAssetImage } from "@/components/inventory/InventoryAssetImage";
+import { cn } from "@/lib/utils";
 import type { MarketplaceListing } from "@/types/api";
 
 type InventoryListingCardProps = {
   item: MarketplaceListing;
-  gameLabel?: string;
+  selected?: boolean;
+  onSelect?: (item: MarketplaceListing) => void;
   onBuy: (item: MarketplaceListing) => void;
 };
 
-function formatCompactCount(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "")}K`;
-  return String(n);
-}
-
-function pseudoCount(id: string, salt: number, min: number, max: number): number {
-  let h = salt;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return min + (h % (max - min + 1));
-}
-
-function getCategoryBadgeStyle(category: string, gameId: string) {
+function getCategoryBadgeStyle(category: string) {
   const key = category.toLowerCase();
-  const game = gameId.toLowerCase();
-  if (game.includes("robo"))
-    return "bg-sky-950/80 border-sky-500/35 text-sky-400";
   if (key.includes("legendary") || key.includes("bundle"))
-    return "bg-amber-950/80 border-amber-500/35 text-amber-400";
+    return "bg-amber-950/90 border-amber-500/45 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]";
   if (key.includes("weapon") || key.includes("skin"))
-    return "bg-purple-950/80 border-purple-500/35 text-[#d6acff]";
-  return "bg-purple-950/80 border-purple-500/35 text-[#d6acff]";
+    return "bg-purple-950/90 border-purple-500/45 text-[#e8d4ff]";
+  if (key.includes("boost") || key.includes("module"))
+    return "bg-blue-950/90 border-blue-500/45 text-blue-300";
+  return "bg-purple-950/90 border-purple-500/45 text-[#d6acff]";
 }
 
-function shortenGameId(id: string): string {
-  if (id.length <= 14) return id;
-  return `${id.slice(0, 6)}...${id.slice(-4)}`;
-}
+export function InventoryListingCard({ item, selected, onSelect, onBuy }: InventoryListingCardProps) {
+  const badgeClass = getCategoryBadgeStyle(item.category);
 
-export function InventoryListingCard({ item, gameLabel, onBuy }: InventoryListingCardProps) {
-  const [bookmarked, setBookmarked] = useState(false);
-  const badgeClass = getCategoryBadgeStyle(item.category, item.gameIdentification);
-  const displayGame = gameLabel ?? shortenGameId(item.gameIdentification);
-  const views = formatCompactCount(pseudoCount(item.id, 7, 120, 4200));
-  const likes = formatCompactCount(pseudoCount(item.id, 13, 1, 48));
-  const shares = formatCompactCount(pseudoCount(item.id, 19, 1, 12));
-  const priceLabel = `${item.price} ${item.currency}`;
+  const handleCardClick = () => {
+    if (onSelect) onSelect(item);
+    else onBuy(item);
+  };
 
-  const handlePurchase = (e: MouseEvent) => {
+  const handleBuy = (e: MouseEvent) => {
     e.stopPropagation();
     onBuy(item);
   };
 
   return (
-    <div className="flex flex-col">
+    <article
+      className={cn(
+        "inventory-listing-card group relative flex flex-col overflow-hidden rounded-lg border bg-[#04080f]/95 transition-all duration-300",
+        selected
+          ? "border-[#9a35ff]/55 shadow-[0_0_24px_rgba(154,53,255,0.22)] ring-1 ring-[#9a35ff]/40"
+          : "border-white/10 hover:border-[#9a35ff]/35 hover:shadow-[0_12px_40px_rgba(0,0,0,0.45),0_0_20px_rgba(154,53,255,0.08)]"
+      )}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, rgba(154, 53, 255, 0.08), transparent 55%)",
+        }}
+        aria-hidden
+      />
+
+      {selected ? (
+        <span className="absolute left-0 top-0 z-10 h-full w-1 bg-gradient-to-b from-[#9a35ff] via-[#b12eff] to-[#7430ff]" aria-hidden />
+      ) : null}
+
       <button
         type="button"
-        onClick={handlePurchase}
-        className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-lg border border-white/8 bg-black/40 text-left"
+        onClick={handleCardClick}
+        className="relative w-full cursor-pointer overflow-hidden text-left"
       >
-        {item.assetUrl ? (
-          <img
-            src={item.assetUrl}
-            alt={item.name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#0a0f18] font-tech text-[9px] uppercase tracking-wider text-white/35">
-            No preview
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
-
-        <div
-          className={`absolute left-3 top-3 select-none rounded border px-2 py-0.5 font-tech text-[9px] font-black uppercase tracking-wide ${badgeClass}`}
+        <InventoryAssetImage
+          src={item.assetUrl}
+          alt={item.name}
+          compact
+          className="aspect-[4/3] w-full min-h-[112px] max-h-[128px] sm:max-h-[140px]"
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#04080f] to-transparent" />
+        <span
+          className={cn(
+            "absolute left-2 top-2 z-[2] rounded-md border px-2 py-0.5 font-tech text-[8px] font-black uppercase tracking-wider backdrop-blur-sm",
+            badgeClass
+          )}
         >
           {item.category}
-        </div>
-
-        <div className="absolute right-3 top-3 rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">
-          {priceLabel}
-        </div>
+        </span>
       </button>
 
-      <div className="mt-3 flex flex-1 flex-col justify-between">
-        <div>
+      <div className="relative flex flex-col gap-2 border-t border-white/8 bg-[#060b14]/80 px-3 pb-3 pt-2.5">
+        <button
+          type="button"
+          onClick={handleCardClick}
+          className="line-clamp-1 text-left text-xs font-semibold leading-tight text-white transition group-hover:text-[#d6acff]"
+          title={item.name}
+        >
+          {item.name}
+        </button>
+
+        {item.shortDescription ? (
+          <p className="line-clamp-1 text-[10px] leading-snug text-white/42">{item.shortDescription}</p>
+        ) : null}
+
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <div>
+            <span className="font-tech text-[8px] uppercase tracking-wider text-white/35">Price</span>
+            <p className="font-tech text-base font-bold leading-none text-[#ffc000]">
+              {item.price}
+              <span className="ml-1 text-[10px] font-semibold text-white/45">{item.currency}</span>
+            </p>
+          </div>
           <button
             type="button"
-            onClick={handlePurchase}
-            className="w-full cursor-pointer truncate text-left text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400"
+            onClick={handleBuy}
+            className="btn-primary flex h-8 shrink-0 items-center gap-1.5 rounded-md px-3 font-tech text-[9px] font-bold uppercase tracking-wider shadow-[0_0_16px_rgba(154,53,255,0.2)]"
+            aria-label={`Buy ${item.name}`}
           >
-            {item.name}
+            <ShoppingCart className="h-3.5 w-3.5" />
+            Buy
           </button>
-
-          <div className="mt-1.5 flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/50">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#1a1030] text-[8px] font-bold uppercase text-purple-300">
-                {displayGame.charAt(0)}
-              </span>
-              <span className="truncate">by {displayGame}</span>
-              <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
-            </div>
-            <span className="shrink-0 font-tech text-[9px] font-bold uppercase tracking-wider text-[#00f080]">
-              {item.status}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between border-t border-white/6 pt-3 text-xs font-semibold text-white/45">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <Eye className="h-4 w-4 text-white/30" />
-              <span>{views}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Heart className="h-4 w-4 text-white/30" />
-              <span>{likes}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Share2 className="h-4 w-4 text-white/30" />
-              <span>{shares}</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePurchase}
-              className="text-white/30 transition hover:text-purple-400"
-              aria-label={`Purchase ${item.name}`}
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setBookmarked((v) => !v);
-              }}
-              className="cursor-pointer text-white/30 transition hover:text-purple-400"
-              aria-label={bookmarked ? "Remove bookmark" : "Bookmark item"}
-            >
-              <Bookmark
-                className={`h-4 w-4 ${bookmarked ? "fill-purple-500 text-purple-500" : ""}`}
-              />
-            </button>
-          </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
 export function InventoryListingCardSkeleton() {
   return (
-    <div className="flex flex-col">
-      <div className="aspect-[16/9] animate-pulse rounded-lg border border-white/8 bg-white/5" />
-      <div className="mt-3 space-y-2">
-        <div className="h-4 w-4/5 animate-pulse rounded bg-white/5" />
-        <div className="h-3 w-2/3 animate-pulse rounded bg-white/5" />
-        <div className="mt-3 flex justify-between border-t border-white/6 pt-3">
-          <div className="h-3 w-24 animate-pulse rounded bg-white/5" />
-          <div className="h-3 w-8 animate-pulse rounded bg-white/5" />
-        </div>
+    <div className="overflow-hidden rounded-lg border border-white/10 bg-[#04080f]/95">
+      <div className="aspect-[4/3] max-h-[140px] animate-pulse bg-white/[0.04]" />
+      <div className="space-y-2.5 border-t border-white/8 p-3">
+        <div className="h-3 w-4/5 animate-pulse rounded bg-white/5" />
+        <div className="h-2 w-full animate-pulse rounded bg-white/5" />
+        <div className="h-8 w-full animate-pulse rounded-md bg-white/5" />
       </div>
     </div>
   );
