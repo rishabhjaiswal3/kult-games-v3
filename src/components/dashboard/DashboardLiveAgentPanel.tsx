@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Metric } from "@/components/dashboard/Metric";
-import agentNexus from "@/assets/agent-nexus.jpg";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 type DashboardLiveAgentPanelProps = {
@@ -50,11 +49,12 @@ export function DashboardLiveAgentPanel({ agent, isLoading, onCreateAgent }: Das
   return (
     <section className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95">
       <div className="grid lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="relative h-[240px] overflow-hidden border-r border-white/6 bg-[#0a0f18] lg:h-auto">
-          <img src={agentNexus} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
-          <div className="relative flex h-full items-center justify-center p-6">
-            <ArenaAgentThumbnail agent={agent} size="md" className="h-24 w-24 rounded-xl" />
-          </div>
+        <div className="relative h-[280px] overflow-hidden border-r border-white/6 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] lg:h-auto">
+          <ArenaAgentThumbnail
+            agent={agent}
+            size="md"
+            className="h-full w-full rounded-none border-0 bg-transparent"
+          />
         </div>
         <div className="p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">

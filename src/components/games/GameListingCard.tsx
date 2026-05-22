@@ -31,17 +31,17 @@ export function GameListingCard({
   const platforms = game.platform ?? [];
 
   return (
-    <article className="group flex flex-col">
+    <article className="group flex min-h-full flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35">
       <button
         type="button"
         onClick={onOpen}
-        className="relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-lg border border-white/8 bg-[#0a0f18] text-left"
+        className="relative aspect-[16/10] w-full cursor-pointer overflow-hidden bg-[#0a0f18] text-left"
       >
         {image ? (
           <img
             src={image}
             alt={name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
@@ -68,11 +68,11 @@ export function GameListingCard({
         </div>
       </button>
 
-      <div className="mt-3 flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col p-4">
         <button
           type="button"
           onClick={onOpen}
-          className="truncate text-left text-sm font-semibold text-white/90 transition hover:text-[#c78aff]"
+          className="truncate text-left text-base font-semibold text-white/90 transition hover:text-[#c78aff]"
         >
           {name}
         </button>
@@ -91,7 +91,7 @@ export function GameListingCard({
             ))}
           </div>
         ) : null}
-        <div className="mt-3 flex items-center justify-between border-t border-white/6 pt-3">
+        <div className="mt-auto flex items-center justify-between border-t border-white/6 pt-3">
           <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#00f080]">Free</span>
           <button
             type="button"
@@ -119,9 +119,9 @@ export function GameListingCard({
 
 export function GameListingCardSkeleton() {
   return (
-    <div className="flex flex-col">
-      <div className="aspect-[16/9] animate-pulse rounded-lg border border-white/8 bg-white/5" />
-      <div className="mt-3 space-y-2">
+    <div className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
+      <div className="aspect-[16/10] animate-pulse bg-white/5" />
+      <div className="space-y-2 p-4">
         <div className="h-4 w-4/5 animate-pulse rounded bg-white/5" />
         <div className="h-3 w-full animate-pulse rounded bg-white/5" />
         <div className="mt-3 flex justify-between border-t border-white/6 pt-3">

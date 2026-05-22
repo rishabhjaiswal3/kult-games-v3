@@ -47,7 +47,7 @@ function PodiumCard({
       className={`arena-panel relative flex flex-col items-center justify-between overflow-hidden p-5 text-center bg-[#04080f] ${styles.height} ${styles.border}`}
     >
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20">
-        <img src={player.avatar} alt="" className="h-full w-full scale-110 object-cover object-center blur-[0.5px]" />
+        <img src={player.avatar} alt="" className="h-full w-full scale-105 object-cover object-[center_12%] blur-[0.5px]" />
         <div className={`absolute inset-0 bg-gradient-to-b ${styles.gradient} via-transparent to-[#04080f]`} />
       </div>
 
@@ -59,7 +59,7 @@ function PodiumCard({
 
       <div className="relative z-10 mt-2">
         <div className={`overflow-hidden rounded-full ${styles.avatarSize} ${styles.avatarBorder}`}>
-          <img src={player.avatar} alt={player.name} className="h-full w-full object-cover" />
+          <img src={player.avatar} alt={player.name} className="h-full w-full object-cover object-[center_12%]" />
         </div>
       </div>
 

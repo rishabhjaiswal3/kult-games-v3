@@ -1,11 +1,12 @@
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import agentsPoster from "@/assets/ai_agents_4k_poster.png";
-import assassinPhantom from "@/assets/assassin_phantom.png";
-import berserkerRagnar from "@/assets/berserker_ragnar.png";
-import defenderTitan from "@/assets/defender_titan.png";
-import hybridGlitch from "@/assets/hybrid_glitch.png";
-import supportLumina from "@/assets/support_lumina.png";
-import tacticianSynapse from "@/assets/tactician_synapse.png";
+import agentAegis from "@/assets/agent-aegis.jpg";
+import assassinPhantom from "@/assets/agent-lumen.jpg";
+import berserkerRagnar from "@/assets/agent-rageborn.jpg";
+import defenderTitan from "@/assets/agent-shadow.jpg";
+import hybridGlitch from "@/assets/agent-nexus.jpg";
+import supportLumina from "@/assets/agent-voidwalker.jpg";
+import tacticianSynapse from "@/assets/agent-aegis.jpg";
 
 export { agentsPoster };
 
@@ -88,6 +89,14 @@ const ARCHETYPE_PORTRAIT_BY_TYPE = Object.fromEntries(
 ) as Record<string, string>;
 
 const PORTRAIT_POOL = ARENA_AGENT_ARCHETYPE_CARDS.map((card) => card.image);
+const LEADERBOARD_PORTRAIT_POOL = [
+  agentAegis,
+  assassinPhantom,
+  hybridGlitch,
+  berserkerRagnar,
+  defenderTitan,
+  supportLumina,
+];
 
 function portraitIndexFromAgentId(agentId: string): number {
   let hash = 0;
@@ -114,8 +123,10 @@ export function getArchetypeCardByType(archetype: AiArenaArchetype): ArenaAgentA
 export function getLeaderboardPlayerVisual(wallet: string) {
   const seed = wallet?.trim() || "player";
   const card = ARENA_AGENT_ARCHETYPE_CARDS[portraitIndexFromAgentId(seed)] ?? ARENA_AGENT_ARCHETYPE_CARDS[0];
+  const portrait = LEADERBOARD_PORTRAIT_POOL[portraitIndexFromAgentId(seed)] ?? LEADERBOARD_PORTRAIT_POOL[0];
+
   return {
-    portrait: card.image,
+    portrait,
     archetype: card.archetype,
     codename: card.codename,
     role: card.role,
