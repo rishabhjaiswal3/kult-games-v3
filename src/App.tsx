@@ -22,6 +22,8 @@ import AIArenaPage from "./pages/AIArenaPage";
 import MomentsPage from "./pages/MomentsPage";
 import ProfilePage from "./pages/ProfilePage";
 import Dashboard from "./pages/Dashboard";
+import AutonomousPage from "./pages/AutonomousPage";
+import AchievementsPage from "./pages/AchievementsPage";
 import LoadingScreen from "./components/LoadingScreen";
 import KultAIFloating from "./components/KultAIFloating";
 import { AppShell } from "@/layout/AppShell";
@@ -156,6 +158,8 @@ const App = () => {
                 <Route path="/events" element={<Events />} />
                 <Route path="/ai-arena" element={<AIArenaPage />} />
                 <Route path="/moments" element={<MomentsPage />} />
+                <Route path="/autonomous" element={<AutonomousPage />} />
+                <Route path="/achievements" element={<AchievementsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/game/:id" element={<GameDetail />} />
               </Route>
