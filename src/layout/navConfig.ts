@@ -10,6 +10,8 @@ import {
   Sparkles,
   Swords,
   UserRoundCog,
+  Trophy,
+  Bot,
 } from "lucide-react";
 
 export type NavItem = {
@@ -29,6 +31,8 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Inventory", path: "/inventory", icon: Package },
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles },
   { label: "Moments", path: "/moments", icon: FileText },
+  { label: "Autonomous", path: "/autonomous", icon: Bot },
+  { label: "Achievements", path: "/achievements", icon: Trophy },
   { label: "Leaderboard", path: "/leaderboard", icon: Crown },
 ];
 
