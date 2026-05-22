@@ -45,7 +45,7 @@ const socials = [
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-[hsl(278_100%_70%/0.24)] bg-[#040812]">
+    <footer className="arena-panel relative mb-6 border border-white/8 bg-[#04080f] overflow-hidden">
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.09]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[hsl(278_100%_74%/0.85)] to-transparent" />
       <div className="pointer-events-none absolute -left-28 top-8 h-56 w-56 rounded-full bg-[hsl(278_100%_60%/0.16)] blur-3xl" />

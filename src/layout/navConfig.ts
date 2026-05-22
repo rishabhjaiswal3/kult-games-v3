@@ -27,7 +27,7 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Training", path: "/training", icon: Cuboid },
   { label: "Battles", path: "/battles", icon: Swords },
   { label: "Inventory", path: "/inventory", icon: Package },
-  { label: "AI Arena", path: "/ai-arena", icon: Sparkles, tag: "Live" },
+  { label: "AI Arena", path: "/ai-arena", icon: Sparkles },
   { label: "Moments", path: "/moments", icon: FileText },
   { label: "Leaderboard", path: "/leaderboard", icon: Crown },
 ];

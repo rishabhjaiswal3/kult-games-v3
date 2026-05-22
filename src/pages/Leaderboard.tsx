@@ -102,7 +102,7 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-[1284px]">
       <div className="mb-6">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight">LEADERBOARD</h1>
         <p className="mt-1.5 text-sm text-white/55">

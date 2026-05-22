@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { MOMENTS_IFRAME_URL } from "@/lib/momentsUrl";
 import { useAuth } from "@/contexts/AuthContext";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 
 /**
  * Embed of the standalone Kult Moments app inside the shared app shell (sidebar only).
@@ -34,16 +35,18 @@ const MomentsPage = () => {
   }, [sendAuthToIframe]);
 
   return (
-    <iframe
-      ref={iframeRef}
-      title="Kult Moments"
-      src={MOMENTS_IFRAME_URL}
-      onLoad={sendAuthToIframe}
-      className="min-h-0 w-full flex-1 border-0 bg-[#03070d]"
-      style={{ minHeight: "100dvh" }}
-      allow="clipboard-read; clipboard-write; fullscreen"
-      referrerPolicy="strict-origin-when-cross-origin"
-    />
+    <div className="flex flex-1 flex-col min-h-0 w-full">
+      <DashboardTopbar />
+      <iframe
+        ref={iframeRef}
+        title="Kult Moments"
+        src={MOMENTS_IFRAME_URL}
+        onLoad={sendAuthToIframe}
+        className="min-h-0 w-full flex-1 border-0 bg-[#03070d]"
+        allow="clipboard-read; clipboard-write; fullscreen"
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    </div>
   );
 };
 
