@@ -1,4 +1,5 @@
-import kultLogo from "@/assets/kult-logo.png";
+import kultLogo from "@/assets/Kult Logo.png";
+import zeroGLogo from "@/assets/0G Logo.png";
 import { Link } from "react-router-dom";
 
 const platformLinks = [
@@ -12,8 +13,8 @@ const platformLinks = [
 const socials = [
   {
     key: "x",
-    label: "X (Twitter)",
-    href: "https://twitter.com/_KultGames",
+    label: "X",
+    href: "https://x.com/_KultGames",
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -40,43 +41,39 @@ const socials = [
       </svg>
     ),
   },
-  {
-    key: "instagram",
-    label: "Instagram",
-    href: "https://www.instagram.com/kult_games_/?igsh=dzAxNnJ3eWQ4NmUz&utm_source=qr",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-      </svg>
-    ),
-  },
-  {
-    key: "medium",
-    label: "Medium",
-    href: "https://medium.com/@kult_games",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-        <path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z" />
-      </svg>
-    ),
-  },
 ];
 
 const Footer = () => {
   return (
-    <footer className="relative z-10 border-t border-border/30 bg-card/95">
-      <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.07]" />
+    <footer className="relative z-10 overflow-hidden border-t border-[hsl(278_100%_70%/0.24)] bg-[#040812]">
+      <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.09]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[hsl(278_100%_74%/0.85)] to-transparent" />
+      <div className="pointer-events-none absolute -left-28 top-8 h-56 w-56 rounded-full bg-[hsl(278_100%_60%/0.16)] blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-[hsl(190_100%_55%/0.11)] blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(278_100%_70%/0.12),transparent_34%),linear-gradient(180deg,rgba(7,10,22,0.92),rgba(2,5,12,0.98))]" />
 
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="flex flex-col gap-6 py-8 md:flex-row md:items-center md:justify-between md:py-9">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-            <img src={kultLogo} alt="Kult Games" className="h-7 w-auto" />
-            <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
-              The next generation of AI-powered, on-chain gaming.
-            </p>
+        <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
+          <div className="relative overflow-hidden rounded-[1.25rem] border border-[hsl(278_100%_70%/0.18)] bg-white/[0.035] p-5 shadow-[0_24px_80px_hsl(278_100%_55%/0.12)] backdrop-blur">
+            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(278_100%_70%/0.12)] via-transparent to-[hsl(190_100%_60%/0.08)]" />
+            <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <div className="flex h-16 shrink-0 items-center gap-5 rounded-2xl border border-[hsl(278_100%_70%/0.24)] bg-black/30 px-5 shadow-[0_0_35px_hsl(278_100%_60%/0.22)]">
+                <img src={kultLogo} alt="Kult Games" className="h-8 w-auto max-w-[92px] object-contain" />
+                <span className="h-8 w-px bg-white/16" aria-hidden />
+                <img src={zeroGLogo} alt="0G" className="h-7 w-auto max-w-[64px] object-contain" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-mono uppercase tracking-[0.36em] text-[hsl(278_100%_82%)]">
+                  Kult Games
+                </p>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/72">
+                  The next generation of AI-powered, on-chain gaming.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-x-1 gap-y-1">
+          <nav className="flex flex-wrap items-center gap-2 lg:justify-center" aria-label="Footer navigation">
             {platformLinks.map((link, i) => (
               <span key={link.href} className="flex items-center">
                 {link.href.startsWith("http") ? (
@@ -84,51 +81,55 @@ const Footer = () => {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-[hsl(278_100%_82%)]"
+                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
                   >
                     {link.label}
                   </a>
                 ) : (
                   <Link
                     to={link.href}
-                    className="px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-[hsl(278_100%_82%)]"
+                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
                   >
                     {link.label}
                   </Link>
                 )}
-                {i < platformLinks.length - 1 ? (
-                  <span className="text-muted-foreground/25" aria-hidden>
-                    ·
-                  </span>
-                ) : null}
               </span>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            {socials.map((s) => (
-              <a
-                key={s.key}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-[hsl(278_100%_70%/0.18)] bg-[hsl(278_100%_70%/0.08)] text-muted-foreground transition-all hover:border-[hsl(278_100%_70%/0.32)] hover:bg-[hsl(278_100%_70%/0.14)] hover:text-[hsl(278_100%_82%)]"
-                aria-label={s.label}
-                title={s.label}
-              >
-                {s.icon}
-              </a>
-            ))}
+          <div className="flex flex-col gap-4 lg:items-end">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-white/40">Follow</span>
+              <div className="flex items-center gap-2">
+                {socials.map((s) => (
+                  <a
+                    key={s.key}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] text-white/70 transition-all hover:-translate-y-1 hover:border-[hsl(278_100%_78%/0.58)] hover:bg-[hsl(278_100%_70%/0.18)] hover:text-white hover:shadow-[0_0_34px_hsl(278_100%_62%/0.35)]"
+                    aria-label={s.label}
+                    title={s.label}
+                  >
+                    <span className="transition-transform group-hover:scale-110">{s.icon}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="flex w-fit items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">
+              <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-white/38">Powered by</span>
+              <img src={zeroGLogo} alt="0G" className="h-5 w-auto opacity-90" />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-2 border-t border-border/20 py-4 sm:flex-row">
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground font-mono">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 sm:flex-row">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/42 font-mono">
             <span>© 2026 Kult Games</span>
-            <span className="text-muted-foreground/30">·</span>
+            <span className="text-white/20">·</span>
             <span>Powered by 0G</span>
           </div>
-          <span className="text-[9px] font-mono tracking-wider text-muted-foreground/50">
+          <span className="text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED
           </span>
         </div>
