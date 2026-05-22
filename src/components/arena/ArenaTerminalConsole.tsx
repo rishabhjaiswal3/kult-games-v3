@@ -116,7 +116,10 @@ export function ArenaTerminalConsole({ battleId, className }: ArenaTerminalConso
     ]);
   }, [battleId]);
 
-  if (isAiArenaReady && myAgentsQ.isLoading && !myAgentsQ.data?.agents?.length) {
+  const agentCount = myAgentsQ.data?.agents?.length ?? 0;
+  const showTerminalSkeleton = isAiArenaReady && myAgentsQ.isLoading && agentCount === 0;
+
+  if (showTerminalSkeleton) {
     return (
       <section className={cn("scroll-mt-24", className)}>
         <ArenaTerminalSkeleton />

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Swords, Flame, Users, Gamepad2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
@@ -16,13 +16,13 @@ const liveStats = [
 const line1Words = ["SHAPING", "THE", "FUTURE", "OF"];
 const line2Words = ["ON-CHAIN", "GAMING"];
 
-const wordStagger = {
+const wordStagger: Variants = {
   hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { delay: 0.15 + i * 0.07, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: 0.15 + i * 0.07, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 

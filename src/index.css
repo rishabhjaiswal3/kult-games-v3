@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -51,6 +51,13 @@
     --neon-purple: 278 88% 62%;
     --cyan-glow: 198 92% 68%;
     --cyan-lightning: 190 100% 70%;
+
+    /* Pixel-perfect landing palette (oklch) */
+    --neon: oklch(0.65 0.28 300);
+    --neon-2: oklch(0.72 0.25 330);
+    --cyan: oklch(0.75 0.18 220);
+    --lime: oklch(0.82 0.22 145);
+    --amber: oklch(0.78 0.18 75);
 
     /* Reimagined-inspired gradients (reference: ai-arena-reimagined) */
     --gradient-hero: linear-gradient(135deg, hsl(210 20% 96%), hsl(198 92% 68%) 40%, hsl(278 88% 62%));
@@ -474,6 +481,28 @@
     border: 2px solid hsl(220 35% 14% / 0.75);
     box-shadow: 0 0 10px hsl(195 100% 60% / 0.35);
   }
+  .arena-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(154, 53, 255, 0.5) rgba(255, 255, 255, 0.06);
+  }
+  .arena-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .arena-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 4px;
+  }
+  .arena-scroll::-webkit-scrollbar-thumb {
+    background: rgba(154, 53, 255, 0.45);
+    border-radius: 4px;
+  }
+  .arena-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(154, 53, 255, 0.65);
+  }
+
   .scrollbar-market::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, hsl(195 100% 68% / 1), hsl(270 80% 70% / 0.95));
     box-shadow: 0 0 14px hsl(195 100% 60% / 0.5);
@@ -631,5 +660,101 @@
   }
   ::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* ─── Pixel-perfect / AI Arena shell (from pixel-perfect-pages) ─── */
+.arena-app-shell {
+  --arena-bg: #03070d;
+  --arena-sidebar: #050913;
+  --arena-purple: #9a35ff;
+  --arena-purple-active: #8f27ff;
+  --arena-gold: #ffc000;
+  --arena-green: #00f080;
+}
+
+@layer utilities {
+  .font-tech {
+    font-family: "Orbitron", sans-serif;
+  }
+
+  .font-display-marker,
+  .font-display {
+    font-family: "Permanent Marker", sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .text-gradient-arena {
+    background: linear-gradient(120deg, hsl(0 0% 98%), hsl(278 88% 72%), hsl(310 80% 75%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient {
+    background: linear-gradient(120deg, oklch(0.95 0.05 290), oklch(0.7 0.28 305), oklch(0.75 0.25 330));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-glass {
+    background: linear-gradient(180deg, oklch(0.15 0.06 285 / 0.7), oklch(0.1 0.04 285 / 0.6));
+    backdrop-filter: blur(10px);
+    border: 1px solid oklch(0.4 0.1 295 / 0.3);
+  }
+
+  .card-glass:hover {
+    border-color: oklch(0.65 0.25 300 / 0.6);
+    box-shadow: 0 8px 40px oklch(0.5 0.3 300 / 0.25);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 40px oklch(0.6 0.28 300 / 0.5), 0 0 80px oklch(0.6 0.28 300 / 0.25);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(oklch(0.5 0.15 295 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.5 0.15 295 / 0.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .arena-panel {
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(9, 14, 25, 0.88), rgba(4, 8, 15, 0.86));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(12px);
+  }
+
+  .card-glass-arena {
+    background: linear-gradient(180deg, rgba(22, 14, 38, 0.7), rgba(10, 8, 18, 0.6));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(154, 53, 255, 0.25);
+  }
+
+  .btn-arena-primary {
+    background: linear-gradient(135deg, #7a22e8, #9a35ff);
+    color: white;
+    box-shadow: 0 4px 20px rgba(139, 37, 255, 0.45);
+    transition: all 0.2s ease;
+  }
+
+  .btn-arena-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(154, 53, 255, 0.55);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7a22e8, #9a35ff);
+    color: white;
+    box-shadow: 0 4px 20px rgba(139, 37, 255, 0.45);
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(154, 53, 255, 0.55);
   }
 }

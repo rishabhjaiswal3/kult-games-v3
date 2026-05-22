@@ -22,7 +22,7 @@ export function ArenaAgentShowcase() {
         }}
       />
 
-      <div
+      <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
@@ -56,7 +56,7 @@ export function ArenaAgentShowcase() {
 
         <div className="relative border-t border-white/[0.06] bg-background/30 p-4 sm:p-6 md:p-8">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div
+            <motion.div
               initial={{ opacity: 0, x: -8 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -66,7 +66,7 @@ export function ArenaAgentShowcase() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Hover to preview — click to start creation with that class locked in.
               </p>
-            </div>
+            </motion.div>
             {hovered ? (
               <motion.span
                 key={hovered}
@@ -93,7 +93,7 @@ export function ArenaAgentShowcase() {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

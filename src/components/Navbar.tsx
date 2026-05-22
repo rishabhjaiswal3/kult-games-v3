@@ -28,7 +28,7 @@ import {
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Games", path: "/games" },
-  { label: "Marketplace", path: "/marketplace" },
+  { label: "Inventory", path: "/inventory" },
   { label: "AI Arena", path: "/ai-arena" },
   { label: "Moments", path: "/moments" },
   { label: "Leaderboard", path: "/leaderboard" },

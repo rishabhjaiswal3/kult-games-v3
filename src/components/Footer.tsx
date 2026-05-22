@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const platformLinks = [
   { label: "Games", href: "/" },
-  { label: "Marketplace", href: "/marketplace" },
+  { label: "Inventory", href: "/inventory" },
   { label: "AI Arena", href: "/ai-arena" },
   { label: "Moments", href: "/moments" },
   { label: "Leaderboard", href: "/leaderboard" },

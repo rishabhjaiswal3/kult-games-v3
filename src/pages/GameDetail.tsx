@@ -343,7 +343,7 @@ const GameDetail = () => {
                     )}
                     <button
                       type="button"
-                      onClick={() => navigate("/marketplace")}
+                      onClick={() => navigate("/inventory")}
                       className="btn-eye-outline inline-flex items-center gap-2 px-5 py-3 font-display text-xs font-bold tracking-wider"
                     >
                       <ShoppingBag className="h-4 w-4" />

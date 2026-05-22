@@ -61,7 +61,7 @@ export function HomeArenaPromoBanner() {
               {isAuthenticated ? (
                 <button
                   type="button"
-                  onClick={openCreateAgent}
+                  onClick={() => openCreateAgent()}
                   className="btn-eye-outline inline-flex items-center gap-2 px-5 py-3 font-display text-xs font-bold tracking-wider sm:px-7 sm:text-sm"
                 >
                   <Plus className="h-4 w-4" />

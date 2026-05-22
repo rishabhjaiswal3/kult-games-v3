@@ -21,7 +21,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative pt-2 sm:pt-3">
+    <div className="min-h-screen relative">
       <HeroSection onExploreGames={handleGamesAccess} />
 
       <LiveEcosystemLayer />
