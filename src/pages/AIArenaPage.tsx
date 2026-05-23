@@ -12,6 +12,8 @@ import {
   Eye,
   ArrowRight,
   Sparkles,
+  Radio,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import heroVideo from "@/assets/hero-video.mp4";
@@ -23,9 +25,9 @@ import agentAegis from "@/assets/agent-aegis.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
 import agentLumen from "@/assets/agent-lumen.jpg";
-import iconTrain from "@/assets/icon-train.jpg";
-import iconBattle from "@/assets/icon-battle.jpg";
-import iconEarn from "@/assets/icon-earn.jpg";
+import iconTrain from "@/assets/icon-train.png";
+import iconBattle from "@/assets/icon-battle.png";
+import iconEarn from "@/assets/icon-earn.png";
 const agents = [
   {
     rank: "01",
@@ -116,6 +118,36 @@ const battles = [
   },
 ];
 
+const liveSignals = [
+  "NEXUS-01 defeated VOIDWALKER",
+  "RAGEBORN initiated revenge protocol",
+  "LUMEN-22 learned a new counter",
+  "SHADOW-9 switched to flank logic",
+  "AEGIS-07 blocked 3 critical strikes",
+  "0G faction signal detected",
+];
+
+const arenaMoments = [
+  {
+    title: "Revenge Arc",
+    desc: "VOIDWALKER hunted NEXUS-01 across three matches after a late-round betrayal.",
+    img: agentVoid,
+    meta: "12.8K replays",
+  },
+  {
+    title: "Learning Moment",
+    desc: "LUMEN-22 lost twice, rebuilt its dodge pattern, then countered the same tactic live.",
+    img: agentLumen,
+    meta: "AI commentary",
+  },
+  {
+    title: "Faction Break",
+    desc: "AEGIS-07 ignored alliance orders and triggered a full Aether signal storm.",
+    img: agentAegis,
+    meta: "Trending rivalry",
+  },
+];
+
 function ZeroGLogo({ className = "h-4 w-auto" }: { className?: string }) {
   return (
     <img
@@ -154,11 +186,13 @@ const AIArenaPage = () => {
   return (
     <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-[1284px]">
       <Hero />
+      <LiveSignalStrip />
       <StatsBar />
       <FeaturesBlock />
       <HowItWorks />
       <TopAgents />
       <LiveBattles />
+      <ArenaMoments />
       <PartnersBlock />
       <ArenaLandingFooter />
     </div>
@@ -209,15 +243,12 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       >
         Where AI agents
         <br />
-        battle for{" "}
         <span className="underline decoration-accent decoration-4 underline-offset-4">
-          supremacy
+          evolve through war
         </span>
       </h2>
       <p className="mt-5 md:mt-6 text-sm md:text-base text-muted-foreground max-w-md">
-        Collect, train, and battle unique AI Agents.
-        <br />
-        Own your journey. Rule the Arena.
+        Train intelligence, enter rivalries, and watch agents learn, adapt, talk back, and rule the Arena.
       </p>
       <div
         className={
@@ -229,11 +260,10 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         {isAuthenticated ? (
           <Link
             to="/dashboard"
-            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-              compact
+            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${compact
                 ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
                 : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-            }`}
+              }`}
           >
             <span className="leading-tight text-center whitespace-nowrap">OPEN DASHBOARD</span>{" "}
             <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
@@ -242,11 +272,10 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={login}
-            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-              compact
+            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${compact
                 ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
                 : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-            }`}
+              }`}
           >
             <span className="leading-tight text-center whitespace-nowrap">CONNECT WALLET</span>{" "}
             <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
@@ -254,11 +283,10 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         )}
         <Link
           to="/my-agents"
-          className={`min-w-0 rounded-md font-tech border border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 hover:border-primary/80 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(143,39,255,0.15)] hover:shadow-[0_0_25px_rgba(143,39,255,0.35)] whitespace-nowrap ${
-            compact
+          className={`min-w-0 rounded-md font-tech border border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 hover:border-primary/80 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(143,39,255,0.15)] hover:shadow-[0_0_25px_rgba(143,39,255,0.35)] whitespace-nowrap ${compact
               ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.06em] gap-2"
               : "w-[240px] lg:w-auto px-5 py-3 text-[10.5px] tracking-[0.18em] gap-2"
-          }`}
+            }`}
         >
           <Box className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 text-accent" />{" "}
           <span className="leading-tight text-center font-bold whitespace-nowrap">MY AGENTS</span>
@@ -271,6 +299,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 function Hero() {
   return (
     <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px] max-md:min-h-[520px]">
+      <HeroAtmosphere />
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden
@@ -298,12 +327,64 @@ function Hero() {
           <source src={heroVideo} type="video/mp4" />
         </video>
         <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
+        <HeroHud compact />
         <div className="relative z-10 px-4 sm:px-6 pt-3">
           <HeroCopy compact />
         </div>
       </div>
       <div className="relative max-w-7xl mx-auto hidden md:flex px-6 pt-20 pb-32 min-h-[680px] items-center">
         <HeroCopy />
+        <HeroHud />
+      </div>
+    </section>
+  );
+}
+
+function HeroAtmosphere() {
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-0 z-[3] hero-hologram-overlay opacity-80" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-[4] h-28 bg-[linear-gradient(105deg,transparent,rgba(154,53,255,0.18),transparent,rgba(0,240,128,0.1),transparent)] arena-neon-reflection" />
+    </>
+  );
+}
+
+function HeroHud({ compact = false }: { compact?: boolean }) {
+  const nodes = [
+    { label: "EYES", value: "GLOWING", pos: compact ? "right-3 top-[52%]" : "right-[9%] top-[26%]" },
+    { label: "SCAN", value: "LOCKED", pos: compact ? "left-3 bottom-[16%]" : "right-[19%] bottom-[22%]" },
+    { label: "FACTION", value: "0G PULSE", pos: compact ? "right-4 bottom-[7%]" : "right-[5%] bottom-[10%]" },
+  ];
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-20">
+      {nodes.map((node) => (
+        <div
+          key={node.label}
+          className={`absolute ${node.pos} hero-hologram-flicker rounded-md border border-cyan-300/25 bg-black/35 px-3 py-2 shadow-[0_0_24px_rgba(0,225,255,0.16)] backdrop-blur-sm`}
+        >
+          <div className="font-tech text-[8px] tracking-[0.26em] text-cyan-200/70">{node.label}</div>
+          <div className="mt-1 font-tech text-[10px] text-white">{node.value}</div>
+        </div>
+      ))}
+      <div className="absolute right-[28%] top-[34%] hidden h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_26px_10px_rgba(34,211,238,0.28)] md:block arena-eye-glow" />
+      <div className="absolute right-[24%] top-[35%] hidden h-2.5 w-2.5 rounded-full bg-fuchsia-300 shadow-[0_0_26px_10px_rgba(217,70,239,0.24)] md:block arena-eye-glow" />
+    </div>
+  );
+}
+
+function LiveSignalStrip() {
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-1 relative z-20">
+      <div className="mask-fade-x overflow-hidden rounded-lg border border-red-500/20 bg-black/45 py-2">
+        <div className="hero-arena-marquee flex w-max items-center gap-6 pr-6">
+          {[...liveSignals, ...liveSignals].map((item, i) => (
+            <span key={`${item}-${i}`} className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-white/72">
+              <span className="live-dot h-1.5 w-1.5 rounded-full bg-red-500" />
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -311,10 +392,10 @@ function Hero() {
 
 function StatsBar() {
   const stats = [
-    { icon: Box, label: "TOTAL AGENTS", value: "1,248,721", c: "var(--neon)" },
-    { icon: Swords, label: "BATTLES TODAY", value: "24,891", c: "var(--cyan)" },
-    { icon: TrendingUp, label: "TOTAL PRIZE POOL", value: "$2,451,891", c: "var(--amber)" },
-    { icon: Sparkles, label: "ACTIVE USERS", value: "12,450", c: "var(--lime)" },
+    { icon: Box, label: "AGENTS TRAINING NOW", value: "12,450", c: "var(--neon)" },
+    { icon: Swords, label: "LIVE BATTLES", value: "384", c: "var(--cyan)" },
+    { icon: TrendingUp, label: "ACTIVE RIVALRIES", value: "72", c: "var(--amber)" },
+    { icon: Sparkles, label: "MOMENTS TODAY", value: "2.9K", c: "var(--lime)" },
   ];
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
@@ -689,6 +770,17 @@ function LiveBattles() {
           </div>
         ))}
       </div>
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        {liveSignals.slice(1, 4).map((signal, i) => (
+          <div key={signal} className="card-glass rounded-lg p-3">
+            <div className="mb-2 flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-red-300">
+              <Radio className="h-3.5 w-3.5" />
+              Agent callout 0{i + 1}
+            </div>
+            <p className="text-sm text-white/82">{signal}</p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -713,6 +805,51 @@ function Fighter({ f, flip }: { f: { name: string; chain: string; img: string };
         </div>
       </div>
     </div>
+  );
+}
+
+function ArenaMoments() {
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+        <div>
+          <span className="font-tech text-[10px] uppercase tracking-[0.28em] text-accent">Arena Moments</span>
+          <h3 className="mt-2 font-display text-2xl sm:text-3xl">RIVALRIES, BETRAYALS, LEARNING ARCS</h3>
+        </div>
+        <Link to="/moments" className="text-sm text-accent hover:underline">
+          Watch Moments
+        </Link>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {arenaMoments.map((moment) => (
+          <Link
+            key={moment.title}
+            to="/moments"
+            className="card-glass group overflow-hidden rounded-xl transition hover:-translate-y-1"
+          >
+            <div className="relative aspect-[16/10] overflow-hidden">
+              <img
+                src={moment.img}
+                alt={moment.title}
+                loading="lazy"
+                width={640}
+                height={400}
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded border border-white/10 bg-black/45 px-2 py-1 font-tech text-[9px] uppercase tracking-[0.16em] text-white/75 backdrop-blur-sm">
+                <Zap className="h-3 w-3 text-amber-300" />
+                {moment.meta}
+              </div>
+            </div>
+            <div className="p-4">
+              <h4 className="font-tech text-sm uppercase tracking-wider text-white">{moment.title}</h4>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{moment.desc}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
