@@ -10,8 +10,22 @@ import agentRage from "@/assets/agent-rageborn.jpg";
 import heroTrio from "@/assets/hero-trio.png";
 import battleIcon from "@/assets/icon-battle.jpg";
 import dashboardCrest from "@/assets/dashboard-crest.png";
+import battleStep1 from "@/assets/step1.mp4";
+import battleStep2 from "@/assets/step2.mp4";
+import battleStep3 from "@/assets/step3.mp4";
+import battleStep4 from "@/assets/step4.mp4";
+import battleStep5 from "@/assets/step5.mp4";
 
-const gameModes = [
+export type GameMode = {
+  title: string;
+  tag: string;
+  body: string;
+  image?: string;
+  video?: string;
+  tone: string;
+};
+
+const gameModes: GameMode[] = [
   {
     title: "WARZONE WARRIORS",
     tag: "2D SHOOTER",
@@ -23,7 +37,7 @@ const gameModes = [
     title: "ROBOWARS",
     tag: "VEHICLE ARENA",
     body: "Build. Upgrade. Destroy. Fight in intense robotic vehicle battles.",
-    image: battleIcon,
+    video: battleStep5,
     tone: "from-[#201007]/30 via-[#100b0c]/55 to-[#070910]/95",
   },
 ];
@@ -43,6 +57,19 @@ const activeBattles = [
     color: "#7b3cff",
   },
   {
+    game: "ROBOWARS",
+    title: "ARENA BRAWL",
+    map: "Steel Pit",
+    left: "Iron Titans",
+    right: "Cyber Claws",
+    leftScore: "3",
+    rightScore: "3",
+    status: "LIVE",
+    time: "09:30",
+    video: battleStep1,
+    color: "#b037ff",
+  },
+  {
     game: "WARZONE WARRIORS",
     title: "CAPTURE THE FLAG",
     map: "Jungle Ruins",
@@ -57,19 +84,6 @@ const activeBattles = [
   },
   {
     game: "ROBOWARS",
-    title: "ARENA BRAWL",
-    map: "Steel Pit",
-    left: "Iron Titans",
-    right: "Cyber Claws",
-    leftScore: "3",
-    rightScore: "3",
-    status: "LIVE",
-    time: "09:30",
-    image: battleIcon,
-    color: "#b037ff",
-  },
-  {
-    game: "ROBOWARS",
     title: "MECH MAYHEM",
     map: "Scrap Yard",
     left: "Dark Bots",
@@ -78,8 +92,60 @@ const activeBattles = [
     rightScore: "2",
     status: "STARTING SOON",
     time: "01:20",
-    image: battleIcon,
+    video: battleStep2,
     color: "#ffc000",
+  },
+  {
+    game: "WARZONE WARRIORS",
+    title: "DOMINATION",
+    map: "Desert Storm",
+    left: "Desert Foxes",
+    right: "Sand Vipers",
+    leftScore: "45",
+    rightScore: "30",
+    status: "STARTING SOON",
+    time: "02:15",
+    image: heroTrio,
+    color: "#ffc000",
+  },
+  {
+    game: "ROBOWARS",
+    title: "CIRCUIT BREAKER",
+    map: "Neon Factory",
+    left: "Volt Runners",
+    right: "Spark Plugs",
+    leftScore: "1",
+    rightScore: "0",
+    status: "LIVE",
+    time: "04:45",
+    video: battleStep3,
+    color: "#00f080",
+  },
+  {
+    game: "WARZONE WARRIORS",
+    title: "FREE FOR ALL",
+    map: "Neon City",
+    left: "Neon Wraiths",
+    right: "Cyber Punks",
+    leftScore: "10",
+    rightScore: "10",
+    status: "LIVE",
+    time: "12:00",
+    image: agentShadow,
+    color: "#ff3c7b",
+  },
+  {
+    game: "ROBOWARS",
+    title: "SCRAP YARD SCRAMBLE",
+    map: "Junkyard",
+    left: "Scrap Titans",
+    right: "Rust Buckets",
+    leftScore: "7",
+    rightScore: "6",
+    status: "LIVE",
+    time: "15:30",
+    video: battleStep4,
+    color: "#ff5050",
   },
 ];
 
@@ -135,10 +201,14 @@ function RankCard() {
   );
 }
 
-function GameModeCard({ mode }: { mode: (typeof gameModes)[number] }) {
+function GameModeCard({ mode }: { mode: GameMode }) {
   return (
-    <article className="arena-panel relative h-[220px] overflow-hidden">
-      <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78" />
+    <article className="arena-panel relative h-[260px] overflow-hidden">
+      {mode.video ? (
+        <video src={mode.video} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-78" />
+      ) : (
+        <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78" />
+      )}
       <div className={`absolute inset-0 bg-gradient-to-r ${mode.tone}`} />
       <div className="relative z-10 flex h-full flex-col justify-between p-5">
         <div>
@@ -177,9 +247,13 @@ function Team({ name, color, right = false }: { name: string; color: string; rig
 
 function BattleCard({ battle }: { battle: (typeof activeBattles)[number] }) {
   return (
-    <article className="arena-panel overflow-hidden">
-      <div className="relative h-[118px]">
-        <img src={battle.image} alt="" className="h-full w-full object-cover opacity-75" />
+    <article className="arena-panel overflow-hidden flex flex-col h-full">
+      <div className="relative h-[118px] shrink-0">
+        {battle.video ? (
+          <video src={battle.video} autoPlay loop muted playsInline className="h-full w-full object-cover opacity-75" />
+        ) : (
+          <img src={battle.image} alt="" className="h-full w-full object-cover opacity-75" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050913] via-black/25 to-transparent" />
         <span className="absolute left-3 top-3 rounded border border-[#a231ff] bg-[#5b1499]/60 px-2 py-1 font-tech text-[9px] text-[#d773ff]">
           {battle.game}
@@ -202,12 +276,14 @@ function BattleCard({ battle }: { battle: (typeof activeBattles)[number] }) {
           <span className={battle.status === "LIVE" ? "text-red-500" : "text-[#ffc000]"}>● {battle.status}</span>
           <span className="text-white/72">{battle.time}</span>
         </div>
-        <button
-          type="button"
-          className="mt-3 h-9 w-full rounded border border-[#9b32ff]/70 bg-[#230b35]/75 font-tech text-[10px]"
-        >
-          {battle.status === "LIVE" ? "WATCH NOW" : "JOIN BATTLE"}
-        </button>
+        <div className="mt-auto pt-3">
+          <button
+            type="button"
+            className="h-9 w-full rounded border border-[#9b32ff]/70 bg-[#230b35]/75 font-tech text-[10px]"
+          >
+            {battle.status === "LIVE" ? "WATCH NOW" : "JOIN BATTLE"}
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -222,8 +298,7 @@ function Rewards() {
   ] as const;
   return (
     <aside className="arena-panel h-fit p-4">
-      <h3 className="font-tech text-xs">BATTLE REWARDS</h3>
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         {rewards.map(([label, value, color]) => (
           <div key={label} className="flex items-center justify-between gap-3 text-xs">
             <span className="flex items-center gap-3 text-white/72">
@@ -268,45 +343,53 @@ function PerformerCard({ agent }: { agent: (typeof performers)[number] }) {
   );
 }
 
-const BattlesPage = () => (
-  <ArenaPageLayout>
-    <div className="mb-4">
-      <h1 className="text-3xl font-bold tracking-tight">BATTLE ARENA</h1>
-      <p className="mt-2 text-sm text-white/68">Compete in epic battles across different games and modes.</p>
-    </div>
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
-      <StatsRail />
-      <RankCard />
-    </div>
-    <SectionTitle>CHOOSE YOUR GAME</SectionTitle>
-    <div className="grid gap-3 xl:grid-cols-2">
-      {gameModes.map((mode) => (
-        <GameModeCard key={mode.title} mode={mode} />
-      ))}
-    </div>
-    <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <SectionTitle className="mt-0">ACTIVE BATTLES</SectionTitle>
-          <Link to="/battles" className="font-tech text-[10px] text-[#b33cff]">
-            View All Battles
-          </Link>
+const BattlesPage = () => {
+  return (
+    <ArenaPageLayout>
+      <div className="mb-4">
+        <h1 className="text-3xl font-bold tracking-tight">BATTLE ARENA</h1>
+        <p className="mt-2 text-sm text-white/68">Compete in epic battles across different games and modes.</p>
+      </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
+        <StatsRail />
+        <RankCard />
+      </div>
+      <SectionTitle>CHOOSE YOUR GAME</SectionTitle>
+      <div className="grid gap-3 xl:grid-cols-2">
+        {gameModes.map((mode) => (
+          <GameModeCard key={mode.title} mode={mode} />
+        ))}
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
+        <div>
+          <div className="mb-3">
+            <SectionTitle className="!mt-0">ACTIVE BATTLES</SectionTitle>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {activeBattles.map((battle) => (
+              <BattleCard key={battle.title} battle={battle} />
+            ))}
+          </div>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {activeBattles.map((battle) => (
-            <BattleCard key={battle.title} battle={battle} />
-          ))}
+        <div className="flex flex-col gap-6">
+          <div>
+            <div className="mb-3">
+              <SectionTitle className="!mt-0">BATTLE REWARDS</SectionTitle>
+            </div>
+            <Rewards />
+          </div>
+          <div>
+            <SectionTitle className="mt-0">YOUR TOP PERFORMERS</SectionTitle>
+            <div className="mt-3 grid gap-3">
+              {performers.map((agent) => (
+                <PerformerCard key={agent.name} agent={agent} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-      <Rewards />
-    </div>
-    <SectionTitle>YOUR TOP PERFORMERS</SectionTitle>
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-      {performers.map((agent) => (
-        <PerformerCard key={agent.name} agent={agent} />
-      ))}
-    </div>
-  </ArenaPageLayout>
-);
+    </ArenaPageLayout>
+  );
+};
 
 export default BattlesPage;
