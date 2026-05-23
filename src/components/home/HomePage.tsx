@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -8,9 +8,11 @@ import {
   Crown,
   Gamepad2,
   Package,
+  Radio,
   Sparkles,
   Swords,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +20,15 @@ import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay
 import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
+import agentNexus from "@/assets/agent-nexus.jpg";
+import agentShadow from "@/assets/agent-shadow.jpg";
+import agentAegis from "@/assets/agent-aegis.jpg";
+import agentVoid from "@/assets/agent-voidwalker.jpg";
+import agentRage from "@/assets/agent-rageborn.jpg";
+import agentLumen from "@/assets/agent-lumen.jpg";
+import momentFeatured from "@/assets/moment-featured.png";
+import momentRobowars from "@/assets/moment-robowars.png";
+import momentWarzone from "@/assets/moment-warzone.png";
 
 const trailerVideo = new URL("../../assets/Trailer.MOV", import.meta.url).href;
 
@@ -28,6 +39,40 @@ const quickLinks = [
   { label: "Dashboard", path: "/dashboard", icon: Box, color: "#00f080" },
   { label: "Battles", path: "/battles", icon: Swords, color: "#b338ff" },
   { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#f59e0b" },
+];
+
+const homeArenaSignals = [
+  "NEXUS-01 defeated VOIDWALKER",
+  "Revenge initiated by RAGEBORN",
+  "LUMEN-22 learned new dodge logic",
+  "Faction war active in 0G Arena",
+];
+
+const homeArenaAgents = [
+  { name: "NEXUS-01", img: agentNexus, stat: "14,850 power" },
+  { name: "SHADOW-9", img: agentShadow, stat: "flank logic" },
+  { name: "AEGIS-07", img: agentAegis, stat: "shield online" },
+  { name: "VOIDWALKER", img: agentVoid, stat: "revenge live" },
+  { name: "RAGEBORN", img: agentRage, stat: "berserk mode" },
+  { name: "LUMEN-22", img: agentLumen, stat: "new tactic" },
+];
+
+const homeMoments = [
+  {
+    title: "AI learned mid-fight",
+    desc: "LUMEN countered a tactic after two losses.",
+    img: momentFeatured,
+  },
+  {
+    title: "Rivalry went public",
+    desc: "NEXUS and VOIDWALKER triggered a revenge chain.",
+    img: momentRobowars,
+  },
+  {
+    title: "Faction signal storm",
+    desc: "Aether squads broke formation live.",
+    img: momentWarzone,
+  },
 ];
 
 export function HomePage() {
@@ -98,10 +143,10 @@ export function HomePage() {
               Kult Games
             </span>
             <h1 className="font-tech text-4xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Shape the future of on-chain gaming
+              Where AI agents evolve through war
             </h1>
             <p className="max-w-lg text-sm leading-relaxed text-white/60">
-              Play curated Web3 titles, train AI agents, battle rivals, and climb the arena leaderboard — all in one hub.
+              One browser for games, agents, rivalries, live battles, and the moments that turn AI fights into stories.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -195,38 +240,8 @@ export function HomePage() {
         </div>
       </section>
 
-      <div>
-        <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
-              style={
-                {
-                  "--quick-link-color": link.color,
-                  "--quick-link-glow": `${link.color}33`,
-                } as CSSProperties
-              }
-            >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="flex items-center gap-3">
-                <div
-                  className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
-                  style={{ color: link.color }}
-                >
-                  <link.icon className="h-5 w-5" />
-                </div>
-                <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
-                  {link.label}
-                </span>
-              </div>
-              <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
-            </Link>
-          ))}
-        </div>
-      </div>
+      <HomeAIArenaSection />
+      <HomeMomentsSection />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -283,6 +298,39 @@ export function HomePage() {
         </div>
       </div>
 
+      <div>
+        <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+              style={
+                {
+                  "--quick-link-color": link.color,
+                  "--quick-link-glow": `${link.color}33`,
+                } as CSSProperties
+              }
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="flex items-center gap-3">
+                <div
+                  className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
+                  style={{ color: link.color }}
+                >
+                  <link.icon className="h-5 w-5" />
+                </div>
+                <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
+                  {link.label}
+                </span>
+              </div>
+              <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
@@ -303,5 +351,153 @@ export function HomePage() {
         </button>
       </div>
     </div>
+  );
+}
+
+function HomeAIArenaSection() {
+  const [activeAgentIndex, setActiveAgentIndex] = useState(0);
+  const activeAgent = homeArenaAgents[activeAgentIndex];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveAgentIndex((index) => (index + 1) % homeArenaAgents.length);
+    }, 2800);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-4 sm:p-5 lg:p-6">
+      <div className="pointer-events-none absolute inset-0 arena-rain opacity-35" />
+      <div className="pointer-events-none absolute inset-0 hero-hologram-overlay opacity-50" />
+      <div className="relative grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
+        <div className="flex flex-col justify-between gap-5">
+          <div>
+            <div className="mb-3 flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.22em] text-[#9a35ff]">
+              <Sparkles className="h-4 w-4" />
+              AI Arena
+            </div>
+            <h2 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+              Train intelligence. Rule the arena.
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/58">
+              Create agents that remember fights, learn tactics, trigger rivalries, and battle while the whole ecosystem watches.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              ["384", "Live battles"],
+              ["12.4K", "Agents awake"],
+              ["72", "Rivalries"],
+              ["9", "Tournaments"],
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-md border border-white/8 bg-white/[0.035] p-3">
+                <div className="font-tech text-xl font-bold text-white">{value}</div>
+                <div className="mt-1 font-tech text-[9px] uppercase tracking-wider text-white/42">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <Link
+            to="/ai-arena"
+            className="btn-primary inline-flex w-fit items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+          >
+            Enter AI Arena
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)]">
+          <Link
+            to="/ai-arena"
+            className="group relative min-h-[360px] overflow-hidden rounded-lg border border-white/8 bg-black/40 sm:min-h-[420px] md:min-h-full"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(154,53,255,0.24),transparent_44%)]" />
+            <img
+              key={activeAgent.name}
+              src={activeAgent.img}
+              alt={activeAgent.name}
+              className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/12 to-transparent" />
+            <div className="absolute bottom-3 left-3 right-3">
+              <div className="font-tech text-lg font-bold uppercase text-white">{activeAgent.name}</div>
+              <div className="mt-1 text-sm text-white/60">{activeAgent.stat}</div>
+              <div className="mt-3 flex gap-1.5">
+                {homeArenaAgents.map((agent, index) => (
+                  <span
+                    key={agent.name}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === activeAgentIndex ? "w-7 bg-[#9a35ff]" : "w-1.5 bg-white/25"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </Link>
+
+          <div className="rounded-lg border border-white/8 bg-black/35 p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-tech text-[10px] uppercase tracking-[0.2em] text-white/60">Live system feed</span>
+              <span className="flex items-center gap-1 rounded border border-red-500/30 bg-red-500/12 px-2 py-0.5 font-tech text-[9px] text-red-300">
+                <span className="live-dot h-1.5 w-1.5 rounded-full bg-red-500" />
+                Live
+              </span>
+            </div>
+            <div className="space-y-2">
+              {homeArenaSignals.map((signal, i) => (
+                <div key={signal} className="flex items-center gap-3 rounded border border-white/6 bg-white/[0.025] px-3 py-2">
+                  <Radio className="h-3.5 w-3.5 shrink-0 text-cyan-300" />
+                  <span className="min-w-0 flex-1 truncate text-xs text-white/72">{signal}</span>
+                  <span className="text-[10px] text-white/34">{i + 1}m</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeMomentsSection() {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Moments</h2>
+          <p className="mt-1 text-xs text-white/42">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
+        </div>
+        <Link
+          to="/moments"
+          className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
+        >
+          View moments →
+        </Link>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {homeMoments.map((moment) => (
+          <Link
+            key={moment.title}
+            to="/moments"
+            className="group overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:-translate-y-0.5 hover:border-[#9a35ff]/35"
+          >
+            <div className="relative aspect-[16/9] overflow-hidden">
+              <img src={moment.img} alt={moment.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-transparent to-transparent" />
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded border border-white/10 bg-black/45 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-white/72">
+                <Zap className="h-3 w-3 text-[#ffc000]" />
+                AI Moment
+              </div>
+            </div>
+            <div className="p-3">
+              <p className="text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">{moment.title}</p>
+              <p className="mt-1 line-clamp-1 text-[10px] text-white/42">{moment.desc}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

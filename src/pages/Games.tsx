@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
+  Activity,
   ArrowUpRight,
   ChevronRight,
   Download,
@@ -10,6 +11,7 @@ import {
   Layers,
   Search,
   Smartphone,
+  Volume2,
   Zap,
 } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
@@ -134,16 +136,20 @@ const Games = () => {
               return (
                 <article
                   key={game._id ?? game.identification}
-                  className="arena-panel relative min-h-[240px] overflow-hidden"
+                  className="arena-panel group relative min-h-[240px] overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/50 hover:shadow-[0_0_46px_rgba(154,53,255,0.2)]"
                 >
                   {image ? (
                     <img
                       src={image}
                       alt=""
-                      className="absolute inset-0 h-full w-full object-cover opacity-70"
+                      className="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-700 group-hover:scale-105 group-hover:opacity-85"
                     />
                   ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/75 to-[#050913]/35" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/75 to-[#050913]/35 transition group-hover:via-[#050913]/58" />
+                  <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100">
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(180deg,transparent,transparent_6px,rgba(0,240,255,0.06)_7px)]" />
+                    <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc] to-transparent" />
+                  </div>
                   <div className="relative z-10 flex h-full min-h-[240px] flex-col justify-between p-6">
                     <div>
                       <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
@@ -155,15 +161,34 @@ const Games = () => {
                       <p className="mt-2 line-clamp-2 max-w-md text-xs text-white/65">
                         {getGameDescription(game.description) || "Jump in and compete on the Kult leaderboard."}
                       </p>
+                      <div className="mt-4 grid max-w-sm grid-cols-3 gap-2 opacity-0 transition duration-300 group-hover:opacity-100">
+                        {[
+                          ["AI Win", "74%"],
+                          ["Heat", downloadable ? "BUILD" : "LIVE"],
+                          ["Rivals", "32"],
+                        ].map(([label, value]) => (
+                          <div key={label} className="rounded border border-white/8 bg-black/35 px-2 py-1.5">
+                            <div className="font-tech text-[8px] uppercase tracking-wider text-white/34">{label}</div>
+                            <div className="mt-0.5 font-tech text-[10px] font-bold text-white/80">{value}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => openGame(game)}
-                      className="mt-4 flex h-10 w-fit items-center gap-2 rounded border border-[#9b32ff]/70 bg-[#170d26]/75 px-4 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6acff] transition hover:border-[#9a35ff]"
-                    >
-                      {downloadable ? "View & Download" : "Enter Game"}
-                      <ArrowUpRight className="h-4 w-4" />
-                    </button>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openGame(game)}
+                        className="flex h-10 w-fit items-center gap-2 rounded border border-[#9b32ff]/70 bg-[#170d26]/75 px-4 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6acff] transition hover:border-[#9a35ff]"
+                      >
+                        {downloadable ? "View & Download" : "Enter Game"}
+                        <ArrowUpRight className="h-4 w-4" />
+                      </button>
+                      <span className="flex translate-y-1 items-center gap-2 rounded border border-white/8 bg-black/35 px-3 py-2 text-[10px] text-white/58 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                        <Volume2 className="h-3.5 w-3.5 text-[#00f080]" />
+                        AI voice line armed
+                        <Activity className="h-3.5 w-3.5 text-[#9a35ff]" />
+                      </span>
+                    </div>
                   </div>
                 </article>
               );
