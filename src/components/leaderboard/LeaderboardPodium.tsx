@@ -21,6 +21,7 @@ function PodiumCard({
           avatarSize: "h-[4.5rem] w-[4.5rem]",
           gradient: "from-[#ffc000]/10",
           rank: "1",
+          glowColor: "#ffc000",
         }
       : slot === "second"
         ? {
@@ -31,6 +32,7 @@ function PodiumCard({
             avatarSize: "h-16 w-16",
             gradient: "from-blue-950/20",
             rank: "2",
+            glowColor: "#3b82f6",
           }
         : {
             height: "h-[210px]",
@@ -40,11 +42,13 @@ function PodiumCard({
             avatarSize: "h-16 w-16",
             gradient: "from-orange-950/20",
             rank: "3",
+            glowColor: "#d97706",
           };
 
   return (
     <div
-      className={`arena-panel relative flex flex-col items-center justify-between overflow-hidden p-5 text-center bg-[#04080f] ${styles.height} ${styles.border}`}
+      className={`arena-panel relative flex flex-col items-center justify-between overflow-hidden p-5 text-center bg-[#04080f] ${styles.height} ${styles.border} podium-glow-border`}
+      style={{ "--podium-glow-color": styles.glowColor } as React.CSSProperties}
     >
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20">
         <img src={player.avatar} alt="" className="h-full w-full scale-105 object-cover object-[center_12%] blur-[0.5px]" />

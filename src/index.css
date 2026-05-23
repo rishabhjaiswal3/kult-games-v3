@@ -811,6 +811,42 @@
     display: none;
   }
 }
+/* ── Leaderboard Podium Rotating Border ── */
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-border-light {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+.podium-glow-border {
+  position: relative;
+}
+
+.podium-glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 60%,
+    var(--podium-glow-color, hsl(195 100% 50%)) 90%,
+    transparent 100%
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  animation: rotate-border-light 3s linear infinite;
+  z-index: 10;
+}
 
 /* ─── Pixel-perfect / AI Arena shell (from pixel-perfect-pages) ─── */
 .arena-app-shell {
