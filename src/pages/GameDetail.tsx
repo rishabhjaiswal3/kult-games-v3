@@ -167,30 +167,44 @@ const GameDetail = () => {
 
   return (
     <ArenaPageLayout>
-      <button
-        type="button"
-        onClick={() => navigate("/games")}
-        className="inline-flex items-center gap-2 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:border-purple-500/35 hover:text-white"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to games
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => navigate("/games")}
+          className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#07101d]/70 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white/58 transition hover:border-purple-500/40 hover:bg-purple-950/10 hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to games
+        </button>
+        <div className="hidden items-center gap-2 rounded-md border border-purple-500/20 bg-purple-950/10 px-3 py-2 font-tech text-[10px] uppercase tracking-wider text-purple-200/70 sm:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00f080] shadow-[0_0_12px_#00f080]" />
+          Game launcher online
+        </div>
+      </div>
 
-      <article className="arena-panel relative min-h-[200px] overflow-hidden border-white/8">
+      <article className="arena-panel group relative min-h-[360px] overflow-hidden border-white/8 bg-[#03070d] shadow-[0_28px_90px_rgba(0,0,0,0.35)]">
         {showcaseSrc ? (
-          <img src={showcaseSrc} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />
+          <img
+            src={showcaseSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-700 group-hover:scale-[1.03] group-hover:opacity-75"
+          />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050913] via-[#050913]/88 to-[#050913]/40" />
-        <div className="relative z-10 flex flex-col justify-between gap-6 p-5 sm:flex-row sm:items-end sm:p-6">
-          <div className="max-w-2xl space-y-3">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#03070d] via-[#03070d]/86 to-[#03070d]/34" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#03070d] via-transparent to-purple-950/18" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(154,53,255,0.28),transparent_32%),radial-gradient(circle_at_82%_22%,rgba(0,240,128,0.10),transparent_28%)]" />
+        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-purple-300/80 to-transparent" />
+
+        <div className="relative z-10 grid min-h-[360px] gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] lg:items-end">
+          <div className="max-w-3xl space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               {game.category ? (
-                <span className="rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
+                <span className="rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
                   {game.category}
                 </span>
               ) : null}
               <span
-                className={`rounded border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${
+                className={`rounded border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider ${
                   downloadable
                     ? "border-amber-500/35 bg-amber-950/50 text-amber-400"
                     : "border-emerald-500/35 bg-emerald-950/50 text-[#00f080]"
@@ -199,15 +213,40 @@ const GameDetail = () => {
                 {downloadable ? "Downloadable" : "Instant play"}
               </span>
             </div>
-            <h1 className="font-tech text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">{title}</h1>
-            {game.slogan ? <p className="text-sm text-white/65">{game.slogan}</p> : null}
+            <div>
+              <h1 className="font-tech text-4xl font-black uppercase leading-none tracking-tight text-white drop-shadow-[0_0_28px_rgba(154,53,255,0.24)] sm:text-5xl xl:text-6xl">
+                {title}
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/66 sm:text-base">
+                {game.slogan || getGameDescription(game.description) || "Enter the arena, master the loop, and climb the Kult ecosystem."}
+              </p>
+            </div>
+            <div className="grid max-w-xl grid-cols-3 gap-2">
+              {[
+                ["Mode", downloadable ? "Build" : "Browser"],
+                ["Arena", "0G"],
+                ["Access", isAuthenticated ? "Ready" : "Login"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-md border border-white/8 bg-black/35 px-3 py-2 backdrop-blur-sm">
+                  <div className="font-tech text-[8px] uppercase tracking-wider text-white/36">{label}</div>
+                  <div className="mt-1 truncate font-tech text-xs font-bold uppercase text-white/82">{value}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
+
+          <div className="rounded-xl border border-white/10 bg-black/35 p-3 backdrop-blur-md">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-tech text-[10px] uppercase tracking-[0.2em] text-white/48">Launch control</span>
+              <span className="rounded border border-white/10 bg-white/[0.04] px-2 py-0.5 font-tech text-[9px] uppercase text-white/55">
+                v1.0
+              </span>
+            </div>
             {downloadable ? (
               <button
                 type="button"
                 onClick={handleDownloadClick}
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                className="btn-primary flex w-full items-center justify-center gap-2 rounded-md px-5 py-3 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Download className="h-4 w-4" />
                 Download
@@ -216,7 +255,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handlePlayAccess}
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                className="btn-primary flex w-full items-center justify-center gap-2 rounded-md px-5 py-3 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Play className="h-4 w-4 fill-current" />
                 Play now
@@ -225,7 +264,7 @@ const GameDetail = () => {
             <button
               type="button"
               onClick={() => navigate("/inventory")}
-              className="inline-flex items-center gap-2 rounded border border-white/8 bg-[#0a0f1b]/60 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#0a0f1b]/70 px-4 py-3 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-300 transition hover:border-purple-500/40 hover:text-white"
             >
               <ShoppingBag className="h-4 w-4" />
               Inventory
@@ -234,10 +273,10 @@ const GameDetail = () => {
         </div>
       </article>
 
-      <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {facts.map((fact) => (
-          <div key={fact.label} className="flex items-center gap-3 p-4">
-            <div className="grid h-10 w-10 place-items-center rounded-md bg-white/[0.04]">
+          <div key={fact.label} className="arena-panel flex items-center gap-3 border-white/8 bg-[#04080f]/95 p-4">
+            <div className="grid h-11 w-11 place-items-center rounded-md border border-white/8 bg-white/[0.04]">
               <fact.icon className="h-5 w-5" style={{ color: fact.color }} />
             </div>
             <div className="min-w-0">
@@ -248,11 +287,12 @@ const GameDetail = () => {
         ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-w-0 space-y-4">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="min-w-0 space-y-5">
           {about ? (
-            <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5">
-              <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">About the game</h2>
+            <div className="arena-panel relative overflow-hidden space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6">
+              <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/55 to-transparent" />
+              <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Mission briefing</h2>
               <div className="space-y-3 text-sm leading-relaxed text-white/60">
                 {about.split("\n\n").filter(Boolean).map((para, i) => (
                   <p key={i}>{para.trim()}</p>
@@ -262,7 +302,7 @@ const GameDetail = () => {
           ) : null}
 
           {features.length > 0 ? (
-            <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5">
+            <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6">
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Features</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {features.map((feature) => (
@@ -280,7 +320,8 @@ const GameDetail = () => {
             </div>
           ) : null}
 
-          <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
+          <div className="arena-panel relative overflow-hidden flex flex-wrap items-center justify-between gap-4 border-purple-500/30 bg-[#070a12]/95 p-5 sm:p-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_50%,rgba(154,53,255,0.20),transparent_34%)]" />
             <div>
               <p className="font-tech text-[10px] uppercase tracking-wider text-[#d773ff]">
                 {downloadable ? "Desktop build" : "Ready to play"}
@@ -293,7 +334,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handleDownloadClick}
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                className="btn-primary relative inline-flex items-center gap-2 rounded-md px-6 py-3 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Download className="h-4 w-4" />
                 Download
@@ -303,7 +344,7 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handlePlayAccess}
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                className="btn-primary relative inline-flex items-center gap-2 rounded-md px-6 py-3 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Play className="h-4 w-4 fill-current" />
                 Play now
@@ -314,7 +355,10 @@ const GameDetail = () => {
         </div>
 
         <aside className="space-y-4">
-          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95">
+          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95 shadow-[0_20px_70px_rgba(0,0,0,0.26)]">
+            <div className="border-b border-white/8 px-4 py-3">
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Media deck</h3>
+            </div>
             <div className="relative aspect-video border-b border-white/6 bg-[#0a0f18]">
               {showcaseSrc ? (
                 <img src={showcaseSrc} alt={title} className="h-full w-full object-cover" loading="eager" />
@@ -366,7 +410,7 @@ const GameDetail = () => {
           </div>
 
           <div className="arena-panel space-y-3 border-white/8 bg-[#04080f]/95 p-4">
-            <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Quick links</h3>
+            <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Command links</h3>
             <button
               type="button"
               onClick={() => navigate("/leaderboard")}
