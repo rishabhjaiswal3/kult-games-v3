@@ -270,7 +270,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 
 function Hero() {
   return (
-    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]">
+    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px] max-md:min-h-[520px]">
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden
@@ -285,7 +285,7 @@ function Hero() {
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
       </div>
-      <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black">
+      <div className="relative md:hidden min-h-[520px] h-[145vw] max-h-[700px] bg-black">
         <video
           aria-hidden
           autoPlay

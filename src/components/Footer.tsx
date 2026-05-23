@@ -56,7 +56,7 @@ const Footer = () => {
         <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
           <div className="relative overflow-hidden rounded-[1.25rem] border border-[hsl(278_100%_70%/0.18)] bg-white/[0.035] p-5 shadow-[0_24px_80px_hsl(278_100%_55%/0.12)] backdrop-blur">
             <div className="absolute inset-0 bg-gradient-to-br from-[hsl(278_100%_70%/0.12)] via-transparent to-[hsl(190_100%_60%/0.08)]" />
-            <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <div className="relative flex min-w-0 flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-5 sm:text-left">
               <div className="flex h-16 shrink-0 items-center gap-5 rounded-2xl border border-[hsl(278_100%_70%/0.24)] bg-black/30 px-5 shadow-[0_0_35px_hsl(278_100%_60%/0.22)]">
                 <img src={kultLogo} alt="Kult Games" className="h-8 w-auto max-w-[92px] object-contain" />
                 <span className="h-8 w-px bg-white/16" aria-hidden />
@@ -73,7 +73,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-2 lg:justify-center" aria-label="Footer navigation">
+          <nav className="flex flex-wrap items-center justify-center gap-2" aria-label="Footer navigation">
             {platformLinks.map((link, i) => (
               <span key={link.href} className="flex items-center">
                 {link.href.startsWith("http") ? (
@@ -97,8 +97,8 @@ const Footer = () => {
             ))}
           </nav>
 
-          <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-4 lg:items-end">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-white/40">Follow</span>
               <div className="flex items-center gap-2">
                 {socials.map((s) => (
@@ -129,7 +129,7 @@ const Footer = () => {
             <span className="text-white/20">·</span>
             <span>Powered by 0G</span>
           </div>
-          <span className="text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
+          <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED
           </span>
         </div>

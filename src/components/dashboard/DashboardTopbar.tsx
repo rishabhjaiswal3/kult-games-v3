@@ -45,9 +45,9 @@ export function DashboardTopbar() {
   return (
     <>
       <header className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
-        <div className="relative mx-auto flex min-h-[68px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:gap-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex min-h-[58px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:min-h-[68px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            <div className="relative shrink-0 rounded-md bg-gradient-to-r from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
+            <div className="relative shrink-0 rounded-md bg-gradient-to-r from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff] max-[379px]:hidden">
               <button
                 type="button"
                 onClick={() => togglePanel("arena")}
@@ -86,7 +86,7 @@ export function DashboardTopbar() {
                 togglePanel("notifications");
                 setHasUnreadNotifications(false);
               }}
-              className="relative shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white sm:p-2"
+              className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
               aria-label="Open notifications"
             >
               <Bell className="h-5 w-5" />
@@ -103,7 +103,7 @@ export function DashboardTopbar() {
               }
             >
               <span className="hidden min-[430px]:inline">{isAuthenticated ? "DISCONNECT" : "CONNECT WALLET"}</span>
-              <span className="min-[430px]:hidden">{isAuthenticated ? "OFF" : "ON"}</span>
+              <span className="min-[430px]:hidden">{isAuthenticated ? "LOGOUT" : "LOGIN"}</span>
             </button>
             <button
               type="button"
