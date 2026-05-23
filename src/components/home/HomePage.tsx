@@ -19,6 +19,8 @@ import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 
+const trailerVideo = new URL("../../assets/Trailer.MOV", import.meta.url).href;
+
 const quickLinks = [
   { label: "Games", path: "/games", icon: Gamepad2, color: "#0089ff" },
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles, color: "#9a35ff" },
@@ -140,6 +142,58 @@ export function HomePage() {
           </div>
         ))}
       </div>
+
+      <section className="arena-panel group relative overflow-hidden border-white/8 bg-[#03070d]/95">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(154,53,255,0.24),transparent_36%),radial-gradient(circle_at_82%_12%,rgba(0,137,255,0.16),transparent_34%)]" />
+        <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc]/70 to-transparent" />
+        <div className="relative grid gap-5 p-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] lg:p-5">
+          <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black shadow-[0_24px_70px_rgba(0,0,0,0.42),0_0_44px_rgba(154,53,255,0.18)]">
+            <video
+              src={trailerVideo}
+              autoPlay
+              controls
+              muted
+              preload="auto"
+              playsInline
+              className="aspect-video h-full w-full bg-black object-cover"
+            />
+            <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10" />
+          </div>
+          <div className="flex flex-col justify-center gap-4 px-1 py-1 lg:px-2">
+            <div className="space-y-3">
+              <span className="inline-flex w-fit rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
+                Official trailer
+              </span>
+              <h2 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+                Watch the next wave of KULT games
+              </h2>
+              <p className="text-sm leading-relaxed text-white/58">
+                A quick look at the arena, battles, agents, and the high-energy worlds coming together inside KULT.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                ["Arena", "#9a35ff"],
+                ["Agents", "#00f080"],
+                ["Battles", "#ffc000"],
+              ].map(([label, color]) => (
+                <div key={label} className="rounded-md border border-white/8 bg-white/[0.035] p-3">
+                  <div className="mb-2 h-1 w-7 rounded-full" style={{ backgroundColor: color }} />
+                  <div className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/72">{label}</div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/games")}
+              className="inline-flex w-fit items-center gap-2 rounded-md border border-[#9b32ff]/60 bg-[#230b35]/75 px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-[#c084fc] hover:bg-[#35104f]"
+            >
+              Browse games
+              <ArrowUpRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </section>
 
       <div>
         <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
