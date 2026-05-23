@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "@/layout/AppSidebar";
 import { AppTopbar } from "@/layout/AppTopbar";
+import { MobileBottomNav } from "@/layout/MobileBottomNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { navLabelForPath } from "@/layout/navConfig";
 import { usesArenaLayout } from "@/layout/arenaRoutes";
@@ -30,13 +31,13 @@ export function AppShell() {
         <AppSidebar activeLabel={activeLabel} isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(!isCollapsed)} />
         <main className={cn("flex h-full min-h-0 min-w-0 flex-1 flex-col transition-[margin] duration-300", isCollapsed ? "lg:ml-[72px]" : "lg:ml-[225px]")}>
           {scrollableMain ? (
-            <div className="arena-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            <div className="arena-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-24 sm:pb-0">
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {!hideAppTopbar ? <AppTopbar /> : null}
               <Outlet />
             </div>
           ) : (
-            <div className="arena-scroll mx-auto min-h-0 w-full max-w-[1600px] flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            <div className="arena-scroll mx-auto min-h-0 w-full max-w-[1600px] flex-1 flex-col overflow-y-auto overflow-x-hidden pb-24 sm:pb-0">
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {!hideAppTopbar ? <AppTopbar /> : null}
               <div className="px-4 py-5 sm:px-6 lg:px-8">
@@ -45,6 +46,7 @@ export function AppShell() {
             </div>
           )}
         </main>
+        <MobileBottomNav />
       </div>
     </div>
   );

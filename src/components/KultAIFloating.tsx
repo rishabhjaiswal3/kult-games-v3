@@ -41,7 +41,7 @@ const KultAIFloating = () => {
             whileTap={{ scale: 0.96 }}
             onClick={() => setOpen(true)}
             aria-label="Open KULT AI chat"
-            className="group fixed bottom-6 right-6 z-50 h-16 w-16 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group fixed bottom-28 right-5 z-50 h-16 w-16 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:bottom-6 sm:right-6"
           >
             {/* Soft breathing halo */}
             <motion.div

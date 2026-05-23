@@ -41,9 +41,9 @@ export function AppTopbar() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[68px] max-w-[1600px] flex-wrap items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[58px] max-w-[1600px] flex-nowrap items-center justify-between gap-2 px-3 py-2 sm:min-h-[68px] sm:flex-wrap sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <Link to="/" className="font-tech text-xl font-bold lg:hidden">
+            <Link to="/" className="truncate font-tech text-lg font-bold sm:text-xl lg:hidden">
               KULT <span className="text-[#9a35ff]">GAMES</span>
             </Link>
             <span className="hidden sm:inline font-tech text-[10px] uppercase tracking-[0.2em] text-white/45">
@@ -51,7 +51,7 @@ export function AppTopbar() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-wrap sm:gap-3">
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -76,7 +76,7 @@ export function AppTopbar() {
               <button
                 type="button"
                 onClick={handleLogin}
-                className="btn-arena-primary rounded-md px-4 py-2.5 font-tech text-[10px] sm:text-[11px]"
+                className="btn-arena-primary rounded-md px-3 py-2.5 font-tech text-[10px] sm:px-4 sm:text-[11px]"
               >
                 CONNECT WALLET
               </button>
@@ -84,7 +84,7 @@ export function AppTopbar() {
 
             <button
               type="button"
-              className="relative rounded-md p-2 text-white/70 transition hover:bg-white/5 hover:text-white"
+              className="relative hidden rounded-md p-2 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block"
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
