@@ -32,7 +32,7 @@ export function InventoryToolbar({
   onReset,
 }: InventoryToolbarProps) {
   return (
-    <div className="arena-panel flex flex-col gap-3 border-white/8 bg-[#04080f]/92 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="arena-panel flex flex-col gap-3 rounded-xl border border-white/10 bg-[#04080f]/80 px-4 py-3 backdrop-blur-lg sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
         {categoriesLoading
           ? Array.from({ length: 5 }).map((_, i) => (
@@ -43,10 +43,10 @@ export function InventoryToolbar({
                 key={tab}
                 type="button"
                 onClick={() => onCategoryChange(tab)}
-                className={`rounded-md px-3 py-2 font-tech text-[11px] font-bold uppercase tracking-wide transition ${
+                className={`rounded-md px-4 py-2 font-tech text-[11px] font-bold uppercase tracking-wide transition-all ${
                   itemCategory === tab
-                    ? "bg-gradient-to-r from-[#7430ff] to-[#9a35ff] text-white shadow-[0_0_18px_rgba(154,53,255,0.25)]"
-                    : "border border-transparent text-white/45 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                    ? "bg-gradient-to-r from-[#9a35ff] to-[#7430ff] text-white shadow-[0_0_20px_rgba(154,53,255,0.35)]"
+                    : "border border-transparent text-white/45 hover:-translate-y-0.5 hover:border-white/10 hover:bg-white/5 hover:text-white"
                 }`}
               >
                 {tab === "All" ? "All items" : tab}
@@ -62,7 +62,7 @@ export function InventoryToolbar({
             placeholder="Search items..."
             value={itemSearch}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-9 w-full rounded-md border border-white/10 bg-[#03070d]/80 pl-10 pr-3 text-xs font-medium text-white outline-none transition placeholder:text-white/30 focus:border-[#9a35ff]/50 focus:ring-1 focus:ring-[#9a35ff]/20"
+            className="h-9 w-full rounded-md border border-white/10 bg-[#03070d] pl-10 pr-3 text-xs font-medium text-white shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] outline-none transition placeholder:text-white/30 focus:border-[#9a35ff]/70 focus:ring-2 focus:ring-[#9a35ff]/30"
           />
         </div>
 
@@ -71,7 +71,7 @@ export function InventoryToolbar({
             value={itemGame}
             onChange={(e) => onGameChange(e.target.value)}
             disabled={gamesLoading}
-            className="h-9 min-w-[120px] cursor-pointer appearance-none rounded-md border border-white/10 bg-[#03070d]/80 py-0 pl-3 pr-9 text-xs font-semibold text-white/75 outline-none transition hover:text-white focus:border-[#9a35ff]/50 disabled:opacity-50"
+            className="h-9 min-w-[120px] cursor-pointer appearance-none rounded-md border border-white/10 bg-[#03070d] py-0 pl-3 pr-9 text-xs font-semibold text-white/75 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] outline-none transition hover:text-white focus:border-[#9a35ff]/70 focus:ring-2 focus:ring-[#9a35ff]/30 disabled:opacity-50"
           >
             <option value={MARKETPLACE_ALL_GAMES}>All games</option>
             {games.map((g) => {
