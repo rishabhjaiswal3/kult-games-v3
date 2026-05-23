@@ -225,6 +225,7 @@ export function MarketplacePurchaseDialog({
 
                       await marketplaceApi.createOrder({
                         listingId: selectedItem.id,
+                        paymentToken: selectedPaymentToken,
                         quantity: 1,
                         txHash,
                       });
