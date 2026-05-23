@@ -581,7 +581,11 @@ function HowItWorks() {
       <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
-            <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
+            <div className="card-glass group relative rounded-xl overflow-hidden h-full flex flex-col transition duration-300 hover:-translate-y-2 hover:border-primary/70 hover:shadow-[0_0_42px_rgba(154,53,255,0.28),0_18px_54px_rgba(0,0,0,0.36)]">
+              <div className="pointer-events-none absolute inset-0 z-10 opacity-0 transition duration-300 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_10%,rgba(154,53,255,0.24),transparent_34%),radial-gradient(circle_at_80%_16%,rgba(0,240,255,0.14),transparent_30%)]" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+              </div>
               <div className="aspect-square overflow-hidden bg-background/50">
                 <img
                   src={s.img}
@@ -589,17 +593,23 @@ function HowItWorks() {
                   loading="lazy"
                   width={400}
                   height={400}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-125"
                 />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 -translate-y-full bg-gradient-to-b from-white/12 to-transparent opacity-0 transition duration-700 group-hover:translate-y-full group-hover:opacity-100" />
               </div>
-              <div className="p-4 text-center md:text-left">
-                <div className="font-display text-xl text-primary glow-text">{s.n}</div>
-                <div className="font-tech text-sm mt-2 tracking-wider break-words">{s.title}</div>
-                <p className="text-xs text-muted-foreground mt-2">{s.desc}</p>
+              <div className="relative z-20 p-4 text-center md:text-left">
+                <div className="flex items-center justify-center gap-2 md:justify-start">
+                  <div className="font-display text-xl text-primary glow-text transition duration-300 group-hover:text-accent">{s.n}</div>
+                  <span className="rounded border border-primary/25 bg-primary/10 px-2 py-0.5 font-tech text-[8px] uppercase tracking-[0.18em] text-primary/70 opacity-0 transition duration-300 group-hover:opacity-100">
+                    Active
+                  </span>
+                </div>
+                <div className="font-tech text-sm mt-2 tracking-wider break-words transition duration-300 group-hover:text-white">{s.title}</div>
+                <p className="text-xs text-muted-foreground mt-2 transition duration-300 group-hover:text-white/68">{s.desc}</p>
               </div>
             </div>
             {i < steps.length - 1 && (
-              <ArrowRight className="hidden md:block absolute top-1/3 -right-2 w-5 h-5 text-primary z-10" />
+              <ArrowRight className="hidden md:block absolute top-1/3 -right-2 w-5 h-5 text-primary z-30 transition duration-300 group-hover:translate-x-1 group-hover:text-accent" />
             )}
           </div>
         ))}
