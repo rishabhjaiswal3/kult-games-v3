@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronRight,
@@ -20,13 +21,7 @@ import agentShadow from "@/assets/agent-shadow.jpg";
 import agentAegis from "@/assets/agent-aegis.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
-
-const filterTabs = [
-  { label: "ALL AGENTS", key: "ALL AGENTS" },
-  { label: "ACTIVE (3)", key: "ACTIVE" },
-  { label: "INACTIVE (2)", key: "INACTIVE" },
-  { label: "ARCHIVED (0)", key: "ARCHIVED" },
-] as const;
+import agentLumen from "@/assets/agent-lumen.jpg";
 
 const initialAgents = [
   {
@@ -99,12 +94,41 @@ const initialAgents = [
     powerScore: 6250,
     image: agentRage,
   },
+  {
+    id: "LUMEN-22",
+    name: "LUMEN-22",
+    clanName: "Aether Clan &bull; Support",
+    clanType: "zerog",
+    active: false,
+    level: 7,
+    xp: 820,
+    xpTotal: 1800,
+    battles: 15,
+    winRate: 53.3,
+    powerScore: 7040,
+    image: agentLumen,
+  },
 ];
 
 const MyAgentsPage = () => {
+  const navigate = useNavigate();
   const [activeFilterTab, setActiveFilterTab] = useState<string>("ALL AGENTS");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Recently Used");
+  const totalAgents = initialAgents.length;
+  const activeAgents = initialAgents.filter((agent) => agent.active).length;
+  const inactiveAgents = totalAgents - activeAgents;
+  const totalBattles = initialAgents.reduce((sum, agent) => sum + agent.battles, 0);
+  const averageWinRate =
+    totalAgents > 0
+      ? initialAgents.reduce((sum, agent) => sum + agent.winRate, 0) / totalAgents
+      : 0;
+  const filterTabs = [
+    { label: "ALL AGENTS", key: "ALL AGENTS" },
+    { label: `ACTIVE (${activeAgents})`, key: "ACTIVE" },
+    { label: `INACTIVE (${inactiveAgents})`, key: "INACTIVE" },
+    { label: "ARCHIVED (0)", key: "ARCHIVED" },
+  ] as const;
 
   const filteredAgents = initialAgents.filter((agent) => {
     const matchesTab =
@@ -127,7 +151,7 @@ const MyAgentsPage = () => {
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">TOTAL AGENTS</span>
-            <span className="font-tech block text-xl font-bold text-white">5</span>
+            <span className="font-tech block text-xl font-bold text-white">{totalAgents}</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
             <UserRound className="h-4.5 w-4.5" />
@@ -137,7 +161,7 @@ const MyAgentsPage = () => {
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">ACTIVE AGENTS</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-tech text-xl font-bold text-white">3</span>
+              <span className="font-tech text-xl font-bold text-white">{activeAgents}</span>
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
             </div>
           </div>
@@ -148,7 +172,7 @@ const MyAgentsPage = () => {
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">TOTAL BATTLES</span>
-            <span className="font-tech block text-xl font-bold text-white">128</span>
+            <span className="font-tech block text-xl font-bold text-white">{totalBattles}</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400">
             <Swords className="h-4.5 w-4.5" />
@@ -157,7 +181,7 @@ const MyAgentsPage = () => {
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">WIN RATE</span>
-            <span className="font-tech block text-xl font-bold text-white">62.5%</span>
+            <span className="font-tech block text-xl font-bold text-white">{averageWinRate.toFixed(1)}%</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-sky-500/20 bg-sky-500/10 text-sky-400">
             <TrendingUp className="h-4.5 w-4.5" />
@@ -228,7 +252,7 @@ const MyAgentsPage = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {filteredAgents.map((agent) => {
           const xpPct = Math.round((agent.xp / agent.xpTotal) * 100);
           return (
@@ -334,6 +358,7 @@ const MyAgentsPage = () => {
         </div>
         <button
           type="button"
+          onClick={() => navigate("/ai-arena")}
           className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
         >
           <span>LEARN MORE</span>

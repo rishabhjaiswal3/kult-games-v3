@@ -47,28 +47,32 @@ export function DashboardTopbar() {
       <header className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[68px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            <button
-              type="button"
-              onClick={() => togglePanel("arena")}
-              className="flex h-10 min-w-0 max-w-[8.75rem] shrink items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2 py-2 font-tech text-[10px] transition hover:bg-white/6 min-[430px]:max-w-none sm:gap-3 sm:px-2.5 sm:text-xs"
-            >
-              <span className="flex min-w-0 items-center gap-1.5 text-[#ffc000] sm:gap-2">
-                <Hexagon className="h-4 w-4 shrink-0" />
-                <span className="truncate">$ARENA 1.00</span>
-              </span>
-              <span className="hidden shrink-0 text-[#00f080] min-[430px]:inline">+4.35%</span>
-            </button>
+            <div className="relative shrink-0 rounded-md bg-gradient-to-r from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
+              <button
+                type="button"
+                onClick={() => togglePanel("arena")}
+                className="flex h-[38px] w-full min-w-0 max-w-[8.75rem] items-center gap-1.5 rounded-[5px] bg-[#03070d]/95 px-2 py-2 font-tech text-[10px] transition hover:bg-white/5 min-[430px]:max-w-none sm:gap-3 sm:px-2.5 sm:text-xs"
+              >
+                <span className="flex min-w-0 items-center gap-1.5 text-[#ffc000] sm:gap-2">
+                  <Hexagon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">$ARENA 1.00</span>
+                </span>
+                <span className="hidden shrink-0 text-[#00f080] min-[430px]:inline">+4.35%</span>
+              </button>
+            </div>
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={() => togglePanel("wallet")}
-              className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-white/12 bg-white/[0.02] px-2 font-tech text-xs text-white/86 transition hover:bg-white/6 sm:px-3"
-            >
-              <Wallet className="h-4 w-4" />
-              <span className="hidden max-w-[8rem] truncate sm:inline">{shortWallet}</span>
-              <ChevronRight className="hidden h-3.5 w-3.5 rotate-90 sm:block" />
-            </button>
+            <div className="relative shrink-0 rounded-md bg-gradient-to-l from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
+              <button
+                type="button"
+                onClick={() => togglePanel("wallet")}
+                className="flex h-[38px] w-full items-center gap-2 rounded-[5px] bg-[#03070d]/95 px-2 font-tech text-xs text-white/86 transition hover:bg-white/5 sm:px-3"
+              >
+                <Wallet className="h-4 w-4" />
+                <span className="hidden max-w-[8rem] truncate sm:inline">{shortWallet}</span>
+                <ChevronRight className="hidden h-3.5 w-3.5 rotate-90 sm:block" />
+              </button>
+            </div>
             <Link to="/ai-arena" aria-label="Open AI Arena" className="hidden shrink-0 min-[430px]:block">
               <img
                 src={dashboardAvatar}
@@ -93,7 +97,10 @@ export function DashboardTopbar() {
             <button
               type="button"
               onClick={handleConnectWallet}
-              className="btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+              className={isAuthenticated 
+                ? "block shrink-0 rounded-md bg-gradient-to-b from-[#1a0a14] to-[#0a0306] border border-red-500/20 px-2 py-2.5 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+                : "btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+              }
             >
               <span className="hidden min-[430px]:inline">{isAuthenticated ? "DISCONNECT" : "CONNECT WALLET"}</span>
               <span className="min-[430px]:hidden">{isAuthenticated ? "OFF" : "ON"}</span>
