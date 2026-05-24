@@ -32,6 +32,27 @@ export function pickNumber(...values: unknown[]): number | undefined {
   return undefined;
 }
 
+export function pickBoolean(...values: unknown[]): boolean | undefined {
+  for (const value of values) {
+    if (typeof value === "boolean") {
+      return value;
+    }
+    if (typeof value === "number" && (value === 0 || value === 1)) {
+      return value === 1;
+    }
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true" || normalized === "1") {
+        return true;
+      }
+      if (normalized === "false" || normalized === "0") {
+        return false;
+      }
+    }
+  }
+  return undefined;
+}
+
 export function pickLocalizedText(value: unknown): string | undefined {
   if (typeof value === "string") {
     return value.trim() || undefined;

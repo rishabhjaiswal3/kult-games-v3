@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Info } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { leaderboardApi } from "@/api/leaderboardApi";
+import { playerApi } from "@/api/playerApi";
 import { LeaderboardPodium } from "@/components/leaderboard/LeaderboardPodium";
 import { LeaderboardSidebar } from "@/components/leaderboard/LeaderboardSidebar";
 import { LeaderboardTablePanel } from "@/components/leaderboard/LeaderboardTablePanel";
@@ -12,6 +13,7 @@ import {
   type LeaderboardTab,
 } from "@/components/leaderboard/leaderboardUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { getGameName } from "@/lib/gameDisplay";
 
 const PAGE_SIZE = 10;
 const GLOBAL_KEY = "global";
@@ -23,6 +25,14 @@ function gameOptionLabel(name: unknown, fallbackId: string): string {
     if (en?.trim()) return en.trim().toUpperCase();
   }
   return fallbackId.replace(/-/g, " ").toUpperCase();
+}
+
+function normalizeGameIdentifier(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+function fallbackGameLabel(gameId: string): string {
+  return gameId.replace(/[_-]+/g, " ").trim().toUpperCase();
 }
 
 const Leaderboard = () => {
@@ -38,6 +48,13 @@ const Leaderboard = () => {
     staleTime: 5 * 60_000,
   });
 
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["player", "full-profile", "leaderboard"],
+    queryFn: () => playerApi.getFullProfile(),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
   const gameOptions = useMemo(() => {
     const games = gamesData?.games ?? [];
     return [
@@ -49,20 +66,36 @@ const Leaderboard = () => {
     ];
   }, [gamesData]);
 
+  const gameNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const game of gamesData?.games ?? []) {
+      const label = getGameName(game.name).trim().toUpperCase();
+      if (!label) continue;
+
+      for (const key of [game.identification, game.slug, game._id]) {
+        if (!key) continue;
+        map.set(normalizeGameIdentifier(key), label);
+      }
+    }
+
+    return map;
+  }, [gamesData]);
+
   const selectedLabel =
     gameOptions.find((g) => g.id === selectedGameId)?.label ?? "ALL GAMES";
+
+  const activeWalletAddress = isAuthenticated ? walletAddress : null;
 
   const { data, isLoading } = useQuery({
     queryKey: ["leaderboard", selectedGameId, page, PAGE_SIZE, activeTab],
     queryFn: async () => {
-      if (activeTab === "FRIENDS") {
-        return { entries: [], total: 0, page: 1, limit: PAGE_SIZE };
-      }
       if (selectedGameId === GLOBAL_KEY) {
         return leaderboardApi.getGlobal(page, PAGE_SIZE);
       }
       return leaderboardApi.getByGame(selectedGameId, page, PAGE_SIZE);
     },
+    enabled: activeTab === "GLOBAL",
     staleTime: 60_000,
   });
 
@@ -71,24 +104,59 @@ const Leaderboard = () => {
   const total = data?.total ?? players.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const displayPlayers = entriesToDisplayPlayers(players, walletAddress);
+  const displayPlayers = entriesToDisplayPlayers(players, activeWalletAddress);
   const tableRows = page === 1 ? displayPlayers.slice(3) : displayPlayers;
 
   const top3: ReturnType<typeof entriesToDisplayPlayers> | null =
     page === 1 && players.length >= 3
-      ? entriesToDisplayPlayers([players[1], players[0], players[2]], walletAddress)
+      ? entriesToDisplayPlayers([players[1], players[0], players[2]], activeWalletAddress)
       : null;
 
-  const userEntry = walletAddress
-    ? players.find((p) => p.wallet_address.toLowerCase() === walletAddress.toLowerCase())
+  const userEntry = activeWalletAddress
+    ? players.find((p) => p.wallet_address.toLowerCase() === activeWalletAddress.toLowerCase())
     : undefined;
   const userRow = userEntry ? entryToDisplayPlayer(userEntry, { isYou: true }) : null;
   const showPinnedUserRow = Boolean(
     userRow && !tableRows.some((r) => r.wallet.toLowerCase() === userRow.wallet.toLowerCase()),
   );
 
-  const userPoints = userEntry ? Math.round(userEntry.score) : 0;
-  const userRank = userEntry?.rank;
+  const userPoints = profile?.totalScore ?? (userEntry ? Math.round(userEntry.score) : 0);
+  const userRank = profile?.rank ?? userEntry?.rank;
+
+  const myRankRows = useMemo(() => {
+    if (!profile) return [];
+
+    const gameRows = profile.gameScoresList
+      .map((row) => {
+        const normalizedId = normalizeGameIdentifier(row.identification);
+        return {
+          id: row.identification,
+          label: gameNameMap.get(normalizedId) ?? fallbackGameLabel(row.identification),
+          rank: row.rank,
+          score: row.score,
+          weightedScore: row.weightedScore,
+          isGlobal: false,
+        };
+      })
+      .sort((a, b) => {
+        if (a.rank == null && b.rank == null) return b.weightedScore - a.weightedScore;
+        if (a.rank == null) return 1;
+        if (b.rank == null) return -1;
+        return a.rank - b.rank;
+      });
+
+    return [
+      {
+        id: GLOBAL_KEY,
+        label: "ALL GAMES",
+        rank: profile.rank,
+        score: profile.totalScore,
+        weightedScore: profile.totalScore,
+        isGlobal: true,
+      },
+      ...gameRows,
+    ];
+  }, [gameNameMap, profile]);
 
   const handleTabChange = (tab: LeaderboardTab) => {
     setActiveTab(tab);
@@ -114,7 +182,7 @@ const Leaderboard = () => {
         <div className="min-w-0 space-y-5">
           <div className="flex flex-col justify-between gap-4 border-b border-white/8 pb-3 sm:flex-row sm:items-center">
             <div className="flex gap-6 font-tech text-[12px] font-bold uppercase tracking-wider">
-              {(["GLOBAL", "FRIENDS", "MY RANK"] as LeaderboardTab[]).map((tab) => (
+              {(["GLOBAL", "MY RANK"] as LeaderboardTab[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -131,60 +199,131 @@ const Leaderboard = () => {
               ))}
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="font-tech text-[10px] uppercase tracking-widest text-white/45">
-                GAME MODE
-              </span>
-              <div className="relative text-left">
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen((o) => !o)}
-                  className="flex items-center gap-2 rounded border border-white/8 bg-white/[0.02] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-white/[0.05]"
-                  aria-expanded={isDropdownOpen}
-                >
-                  <span className="max-w-[12rem] truncate">{selectedLabel}</span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 text-white/50 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-                {isDropdownOpen ? (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} aria-hidden />
-                    <div className="absolute right-0 z-50 mt-1.5 w-56 rounded border border-white/10 bg-[#090e19] p-1 shadow-2xl">
-                      {gameOptions.map((game) => (
-                        <button
-                          key={game.id}
-                          type="button"
-                          onClick={() => handleGameChange(game.id)}
-                          className={`flex w-full rounded px-3 py-2 text-left font-tech text-[9px] font-semibold uppercase tracking-wider transition ${
-                            selectedGameId === game.id
-                              ? "bg-[#9a35ff]/20 text-[#c78aff]"
-                              : "text-white/70 hover:bg-white/5 hover:text-white"
-                          }`}
-                        >
-                          {game.label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : null}
+            {activeTab === "GLOBAL" ? (
+              <div className="flex items-center gap-3">
+                <span className="font-tech text-[10px] uppercase tracking-widest text-white/45">
+                  GAME MODE
+                </span>
+                <div className="relative text-left">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen((o) => !o)}
+                    className="flex items-center gap-2 rounded border border-white/8 bg-white/[0.02] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-white/[0.05]"
+                    aria-expanded={isDropdownOpen}
+                  >
+                    <span className="max-w-[12rem] truncate">{selectedLabel}</span>
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 text-white/50 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {isDropdownOpen ? (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} aria-hidden />
+                      <div className="absolute right-0 z-50 mt-1.5 w-56 rounded border border-white/10 bg-[#090e19] p-1 shadow-2xl">
+                        {gameOptions.map((game) => (
+                          <button
+                            key={game.id}
+                            type="button"
+                            onClick={() => handleGameChange(game.id)}
+                            className={`flex w-full rounded px-3 py-2 text-left font-tech text-[9px] font-semibold uppercase tracking-wider transition ${
+                              selectedGameId === game.id
+                                ? "bg-[#9a35ff]/20 text-[#c78aff]"
+                                : "text-white/70 hover:bg-white/5 hover:text-white"
+                            }`}
+                          >
+                            {game.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
 
-          {activeTab === "FRIENDS" ? (
-            <div className="arena-panel border border-white/8 px-6 py-14 text-center">
-              <p className="font-tech text-sm uppercase tracking-wider text-white/55">
-                Friends leaderboard coming soon
-              </p>
-              <p className="mt-2 text-xs text-white/40">Connect with pilots you follow to compare ranks.</p>
-            </div>
-          ) : activeTab === "MY RANK" && !isAuthenticated ? (
+          {activeTab === "MY RANK" && !isAuthenticated ? (
             <div className="arena-panel border border-white/8 px-6 py-14 text-center">
               <p className="font-tech text-sm uppercase tracking-wider text-[#b95cff]">
                 Connect wallet to see your rank
               </p>
             </div>
+          ) : activeTab === "MY RANK" ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    label: "GLOBAL RANK",
+                    value: profile?.rank != null ? `#${profile.rank}` : profileLoading ? "Loading…" : "UNRANKED",
+                  },
+                  {
+                    label: "TOTAL SCORE",
+                    value: profile ? Math.round(profile.totalScore).toLocaleString() : profileLoading ? "Loading…" : "0",
+                  },
+                  {
+                    label: "RANKED GAMES",
+                    value: profile ? String(profile.gameScoresList.length) : profileLoading ? "Loading…" : "0",
+                  },
+                ].map((stat) => (
+                  <div key={stat.label} className="arena-panel border border-white/8 bg-[#04080f]/95 p-4">
+                    <div className="font-tech text-[9px] uppercase tracking-wider text-white/42">{stat.label}</div>
+                    <div className="mt-2 text-2xl font-bold text-white">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="arena-panel relative overflow-hidden border border-white/8">
+                <div className="relative z-10 overflow-x-auto">
+                  <table className="w-full min-w-[560px] border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-white/8 bg-white/[0.01] font-tech text-[10px] uppercase tracking-wider text-white/45">
+                        <th className="px-5 py-4 font-semibold">Mode</th>
+                        <th className="px-5 py-4 font-semibold text-center">Rank</th>
+                        <th className="px-5 py-4 font-semibold text-right">Score</th>
+                        <th className="px-5 py-4 font-semibold text-right">Weighted Score</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/6 font-medium text-white/86">
+                      {profileLoading ? (
+                        <tr>
+                          <td colSpan={4} className="px-5 py-16 text-center font-tech text-white/45">
+                            LOADING YOUR RANKS…
+                          </td>
+                        </tr>
+                      ) : myRankRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-5 py-16 text-center font-tech text-white/45">
+                            NO RANK DATA YET
+                          </td>
+                        </tr>
+                      ) : (
+                        myRankRows.map((row) => (
+                          <tr
+                            key={row.id}
+                            className={row.isGlobal ? "bg-[#9a35ff]/8 text-white" : "transition hover:bg-white/[0.02]"}
+                          >
+                            <td className="px-5 py-4 font-tech text-[11px] uppercase tracking-wider">
+                              {row.label}
+                            </td>
+                            <td className="px-5 py-4 text-center font-semibold">
+                              {row.rank != null ? `#${row.rank}` : "UNRANKED"}
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              {Math.round(row.score).toLocaleString()}
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              {row.weightedScore.toLocaleString(undefined, {
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               {page === 1 && top3?.length === 3 ? (

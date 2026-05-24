@@ -25,6 +25,7 @@ import Dashboard from "./pages/Dashboard";
 import AutonomousPage from "./pages/AutonomousPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import LoadingScreen from "./components/LoadingScreen";
+import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
@@ -167,6 +168,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
+          <LoginModalHost />
           {loaded && <KultAIFloating />}
         </BrowserRouter>
       </TooltipProvider>

@@ -9,6 +9,7 @@ import {
 } from "@privy-io/react-auth";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
+import { consumePendingLoginModalRequest } from "@/lib/loginModalBus";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [walletFlowBusy, setWalletFlowBusy] = useState(false);
   const [authError, setAuthError] = useState("");
   const [finishingSignIn, setFinishingSignIn] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const walletFlowInFlightRef = useRef(false);
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -66,17 +68,46 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   useEffect(() => {
     if (!isOpen) {
       setAuthError("");
+      setRecoveryMode(false);
       setFinishingSignIn(false);
       return;
     }
-    if (authenticated && !isAuthenticated && !authLoading) {
+
+    const pendingRequest = consumePendingLoginModalRequest();
+    if (pendingRequest?.mode === "recover") {
+      walletFlowInFlightRef.current = false;
+      setOtpSent(false);
+      setOtpCode("");
+      setLoading(false);
+      setWalletFlowBusy(false);
+      setRecoveryMode(true);
+      setFinishingSignIn(false);
+      setAuthError(
+        pendingRequest.message ??
+          "Sign-in could not finish. Please choose wallet, email, or Google to continue."
+      );
+      return;
+    }
+
+    if (authenticated && !isAuthenticated && !authLoading && !recoveryMode) {
       setFinishingSignIn(true);
     }
     if (finishingSignIn && isAuthenticated && !authLoading) {
       setFinishingSignIn(false);
       onClose();
     }
-  }, [isOpen, authenticated, isAuthenticated, authLoading, finishingSignIn, onClose]);
+    if (finishingSignIn && !authenticated && !isAuthenticated && !authLoading) {
+      setFinishingSignIn(false);
+    }
+  }, [
+    isOpen,
+    authenticated,
+    isAuthenticated,
+    authLoading,
+    finishingSignIn,
+    recoveryMode,
+    onClose,
+  ]);
 
   useEffect(() => {
     if (!isOpen || !finishingSignIn || authLoading) return;
@@ -91,6 +122,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
   const handleWalletAuth = () => {
     if (!ready || walletFlowBusy) return;
+    setRecoveryMode(false);
     if (isAuthenticated) {
       linkWallet({ walletChainType: "ethereum-only" });
       return;
@@ -109,6 +141,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleSendCode = async () => {
     if (!email) return;
     setLoading(true);
+    setRecoveryMode(false);
     setAuthError("");
     try {
       await sendCode({ email });
@@ -124,6 +157,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleVerifyCode = async () => {
     if (!otpCode) return;
     setLoading(true);
+    setRecoveryMode(false);
     setAuthError("");
     try {
       await loginWithCode({ code: otpCode });
@@ -329,6 +363,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => {
+                            setRecoveryMode(false);
                             setAuthError("");
                             void initOAuth({ provider: "google" });
                           }}

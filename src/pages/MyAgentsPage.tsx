@@ -14,6 +14,8 @@ import {
   UserRound,
 } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
+import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
+import { useAuth } from "@/contexts/AuthContext";
 import { ClanIcon } from "@/components/arena/ClanIcon";
 import agentNexus from "@/assets/agent-nexus.jpg";
 import agentShadow from "@/assets/agent-shadow.jpg";
@@ -102,9 +104,19 @@ const initialAgents = [
 ];
 
 const MyAgentsPage = () => {
+  const { isAuthenticated } = useAuth();
   const [activeFilterTab, setActiveFilterTab] = useState<string>("ALL AGENTS");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Recently Used");
+
+  if (!isAuthenticated) {
+    return (
+      <DashboardSignInGate
+        title="My Agents"
+        description="Connect your wallet to view, manage, and train the AI agents linked to your account."
+      />
+    );
+  }
 
   const filteredAgents = initialAgents.filter((agent) => {
     const matchesTab =

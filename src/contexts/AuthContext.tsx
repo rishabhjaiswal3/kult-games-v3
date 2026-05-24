@@ -36,6 +36,27 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Dedupes SIWE across React Strict Mode remounts (refs reset; a second `personal_sign` was still fired). */
 const siweInFlightByAddress = new Map<string, Promise<void>>();
+const SIGNING_WALLET_WAIT_MS = 8_000;
+const SIGNING_WALLET_POLL_MS = 250;
+
+function isMissingSigningWalletError(error: unknown) {
+  return error instanceof Error && error.message === "No Privy wallet available to sign";
+}
+
+async function waitForSigningWallet(
+  getWallet: () => ReturnType<typeof pickSigningWallet>,
+  timeoutMs = SIGNING_WALLET_WAIT_MS,
+): Promise<ReturnType<typeof pickSigningWallet>> {
+  const startedAt = Date.now();
+  let wallet = getWallet();
+
+  while (!wallet && Date.now() - startedAt < timeoutMs) {
+    await new Promise((resolve) => window.setTimeout(resolve, SIGNING_WALLET_POLL_MS));
+    wallet = getWallet();
+  }
+
+  return wallet;
+}
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -118,8 +139,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const nonce = await fetchSiweNonce(address);
       const message = buildSiweMessage(address, nonce);
 
-      const currentWallets = walletsRef.current;
-      const privyWallet = pickSigningWallet(currentWallets, address);
+      const privyWallet = await waitForSigningWallet(() =>
+        pickSigningWallet(walletsRef.current, address)
+      );
       if (!privyWallet) throw new Error("No Privy wallet available to sign");
 
       const allowedChain = getAllowedChainFromEnv();
@@ -156,9 +178,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     siweInFlightByAddress.set(addrKey, run);
 
     void run
-      .catch((err) => {
+      .catch(async (err) => {
         console.error("[SIWE] Login failed:", err);
         playerApi.logout();
+
+        if (isMissingSigningWalletError(err)) {
+          try {
+            await privyLogout();
+          } catch {
+            /* best-effort session reset */
+          }
+
+          requestOpenLoginModal({
+            mode: "recover",
+            message:
+              "No wallet was available to finish sign-in. Please choose wallet, email, or Google to continue.",
+          });
+          toast.error(
+            "No wallet was available to finish sign-in. Please choose wallet, email, or Google to continue."
+          );
+          return;
+        }
+
         toast.error("Could not finish sign-in. Please try wallet login or refresh the page.");
       })
       .finally(() => {
