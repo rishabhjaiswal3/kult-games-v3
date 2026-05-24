@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, Award, Clock, Hexagon, Loader2, Plus, Sparkles, TrendingUp, X, Zap } from "lucide-react";
+import { Activity, Award, Clock, Eye, Hexagon, Loader2, Plus, Search, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -138,6 +138,8 @@ const TrainingPage = () => {
   const myAgentsQ = useMyArenaAgents(1, 50);
   const agents = myAgentsQ.data?.agents ?? [];
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [jobLookupInput, setJobLookupInput] = useState("");
 
   useEffect(() => {
     setSelectedAgentId((current) => {
@@ -182,18 +184,65 @@ const TrainingPage = () => {
     retry: 1,
   });
 
+  const globalJobsQ = useQuery({
+    queryKey: ["aiArenaGateway", "trainingPageGlobalJobs", agents.map((agent) => agent.id).join(",")],
+    queryFn: async () => {
+      const result = await aiArenaGatewayApi.listTrainingJobs();
+      return sortJobs(
+        dedupeJobs(
+          (result.jobs ?? []).map((job) => ({
+            ...job,
+            agent: agents.find((agent) => agent.id === job.agentId),
+          }))
+        )
+      );
+    },
+    enabled: isAuthenticated && isAiArenaReady,
+    staleTime: 10_000,
+    retry: 1,
+  });
+
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId) ?? null;
   const selectedEligibility = selectedAgentId ? eligibilityQ.data?.[selectedAgentId] ?? null : null;
   const selectedEligibilityReasons = eligibilityReasons(selectedEligibility);
   const allJobs = trainingJobsQ.data ?? [];
+  const globalJobs = globalJobsQ.data ?? [];
   const filteredJobs = filterJobsForTab(activeTab, allJobs);
   const activeJobs = allJobs.filter((job) => job.status === "QUEUED" || job.status === "RUNNING");
   const completedJobs = allJobs.filter((job) => job.status === "COMPLETED");
   const eligibleAgentsCount = Object.values(eligibilityQ.data ?? {}).filter((entry) => entry?.eligible).length;
+  const visibleGlobalJobs = globalJobs.slice(0, 6);
+  const selectedJobSummary = useMemo(
+    () => [...allJobs, ...globalJobs].find((job) => job.id === selectedJobId) ?? null,
+    [allJobs, globalJobs, selectedJobId]
+  );
+
+  useEffect(() => {
+    if (selectedJobId) return;
+    const defaultJobId = allJobs[0]?.id ?? globalJobs[0]?.id ?? null;
+    if (!defaultJobId) return;
+    setSelectedJobId(defaultJobId);
+    setJobLookupInput(defaultJobId);
+  }, [allJobs, globalJobs, selectedJobId]);
+
+  const jobDetailQ = useQuery({
+    queryKey: ["aiArenaGateway", "trainingPageJobDetail", selectedJobId],
+    queryFn: () => aiArenaGatewayApi.getTrainingJob(selectedJobId!),
+    enabled: isAuthenticated && isAiArenaReady && !!selectedJobId,
+    staleTime: 10_000,
+    retry: 1,
+  });
+
+  const inspectJob = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setJobLookupInput(jobId);
+  };
 
   const invalidateTrainingQueries = async () => {
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "trainingPageJobs"], exact: false });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "trainingPageEligibility"], exact: false });
+    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "trainingPageGlobalJobs"], exact: false });
+    await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "trainingPageJobDetail"], exact: false });
     await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "myAgents"], exact: false });
   };
 
@@ -282,7 +331,9 @@ const TrainingPage = () => {
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 p-5">
               <div>
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training queue</h3>
-                <p className="mt-1 text-[11px] text-white/45">Powered by `/v1/training` and `/v1/training/agents/:id/eligibility`</p>
+                <p className="mt-1 text-[11px] text-white/45">
+                  Queue a run for your selected fighter and check whether they are ready to train.
+                </p>
               </div>
               <button
                 type="button"
@@ -332,7 +383,7 @@ const TrainingPage = () => {
                 filteredJobs.map((job, index) => (
                   <div
                     key={job.id}
-                    className={`flex flex-wrap items-center justify-between gap-4 ${index === 0 ? "pb-4" : index === filteredJobs.length - 1 ? "pt-4" : "py-4"}`}
+                    className={`flex flex-wrap items-center justify-between gap-4 ${selectedJobId === job.id ? "rounded-xl border border-[#9a35ff]/35 bg-[#9a35ff]/6 px-3" : ""} ${index === 0 ? "pb-4" : index === filteredJobs.length - 1 ? "pt-4" : "py-4"}`}
                   >
                     <div className="flex items-center gap-3">
                       <ArenaAgentThumbnail agent={job.agent ?? fallbackAgentForTraining(job.agentId)} className="h-10 w-10 rounded-xl" size="md" />
@@ -359,6 +410,14 @@ const TrainingPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3.5">
+                      <button
+                        type="button"
+                        onClick={() => inspectJob(job.id)}
+                        className="flex cursor-pointer items-center gap-1 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-300 transition hover:border-cyan-500/35 hover:bg-cyan-950/10"
+                      >
+                        <Eye className="h-3 w-3" />
+                        <span>Inspect</span>
+                      </button>
                       <div className="flex items-center gap-1 font-tech text-[10px] font-semibold text-white/55">
                         <Clock className="h-3.5 w-3.5 text-white/30" />
                         <span>{formatDateTime(job.startedAt ?? job.createdAt)}</span>
@@ -387,6 +446,67 @@ const TrainingPage = () => {
             <div className="flex items-center justify-between border-t border-white/8 bg-white/[0.005] px-5 py-4 font-tech text-[10px] font-bold uppercase text-white/40">
               <span>Visible jobs • {filteredJobs.length}</span>
               <span className="text-white/70">Active queue • {activeJobs.length}</span>
+            </div>
+          </div>
+
+          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 p-5">
+              <div>
+                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Global training feed</h3>
+                <p className="mt-1 text-[11px] text-white/45">
+                  A live look at recent training activity happening across the arena.
+                </p>
+              </div>
+              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">
+                Visible jobs • {globalJobs.length}
+              </span>
+            </div>
+
+            <div className="space-y-3 p-5">
+              {globalJobsQ.isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-white/55">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading global training jobs…
+                </div>
+              ) : visibleGlobalJobs.length > 0 ? (
+                visibleGlobalJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition ${
+                      selectedJobId === job.id
+                        ? "border-cyan-500/30 bg-cyan-500/8"
+                        : "border-white/8 bg-black/15"
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-xs font-bold text-white">
+                          {job.agent?.name ?? shortAgentName(job.agentId)}
+                        </span>
+                        <span className={`font-tech text-[9px] uppercase tracking-[0.16em] ${statusTone(job.status)}`}>
+                          {job.status}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[10px] text-white/45">
+                        {jobTypeLabel(job.type)} · {formatDateTime(job.createdAt)}
+                      </div>
+                      <div className="mt-1 font-mono text-[10px] text-white/35">
+                        Job {job.id}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => inspectJob(job.id)}
+                      className="flex cursor-pointer items-center gap-1 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-300 transition hover:border-cyan-500/35 hover:bg-cyan-950/10"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      Inspect Job
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-white/50">No global training jobs are visible right now.</div>
+              )}
             </div>
           </div>
 
@@ -426,6 +546,82 @@ const TrainingPage = () => {
         </div>
 
         <aside className="space-y-4">
+          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Job inspector</h3>
+              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Look up any job by ID</span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Job ID</label>
+              <div className="flex gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/25" />
+                  <input
+                    value={jobLookupInput}
+                    onChange={(event) => setJobLookupInput(event.target.value)}
+                    placeholder="Paste training job id"
+                    className="w-full rounded border border-white/8 bg-[#03070d]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-purple-500/45"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextId = jobLookupInput.trim();
+                    if (!nextId) {
+                      toast.error("Paste a training job ID to inspect.");
+                      return;
+                    }
+                    setSelectedJobId(nextId);
+                  }}
+                  className="rounded border border-cyan-500/35 bg-cyan-500/10 px-3 py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-300 transition hover:border-cyan-400"
+                >
+                  Inspect
+                </button>
+              </div>
+            </div>
+
+            {jobDetailQ.isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-white/55">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading job snapshot…
+              </div>
+            ) : jobDetailQ.isError ? (
+              <div className="rounded-lg border border-rose-500/20 bg-rose-950/10 px-4 py-3 text-sm text-rose-100/85">
+                Could not load that training job. Check the job ID and try again.
+              </div>
+            ) : jobDetailQ.data?.job ? (
+              <div className="space-y-3">
+                <div className="rounded-lg border border-white/8 bg-black/20 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-white">{jobTypeLabel(jobDetailQ.data.job.type)}</div>
+                      <div className="mt-1 font-mono text-[10px] text-white/40">{jobDetailQ.data.job.id}</div>
+                    </div>
+                    <div className={`font-tech text-[10px] uppercase tracking-[0.16em] ${statusTone(jobDetailQ.data.job.status)}`}>
+                      {jobDetailQ.data.job.status}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <ReadinessStat label="Agent" value={selectedJobSummary?.agent?.name ?? shortAgentName(jobDetailQ.data.job.agentId)} />
+                  <ReadinessStat label="Priority" value={String(jobDetailQ.data.job.priority ?? 0)} />
+                  <ReadinessStat label="Started" value={formatDateTime(jobDetailQ.data.job.startedAt)} />
+                  <ReadinessStat label="Completed" value={formatDateTime(jobDetailQ.data.job.completedAt)} />
+                </div>
+
+                <div className="rounded-lg border border-white/8 bg-black/20 px-3 py-2.5 text-[10px] text-white/55">
+                  {jobDetailQ.data.job.datasetRootHash
+                    ? `Dataset root ${jobDetailQ.data.job.datasetRootHash}`
+                    : "No dataset root hash on this job."}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-white/50">Select or paste a job ID to inspect a single training job.</p>
+            )}
+          </div>
+
           <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
             <div className="flex items-center justify-between">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Agent readiness</h3>

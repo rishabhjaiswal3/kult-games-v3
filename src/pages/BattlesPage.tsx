@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowUpRight, Crosshair, Eye, Hexagon, Loader2, Search, Shield, Swords, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,7 +8,11 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
-import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
+import {
+  AI_ARENA_DEFAULT_GAME_ID,
+  AI_ARENA_GAME_IDS,
+  AI_ARENA_MATCH_MODES,
+} from "@/constants/aiArenaMatchmaking";
 import { useAuth } from "@/contexts/AuthContext";
 import { type ArenaOpenLobbyItem, useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { leaderboardElo, leaderboardName, useEnrichedArenaLeaderboard } from "@/hooks/useEnrichedArenaLeaderboard";
@@ -133,11 +137,11 @@ function BattleInspectorCard({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,41,255,0.12),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(0,137,255,0.09),transparent_34%)]" />
       <div className="relative z-10">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="font-tech text-[10px] uppercase tracking-[0.2em] text-white/45">Battle API</div>
-            <h3 className="mt-2 text-xl font-bold text-white">Tracked battle snapshot</h3>
-            <p className="mt-1 text-xs text-white/55">
-              Battle ID <span className="font-mono text-white/78">{battle.id}</span>
+            <div>
+              <div className="font-tech text-[10px] uppercase tracking-[0.2em] text-white/45">Live Battle</div>
+              <h3 className="mt-2 text-xl font-bold text-white">Tracked battle snapshot</h3>
+              <p className="mt-1 text-xs text-white/55">
+                Battle ID <span className="font-mono text-white/78">{battle.id}</span>
             </p>
           </div>
           <div className="text-right">
@@ -314,6 +318,11 @@ const BattlesPage = () => {
   const [battleIdInput, setBattleIdInput] = useState(() => getTrackedAiArenaBattleId() ?? "");
   const [selectedBattleId, setSelectedBattleId] = useState(() => getTrackedAiArenaBattleId());
   const [joiningLobbyId, setJoiningLobbyId] = useState<string | null>(null);
+  const [manualBattleAgentId, setManualBattleAgentId] = useState<string | null>(null);
+  const [manualOpponentId, setManualOpponentId] = useState("");
+  const [manualMode, setManualMode] = useState<(typeof AI_ARENA_MATCH_MODES)[number]["value"]>("RANKED");
+  const [manualGameId, setManualGameId] = useState(AI_ARENA_DEFAULT_GAME_ID);
+  const [manualWagerAmount, setManualWagerAmount] = useState("");
 
   const myAgentsQ = useMyArenaAgents(1, 50);
   const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 12 });
@@ -390,6 +399,23 @@ const BattlesPage = () => {
     }
     return availableAgents[0] ?? null;
   }, [myAgents, queuedMyAgentIds]);
+  const manualBattleAgents = useMemo(
+    () => myAgents.filter((agent) => !queuedMyAgentIds.has(agent.id)),
+    [myAgents, queuedMyAgentIds]
+  );
+  const selectedManualBattleAgent = useMemo(
+    () => manualBattleAgents.find((agent) => agent.id === manualBattleAgentId) ?? null,
+    [manualBattleAgents, manualBattleAgentId]
+  );
+  const manualModeMeta = AI_ARENA_MATCH_MODES.find((mode) => mode.value === manualMode) ?? null;
+  const manualGameMeta = AI_ARENA_GAME_IDS.find((game) => game.value === manualGameId) ?? null;
+
+  useEffect(() => {
+    setManualBattleAgentId((current) => {
+      if (current && manualBattleAgents.some((agent) => agent.id === current)) return current;
+      return challengeAgent?.id ?? manualBattleAgents[0]?.id ?? null;
+    });
+  }, [challengeAgent, manualBattleAgents]);
 
   const joinLobbyMut = useMutation({
     mutationFn: async (lobby: ArenaOpenLobbyItem) => {
@@ -424,6 +450,38 @@ const BattlesPage = () => {
     },
     onSettled: () => {
       setJoiningLobbyId(null);
+    },
+  });
+
+  const createBattleMut = useMutation({
+    mutationFn: async () => {
+      if (!manualBattleAgentId) {
+        throw new Error("Select your fighter first.");
+      }
+      const opponentId = manualOpponentId.trim();
+      if (!opponentId) {
+        throw new Error("Enter an opponent agent ID.");
+      }
+      const wagerAmount = Number.parseFloat(manualWagerAmount);
+      return aiArenaGatewayApi.createBattle({
+        agentId: manualBattleAgentId,
+        opponentId,
+        mode: manualMode,
+        gameId: manualGameId,
+        wagerAmount: manualMode === "WAGER" && Number.isFinite(wagerAmount) ? wagerAmount : undefined,
+      });
+    },
+    onSuccess: async ({ battle }) => {
+      setBattleIdInput(battle.id);
+      setSelectedBattleId(battle.id);
+      saveTrackedAiArenaBattleId(battle.id);
+      toast.success(`Battle ${shortId(battle.id)} created`);
+      setManualOpponentId("");
+      if (manualMode === "WAGER") setManualWagerAmount("");
+      await Promise.all([battleQ.refetch(), battleBoardQ.openLobbiesQ.refetch()]);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not create battle");
     },
   });
 
@@ -526,6 +584,189 @@ const BattlesPage = () => {
             No queued arena lobbies or live matchups are available right now.
           </div>
         )}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <SectionTitle>Manual Battle Creator</SectionTitle>
+          <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Invite a specific opponent</span>
+        </div>
+
+        <div className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,210,255,0.12),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(155,50,255,0.12),transparent_38%)]" />
+          {isAuthenticated ? (
+            manualBattleAgents.length > 0 ? (
+              <div className="relative z-10 grid gap-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+                <div className="rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(8,14,26,0.96),rgba(4,8,15,0.92))] p-4 sm:p-5">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-300">Direct Duel</div>
+                      <h3 className="mt-1 text-xl font-bold text-white">Launch a custom battle</h3>
+                    </div>
+                    <div className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-300">
+                      No Queue Needed
+                    </div>
+                  </div>
+
+                  {selectedManualBattleAgent ? (
+                    <div className="rounded-2xl border border-cyan-500/15 bg-[radial-gradient(circle_at_top,rgba(0,210,255,0.14),transparent_48%),linear-gradient(180deg,rgba(15,26,44,0.95),rgba(7,10,22,0.95))] p-4">
+                      <div className="flex flex-wrap items-center gap-4">
+                        <ArenaAgentThumbnail
+                          agent={selectedManualBattleAgent}
+                          className="h-24 w-24 rounded-2xl border-cyan-500/25 shadow-[0_0_32px_rgba(0,210,255,0.18)]"
+                          size="md"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Your fighter</div>
+                          <div className="mt-1 truncate text-2xl font-bold text-white">
+                            {selectedManualBattleAgent.name}
+                          </div>
+                          <div className="mt-1 text-sm text-white/55">
+                            {selectedManualBattleAgent.archetype} · {selectedManualBattleAgent.clan}
+                          </div>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-emerald-300">
+                              ELO {selectedManualBattleAgent.eloRating.toLocaleString()}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white/65">
+                              {manualModeMeta?.label ?? manualMode}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white/65">
+                              {manualGameMeta?.label ?? manualGameId}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 rounded-xl border border-white/8 bg-black/25 px-3.5 py-3 text-sm text-white/60">
+                        {manualOpponentId.trim()
+                          ? `Target locked. This battle will challenge agent ${manualOpponentId.trim()}.`
+                          : "Paste an opponent agent ID to set up a direct fight."}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <MiniStat label="Mode" value={manualModeMeta?.label ?? manualMode} />
+                    <MiniStat label="Game" value={manualGameMeta?.label ?? manualGameId} />
+                    <MiniStat label="Wager" value={manualMode === "WAGER" ? (manualWagerAmount.trim() || "Set stake") : "Disabled"} />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/8 bg-black/20 p-4 sm:p-5">
+                  <div className="mb-4">
+                    <div className="font-tech text-[10px] uppercase tracking-[0.18em] text-white/38">Battle Config</div>
+                    <p className="mt-1 text-sm text-white/55">
+                      Skip matchmaking and challenge a specific rival directly. Queued fighters stay hidden here to avoid conflicts.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label className="space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Your fighter</span>
+                      <select
+                        value={manualBattleAgentId ?? ""}
+                        onChange={(event) => setManualBattleAgentId(event.target.value || null)}
+                        className="arena-select"
+                      >
+                        {manualBattleAgents.map((agent) => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name} — ELO {agent.eloRating}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Opponent ID</span>
+                      <input
+                        value={manualOpponentId}
+                        onChange={(event) => setManualOpponentId(event.target.value)}
+                        placeholder="Paste target agent id"
+                        className="arena-input"
+                      />
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Mode</span>
+                      <select
+                        value={manualMode}
+                        onChange={(event) => setManualMode(event.target.value as (typeof AI_ARENA_MATCH_MODES)[number]["value"])}
+                        className="arena-select"
+                      >
+                        {AI_ARENA_MATCH_MODES.map((mode) => (
+                          <option key={mode.value} value={mode.value}>
+                            {mode.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Game</span>
+                      <select
+                        value={manualGameId}
+                        onChange={(event) => setManualGameId(event.target.value)}
+                        className="arena-select"
+                      >
+                        {AI_ARENA_GAME_IDS.map((game) => (
+                          <option key={game.value} value={game.value}>
+                            {game.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+
+                  {manualMode === "WAGER" ? (
+                    <label className="mt-3 block max-w-xs space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Wager amount</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={manualWagerAmount}
+                        onChange={(event) => setManualWagerAmount(event.target.value)}
+                        placeholder="Optional stake"
+                        className="arena-input"
+                      />
+                    </label>
+                  ) : null}
+
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-4">
+                    <div className="text-xs text-white/45">
+                      Direct battles are useful for controlled matchups, testing, and admin-triggered duels.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => createBattleMut.mutate()}
+                      disabled={createBattleMut.isPending || !manualBattleAgentId || !manualOpponentId.trim()}
+                      className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/30 bg-[linear-gradient(135deg,rgba(0,210,255,0.18),rgba(155,50,255,0.2))] px-4 py-2.5 font-tech text-[10px] uppercase tracking-[0.18em] text-white shadow-[0_0_24px_rgba(0,210,255,0.12)] transition hover:border-cyan-300/55 hover:shadow-[0_0_30px_rgba(0,210,255,0.2)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {createBattleMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Swords className="h-3.5 w-3.5" />}
+                      {createBattleMut.isPending ? "Opening Battle" : "Create Battle"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative z-10 text-sm text-white/55">
+                All of your agents are currently queued or unavailable. Leave a queue first, then create a direct battle.
+              </div>
+            )
+          ) : (
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-white/55">Connect your wallet to create direct AI Arena battles.</p>
+              <button
+                type="button"
+                onClick={login}
+                className="inline-flex items-center gap-2 rounded border border-[#9b32ff]/45 bg-[#230b35]/70 px-4 py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-white transition hover:border-[#bb65ff]"
+              >
+                Login To Create
+              </button>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="space-y-4">
