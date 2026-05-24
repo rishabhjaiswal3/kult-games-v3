@@ -111,16 +111,39 @@ export interface AiArenaBattleResult {
 
 export interface AiArenaBattle {
   id: string;
-  status: "PENDING" | "INITIALIZING" | "IN_PROGRESS" | "COMPLETED" | string;
+  status: "PENDING" | "INITIALIZING" | "IN_PROGRESS" | "COMPLETED" | "DISPUTED" | "CANCELLED" | string;
   agentIds?: string[];
   gameId?: string;
   mode?: string;
+  config?: Record<string, unknown>;
   result?: AiArenaBattleResult;
+  startedAt?: string | null;
   endedAt?: string;
+  createdAt?: string;
 }
 
 export interface AiArenaBattleResponse {
   battle: AiArenaBattle;
+}
+
+export interface AiArenaCreateBattleRequest {
+  agentId: string;
+  opponentId: string;
+  mode: string;
+  gameId: string;
+  wagerAmount?: number;
+}
+
+export interface AiArenaCreateBattleResponse {
+  battle: AiArenaBattle;
+}
+
+export interface AiArenaDisputeBattleRequest {
+  reason: string;
+}
+
+export interface AiArenaDisputeBattleResponse {
+  success: boolean;
 }
 
 export interface AiArenaMatchmakingStatusBody {
@@ -225,11 +248,10 @@ export interface AiArenaFinancialDepositResponse {
 
 /** GET /v1/agents/:agentId/evolution */
 export interface AiArenaAgentEvolutionResponse {
-  stage: string;
-  nextStage: string;
-  winsRequired: number;
-  winsToGo: number;
-  eligible: boolean;
+  currentStage: string;
+  totalBattles: number;
+  eloRating: number;
+  eligibleForEvolution: boolean;
 }
 
 /** GET /v1/leaderboards/global/rank/:agentId */
@@ -275,4 +297,67 @@ export interface AiArenaReplayResponse {
     finalStateHash?: string;
   };
   storedAt?: string;
+}
+
+export type AiArenaTrainingType =
+  | "BEHAVIOUR_CLONING"
+  | "REINFORCEMENT_LEARNING"
+  | "LORA_FINETUNE";
+
+export type AiArenaTrainingJobStatus =
+  | "QUEUED"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED"
+  | "CANCELLED";
+
+export interface AiArenaTrainingJob {
+  id: string;
+  agentId: string;
+  type: AiArenaTrainingType | string;
+  status: AiArenaTrainingJobStatus | string;
+  priority: number;
+  config?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  errorLog?: string | null;
+  modelId?: string | null;
+  datasetRootHash?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  createdAt?: string;
+}
+
+export interface AiArenaCreateTrainingJobRequest {
+  agentId: string;
+  type?: AiArenaTrainingType;
+  priority?: number;
+  baseModel?: "Qwen2.5-0.5B-Instruct" | "Qwen3-32B";
+  trainingData?: Array<Record<string, unknown>>;
+  config?: Record<string, unknown>;
+}
+
+export interface AiArenaCreateTrainingJobResponse {
+  job: AiArenaTrainingJob;
+}
+
+export interface AiArenaTrainingJobsResponse {
+  jobs: AiArenaTrainingJob[];
+}
+
+export interface AiArenaTrainingJobResponse {
+  job: AiArenaTrainingJob;
+}
+
+export interface AiArenaCancelTrainingJobResponse {
+  cancelled: boolean;
+}
+
+export interface AiArenaTrainingEligibilityResponse {
+  eligible: boolean;
+  reasons: {
+    hasRunningJobs: boolean;
+    insufficientBattles: boolean;
+    totalBattles: number;
+    runningJobs: number;
+  };
 }

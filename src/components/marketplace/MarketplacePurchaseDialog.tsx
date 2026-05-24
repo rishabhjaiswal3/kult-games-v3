@@ -1,18 +1,25 @@
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { encodeFunctionData } from "viem";
-import { Hexagon, ShoppingCart, X } from "lucide-react";
+import { Hexagon, Loader2, RefreshCcw, ShoppingCart, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { marketplaceApi } from "@/api/marketplaceApi";
 import type { MarketplaceListing } from "@/types/api";
 import {
   MARKETPLACE_PAYMENT_TOKENS,
+  getMarketplaceChainConfig,
+  getMarketplaceChainLabel,
   getMarketplacePaymentConfig,
   type MarketplacePaymentToken,
   unifiedMarketplaceAbi,
 } from "@/lib/marketplacePayment";
+import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import type { usePrivyWalletTools } from "@/hooks/usePrivyWalletTools";
 
 type WalletTools = ReturnType<typeof usePrivyWalletTools>;
+type WalletProvider = Awaited<
+  ReturnType<NonNullable<NonNullable<WalletTools["activeWallet"]>["getEthereumProvider"]>>
+>;
 
 type MarketplacePurchaseDialogProps = {
   selectedItem: MarketplaceListing | null;
@@ -39,6 +46,22 @@ function categoryBadgeClass(category: string) {
   return "bg-purple-950/80 border-purple-500/35 text-[#d6acff]";
 }
 
+function parseChainId(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return null;
+  const parsed = normalized.startsWith("0x") ? Number.parseInt(normalized, 16) : Number.parseInt(normalized, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+async function readProviderChainId(provider: WalletProvider): Promise<number | null> {
+  const chainId = await provider.request({ method: "eth_chainId" });
+  return parseChainId(chainId);
+}
+
 export function MarketplacePurchaseDialog({
   selectedItem,
   onClose,
@@ -56,16 +79,118 @@ export function MarketplacePurchaseDialog({
   parseWei,
   getFriendlyPurchaseError,
 }: MarketplacePurchaseDialogProps) {
+  const [walletChainId, setWalletChainId] = useState<number | null>(null);
+  const [isCheckingChain, setIsCheckingChain] = useState(false);
+  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
   const selectedTokenAddress = selectedItem
     ? paymentConfig.tokenAddressBySymbol[selectedPaymentToken]
     : "";
   const selectedItemCalldata = selectedItem?.purchaseCalldata ?? null;
+  const purchaseChainId = selectedItem?.purchaseChainId ?? paymentConfig.marketplaceChainId;
+  const purchaseChainConfig = useMemo(
+    () => getMarketplaceChainConfig(purchaseChainId),
+    [purchaseChainId]
+  );
+  const purchaseChainLabel = useMemo(
+    () => getMarketplaceChainLabel(purchaseChainId),
+    [purchaseChainId]
+  );
+  const isWalletConnected = Boolean(activeWallet?.address);
+  const needsNetworkPreparation = Boolean(
+    selectedItem && isWalletConnected && walletChainId !== purchaseChainId
+  );
+  const isWalletReadyForPurchase = isWalletConnected && walletChainId === purchaseChainId;
   const canConfirmPurchase = Boolean(
     selectedItem &&
       paymentConfig.marketplaceContractAddress &&
       selectedTokenAddress &&
       canUsePrivy
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedItem || !activeWallet?.address || typeof activeWallet.getEthereumProvider !== "function") {
+      setWalletChainId(null);
+      setIsCheckingChain(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setIsCheckingChain(true);
+    void (async () => {
+      try {
+        const provider = await activeWallet.getEthereumProvider();
+        const currentChainId = await readProviderChainId(provider);
+        if (!cancelled) {
+          setWalletChainId(currentChainId);
+        }
+      } catch {
+        if (!cancelled) {
+          setWalletChainId(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsCheckingChain(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedItem?.id, selectedPaymentToken, activeWallet?.address, activeWallet?.getEthereumProvider]);
+
+  const ensurePurchaseNetwork = async () => {
+    if (!activeWallet?.address) {
+      throw new Error("Connect wallet first");
+    }
+    if (typeof activeWallet.getEthereumProvider !== "function") {
+      throw new Error(`Wallet provider unavailable. Reconnect and switch to ${purchaseChainLabel}.`);
+    }
+
+    setIsSwitchingNetwork(true);
+    try {
+      if (typeof activeWallet.switchChain === "function") {
+        try {
+          await activeWallet.switchChain(purchaseChainId);
+        } catch {
+          /* fall through to provider-based switch */
+        }
+      }
+
+      const provider = await activeWallet.getEthereumProvider();
+      await ensureWalletOnAllowedChain(provider, purchaseChainConfig);
+
+      const currentChainId = await readProviderChainId(provider);
+      setWalletChainId(currentChainId);
+
+      if (currentChainId !== purchaseChainId) {
+        throw new Error(`Wallet is still on the wrong network. Please switch to ${purchaseChainLabel}.`);
+      }
+    } finally {
+      setIsSwitchingNetwork(false);
+    }
+  };
+
+  const handleSwitchNetwork = async () => {
+    if (!privyReady) {
+      toast.error("Wallet system still loading");
+      return;
+    }
+    if (!privyAuthenticated || !activeWallet?.address) {
+      toast.error("Connect wallet first");
+      return;
+    }
+
+    try {
+      await ensurePurchaseNetwork();
+      toast.success(`${purchaseChainLabel} ready for ${selectedPaymentToken} purchase.`);
+    } catch (error) {
+      toast.error(getFriendlyPurchaseError(error));
+    }
+  };
 
   return (
     <Dialog open={!!selectedItem} onOpenChange={(open) => !open && onClose()}>
@@ -144,6 +269,56 @@ export function MarketplacePurchaseDialog({
                 ) : null}
               </div>
 
+              <div className="rounded-lg border border-white/8 bg-[#0a0f1b]/70 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/45">
+                      Purchase network
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white">{purchaseChainLabel}</p>
+                    <p className="mt-1 text-[10px] leading-relaxed text-white/55">
+                      {!isWalletConnected
+                        ? `Connect your wallet to pay with ${selectedPaymentToken}.`
+                        : isCheckingChain
+                          ? "Checking your current wallet network..."
+                          : isWalletReadyForPurchase
+                            ? `Wallet ready on ${purchaseChainLabel}. You can confirm the purchase now.`
+                            : `Switch your wallet to ${purchaseChainLabel} before paying with ${selectedPaymentToken}.`}
+                    </p>
+                    {walletChainId && walletChainId !== purchaseChainId ? (
+                      <p className="mt-1 text-[10px] text-amber-300">
+                        Current wallet network: {getMarketplaceChainLabel(walletChainId)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span
+                    className={`rounded border px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-wider ${
+                      isWalletReadyForPurchase
+                        ? "border-emerald-500/35 bg-emerald-950/60 text-emerald-300"
+                        : "border-amber-500/35 bg-amber-950/50 text-amber-300"
+                    }`}
+                  >
+                    {isWalletReadyForPurchase ? "Ready" : "Switch needed"}
+                  </span>
+                </div>
+
+                {isWalletConnected && !isWalletReadyForPurchase ? (
+                  <button
+                    type="button"
+                    onClick={handleSwitchNetwork}
+                    disabled={isSwitchingNetwork || isPurchasing}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#e3c7ff] transition hover:bg-[#9a35ff]/18 disabled:opacity-60"
+                  >
+                    {isSwitchingNetwork ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="h-4 w-4" />
+                    )}
+                    {isSwitchingNetwork ? "Switching network..." : `Switch to ${purchaseChainLabel}`}
+                  </button>
+                ) : null}
+              </div>
+
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
@@ -154,7 +329,7 @@ export function MarketplacePurchaseDialog({
                 </button>
                 <button
                   type="button"
-                  disabled={!canConfirmPurchase || isPurchasing}
+                  disabled={!canConfirmPurchase || isPurchasing || isSwitchingNetwork}
                   className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider disabled:opacity-50"
                   onClick={async () => {
                     if (!selectedItem || !activeWallet?.address) return;
@@ -171,15 +346,18 @@ export function MarketplacePurchaseDialog({
                       return;
                     }
                     try {
+                      if (needsNetworkPreparation) {
+                        await ensurePurchaseNetwork();
+                        toast.success(`${purchaseChainLabel} ready. Review once and confirm purchase.`);
+                        return;
+                      }
+
                       onPurchasingChange(true);
                       let txHash: string | undefined;
 
                       if (selectedItemCalldata || selectedTokenAddress) {
-                        const txChainId =
-                          selectedItem.purchaseChainId ?? paymentConfig.marketplaceChainId;
-                        if (typeof activeWallet.switchChain === "function") {
-                          await activeWallet.switchChain(txChainId);
-                        }
+                        await ensurePurchaseNetwork();
+                        const txChainId = purchaseChainId;
 
                         const txTarget =
                           selectedItem.purchaseContractAddress ??
@@ -244,7 +422,13 @@ export function MarketplacePurchaseDialog({
                   }}
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  {isPurchasing ? "Processing..." : "Confirm"}
+                  {isPurchasing
+                    ? "Processing..."
+                    : isSwitchingNetwork
+                      ? "Switching..."
+                      : needsNetworkPreparation
+                        ? `Switch to ${purchaseChainLabel}`
+                        : "Confirm"}
                 </button>
               </div>
             </div>
