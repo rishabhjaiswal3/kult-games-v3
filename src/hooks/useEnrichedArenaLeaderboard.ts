@@ -30,7 +30,22 @@ async function enrichEntries(entries: AiArenaLeaderboardEntry[]): Promise<AiAren
   return [...enriched, ...entries.slice(25)];
 }
 
-export function useEnrichedArenaLeaderboard(enabled = true) {
+type UseEnrichedArenaLeaderboardOptions = {
+  enabled?: boolean;
+  refetchInterval?: number | false;
+  staleTime?: number;
+};
+
+export function useEnrichedArenaLeaderboard(options: boolean | UseEnrichedArenaLeaderboardOptions = true) {
+  const normalized =
+    typeof options === "boolean"
+      ? { enabled: options, refetchInterval: false, staleTime: 5 * 60_000 }
+      : {
+          enabled: options.enabled ?? true,
+          refetchInterval: options.refetchInterval ?? false,
+          staleTime: options.staleTime ?? 5 * 60_000,
+        };
+
   return useQuery({
     queryKey: [...AI_ARENA_LEADERBOARD_QUERY_KEY, "enriched"],
     queryFn: async () => {
@@ -38,8 +53,9 @@ export function useEnrichedArenaLeaderboard(enabled = true) {
       const entries = await enrichEntries(data.entries ?? []);
       return { entries };
     },
-    enabled,
-    staleTime: 5 * 60_000,
+    enabled: normalized.enabled,
+    staleTime: normalized.staleTime,
+    refetchInterval: normalized.refetchInterval,
     retry: 1,
   });
 }

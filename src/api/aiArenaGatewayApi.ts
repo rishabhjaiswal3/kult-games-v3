@@ -186,6 +186,52 @@ function normalizeTrainingJob(job: AiArenaTrainingJob): AiArenaTrainingJob {
   };
 }
 
+function normalizeTrainingEligibilityResponse(data: unknown): AiArenaTrainingEligibilityResponse {
+  const raw = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+  const reasonsRaw =
+    raw.reasons && typeof raw.reasons === "object" ? (raw.reasons as Record<string, unknown>) : {};
+
+  const hasRunningJobs =
+    typeof reasonsRaw.hasRunningJobs === "boolean"
+      ? reasonsRaw.hasRunningJobs
+      : typeof raw.hasRunningJobs === "boolean"
+        ? (raw.hasRunningJobs as boolean)
+        : false;
+
+  const insufficientBattles =
+    typeof reasonsRaw.insufficientBattles === "boolean"
+      ? reasonsRaw.insufficientBattles
+      : typeof raw.insufficientBattles === "boolean"
+        ? (raw.insufficientBattles as boolean)
+        : false;
+
+  const totalBattles =
+    typeof reasonsRaw.totalBattles === "number"
+      ? reasonsRaw.totalBattles
+      : typeof raw.totalBattles === "number"
+        ? (raw.totalBattles as number)
+        : 0;
+
+  const runningJobs =
+    typeof reasonsRaw.runningJobs === "number"
+      ? reasonsRaw.runningJobs
+      : typeof raw.runningJobs === "number"
+        ? (raw.runningJobs as number)
+        : hasRunningJobs
+          ? 1
+          : 0;
+
+  return {
+    eligible: typeof raw.eligible === "boolean" ? raw.eligible : !hasRunningJobs && !insufficientBattles,
+    reasons: {
+      hasRunningJobs,
+      insufficientBattles,
+      totalBattles,
+      runningJobs,
+    },
+  };
+}
+
 async function collectAgentsForUserId(userId: string): Promise<AiArenaAgent[]> {
   const client = http();
   const mine: AiArenaAgent[] = [];
@@ -505,9 +551,9 @@ export const aiArenaGatewayApi = {
 
   /** GET /v1/training/agents/:agentId/eligibility */
   getTrainingEligibility: async (agentId: string): Promise<AiArenaTrainingEligibilityResponse> => {
-    const { data } = await http().get<AiArenaTrainingEligibilityResponse>(
+    const { data } = await http().get<unknown>(
       `/v1/training/agents/${encodeURIComponent(agentId)}/eligibility`
     );
-    return data;
+    return normalizeTrainingEligibilityResponse(data);
   },
 };

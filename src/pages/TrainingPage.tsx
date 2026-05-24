@@ -110,11 +110,21 @@ function deriveProgramType(programName: string): "BEHAVIOUR_CLONING" | "REINFORC
   return "BEHAVIOUR_CLONING";
 }
 
+function eligibilityReasons(eligibility?: AiArenaTrainingEligibilityResponse | null) {
+  return {
+    hasRunningJobs: eligibility?.reasons?.hasRunningJobs ?? false,
+    insufficientBattles: eligibility?.reasons?.insufficientBattles ?? false,
+    totalBattles: eligibility?.reasons?.totalBattles ?? 0,
+    runningJobs: eligibility?.reasons?.runningJobs ?? 0,
+  };
+}
+
 function readinessCopy(eligibility?: AiArenaTrainingEligibilityResponse | null) {
   if (!eligibility) return "Select an agent to inspect training readiness.";
   if (eligibility.eligible) return "This agent is ready to queue a new training job.";
-  if (eligibility.reasons.hasRunningJobs) return "This agent already has a running training job.";
-  if (eligibility.reasons.insufficientBattles) {
+  const reasons = eligibilityReasons(eligibility);
+  if (reasons.hasRunningJobs) return "This agent already has a running training job.";
+  if (reasons.insufficientBattles) {
     return `This agent needs more battles before training can start.`;
   }
   return "Training is temporarily unavailable for this agent.";
@@ -174,6 +184,7 @@ const TrainingPage = () => {
 
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId) ?? null;
   const selectedEligibility = selectedAgentId ? eligibilityQ.data?.[selectedAgentId] ?? null : null;
+  const selectedEligibilityReasons = eligibilityReasons(selectedEligibility);
   const allJobs = trainingJobsQ.data ?? [];
   const filteredJobs = filterJobsForTab(activeTab, allJobs);
   const activeJobs = allJobs.filter((job) => job.status === "QUEUED" || job.status === "RUNNING");
@@ -442,10 +453,10 @@ const TrainingPage = () => {
 
                 {selectedEligibility ? (
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <ReadinessStat label="Total Battles" value={selectedEligibility.reasons.totalBattles.toLocaleString()} />
-                    <ReadinessStat label="Running Jobs" value={selectedEligibility.reasons.runningJobs.toLocaleString()} />
-                    <ReadinessStat label="Has Running Job" value={selectedEligibility.reasons.hasRunningJobs ? "Yes" : "No"} />
-                    <ReadinessStat label="Needs More Battles" value={selectedEligibility.reasons.insufficientBattles ? "Yes" : "No"} />
+                    <ReadinessStat label="Total Battles" value={selectedEligibilityReasons.totalBattles.toLocaleString()} />
+                    <ReadinessStat label="Running Jobs" value={selectedEligibilityReasons.runningJobs.toLocaleString()} />
+                    <ReadinessStat label="Has Running Job" value={selectedEligibilityReasons.hasRunningJobs ? "Yes" : "No"} />
+                    <ReadinessStat label="Needs More Battles" value={selectedEligibilityReasons.insufficientBattles ? "Yes" : "No"} />
                   </div>
                 ) : null}
               </div>
