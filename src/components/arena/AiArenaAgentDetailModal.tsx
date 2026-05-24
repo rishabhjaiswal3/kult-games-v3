@@ -167,10 +167,10 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
               <section className="rounded-xl border border-neon-cyan/20 bg-neon-cyan/5 p-4 text-xs">
                 <h4 className="mb-2 font-display text-[11px] font-bold tracking-wider text-neon-cyan">Evolution</h4>
                 <p className="text-muted-foreground">
-                  Stage <span className="text-foreground">{evolutionQ.data.stage}</span> → next{" "}
-                  <span className="text-foreground">{evolutionQ.data.nextStage}</span>. Wins required:{" "}
-                  {evolutionQ.data.winsRequired}, to go: {evolutionQ.data.winsToGo}. Eligible:{" "}
-                  {evolutionQ.data.eligible ? "yes" : "no"}
+                  Stage <span className="text-foreground">{evolutionQ.data.currentStage}</span>. Total battles:{" "}
+                  <span className="text-foreground">{evolutionQ.data.totalBattles}</span>. ELO:{" "}
+                  <span className="text-foreground">{evolutionQ.data.eloRating}</span>. Eligible:{" "}
+                  {evolutionQ.data.eligibleForEvolution ? "yes" : "no"}
                 </p>
               </section>
             )}

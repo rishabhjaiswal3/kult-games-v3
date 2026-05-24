@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ChevronDown,
   ChevronRight,
-  Coins,
+  Globe,
   Hexagon,
   Info,
   LineChart,
@@ -16,98 +17,125 @@ import {
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { ClanIcon } from "@/components/arena/ClanIcon";
+import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import agentNexus from "@/assets/agent-nexus.jpg";
 import agentShadow from "@/assets/agent-shadow.jpg";
 import agentAegis from "@/assets/agent-aegis.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
+import agentLumen from "@/assets/agent-lumen.jpg";
 
-const filterTabs = [
-  { label: "ALL AGENTS", key: "ALL AGENTS" },
-  { label: "ACTIVE (3)", key: "ACTIVE" },
-  { label: "INACTIVE (2)", key: "INACTIVE" },
-  { label: "ARCHIVED (0)", key: "ARCHIVED" },
+const sortOptions = ["Recently Used", "Level", "Win Rate", "Power Score"] as const;
+
+const STAGE_ORDER = [
+  "GENESIS",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "DIAMOND",
+  "MASTER",
+  "LEGENDARY",
 ] as const;
 
-const initialAgents = [
-  {
-    id: "NEXUS-01",
-    name: "NEXUS-01",
-    clanName: "ZeroG Clan &bull; Assassin",
-    clanType: "zerog",
-    active: true,
-    level: 12,
-    xp: 2450,
-    xpTotal: 3600,
-    battles: 32,
-    winRate: 62.5,
-    powerScore: 12850,
-    image: agentNexus,
-  },
-  {
-    id: "SHADOW-9",
-    name: "SHADOW-9",
-    clanName: "Solana Clan &bull; Tactician",
-    clanType: "solana",
-    active: true,
-    level: 11,
-    xp: 1890,
-    xpTotal: 3200,
-    battles: 28,
-    winRate: 60.7,
-    powerScore: 11230,
-    image: agentShadow,
-  },
-  {
-    id: "AEGIS-07",
-    name: "AEGIS-07",
-    clanName: "Base Clan &bull; Guardian",
-    clanType: "base",
-    active: true,
-    level: 10,
-    xp: 1200,
-    xpTotal: 2800,
-    battles: 25,
-    winRate: 64.0,
-    powerScore: 10420,
-    image: agentAegis,
-  },
-  {
-    id: "VOIDWALKER",
-    name: "VOIDWALKER",
-    clanName: "ZeroG Clan &bull; Striker",
-    clanType: "zerog",
-    active: false,
-    level: 8,
-    xp: 650,
-    xpTotal: 2000,
-    battles: 18,
-    winRate: 55.6,
-    powerScore: 7890,
-    image: agentVoid,
-  },
-  {
-    id: "RAGEBORN",
-    name: "RAGEBORN",
-    clanName: "Base Clan &bull; Berserker",
-    clanType: "base",
-    active: false,
-    level: 6,
-    xp: 350,
-    xpTotal: 1600,
-    battles: 10,
-    winRate: 50.0,
-    powerScore: 6250,
-    image: agentRage,
-  },
-];
+function clanTypeFromAgent(agent: AiArenaAgent): "zerog" | "solana" | "base" {
+  const clan = agent.clan?.toUpperCase();
+  if (clan === "SOLANA") return "solana";
+  if (clan === "BASE") return "base";
+  return "zerog";
+}
+
+function clanLabel(clan?: string) {
+  const normalized = clan?.trim().toUpperCase();
+  if (normalized === "SOLANA") return "Solana";
+  if (normalized === "BASE") return "Base";
+  if (normalized === "ZEROG" || normalized === "0G") return "ZeroG";
+  return clan?.trim() || "AI Arena";
+}
+
+function isAgentActive(agent: AiArenaAgent) {
+  return agent.status?.toLowerCase() !== "inactive";
+}
+
+function agentBattles(agent: AiArenaAgent) {
+  return agent.wins + agent.losses + (agent.draws ?? 0);
+}
+
+function agentWinRate(agent: AiArenaAgent) {
+  const battles = agentBattles(agent);
+  if (!battles) return 0;
+  return Number(((agent.wins / battles) * 100).toFixed(1));
+}
+
+function stageRank(stage?: string) {
+  const normalized = stage?.trim().toUpperCase() || "GENESIS";
+  const indexed = STAGE_ORDER.indexOf(normalized as (typeof STAGE_ORDER)[number]);
+  if (indexed >= 0) return indexed + 1;
+  const numeric = Number.parseInt(normalized.replace(/[^\d]/g, ""), 10);
+  return Number.isFinite(numeric) ? numeric : 1;
+}
+
+function stageLabel(stage?: string) {
+  return (stage?.trim() || "GENESIS").replaceAll("_", " ");
+}
+
+function progressFromAgent(agent: AiArenaAgent) {
+  const battles = agentBattles(agent);
+  if (battles > 0) {
+    return Math.max(12, Math.min(100, Math.round((agent.wins / battles) * 100)));
+  }
+  return Math.max(12, Math.min(100, Math.round(agent.eloRating / 25)));
+}
+
+function resolveAgentImage(agent: AiArenaAgent, index: number) {
+  const archetype = agent.archetype?.toUpperCase();
+  if (archetype?.includes("ASSASSIN")) return agentNexus;
+  if (archetype?.includes("TACTICIAN")) return agentShadow;
+  if (archetype?.includes("DEFENDER")) return agentAegis;
+  if (archetype?.includes("BERSERKER")) return agentRage;
+  if (archetype?.includes("SUPPORT")) return agentLumen;
+  if (archetype?.includes("STRIKER")) return agentVoid;
+
+  const byClan = clanTypeFromAgent(agent);
+  if (byClan === "solana") return index % 2 === 0 ? agentShadow : agentLumen;
+  if (byClan === "base") return index % 2 === 0 ? agentAegis : agentRage;
+  return index % 2 === 0 ? agentNexus : agentVoid;
+}
+
+function sortAgents(agents: AiArenaAgent[], sortBy: string) {
+  const sorted = [...agents];
+
+  sorted.sort((left, right) => {
+    if (sortBy === "Level") {
+      return stageRank(right.evolutionStage) - stageRank(left.evolutionStage);
+    }
+    if (sortBy === "Win Rate") {
+      return agentWinRate(right) - agentWinRate(left);
+    }
+    if (sortBy === "Power Score") {
+      return right.eloRating - left.eloRating;
+    }
+
+    const leftTime = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+    const rightTime = right.createdAt ? new Date(right.createdAt).getTime() : 0;
+    return rightTime - leftTime;
+  });
+
+  return sorted;
+}
 
 const MyAgentsPage = () => {
   const { isAuthenticated } = useAuth();
+  const { openCreateAgent } = useCreateAgent();
   const [activeFilterTab, setActiveFilterTab] = useState<string>("ALL AGENTS");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("Recently Used");
+  const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("Recently Used");
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const totalAgentsQ = useArenaAgentsList(1, 1);
 
   if (!isAuthenticated) {
     return (
@@ -118,15 +146,34 @@ const MyAgentsPage = () => {
     );
   }
 
-  const filteredAgents = initialAgents.filter((agent) => {
-    const matchesTab =
-      activeFilterTab === "ALL AGENTS" ||
-      (activeFilterTab === "ACTIVE" && agent.active) ||
-      (activeFilterTab === "INACTIVE" && !agent.active) ||
-      (activeFilterTab === "ARCHIVED" && false);
-    const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  const agents = myAgentsQ.data?.agents ?? [];
+  const activeAgents = agents.filter(isAgentActive);
+  const inactiveAgents = agents.filter((agent) => !isAgentActive(agent));
+  const totalBattles = agents.reduce((sum, agent) => sum + agentBattles(agent), 0);
+  const totalWins = agents.reduce((sum, agent) => sum + agent.wins, 0);
+  const overallWinRate = totalBattles > 0 ? Number(((totalWins / totalBattles) * 100).toFixed(1)) : 0;
+  const myAgentsTotal = myAgentsQ.data?.total ?? agents.length;
+  const arenaAgentsTotal = totalAgentsQ.data?.total ?? null;
+  const waitingForArenaSession = !myAgentsQ.data && !myAgentsQ.isLoading && !myAgentsQ.isError;
+
+  const filterTabs = [
+    { label: `ALL AGENTS (${agents.length})`, key: "ALL AGENTS" },
+    { label: `ACTIVE (${activeAgents.length})`, key: "ACTIVE" },
+    { label: `INACTIVE (${inactiveAgents.length})`, key: "INACTIVE" },
+    { label: "ARCHIVED (0)", key: "ARCHIVED" },
+  ] as const;
+
+  const filteredAgents = sortAgents(
+    agents.filter((agent) => {
+      const matchesTab =
+        activeFilterTab === "ALL AGENTS" ||
+        (activeFilterTab === "ACTIVE" && isAgentActive(agent)) ||
+        (activeFilterTab === "INACTIVE" && !isAgentActive(agent));
+      const matchesSearch = agent.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTab && matchesSearch;
+    }),
+    sortBy
+  );
 
   return (
     <ArenaPageLayout>
@@ -138,8 +185,10 @@ const MyAgentsPage = () => {
       <div className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
-            <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">TOTAL AGENTS</span>
-            <span className="font-tech block text-xl font-bold text-white">5</span>
+            <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">YOUR AGENTS</span>
+            <span className="font-tech block text-xl font-bold text-white">
+              {waitingForArenaSession ? "..." : myAgentsTotal.toLocaleString()}
+            </span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
             <UserRound className="h-4.5 w-4.5" />
@@ -147,9 +196,20 @@ const MyAgentsPage = () => {
         </div>
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
+            <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">ARENA TOTAL</span>
+            <span className="font-tech block text-xl font-bold text-white">
+              {arenaAgentsTotal == null ? "..." : arenaAgentsTotal.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+            <Globe className="h-4.5 w-4.5" />
+          </div>
+        </div>
+        <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
+          <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">ACTIVE AGENTS</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-tech text-xl font-bold text-white">3</span>
+              <span className="font-tech text-xl font-bold text-white">{activeAgents.length.toLocaleString()}</span>
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
             </div>
           </div>
@@ -160,7 +220,7 @@ const MyAgentsPage = () => {
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">TOTAL BATTLES</span>
-            <span className="font-tech block text-xl font-bold text-white">128</span>
+            <span className="font-tech block text-xl font-bold text-white">{totalBattles.toLocaleString()}</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400">
             <Swords className="h-4.5 w-4.5" />
@@ -169,22 +229,10 @@ const MyAgentsPage = () => {
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">WIN RATE</span>
-            <span className="font-tech block text-xl font-bold text-white">62.5%</span>
+            <span className="font-tech block text-xl font-bold text-white">{overallWinRate.toFixed(1)}%</span>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-sky-500/20 bg-sky-500/10 text-sky-400">
             <TrendingUp className="h-4.5 w-4.5" />
-          </div>
-        </div>
-        <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
-          <div className="space-y-1">
-            <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">TOTAL EARNINGS</span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-tech text-xl font-bold text-white">1,250.50</span>
-              <span className="font-tech text-[8px] font-bold text-white/40">SARENA</span>
-            </div>
-          </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400">
-            <Coins className="h-4.5 w-4.5" />
           </div>
         </div>
       </div>
@@ -213,25 +261,27 @@ const MyAgentsPage = () => {
               type="text"
               placeholder="Search agents..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(event) => setSearchQuery(event.target.value)}
               className="w-[180px] max-sm:w-full rounded border border-white/8 bg-[#03070d]/60 py-1.5 pl-9 pr-4 text-xs font-semibold text-white outline-none transition placeholder:text-white/20 focus:border-purple-500/50"
             />
           </div>
           <div className="relative">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(event) => setSortBy(event.target.value as (typeof sortOptions)[number])}
               className="cursor-pointer appearance-none rounded border border-white/8 bg-[#03070d]/60 py-1.5 pl-3 pr-8 text-xs font-semibold text-white/70 outline-none hover:text-white"
             >
-              <option value="Recently Used">Sort by: Recently Used</option>
-              <option value="Level">Sort by: Level</option>
-              <option value="Win Rate">Sort by: Win Rate</option>
-              <option value="Power Score">Sort by: Power Score</option>
+              {sortOptions.map((option) => (
+                <option key={option} value={option}>
+                  {`Sort by: ${option}`}
+                </option>
+              ))}
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/35" />
           </div>
           <button
             type="button"
+            onClick={() => openCreateAgent()}
             className="flex cursor-pointer items-center gap-1.5 rounded bg-[#9a35ff] px-3.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-purple-600"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -240,94 +290,125 @@ const MyAgentsPage = () => {
         </div>
       </div>
 
+      {myAgentsQ.isError ? (
+        <div className="arena-panel border-amber-500/25 bg-amber-500/10 px-4 py-5 text-sm text-amber-100/90">
+          Could not load your AI Arena agents right now. Try again after the arena session reconnects.
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {filteredAgents.map((agent) => {
-          const xpPct = Math.round((agent.xp / agent.xpTotal) * 100);
-          return (
-            <div
-              key={agent.id}
-              className={`arena-panel relative flex flex-col overflow-hidden border-white/8 bg-[#04080f]/95 group ${
-                agent.active ? "ring-1 ring-[#9a35ff]/15" : ""
-              }`}
+        {myAgentsQ.isLoading || waitingForArenaSession ? (
+          <div className="arena-panel col-span-full border-white/8 bg-[#04080f]/95 px-5 py-10 text-center text-sm text-white/55">
+            {waitingForArenaSession ? "Connecting to AI Arena…" : "Loading your agents…"}
+          </div>
+        ) : agents.length === 0 ? (
+          <div className="arena-panel col-span-full border-dashed border-white/12 bg-[#04080f]/95 px-5 py-10 text-center">
+            <p className="text-sm text-white/60">No AI Arena agents found for this wallet yet.</p>
+            <button
+              type="button"
+              onClick={() => openCreateAgent()}
+              className="mt-4 inline-flex items-center gap-1.5 rounded bg-[#9a35ff] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-purple-600"
             >
-              <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-white/6 bg-black/45">
-                <img
-                  src={agent.image}
-                  alt={agent.name}
-                  className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-[#04080f]/10 to-transparent" />
-                <div className="absolute left-3.5 top-3.5 flex items-center gap-1 rounded border border-white/10 bg-black/40 px-2 py-0.5 font-tech text-[8px] font-black tracking-wide">
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${agent.active ? "animate-pulse bg-emerald-500" : "bg-white/30"}`}
+              <Plus className="h-3.5 w-3.5" />
+              Create your first agent
+            </button>
+          </div>
+        ) : filteredAgents.length > 0 ? (
+          filteredAgents.map((agent, index) => {
+            const active = isAgentActive(agent);
+            const winRate = agentWinRate(agent);
+            const battles = agentBattles(agent);
+            const draws = agent.draws ?? 0;
+            const recordLabel = draws > 0 ? `${agent.wins}W · ${agent.losses}L · ${draws}D` : `${agent.wins}W · ${agent.losses}L`;
+
+            return (
+              <div
+                key={agent.id}
+                className={`arena-panel relative flex flex-col overflow-hidden border-white/8 bg-[#04080f]/95 group ${
+                  active ? "ring-1 ring-[#9a35ff]/15" : ""
+                }`}
+              >
+                <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-white/6 bg-black/45">
+                  <img
+                    src={resolveAgentImage(agent, index)}
+                    alt={agent.name}
+                    className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
                   />
-                  <span className="uppercase text-white/80">{agent.active ? "ACTIVE" : "INACTIVE"}</span>
-                </div>
-                <button
-                  type="button"
-                  className="absolute right-3.5 top-3.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-white/10 bg-black/40 text-white/40 transition hover:bg-black/60 hover:text-white"
-                >
-                  &bull;&bull;&bull;
-                </button>
-              </div>
-              <div className="flex flex-1 flex-col justify-between space-y-4 p-4">
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold leading-none text-white/95">{agent.name}</span>
-                      <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[9px] text-white/40">
-                      <ClanIcon type={agent.clanType} className="h-3.5 w-3.5" />
-                      <span dangerouslySetInnerHTML={{ __html: agent.clanName }} />
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-[#04080f]/10 to-transparent" />
+                  <div className="absolute left-3.5 top-3.5 flex items-center gap-1 rounded border border-white/10 bg-black/40 px-2 py-0.5 font-tech text-[8px] font-black tracking-wide">
+                    <span className={`h-1.5 w-1.5 rounded-full ${active ? "animate-pulse bg-emerald-500" : "bg-white/30"}`} />
+                    <span className="uppercase text-white/80">{active ? "ACTIVE" : "INACTIVE"}</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-baseline justify-between text-[9px] font-semibold text-white/50">
-                      <span className="font-tech font-bold text-white">LV. {agent.level}</span>
-                      <span className="font-tech">
-                        {agent.xp.toLocaleString()} / {agent.xpTotal.toLocaleString()} XP
-                      </span>
-                    </div>
-                    <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
-                      <div className="h-full rounded-full bg-[#9a35ff]" style={{ width: `${xpPct}%` }} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 pt-1">
-                    <div className="space-y-0.5">
-                      <span className="text-[8px] font-semibold uppercase text-white/30">Battles</span>
-                      <span className="font-tech text-[10px] font-bold text-white/86">{agent.battles}</span>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[8px] font-semibold uppercase text-white/30">Win Rate</span>
-                      <span className="font-tech text-[10px] font-bold text-white/86">{agent.winRate}%</span>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[8px] font-semibold uppercase text-white/30">Power Score</span>
-                      <span className="block truncate font-tech text-[10px] font-bold text-purple-400">
-                        {agent.powerScore.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 border-t border-white/6 pt-2">
-                  <button
-                    type="button"
-                    className="flex-1 cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
-                  >
-                    MANAGE AGENT
-                  </button>
-                  <button
-                    type="button"
-                    className="cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/40 transition hover:border-white/20 hover:text-white"
+                  <Link
+                    to="/training"
+                    className="absolute right-3.5 top-3.5 flex h-5 w-5 items-center justify-center rounded border border-white/10 bg-black/40 text-white/40 transition hover:bg-black/60 hover:text-white"
+                    aria-label={`Open training for ${agent.name}`}
                   >
                     <LineChart className="h-3.5 w-3.5" />
-                  </button>
+                  </Link>
+                </div>
+                <div className="flex flex-1 flex-col justify-between space-y-4 p-4">
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-bold leading-none text-white/95">{agent.name}</span>
+                        <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[9px] text-white/40">
+                        <ClanIcon type={clanTypeFromAgent(agent)} className="h-3.5 w-3.5" />
+                        <span>{clanLabel(agent.clan)} Clan • {agent.archetype}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-baseline justify-between text-[9px] font-semibold text-white/50">
+                        <span className="font-tech font-bold text-white">{stageLabel(agent.evolutionStage)}</span>
+                        <span className="font-tech">{recordLabel}</span>
+                      </div>
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
+                        <div className="h-full rounded-full bg-[#9a35ff]" style={{ width: `${progressFromAgent(agent)}%` }} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="space-y-0.5">
+                        <span className="text-[8px] font-semibold uppercase text-white/30">Battles</span>
+                        <span className="font-tech text-[10px] font-bold text-white/86">{battles}</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[8px] font-semibold uppercase text-white/30">Win Rate</span>
+                        <span className="font-tech text-[10px] font-bold text-white/86">{winRate}%</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[8px] font-semibold uppercase text-white/30">Power Score</span>
+                        <span className="block truncate font-tech text-[10px] font-bold text-purple-400">
+                          {agent.eloRating.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 border-t border-white/6 pt-2">
+                    <Link
+                      to="/ai-arena"
+                      className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+                    >
+                      MANAGE AGENT
+                    </Link>
+                    <Link
+                      to="/battles"
+                      className="flex items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/40 transition hover:border-white/20 hover:text-white"
+                      aria-label={`Open battles for ${agent.name}`}
+                    >
+                      <Swords className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="arena-panel col-span-full border-white/8 bg-[#04080f]/95 px-5 py-10 text-center text-sm text-white/55">
+            No agents match this filter yet.
+          </div>
+        )}
       </div>
 
       <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-4">
@@ -340,17 +421,17 @@ const MyAgentsPage = () => {
               Your AI agents are your digital assets.
             </h4>
             <p className="text-[9px] font-semibold leading-none text-white/40">
-              Train them, battle with them, and own them on-chain.
+              Live roster data is now pulled from AI Arena while the page keeps the same layout.
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+        <Link
+          to="/ai-arena"
+          className="flex items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
         >
-          <span>LEARN MORE</span>
+          <span>OPEN AI ARENA</span>
           <ChevronRight className="h-3.5 w-3.5" />
-        </button>
+        </Link>
       </div>
     </ArenaPageLayout>
   );

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Bell, Menu, User } from "lucide-react";
+import { Bell, Copy, Menu, User } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -15,6 +16,17 @@ export function AppTopbar() {
   const displayName =
     player?.name?.trim() ||
     (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "Player");
+
+  const copyWalletAddress = async () => {
+    if (!walletAddress) return;
+
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      toast.success("Wallet address copied");
+    } catch {
+      toast.error("Could not copy wallet address");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
@@ -39,6 +51,27 @@ export function AppTopbar() {
                 <span className="max-w-[120px] truncate">{displayName}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 border-white/10 bg-[#060b15]">
+                {walletAddress ? (
+                  <>
+                    <div className="px-2 py-2">
+                      <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
+                        <p className="font-tech text-[9px] uppercase tracking-wider text-white/45">Wallet</p>
+                        <p className="mt-1 break-all font-mono text-[11px] text-white/82">
+                          {walletAddress}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => void copyWalletAddress()}
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-wider text-white/75 transition hover:bg-white/[0.06] hover:text-white"
+                        >
+                          <Copy className="h-3 w-3" />
+                          Copy Wallet
+                        </button>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                  </>
+                ) : null}
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard">Dashboard & agents</Link>
                 </DropdownMenuItem>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, ChevronRight, Hexagon, Menu, Wallet } from "lucide-react";
+import { Bell, ChevronRight, Copy, Hexagon, Menu, Wallet } from "lucide-react";
+import { toast } from "sonner";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -34,6 +35,17 @@ export function DashboardTopbar() {
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : walletAddress;
   const walletLabel = isAuthenticated ? player?.name?.trim() || shortWallet || "Wallet" : "Wallet";
+
+  const copyWalletAddress = async () => {
+    if (!walletAddress) return;
+
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      toast.success("Wallet address copied");
+    } catch {
+      toast.error("Could not copy wallet address");
+    }
+  };
 
   return (
     <header className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
@@ -131,9 +143,23 @@ export function DashboardTopbar() {
                 </span>
               </div>
               <div className="mt-3 rounded border border-white/10 bg-white/[0.02] p-3 font-tech text-xs">
-                {isAuthenticated
-                  ? shortWallet || "Wallet connected."
-                  : "Connect a wallet, email, or Google account to access your arena balance."}
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <p className="break-all font-mono text-[11px] text-white/82">
+                      {walletAddress}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void copyWalletAddress()}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-wider text-white/75 transition hover:bg-white/[0.06] hover:text-white"
+                    >
+                      <Copy className="h-3 w-3" />
+                      Copy Wallet
+                    </button>
+                  </div>
+                ) : (
+                  "Connect a wallet, email, or Google account to access your arena balance."
+                )}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
