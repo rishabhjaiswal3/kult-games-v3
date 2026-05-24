@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Box,
@@ -12,8 +13,20 @@ import {
   Eye,
   ArrowRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
+import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
+import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
+import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
+import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
+import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
@@ -26,6 +39,7 @@ import agentLumen from "@/assets/agent-lumen.jpg";
 import iconTrain from "@/assets/icon-train.jpg";
 import iconBattle from "@/assets/icon-battle.jpg";
 import iconEarn from "@/assets/icon-earn.jpg";
+import type { AiArenaAgent } from "@/types/aiArenaGateway";
 const agents = [
   {
     rank: "01",
@@ -89,33 +103,6 @@ const agents = [
   },
 ];
 
-const battles = [
-  {
-    tag: "Arena Championship",
-    round: "Round 2",
-    time: "02:45",
-    a: { name: "NEXUS-01", chain: "0G", img: agentNexus },
-    b: { name: "SHADOW-9", chain: "Helios", img: agentShadow },
-    views: "1,245",
-  },
-  {
-    tag: "Ranked Battle",
-    round: "Diamond League",
-    time: "01:15",
-    a: { name: "AEGIS-07", chain: "Aether", img: agentAegis },
-    b: { name: "VOIDWALKER", chain: "0G", img: agentVoid },
-    views: "856",
-  },
-  {
-    tag: "Community Battle",
-    round: "Open Arena",
-    time: "00:45",
-    a: { name: "RAGEBORN", chain: "Helios", img: agentRage },
-    b: { name: "LUMEN-22", chain: "Aether", img: agentLumen },
-    views: "624",
-  },
-];
-
 function ZeroGLogo({ className = "h-4 w-auto" }: { className?: string }) {
   return (
     <img
@@ -150,7 +137,23 @@ function ChainLogo({ name, className = "h-3.5 w-auto" }: { name: string; classNa
   return <span>{name}</span>;
 }
 
+function shortBattleId(value?: string | null) {
+  if (!value) return "—";
+  if (value.length <= 14) return value;
+  return `${value.slice(0, 6)}…${value.slice(-4)}`;
+}
+
 const AIArenaPage = () => {
+  return (
+    <ArenaLiveMatchProvider>
+      <AIArenaPageContent />
+    </ArenaLiveMatchProvider>
+  );
+};
+
+export default AIArenaPage;
+
+function AIArenaPageContent() {
   return (
     <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-[1284px]">
       <Hero />
@@ -163,9 +166,7 @@ const AIArenaPage = () => {
       <ArenaLandingFooter />
     </div>
   );
-};
-
-export default AIArenaPage;
+}
 
 function Logo({
   size = "text-2xl",
@@ -227,17 +228,18 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         }
       >
         {isAuthenticated ? (
-          <Link
-            to="/dashboard"
-            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-              compact
-                ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
-                : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-            }`}
-          >
-            <span className="leading-tight text-center whitespace-nowrap">OPEN DASHBOARD</span>{" "}
-            <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
-          </Link>
+          <></>
+          // <Link
+          //   to="/dashboard"
+          //   className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
+          //     compact
+          //       ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
+          //       : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
+          //   }`}
+          // >
+          //   <span className="leading-tight text-center whitespace-nowrap">OPEN DASHBOARD</span>{" "}
+          //   <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
+          // </Link>
         ) : (
           <button
             type="button"
@@ -252,7 +254,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
             <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
           </button>
         )}
-        <Link
+        {/* <Link
           to="/my-agents"
           className={`min-w-0 rounded-md font-tech border border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 hover:border-primary/80 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(143,39,255,0.15)] hover:shadow-[0_0_25px_rgba(143,39,255,0.35)] whitespace-nowrap ${
             compact
@@ -262,9 +264,200 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         >
           <Box className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 text-accent" />{" "}
           <span className="leading-tight text-center font-bold whitespace-nowrap">MY AGENTS</span>
-        </Link>
+        </Link> */}
+        <ArenaHeroMatchmakingAction compact={compact} />
       </div>
     </div>
+  );
+}
+
+function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) {
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const { isAiArenaReady } = useAiArenaGatewaySession();
+  const { setActiveBattleId } = useArenaLiveMatch();
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
+  const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
+  const announcedBattleIdRef = useRef<string | null>(getTrackedAiArenaBattleId());
+
+  const agents = myAgentsQ.data?.agents ?? [];
+
+  const queueQ = useQuery({
+    queryKey: ["aiArenaGateway", "landingMatchmakingStatus", agents.map((agent) => agent.id).join(",")],
+    queryFn: async () =>
+      Promise.all(
+        agents.map(async (agent) => {
+          try {
+            const statusRes = await aiArenaGatewayApi.getMatchmakingStatus(agent.id);
+            return { agent, status: statusRes.status };
+          } catch {
+            return { agent, status: null };
+          }
+        })
+      ),
+    enabled: isAiArenaReady && agents.length > 0,
+    staleTime: 2_000,
+    refetchInterval: 2_000,
+    retry: 1,
+  });
+
+  const queuedAgent = useMemo(
+    () => queueQ.data?.find((row) => row.status?.inQueue)?.agent ?? null,
+    [queueQ.data]
+  );
+
+  const leaveQueueMut = useMutation({
+    mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
+    onSuccess: async () => {
+      toast.success("Left matchmaking queue");
+      setStatusModalAgent(null);
+      await queueQ.refetch();
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not leave queue");
+    },
+  });
+
+  const buttonLabel = !isAuthenticated
+    ? "START MATCHMAKING"
+    : agents.length > 0
+      ? "START MATCHMAKING"
+      : "CREATE AGENT TO MATCH";
+
+  const helperText = !isAuthenticated
+    ? "Connect your wallet to unlock AI Arena matchmaking."
+    : !isAiArenaReady
+      ? "Syncing your AI Arena session..."
+      : myAgentsQ.isLoading
+        ? "Loading your fighters..."
+        : agents.length > 0
+          ? "Queue one of your agents into the live arena lobby."
+          : "Create an AI Arena agent first, then you can queue it here.";
+
+  const startButtonDisabled =
+    isAuthenticated &&
+    agents.length > 0 &&
+    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+
+  const handleArenaAction = () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    if (agents.length === 0) {
+      navigate("/my-agents");
+      return;
+    }
+    setStartModalOpen(true);
+  };
+
+  const handleMatchFound = (payload: {
+    agent: AiArenaAgent;
+    opponent: AiArenaAgent;
+    battleId: string;
+    mode: string;
+  }) => {
+    saveTrackedAiArenaBattleId(payload.battleId);
+    setActiveBattleId(payload.battleId);
+    setTrackedBattleId(payload.battleId);
+    if (announcedBattleIdRef.current !== payload.battleId) {
+      toast.success(`Match found — battle ${shortBattleId(payload.battleId)} is ready`);
+      announcedBattleIdRef.current = payload.battleId;
+    }
+  };
+
+  useEffect(() => {
+    if (trackedBattleId) {
+      setActiveBattleId(trackedBattleId);
+    }
+  }, [trackedBattleId, setActiveBattleId]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleArenaAction}
+        disabled={startButtonDisabled}
+        className={`min-w-0 rounded-md font-tech border border-accent/45 bg-gradient-to-r from-accent/12 to-primary/12 hover:from-accent/20 hover:to-primary/20 hover:border-accent/75 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(0,210,255,0.12)] hover:shadow-[0_0_25px_rgba(0,210,255,0.28)] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60 ${
+          compact
+            ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.06em] gap-2"
+            : "w-[240px] lg:w-auto px-5 py-3 text-[10.5px] tracking-[0.18em] gap-2"
+        }`}
+      >
+        {startButtonDisabled && !queuedAgent ? (
+          <Loader2 className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 animate-spin text-accent" />
+        ) : (
+          <Swords className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 text-accent" />
+        )}
+        <span className="leading-tight text-center font-bold whitespace-nowrap">{buttonLabel}</span>
+      </button>
+
+      {queuedAgent ? (
+        <div
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs"}`}
+        >
+          <p>
+            {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
+            the live match modal any time.
+          </p>
+          <button
+            type="button"
+            onClick={() => setStatusModalAgent(queuedAgent)}
+            className="mt-2 inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-accent transition hover:text-accent/80"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Open live match status
+          </button>
+        </div>
+      ) : (
+        <p
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs"}`}
+        >
+          {helperText}
+        </p>
+      )}
+
+      {trackedBattleId ? (
+        <Link
+          to="/battles"
+          className={`min-w-0 rounded-md font-tech border border-white/15 bg-white/5 hover:bg-white/10 text-white/85 flex items-center justify-center transition whitespace-nowrap ${
+            compact
+              ? "w-[240px] px-4 py-2.5 text-[10px] tracking-[0.06em] gap-2"
+              : "w-[240px] lg:w-auto px-4 py-2.5 text-[10px] tracking-[0.16em] gap-2"
+          }`}
+        >
+          <Eye className="w-3 h-3 shrink-0 text-accent" />
+          <span className="leading-tight text-center font-bold whitespace-nowrap">
+            OPEN LAST BATTLE {shortBattleId(trackedBattleId)}
+          </span>
+        </Link>
+      ) : null}
+
+      <ArenaStartMatchmakingModal
+        open={startModalOpen}
+        onOpenChange={setStartModalOpen}
+        agents={agents}
+        defaultAgentId={queuedAgent?.id ?? agents[0]?.id ?? null}
+        onQueued={async (agentId) => {
+          const queued = agents.find((agent) => agent.id === agentId) ?? null;
+          if (queued) setStatusModalAgent(queued);
+          await queueQ.refetch();
+        }}
+      />
+
+      <ArenaMatchStatusModal
+        open={!!statusModalAgent}
+        onOpenChange={(open) => {
+          if (!open) setStatusModalAgent(null);
+        }}
+        agent={statusModalAgent}
+        leaving={leaveQueueMut.isPending}
+        onLeave={(agentId) => leaveQueueMut.mutate(agentId)}
+        onMatchFound={handleMatchFound}
+      />
+    </>
   );
 }
 
@@ -400,7 +593,7 @@ function FeaturesBlock() {
             LEARN MORE <ArrowUpRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
           {features.map((f) => (
             <div
               key={f.title}
@@ -650,6 +843,9 @@ function TopAgents() {
 }
 
 function LiveBattles() {
+  const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 6 });
+  const previewItems = battleBoardQ.items.slice(0, 3);
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 text-center sm:text-left">
@@ -658,61 +854,25 @@ function LiveBattles() {
           View All Battles
         </Link>
       </div>
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {battles.map((b, i) => (
-          <div key={i} className="card-glass rounded-xl p-4 sm:p-5">
-            <div className="flex flex-wrap items-start justify-center sm:justify-between gap-3 mb-4 text-center sm:text-left">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="font-tech text-xs tracking-wider text-red-400">LIVE</span>
-              </div>
-              <div className="text-center sm:text-right min-w-0">
-                <div className="text-xs">{b.tag}</div>
-                <div className="text-[10px] text-muted-foreground">{b.round}</div>
-              </div>
-              <div className="font-tech text-sm text-accent">{b.time}</div>
-            </div>
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
-              <Fighter f={b.a} />
-              <span className="font-display text-2xl text-muted-foreground">VS</span>
-              <Fighter f={b.b} flip />
-            </div>
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-              <Link to="/battles" className="text-xs text-accent hover:underline font-tech">
-                Watch Now
-              </Link>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {b.views}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Fighter({ f, flip }: { f: { name: string; chain: string; img: string }; flip?: boolean }) {
-  return (
-    <div className={`flex min-w-0 flex-col items-center ${flip ? "" : ""}`}>
-      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-primary/40 glow-primary">
-        <img
-          src={f.img}
-          alt={f.name}
-          loading="lazy"
-          width={160}
-          height={160}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="mt-2 max-w-full text-center">
-        <div className="font-tech text-[10px] sm:text-xs break-words">{f.name}</div>
-        <div className="text-[10px] text-muted-foreground flex justify-center">
-          <ChainLogo name={f.chain} className="h-3 w-auto" />
+      {battleBoardQ.isLoading && previewItems.length === 0 ? (
+        <ArenaBattleBoardGridSkeleton count={3} />
+      ) : previewItems.length > 0 ? (
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {previewItems.map((item) => (
+            <ArenaBattleBoardCard
+              key={item.id}
+              item={item}
+              actionLabel="Watch Now"
+              actionTo="/battles"
+            />
+          ))}
         </div>
-      </div>
-    </div>
+      ) : (
+        <div className="card-glass rounded-xl px-5 py-8 text-sm text-muted-foreground">
+          No live arena battles or open lobbies are available right now.
+        </div>
+      )}
+    </section>
   );
 }
 

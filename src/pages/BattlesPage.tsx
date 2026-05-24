@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowUpRight, Crosshair, Eye, Hexagon, Loader2, Search, Shield, Swords, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
 import { useAuth } from "@/contexts/AuthContext";
+import { type ArenaOpenLobbyItem, useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { leaderboardElo, leaderboardName, useEnrichedArenaLeaderboard } from "@/hooks/useEnrichedArenaLeaderboard";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import type { AiArenaAgent, AiArenaBattle, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 
@@ -305,11 +310,13 @@ function PerformerCard({ entry }: { entry: AiArenaLeaderboardEntry }) {
 }
 
 const BattlesPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const [battleIdInput, setBattleIdInput] = useState(() => getTrackedAiArenaBattleId() ?? "");
   const [selectedBattleId, setSelectedBattleId] = useState(() => getTrackedAiArenaBattleId());
+  const [joiningLobbyId, setJoiningLobbyId] = useState<string | null>(null);
 
   const myAgentsQ = useMyArenaAgents(1, 50);
+  const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 12 });
   const leaderboardQ = useEnrichedArenaLeaderboard(true);
 
   const battleQ = useQuery({
@@ -363,12 +370,62 @@ const BattlesPage = () => {
 
   const entries = leaderboardQ.data?.entries ?? [];
   const topElo = entries[0] ? leaderboardElo(entries[0]) : null;
-  const rankedPairs: Array<[AiArenaLeaderboardEntry, AiArenaLeaderboardEntry]> = [];
-  for (let i = 0; i < Math.min(entries.length - 1, 6); i += 2) {
-    const left = entries[i];
-    const right = entries[i + 1];
-    if (left && right) rankedPairs.push([left, right]);
-  }
+  const myAgents = myAgentsQ.data?.agents ?? [];
+  const myAgentIds = useMemo(() => new Set(myAgents.map((agent) => agent.id)), [myAgents]);
+  const queuedMyAgentIds = useMemo(
+    () =>
+      new Set(
+        battleBoardQ.openLobbyItems
+          .filter((item) => myAgentIds.has(item.agent.id))
+          .map((item) => item.agent.id)
+      ),
+    [battleBoardQ.openLobbyItems, myAgentIds]
+  );
+  const challengeAgent = useMemo(() => {
+    const preferredAgentId = getStoredAiAgentInfo()?.id ?? null;
+    const availableAgents = myAgents.filter((agent) => !queuedMyAgentIds.has(agent.id));
+    if (preferredAgentId) {
+      const preferred = availableAgents.find((agent) => agent.id === preferredAgentId);
+      if (preferred) return preferred;
+    }
+    return availableAgents[0] ?? null;
+  }, [myAgents, queuedMyAgentIds]);
+
+  const joinLobbyMut = useMutation({
+    mutationFn: async (lobby: ArenaOpenLobbyItem) => {
+      if (!challengeAgent) {
+        throw new Error("No available agent is ready to join this arena lobby.");
+      }
+
+      const gameId = lobby.status.gameId?.trim() || AI_ARENA_DEFAULT_GAME_ID;
+      const mode = lobby.status.mode ?? "RANKED";
+      const res = await aiArenaGatewayApi.directMatchmakingChallenge({
+        agentId: challengeAgent.id,
+        opponentId: lobby.agent.id,
+        gameId,
+        mode,
+      });
+
+      return { lobby, challenger: challengeAgent, res };
+    },
+    onMutate: (lobby) => {
+      setJoiningLobbyId(lobby.id);
+    },
+    onSuccess: async ({ lobby, challenger, res }) => {
+      const battleId = res.match.battleId;
+      setBattleIdInput(battleId);
+      setSelectedBattleId(battleId);
+      saveTrackedAiArenaBattleId(battleId);
+      toast.success(`${challenger.name} joined ${lobby.agent.name} — battle ${shortId(battleId)} is live`);
+      await Promise.all([battleBoardQ.openLobbiesQ.refetch(), battleBoardQ.leaderboardQ.refetch()]);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not join arena lobby");
+    },
+    onSettled: () => {
+      setJoiningLobbyId(null);
+    },
+  });
 
   const handleBattleLookup = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -387,7 +444,7 @@ const BattlesPage = () => {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight text-white">BATTLE ARENA</h1>
         <p className="text-sm text-white/68">
-          Inspect a real AI Arena battle, monitor ranked faceoffs, and track the live leaderboard.
+          Track open arena lobbies, inspect known battles, and follow live AI Arena matchups from one board.
         </p>
       </div>
 
@@ -397,6 +454,79 @@ const BattlesPage = () => {
         myAgentsCount={isAuthenticated ? (myAgentsQ.data?.agents.length ?? null) : null}
         trackedBattleStatus={battleQ.data?.battle.status ?? null}
       />
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <SectionTitle>All Arena Battles</SectionTitle>
+          <Link to="/ai-arena" className="font-tech text-[10px] uppercase tracking-[0.16em] text-[#b33cff]">
+            Open AI Arena
+          </Link>
+        </div>
+        {battleBoardQ.isLoading && battleBoardQ.items.length === 0 ? (
+          <ArenaBattleBoardGridSkeleton count={6} />
+        ) : battleBoardQ.items.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {battleBoardQ.items.map((item) => (
+              <ArenaBattleBoardCard
+                key={item.id}
+                item={item}
+                actionLabel={
+                  item.kind === "open-lobby"
+                    ? myAgentIds.has(item.agent.id)
+                      ? "View Queue"
+                      : "Join In Arena"
+                    : "Open Arena"
+                }
+                actionTo={
+                  item.kind === "open-lobby"
+                    ? myAgentIds.has(item.agent.id)
+                      ? "/ai-arena"
+                      : undefined
+                    : "/ai-arena"
+                }
+                onAction={
+                  item.kind === "open-lobby" && !myAgentIds.has(item.agent.id)
+                    ? () => {
+                        if (!isAuthenticated) {
+                          login();
+                          return;
+                        }
+                        if (myAgentsQ.isLoading) {
+                          toast.message("Loading your arena roster...");
+                          return;
+                        }
+                        if (myAgents.length === 0) {
+                          toast.error("Create an AI Arena agent before joining a lobby.");
+                          return;
+                        }
+                        if (!challengeAgent) {
+                          toast.error("All of your agents are already queued. Leave a queue first, then join this lobby.");
+                          return;
+                        }
+                        joinLobbyMut.mutate(item);
+                      }
+                    : undefined
+                }
+                actionDisabled={
+                  item.kind === "open-lobby" &&
+                  !myAgentIds.has(item.agent.id) &&
+                  joiningLobbyId != null &&
+                  joiningLobbyId !== item.id
+                }
+                actionLoading={
+                  item.kind === "open-lobby" &&
+                  !myAgentIds.has(item.agent.id) &&
+                  joiningLobbyId === item.id
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="arena-panel border-dashed border-white/12 bg-[#04080f]/80 px-5 py-8 text-center text-sm text-white/55">
+            No queued arena lobbies or live matchups are available right now.
+          </div>
+        )}
+      </section>
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -463,31 +593,6 @@ const BattlesPage = () => {
         ) : (
           <div className="arena-panel border-dashed border-white/12 bg-[#04080f]/80 px-5 py-8 text-center text-sm text-white/55">
             No tracked battle yet. Join a match from <Link to="/ai-arena" className="text-[#c78aff] underline">AI Arena</Link> or paste a battle ID above.
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <SectionTitle>Rank Watch</SectionTitle>
-          <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/38">
-            Powered by live leaderboard data
-          </span>
-        </div>
-        {leaderboardQ.isLoading ? (
-          <div className="arena-panel flex items-center gap-3 border-white/8 bg-[#04080f]/95 px-5 py-8 text-sm text-white/60">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Pulling ranked matchups…
-          </div>
-        ) : rankedPairs.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-3">
-            {rankedPairs.map(([left, right]) => (
-              <RankedFaceoffCard key={`${left.agentId}-${right.agentId}`} left={left} right={right} />
-            ))}
-          </div>
-        ) : (
-          <div className="arena-panel border-white/8 bg-[#04080f]/95 px-5 py-8 text-sm text-white/55">
-            Leaderboard data is not available right now.
           </div>
         )}
       </section>

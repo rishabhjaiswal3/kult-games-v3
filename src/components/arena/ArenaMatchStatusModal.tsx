@@ -108,10 +108,9 @@ export function ArenaMatchStatusModal({
     queryFn: () => aiArenaGatewayApi.getMatchmakingStatus(agentId!),
     enabled: open && !!agentId,
     refetchInterval: (query) => {
-      const matchId = query.state.data?.status?.matchId;
       const inQueue = query.state.data?.status?.inQueue;
       if (!open || !inQueue) return false;
-      return matchId ? 6_000 : 3_000;
+      return 2_000;
     },
     staleTime: 2_000,
     retry: 1,
