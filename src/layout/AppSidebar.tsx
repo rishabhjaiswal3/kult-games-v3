@@ -4,7 +4,8 @@ import { ArrowUpRight, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import dashboardLiveCard from "@/assets/dashboard-live-card.png";
-import { APP_NAV_ITEMS } from "@/layout/navConfig";
+import { APP_NAV_ITEMS, type NavItem } from "@/layout/navConfig";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
@@ -15,10 +16,12 @@ type AppSidebarProps = {
 
 /* ─── Navigation links ─── */
 function SidebarNav({
+  items,
   activeLabel,
   isCollapsed,
   onNavigate,
 }: {
+  items: NavItem[];
   activeLabel: string;
   isCollapsed?: boolean;
   onNavigate?: () => void;
@@ -27,7 +30,7 @@ function SidebarNav({
 
   return (
     <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1">
-      {APP_NAV_ITEMS.map((item, idx) => {
+      {items.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
           (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -191,6 +194,9 @@ function SidebarPromo({ isCollapsed }: { isCollapsed?: boolean }) {
 /* ─── Main Sidebar Component ─── */
 export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse }: AppSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const navItems = APP_NAV_ITEMS.filter((item) => isAuthenticated || !item.requiresAuth);
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
@@ -206,7 +212,12 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
   const sidebarContent = (onNavigate?: () => void) => (
     <>
       <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
-      <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
+      <SidebarNav
+        items={navItems}
+        activeLabel={activeLabel}
+        isCollapsed={isCollapsed}
+        onNavigate={onNavigate}
+      />
       <SidebarPromo isCollapsed={isCollapsed} />
     </>
   );

@@ -21,7 +21,7 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
-import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
+import { gameDownloadUrl, hasGameDownloadUrl, isGameDownloadable } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import type { Game } from "@/types/api";
@@ -144,6 +144,7 @@ const GameDetail = () => {
   const facts = buildFacts(game);
   const downloadable = isGameDownloadable(game);
   const downloadHref = gameDownloadUrl(game);
+  const canDownload = hasGameDownloadUrl(game);
 
   const handlePlayAccess = () => {
     if (isAuthenticated) {
@@ -154,6 +155,7 @@ const GameDetail = () => {
   };
 
   const handleDownloadClick = () => {
+    if (!canDownload) return;
     triggerBrowserDownload(downloadHref);
   };
 
@@ -207,10 +209,11 @@ const GameDetail = () => {
               <button
                 type="button"
                 onClick={handleDownloadClick}
+                disabled={!canDownload}
                 className="btn-primary inline-flex items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Download className="h-4 w-4" />
-                Download
+                {canDownload ? "Download" : "Download Soon"}
               </button>
             ) : (
               <button
@@ -288,15 +291,21 @@ const GameDetail = () => {
               <h3 className="mt-1 font-tech text-lg font-bold uppercase text-white">
                 {downloadable ? `Get ${title} on your machine` : `Launch ${title} in browser`}
               </h3>
+              {downloadable && !canDownload ? (
+                <p className="mt-1 text-xs text-white/45">
+                  This title is marked as downloadable, but the download link is not available yet.
+                </p>
+              ) : null}
             </div>
             {downloadable ? (
               <button
                 type="button"
                 onClick={handleDownloadClick}
+                disabled={!canDownload}
                 className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
               >
                 <Download className="h-4 w-4" />
-                Download
+                {canDownload ? "Download" : "Download Soon"}
                 <ArrowUpRight className="h-4 w-4" />
               </button>
             ) : (

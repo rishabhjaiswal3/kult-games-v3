@@ -3,7 +3,15 @@ import { UserRound } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function DashboardSignInGate() {
+type DashboardSignInGateProps = {
+  title?: string;
+  description?: string;
+};
+
+export function DashboardSignInGate({
+  title = "Dashboard",
+  description = "Sign in with your wallet to view your profile, agents, arena stats, and progress. Privy handles login and session restore automatically.",
+}: DashboardSignInGateProps) {
   const { login } = useAuth();
 
   return (
@@ -12,11 +20,8 @@ export function DashboardSignInGate() {
         <div className="mb-6 grid h-16 w-16 place-items-center rounded-full border border-[#9a35ff]/30 bg-[#9a35ff]/15 text-[#c78aff]">
           <UserRound className="h-8 w-8" />
         </div>
-        <h1 className="font-tech text-2xl font-bold uppercase tracking-tight text-white">Dashboard</h1>
-        <p className="mt-2 max-w-md text-sm text-white/55">
-          Sign in with your wallet to view your profile, agents, arena stats, and progress. Privy handles login and
-          session restore automatically.
-        </p>
+        <h1 className="font-tech text-2xl font-bold uppercase tracking-tight text-white">{title}</h1>
+        <p className="mt-2 max-w-md text-sm text-white/55">{description}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
             type="button"

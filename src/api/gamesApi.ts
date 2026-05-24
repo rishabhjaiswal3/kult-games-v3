@@ -1,5 +1,5 @@
 import apiClient from "@/lib/apiClient";
-import { isRecord, pickLocalizedText, pickNumber, pickString, unwrapApiData } from "@/api/utils";
+import { isRecord, pickBoolean, pickLocalizedText, pickNumber, pickString, unwrapApiData } from "@/api/utils";
 import type {
   ApiEnvelope,
   Game,
@@ -92,6 +92,7 @@ function normalizeGame(rawValue: unknown): Game {
 
   const metadata = isRecord(raw.metadata) ? raw.metadata : undefined;
   const images = collectImages(raw, thumbnail);
+  const isDownloadable = pickBoolean(raw.isDownloadable, raw.is_downloadable) ?? false;
 
   return {
     _id: pickString(raw._id, raw.id, raw.identification, raw.slug) ?? identification,
@@ -115,8 +116,8 @@ function normalizeGame(rawValue: unknown): Game {
     thumbnail,
     slogan: pickLocalizedText(raw.slogan),
     url: pickString(raw.url),
-    isDownloadable: raw.isDownloadable === true,
-    is_downloadable: raw.is_downloadable === true || raw.isDownloadable === true,
+    isDownloadable,
+    is_downloadable: isDownloadable,
     is_active: typeof raw.is_active === "boolean" ? raw.is_active : undefined,
     play_count: pickNumber(raw.play_count),
     knowledge_facts: Array.isArray(raw.knowledge_facts)

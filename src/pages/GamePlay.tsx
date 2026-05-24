@@ -4,7 +4,7 @@ import { ArrowLeft, Download } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { StorageKeys } from "@/constants/storageKeys";
 import { useAuth } from "@/contexts/AuthContext";
-import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
+import { gameDownloadUrl, hasGameDownloadUrl, isGameDownloadable } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { GamePlaySkeleton } from "@/components/skeleton";
 
@@ -66,6 +66,7 @@ const GamePlay = () => {
 
   if (isGameDownloadable(game)) {
     const href = gameDownloadUrl(game);
+    const canDownload = hasGameDownloadUrl(game);
     const title =
       typeof game.name === "string" ? game.name : game.name?.en ?? Object.values(game.name ?? {})[0] ?? "Game";
     return (
@@ -80,15 +81,18 @@ const GamePlay = () => {
         </button>
         <p className="font-display text-lg text-foreground text-center max-w-md">{title}</p>
         <p className="text-sm text-muted-foreground text-center max-w-md">
-          This game runs as a download on your device, not in the browser. Use the button below — your tab stays here.
+          {canDownload
+            ? "This game runs as a download on your device, not in the browser. Use the button below — your tab stays here."
+            : "This game is marked as downloadable, but the download link is not available yet."}
         </p>
         <button
           type="button"
           onClick={() => triggerBrowserDownload(href)}
+          disabled={!canDownload}
           className="flex items-center gap-2 px-8 py-3.5 font-display text-sm font-bold tracking-[0.18em] btn-eye"
         >
           <Download className="h-5 w-5" />
-          DOWNLOAD
+          {canDownload ? "DOWNLOAD" : "DOWNLOAD SOON"}
         </button>
         <button
           type="button"

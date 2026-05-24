@@ -2,7 +2,7 @@ import { getLeaderboardPlayerVisual } from "@/constants/arenaAgentArchetypes";
 import type { LeaderboardEntry } from "@/types/api";
 import { clanFromArchetype } from "./ClanIcon";
 
-export type LeaderboardTab = "GLOBAL" | "FRIENDS" | "MY RANK";
+export type LeaderboardTab = "GLOBAL" | "MY RANK";
 
 export type DisplayPlayer = {
   rank: number;
