@@ -271,6 +271,27 @@ const TrainingPage = () => {
     },
   });
 
+  const quickTrainMut = useMutation({
+    mutationFn: async () => {
+      if (!selectedAgentId) throw new Error("Select an agent first.");
+      if (!selectedEligibility?.eligible) {
+        throw new Error(readinessCopy(selectedEligibility));
+      }
+      return aiArenaGatewayApi.startAgentTraining(selectedAgentId, {
+        type: "BEHAVIOUR_CLONING",
+        priority: 1,
+      });
+    },
+    onSuccess: async (result) => {
+      toast.success(`Quick training queued: ${jobTypeLabel(result.job.type)}`);
+      inspectJob(result.job.id);
+      await invalidateTrainingQueries();
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not start quick training");
+    },
+  });
+
   const cancelMut = useMutation({
     mutationFn: async (jobId: string) => aiArenaGatewayApi.cancelTrainingJob(jobId),
     onSuccess: async () => {
@@ -332,18 +353,29 @@ const TrainingPage = () => {
               <div>
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training queue</h3>
                 <p className="mt-1 text-[11px] text-white/45">
-                  Queue a run for your selected fighter and check whether they are ready to train.
+                  Start an instant agent training run or queue a custom job for your selected fighter.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => queueMut.mutate()}
-                disabled={!selectedAgentId || queueMut.isPending || !selectedEligibility?.eligible}
-                className="flex cursor-pointer items-center gap-1 rounded border border-purple-500/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-400 hover:bg-[#9a35ff]/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {queueMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
-                <span>Add to queue</span>
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => quickTrainMut.mutate()}
+                  disabled={!selectedAgentId || quickTrainMut.isPending || !selectedEligibility?.eligible}
+                  className="flex cursor-pointer items-center gap-1 rounded border border-cyan-500/35 bg-cyan-500/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-300 transition hover:border-cyan-400 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {quickTrainMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
+                  <span>Quick train</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => queueMut.mutate()}
+                  disabled={!selectedAgentId || queueMut.isPending || !selectedEligibility?.eligible}
+                  className="flex cursor-pointer items-center gap-1 rounded border border-purple-500/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-400 hover:bg-[#9a35ff]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {queueMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                  <span>Create custom job</span>
+                </button>
+              </div>
             </div>
 
             <div className="border-b border-white/8 px-5 py-4">

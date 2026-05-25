@@ -336,6 +336,11 @@ export interface AiArenaCreateTrainingJobRequest {
   config?: Record<string, unknown>;
 }
 
+export interface AiArenaStartAgentTrainingRequest {
+  type?: AiArenaTrainingType;
+  priority?: number;
+}
+
 export interface AiArenaCreateTrainingJobResponse {
   job: AiArenaTrainingJob;
 }
@@ -360,4 +365,10 @@ export interface AiArenaTrainingEligibilityResponse {
     totalBattles: number;
     runningJobs: number;
   };
+}
+
+export interface AiArenaBattleSocketMessage {
+  type: string;
+  battleId?: string;
+  [key: string]: unknown;
 }
