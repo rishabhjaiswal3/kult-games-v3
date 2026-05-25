@@ -1,7 +1,6 @@
 import { type MouseEvent } from "react";
 import { ShoppingCart } from "lucide-react";
 import { InventoryAssetImage } from "@/components/inventory/InventoryAssetImage";
-import inventoryPanelVideo from "@/assets/SC_1-3.mp4";
 import { cn } from "@/lib/utils";
 import type { MarketplaceListing } from "@/types/api";
 
@@ -66,16 +65,6 @@ export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy
         className="relative w-full cursor-pointer overflow-hidden text-left"
       >
         <div className="relative overflow-hidden">
-          <video
-            src={inventoryPanelVideo}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
-            aria-hidden
-          />
           <div className="pointer-events-none absolute inset-0 bg-[#04080f]/48" aria-hidden />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,rgba(154,53,255,0.12),transparent_62%)]" aria-hidden />
           <InventoryAssetImage
