@@ -39,6 +39,7 @@ import battleStep4 from "@/assets/step4.mp4";
 import battleStep5 from "@/assets/step5.mp4";
 import dashboardCrest from "@/assets/dashboard-crest.png";
 import heroTrio from "@/assets/hero-trio.png";
+import warzoneVideo from "@/assets/IMG_9260.MOV";
 import type {
   AiArenaAgent,
   AiArenaBattle,
@@ -61,6 +62,7 @@ const gameModes: GameMode[] = [
     tag: "2D SHOOTER",
     body: "Fast-paced 2D arcade shooter. Team up, deploy, and dominate the battlefield.",
     image: heroTrio,
+    video: warzoneVideo,
     tone: "from-[#101824]/30 via-[#0b0f16]/55 to-[#070910]/95",
   },
   {
@@ -242,11 +244,11 @@ function battleTone(status?: string | null) {
 }
 
 function statusLabel(status?: string | null) {
-  return status ? status.replaceAll("_", " ") : "Pending";
+  return status ? status.replace(/_/g, " ") : "Pending";
 }
 
 function modeLabel(mode?: string | null) {
-  return mode ? mode.replaceAll("_", " ") : "Arena battle";
+  return mode ? mode.replace(/_/g, " ") : "Arena battle";
 }
 
 function StatsRail() {
