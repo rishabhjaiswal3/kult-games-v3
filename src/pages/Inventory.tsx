@@ -24,7 +24,7 @@ import { usePrivyWalletTools } from "@/hooks/usePrivyWalletTools";
 const LISTINGS_PER_PAGE = 100;
 
 const ITEMS_GRID_CLASS =
-  "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4";
+  "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4";
 
 function getGameName(name: Game["name"]): string {
   if (typeof name === "string") return name;
@@ -47,6 +47,10 @@ function parseWei(value: string | null | undefined): bigint {
 
 function buildClientOrderId(input: string): `0x${string}` {
   return keccak256(stringToHex(input));
+}
+
+function getGameId(game: Game): string {
+  return game.identification ?? game.slug ?? "";
 }
 
 function getFriendlyPurchaseError(error: unknown): string {
@@ -92,15 +96,40 @@ const Inventory = () => {
   });
 
   const games = gamesData?.games ?? [];
+  const marketplaceGameIds = useMemo(
+    () => games.map(getGameId).filter(Boolean),
+    [games],
+  );
 
   const { data: categorySource, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["marketplace", "category-source", itemGame || "all"],
-    queryFn: () =>
-      marketplaceApi.getListings({
-        gameIdentification: itemGame || undefined,
+    queryKey: ["marketplace", "category-source", itemGame || "all", marketplaceGameIds],
+    queryFn: async () => {
+      if (itemGame || marketplaceGameIds.length === 0) {
+        return marketplaceApi.getListings({
+          gameIdentification: itemGame || undefined,
+          page: 1,
+          perPage: LISTINGS_PER_PAGE,
+        });
+      }
+
+      const responses = await Promise.all(
+        marketplaceGameIds.map((gameIdentification) =>
+          marketplaceApi.getListings({
+            gameIdentification,
+            page: 1,
+            perPage: LISTINGS_PER_PAGE,
+          }),
+        ),
+      );
+
+      return {
+        listings: responses.flatMap((response) => response.listings),
+        total: responses.reduce((sum, response) => sum + response.total, 0),
         page: 1,
-        perPage: LISTINGS_PER_PAGE,
-      }),
+        perPage: LISTINGS_PER_PAGE * marketplaceGameIds.length,
+      };
+    },
+    enabled: itemGame ? true : !gamesLoading,
     staleTime: 60_000,
   });
 
@@ -116,14 +145,37 @@ const Inventory = () => {
     isError: listingsError,
     error: listingsErrorObj,
   } = useQuery({
-    queryKey: ["marketplace", "listings", itemGame || "all", itemCategory],
-    queryFn: () =>
-      marketplaceApi.getListings({
-        gameIdentification: itemGame || undefined,
-        category: itemCategory === "All" ? undefined : itemCategory,
+    queryKey: ["marketplace", "listings", itemGame || "all", itemCategory, marketplaceGameIds],
+    queryFn: async () => {
+      const category = itemCategory === "All" ? undefined : itemCategory;
+      if (itemGame || marketplaceGameIds.length === 0) {
+        return marketplaceApi.getListings({
+          gameIdentification: itemGame || undefined,
+          category,
+          page: 1,
+          perPage: LISTINGS_PER_PAGE,
+        });
+      }
+
+      const responses = await Promise.all(
+        marketplaceGameIds.map((gameIdentification) =>
+          marketplaceApi.getListings({
+            gameIdentification,
+            category,
+            page: 1,
+            perPage: LISTINGS_PER_PAGE,
+          }),
+        ),
+      );
+
+      return {
+        listings: responses.flatMap((response) => response.listings),
+        total: responses.reduce((sum, response) => sum + response.total, 0),
         page: 1,
-        perPage: LISTINGS_PER_PAGE,
-      }),
+        perPage: LISTINGS_PER_PAGE * marketplaceGameIds.length,
+      };
+    },
+    enabled: itemGame ? true : !gamesLoading,
     staleTime: 30_000,
   });
 
@@ -189,6 +241,7 @@ const Inventory = () => {
         <InventoryListingCard
           key={item.id}
           item={item}
+          gameName={gameLabel(item.gameIdentification, games)}
           onBuy={handleBuy}
         />
       ))}
