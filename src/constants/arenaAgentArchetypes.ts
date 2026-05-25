@@ -1,12 +1,12 @@
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import agentsPoster from "@/assets/ai_agents_4k_poster.png";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import assassinPortrait from "@/assets/agent-lumen.jpg";
-import berserkerPortrait from "@/assets/agent-rageborn.jpg";
-import defenderPortrait from "@/assets/agent-shadow.jpg";
-import hybridPortrait from "@/assets/agent-nexus.jpg";
-import supportPortrait from "@/assets/agent-voidwalker.jpg";
-import tacticianPortrait from "@/assets/agent-aegis.jpg";
+import tacticianPortrait from "@/assets/tactician.mp4";
+import assassinPortrait from "@/assets/assassin.gif";
+import berserkerPortrait from "@/assets/berserker.mp4";
+import defenderPortrait from "@/assets/defender.mp4";
+import hybridPortrait from "@/assets/hybrid.mp4";
+import supportPortrait from "@/assets/support.mp4";
+import agentAegis from "@/assets/tactician.mp4";
 
 export { agentsPoster };
 
@@ -88,14 +88,21 @@ const ARCHETYPE_PORTRAIT_BY_TYPE = Object.fromEntries(
   ARENA_AGENT_ARCHETYPE_CARDS.map((card) => [card.archetype, card.image])
 ) as Record<string, string>;
 
+import lbRageborn from "@/assets/agent-rageborn.jpg";
+import lbShadow from "@/assets/agent-shadow.jpg";
+import lbAegis from "@/assets/agent-aegis.jpg";
+import lbNexus from "@/assets/agent-nexus.jpg";
+import lbVoidwalker from "@/assets/agent-voidwalker.jpg";
+import lbLumen from "@/assets/agent-lumen.jpg";
+
 const PORTRAIT_POOL = ARENA_AGENT_ARCHETYPE_CARDS.map((card) => card.image);
 const LEADERBOARD_PORTRAIT_POOL = [
-  agentAegis,
-  assassinPortrait,
-  hybridPortrait,
-  berserkerPortrait,
-  defenderPortrait,
-  supportPortrait,
+  lbRageborn,   // BERSERKER
+  lbShadow,     // TACTICIAN (Solana clan)
+  lbAegis,      // DEFENDER (Base clan)
+  lbNexus,      // ASSASSIN
+  lbVoidwalker, // SUPPORT
+  lbLumen,      // HYBRID (Zerog clan)
 ];
 
 function portraitIndexFromAgentId(agentId: string): number {
