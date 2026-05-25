@@ -17,15 +17,15 @@ import {
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
-import heroVideo from "@/assets/hero-video.mp4";
+import heroVideo from "@/assets/homebkg.MOV";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import agentNexus from "@/assets/agent-nexus.jpg";
-import agentShadow from "@/assets/agent-shadow.jpg";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import agentVoid from "@/assets/agent-voidwalker.jpg";
-import agentRage from "@/assets/agent-rageborn.jpg";
-import agentLumen from "@/assets/agent-lumen.jpg";
+import agentNexus from "@/assets/hybrid.mp4";
+import agentShadow from "@/assets/defender.mp4";
+import agentAegis from "@/assets/tactician.mp4";
+import agentVoid from "@/assets/support.mp4";
+import agentRage from "@/assets/berserker.mp4";
+import agentLumen from "@/assets/assassin.gif";
 import momentFeatured from "@/assets/moment-featured.png";
 import momentRobowars from "@/assets/moment-robowars.png";
 import momentWarzone from "@/assets/moment-warzone.png";
@@ -117,16 +117,15 @@ export function HomePage() {
     <div className="space-y-6 pb-10">
       <section className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px]">
         <video
+          src={heroVideo}
           aria-hidden
           autoPlay
           loop
           muted
           playsInline
           preload="metadata"
-          className="absolute inset-0 h-full w-full object-cover object-right-bottom opacity-100 saturate-125 contrast-110"
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-100 saturate-125 contrast-110"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
         <div className="relative z-10 flex min-h-[430px] flex-col justify-start gap-8 p-5 sm:min-h-[520px] sm:p-8 lg:min-h-[560px]">
@@ -416,12 +415,24 @@ function HomeAIArenaSection() {
             className="group relative min-h-[360px] overflow-hidden rounded-lg border border-white/8 bg-black/40 sm:min-h-[420px] md:min-h-full"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(154,53,255,0.24),transparent_44%)]" />
-            <img
-              key={activeAgent.name}
-              src={activeAgent.img}
-              alt={activeAgent.name}
-              className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
-            />
+            {activeAgent.img.endsWith(".mp4") ? (
+              <video
+                key={activeAgent.name}
+                src={activeAgent.img}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
+              />
+            ) : (
+              <img
+                key={activeAgent.name}
+                src={activeAgent.img}
+                alt={activeAgent.name}
+                className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/12 to-transparent" />
             <div className="absolute bottom-3 left-3 right-3">
               <div className="font-tech text-lg font-bold uppercase text-white">{activeAgent.name}</div>

@@ -88,13 +88,24 @@ function ArchetypeCarouselCard({
         card.border
       )}
     >
-      <img
-        src={card.image}
-        alt={`${card.codename} — ${card.archetype}`}
-        className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
-        loading="lazy"
-        decoding="async"
-      />
+      {card.image.endsWith(".mp4") ? (
+        <video
+          src={card.image}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
+        />
+      ) : (
+        <img
+          src={card.image}
+          alt={`${card.codename} — ${card.archetype}`}
+          className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
+          loading="lazy"
+          decoding="async"
+        />
+      )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(268_32%_6%/0.95)] via-[hsl(268_32%_8%/0.55)] to-transparent pt-16" />
 

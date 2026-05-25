@@ -133,13 +133,24 @@ function ArchetypeCard({
       )}
     >
       <div className="relative flex flex-1 items-center justify-center p-2 pt-3 sm:p-3">
-        <img
-          src={card.image}
-          alt={`${card.codename} — ${card.archetype} agent`}
-          className="h-full max-h-[240px] w-full object-contain drop-shadow-[0_16px_40px_hsl(270_80%_10%/0.5)] transition-transform duration-300 group-hover:scale-[1.02] sm:max-h-[260px]"
-          loading="lazy"
-          decoding="async"
-        />
+        {card.image.endsWith(".mp4") ? (
+          <video
+            src={card.image}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-full max-h-[240px] w-full object-contain drop-shadow-[0_16px_40px_hsl(270_80%_10%/0.5)] transition-transform duration-300 group-hover:scale-[1.02] sm:max-h-[260px]"
+          />
+        ) : (
+          <img
+            src={card.image}
+            alt={`${card.codename} — ${card.archetype} agent`}
+            className="h-full max-h-[240px] w-full object-contain drop-shadow-[0_16px_40px_hsl(270_80%_10%/0.5)] transition-transform duration-300 group-hover:scale-[1.02] sm:max-h-[260px]"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
       </div>
 
       <div className="relative border-t border-white/[0.06] bg-background/40 p-3 sm:p-4">
