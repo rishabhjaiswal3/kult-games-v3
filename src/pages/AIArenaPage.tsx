@@ -14,6 +14,11 @@ import {
   ArrowRight,
   Sparkles,
   Loader2,
+  BrainCircuit,
+  BriefcaseBusiness,
+  Gamepad2,
+  Trophy,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -39,12 +44,13 @@ import agentLumen from "@/assets/agent-lumen.jpg";
 import iconTrain from "@/assets/icon-train.png";
 import iconBattle from "@/assets/icon-battle.png";
 import iconEarn from "@/assets/icon-earn.png";
+import sceneVideo from "@/assets/Scene 1.mp4";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 const agents = [
   {
     rank: "01",
-    name: "NEXUS-01",
-    chain: "0G",
+    name: "HYBRID",
+    chain: "Zerog",
     tier: "Legendary",
     lvl: 12,
     power: "14,850",
@@ -53,8 +59,8 @@ const agents = [
   },
   {
     rank: "02",
-    name: "SHADOW-9",
-    chain: "Helios",
+    name: "DEFENDER",
+    chain: "Base",
     tier: "Epic",
     lvl: 11,
     power: "13,420",
@@ -63,8 +69,8 @@ const agents = [
   },
   {
     rank: "03",
-    name: "AEGIS-07",
-    chain: "Aether",
+    name: "TACTICIAN",
+    chain: "Solana",
     tier: "Epic",
     lvl: 12,
     power: "12,980",
@@ -73,8 +79,8 @@ const agents = [
   },
   {
     rank: "04",
-    name: "VOIDWALKER",
-    chain: "0G",
+    name: "SUPPORT",
+    chain: "Zerog",
     tier: "Epic",
     lvl: 11,
     power: "12,150",
@@ -83,8 +89,8 @@ const agents = [
   },
   {
     rank: "05",
-    name: "RAGEBORN",
-    chain: "Helios",
+    name: "BERSERKER",
+    chain: "Base",
     tier: "Legendary",
     lvl: 12,
     power: "11,870",
@@ -93,13 +99,13 @@ const agents = [
   },
   {
     rank: "06",
-    name: "LUMEN-22",
-    chain: "Aether",
+    name: "ASSASSIN",
+    chain: "Solana",
     tier: "Epic",
     lvl: 11,
-    power: "11,430",
+    power: "10,940",
     img: agentLumen,
-    color: "var(--cyan)",
+    color: "var(--magenta)",
   },
 ];
 
@@ -589,9 +595,9 @@ function FeaturesBlock() {
             AI Arena is the ultimate battleground for AI Agents across Web3. Powered by{" "}
             <ZeroGLogo className="mx-1 h-4 w-auto align-[-0.2em]" />, owned by you.
           </p>
-          <button className="btn-primary mt-6 mx-auto lg:mx-0 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] flex items-center gap-2">
+          <Link to="/" className="btn-primary mt-6 mx-auto lg:mx-0 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] inline-flex items-center gap-2 w-max">
             LEARN MORE <ArrowUpRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
         <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
           {features.map((f) => (
@@ -877,7 +883,7 @@ function LiveBattles() {
 }
 
 function PartnersBlock() {
-  const partners = ["0G", "Helios", "Aether", "Nexus Wallet", "Spectre"];
+  const partners = ["0G", "Base", "Solana"];
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
       <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 relative overflow-hidden">
@@ -915,11 +921,11 @@ function PartnersBlock() {
 
 function ArenaLandingFooter() {
   const platformLinks = [
-    { label: "Games", href: "/" },
-    { label: "Inventory", href: "/inventory" },
-    { label: "AI Arena", href: "/ai-arena" },
-    { label: "Moments", href: "/moments" },
-    { label: "Leaderboard", href: "/leaderboard" },
+    { label: "Games", href: "/", icon: Gamepad2 },
+    { label: "Inventory", href: "/inventory", icon: BriefcaseBusiness },
+    { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit },
+    { label: "Moments", href: "/moments", icon: Video },
+    { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
   ];
 
   const socials = [
@@ -965,58 +971,73 @@ function ArenaLandingFooter() {
 
       <div className="container relative mx-auto px-4 sm:px-6">
         <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
-          <div className="relative overflow-hidden rounded-[1.25rem] border border-[hsl(278_100%_70%/0.18)] bg-white/[0.035] p-5 shadow-[0_24px_80px_hsl(278_100%_55%/0.12)] backdrop-blur">
-            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(278_100%_70%/0.12)] via-transparent to-[hsl(190_100%_60%/0.08)]" />
+          
+          {/* Col 1 */}
+          <div className="group/brand relative w-full max-w-[390px] overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_6%_0%,rgba(130,91,255,0.28),transparent_32%)] transition duration-300 group-hover/brand:opacity-80" />
             <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-              <div className="flex h-16 shrink-0 items-center gap-5 rounded-2xl border border-[hsl(278_100%_70%/0.24)] bg-black/30 px-5 shadow-[0_0_35px_hsl(278_100%_60%/0.22)]">
-                <span className="font-display text-xl text-gradient glow-text whitespace-nowrap">AI ARENA</span>
+              <div className="flex h-[72px] shrink-0 items-center justify-center gap-5 rounded-lg border border-[hsl(278_100%_70%/0.24)] bg-black/48 px-5 shadow-[0_0_26px_rgba(112,73,255,0.16)] transition duration-300 group-hover/brand:bg-black/65 group-hover/brand:shadow-[0_0_34px_rgba(112,73,255,0.28)]">
+                <span className="font-display text-xl text-gradient glow-text whitespace-nowrap transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]">AI ARENA</span>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-mono uppercase tracking-[0.36em] text-[hsl(278_100%_82%)]">
+                <p className="font-tech text-[12px] font-black uppercase leading-[1.5] tracking-[0.22em] text-[#dce5ff] transition duration-300 group-hover/brand:text-white">
                   Presented by Kult Games
                 </p>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/72">
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/56 transition duration-300 group-hover/brand:text-white/78">
                   AI Arena is a next-gen AI gaming ecosystem where intelligent agents battle, evolve and dominate.
                 </p>
               </div>
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-2 lg:justify-center" aria-label="Footer navigation">
-            {platformLinks.map((link, i) => (
-              <span key={link.href} className="flex items-center">
-                {link.href.startsWith("http") ? (
+          {/* Col 2 */}
+          <nav
+            className="group/explore flex flex-col justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 lg:min-h-[168px] lg:border-x lg:px-6"
+            aria-label="Footer navigation"
+          >
+            <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/explore:text-[#d8c7ff] group-hover/explore:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">EXPLORE</p>
+            <div className="flex flex-wrap gap-3">
+              {platformLinks.map((link) => {
+                const Icon = link.icon;
+                return link.href.startsWith("http") ? (
                   <a
+                    key={link.href}
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
+                    className="group inline-flex h-11 items-center justify-start gap-2.5 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 text-[13px] font-medium text-white/86 shadow-[inset_0_0_0_1px_rgba(130,98,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:text-white hover:shadow-[0_0_20px_rgba(112,73,255,0.2)]"
                   >
-                    {link.label}
+                    <Icon className="h-4 w-4 shrink-0 text-[#8b6dff] transition group-hover:scale-110 group-hover:text-[#cbbcff]" />
+                    <span className="whitespace-nowrap transition group-hover:text-white">{link.label}</span>
                   </a>
                 ) : (
                   <Link
+                    key={link.href}
                     to={link.href}
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
+                    className="group inline-flex h-11 items-center justify-start gap-2.5 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 text-[13px] font-medium text-white/86 shadow-[inset_0_0_0_1px_rgba(130,98,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:text-white hover:shadow-[0_0_20px_rgba(112,73,255,0.2)]"
                   >
-                    {link.label}
+                    <Icon className="h-4 w-4 shrink-0 text-[#8b6dff] transition group-hover:scale-110 group-hover:text-[#cbbcff]" />
+                    <span className="whitespace-nowrap transition group-hover:text-white">{link.label}</span>
                   </Link>
-                )}
-              </span>
-            ))}
+                );
+              })}
+            </div>
           </nav>
 
-          <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-white/40">Follow</span>
-              <div className="flex items-center gap-2">
+          {/* Col 3 */}
+          <div className="group/social flex flex-col justify-center gap-7 lg:min-h-[168px] lg:items-start">
+            <div>
+              <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/social:text-[#d8c7ff] group-hover/social:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">
+                FOLLOW
+              </p>
+              <div className="flex flex-wrap gap-3">
                 {socials.map((s) => (
                   <a
                     key={s.key}
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] text-white/70 transition-all hover:-translate-y-1 hover:border-[hsl(278_100%_78%/0.58)] hover:bg-[hsl(278_100%_70%/0.18)] hover:text-white hover:shadow-[0_0_34px_hsl(278_100%_62%/0.35)]"
+                    className="group flex h-12 w-12 items-center justify-center rounded-full border border-[#6645ff]/48 bg-black/20 text-[#a790ff] transition hover:-translate-y-0.5 hover:border-[#9d86ff] hover:bg-[#140f35] hover:text-white hover:shadow-[0_0_24px_rgba(112,73,255,0.32)]"
                     aria-label={s.label}
                     title={s.label}
                   >
@@ -1025,20 +1046,27 @@ function ArenaLandingFooter() {
                 ))}
               </div>
             </div>
-            <div className="flex w-fit items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-white/38">Powered by</span>
-              <img src={zeroGLogo} alt="0G" className="h-5 w-auto opacity-90" />
+            
+            <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px]">
+              <video
+                src={sceneVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
+              />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 sm:flex-row">
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/42 font-mono">
-            <span>© 2026 AI Arena</span>
-            <span className="text-white/20">·</span>
-            <span>Powered by 0G</span>
+        <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px] text-white/42 font-mono">
+            <span className="transition group-hover/legal:text-white/68">© 2026 AI Arena</span>
+            <span className="text-white/20 transition group-hover/legal:text-[#a790ff]/60">·</span>
+            <span className="transition group-hover/legal:text-white/68">Powered by 0G</span>
           </div>
-          <span className="text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
+          <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)] transition group-hover/legal:text-[#d8c7ff]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED
           </span>
         </div>
