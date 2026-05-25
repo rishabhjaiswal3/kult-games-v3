@@ -87,11 +87,12 @@ const Dashboard = () => {
             isLoading={myAgentsQ.isLoading}
             onCreateAgent={openCreateAgent}
           />
+          <TraitsPanel agent={selectedAgent} />
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.07fr)_minmax(0,0.93fr)]">
             <RecentActivity />
             <Quests />
           </div>
-          <BattleStrip />
+          {/* <BattleStrip /> */}
           {profile?.gameScoresList?.length ? (
             <DashboardGameScoresPanel rows={profile.gameScoresList} />
           ) : null}
@@ -100,7 +101,6 @@ const Dashboard = () => {
         <aside className="space-y-4">
           {profile ? <DashboardAccountPanel profile={profile} /> : null}
           <BalancePanel agent={selectedAgent} />
-          <TraitsPanel agent={selectedAgent} />
           <AutonomousPanel />
           <QuickActions />
         </aside>
