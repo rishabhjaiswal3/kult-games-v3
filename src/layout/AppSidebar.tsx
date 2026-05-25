@@ -3,26 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import dashboardLiveCard from "@/assets/dashboard-live-card.png";
-import { APP_NAV_ITEMS, type NavItem } from "@/layout/navConfig";
-import { useAuth } from "@/contexts/AuthContext";
+import dashboardLiveCard from "@/assets/battle-4.gif";
+import { APP_NAV_ITEMS } from "@/layout/navConfig";
 import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
   activeLabel?: string;
   isCollapsed?: boolean;
-  isHidden?: boolean;
   onToggleCollapse?: () => void;
 };
 
 /* ─── Navigation links ─── */
 function SidebarNav({
-  items,
   activeLabel,
   isCollapsed,
   onNavigate,
 }: {
-  items: NavItem[];
   activeLabel: string;
   isCollapsed?: boolean;
   onNavigate?: () => void;
@@ -31,7 +27,7 @@ function SidebarNav({
 
   return (
     <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1">
-      {items.map((item, idx) => {
+      {APP_NAV_ITEMS.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
           (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -42,17 +38,17 @@ function SidebarNav({
             onClick={onNavigate}
             title={isCollapsed ? item.label : undefined}
             className={cn(
-              "sidebar-nav-item group relative flex min-h-[42px] py-1.5 items-center rounded-lg text-[11px] font-semibold uppercase tracking-[0.06em] transition-all duration-200 font-tech",
+              "sidebar-nav-item group relative flex min-h-[42px] py-1.5 items-center rounded-lg text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-300 font-tech",
               isCollapsed ? "justify-center px-0" : "gap-3.5 px-4",
               isActive
-                ? "sidebar-nav-active bg-gradient-to-r from-[#8f27ff]/20 via-[#8f27ff]/12 to-transparent text-white"
-                : "text-white/55 hover:text-white/90 hover:bg-white/[0.04]",
+                ? "sidebar-nav-active bg-gradient-to-r from-[#8f27ff]/30 via-[#8f27ff]/10 to-transparent text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] border border-[#8f27ff]/20"
+                : "text-white/55 hover:text-white hover:bg-white/5 hover:translate-x-1",
             )}
             style={{ animationDelay: `${idx * 30}ms` }}
           >
             {/* Active indicator bar */}
             {isActive && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full bg-gradient-to-b from-[#c084fc] via-[#9a35ff] to-[#6d28d9] shadow-[0_0_10px_rgba(154,53,255,0.7)]" />
+              <span className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full bg-gradient-to-b from-[#c084fc] via-[#9a35ff] to-[#6d28d9] shadow-[0_0_15px_rgba(154,53,255,0.9)]" />
             )}
 
             {/* Icon container */}
@@ -91,29 +87,7 @@ function SidebarNav({
         );
       })}
 
-      {/* CTA Button */}
-      <div className="pt-3 pb-1">
-        <Link
-          to="/games"
-          onClick={onNavigate}
-          title={isCollapsed ? "Explore Games" : undefined}
-          className={cn(
-            "sidebar-cta group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl font-tech tracking-[0.14em] font-bold text-white transition-all duration-300",
-            isCollapsed ? "h-10 w-10 mx-auto text-[0px]" : "h-11 text-[10px]"
-          )}
-        >
-          {/* Gradient background */}
-          <span className="absolute inset-0 bg-gradient-to-r from-[#7a22e8] via-[#9a35ff] to-[#b854ff] opacity-90 transition-opacity group-hover:opacity-100" />
-          {/* Shimmer sweep */}
-          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          {/* Glow border */}
-          <span className="absolute inset-0 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_20px_rgba(154,53,255,0.4)]" />
-          <span className="relative z-10 flex items-center gap-2">
-            {!isCollapsed && "EXPLORE GAMES"}
-            <ArrowUpRight className={cn("transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5", isCollapsed ? "h-5 w-5" : "h-3.5 w-3.5")} />
-          </span>
-        </Link>
-      </div>
+
     </nav>
   );
 }
@@ -160,29 +134,27 @@ function SidebarPromo({ isCollapsed }: { isCollapsed?: boolean }) {
 
   return (
     <div className="shrink-0 p-3">
-      <div className="sidebar-promo group relative overflow-hidden rounded-xl border border-white/[0.08]">
+      <div className="sidebar-promo group relative overflow-hidden rounded-xl border border-[#8b29ff]/20 transition-all duration-500 hover:border-[#8b29ff]/60 hover:shadow-[0_0_25px_rgba(139,41,255,0.25)]">
         {/* Background image */}
         <img
           src={dashboardLiveCard}
           alt="Kult Games live"
-          className="h-[clamp(130px,16vh,180px)] w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className="h-[clamp(130px,16vh,180px)] w-full object-cover object-top transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
         />
         {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050913] via-[#050913]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#9a35ff]/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050913] via-[#050913]/40 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#9a35ff]/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 mix-blend-overlay" />
 
         {/* Text content */}
-        <div className="absolute bottom-3 left-3 right-3">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#9b32ff]/70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#b95cff]" />
+        <div className="absolute bottom-3 left-4 right-4 flex flex-col gap-1 z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          <span className="font-tech text-[10px] uppercase tracking-[0.1em] text-white/70 font-medium">AI ARENA</span>
+          <div className="flex items-center gap-2">
+            <span className="font-tech text-xl font-bold tracking-wide text-white">V1.0 IS LIVE</span>
+            <span className="relative flex h-2 w-2 mb-0.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c85cff]/80" />
+              <span className="relative inline-flex h-full w-full rounded-full bg-[#d074ff] shadow-[0_0_8px_#c85cff]" />
             </span>
-            {/* <span className="font-tech text-[8px] uppercase tracking-[0.2em] text-[#c89dff]">Live on 0G</span> */}
           </div>
-          {/* <p className="text-[11px] font-semibold leading-snug text-white/85">
-            Play. Compete. Own the moment.
-          </p> */}
         </div>
 
         {/* Top edge glow on hover */}
@@ -193,11 +165,8 @@ function SidebarPromo({ isCollapsed }: { isCollapsed?: boolean }) {
 }
 
 /* ─── Main Sidebar Component ─── */
-export function AppSidebar({ activeLabel = "Home", isCollapsed, isHidden, onToggleCollapse }: AppSidebarProps) {
+export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse }: AppSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
-
-  const navItems = APP_NAV_ITEMS.filter((item) => isAuthenticated || !item.requiresAuth);
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
@@ -213,43 +182,24 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, isHidden, onTogg
   const sidebarContent = (onNavigate?: () => void) => (
     <>
       <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
-      <SidebarNav
-        items={navItems}
-        activeLabel={activeLabel}
-        isCollapsed={isCollapsed}
-        onNavigate={onNavigate}
-      />
+      <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
       <SidebarPromo isCollapsed={isCollapsed} />
     </>
   );
 
   const desktopAside = (
-    <aside
-      className={cn(
-        "sidebar-shell hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col overflow-hidden transition-[width,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        isHidden
-          ? "w-0 -translate-x-3 opacity-0 pointer-events-none"
-          : isCollapsed
-            ? "w-[72px] translate-x-0 opacity-100"
-            : "w-[225px] translate-x-0 opacity-100"
-      )}
-    >
+    <aside className={cn("sidebar-shell hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col overflow-hidden transition-[width] duration-300", isCollapsed ? "w-[72px]" : "w-[225px]")}>
       {/* Background layers */}
-      <div className="absolute inset-0 bg-[#040810]/[0.97]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(154,53,255,0.08),transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(139,37,255,0.05),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[#03070d]/60 backdrop-blur-2xl border-r border-white/5" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(154,53,255,0.15),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(139,37,255,0.1),transparent_50%)]" />
 
       {/* Right border glow */}
       <div className="absolute right-0 inset-y-0 w-px bg-gradient-to-b from-[#9a35ff]/20 via-white/[0.08] to-[#9a35ff]/10" />
       <div className="pointer-events-none absolute right-0 top-0 h-32 w-px shadow-[0_0_12px_rgba(154,53,255,0.3)]" />
 
       {/* Content */}
-      <div
-        className={cn(
-          "relative z-10 flex h-full flex-col transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          isHidden ? "-translate-x-2 opacity-0" : "translate-x-0 opacity-100"
-        )}
-      >
+      <div className="relative z-10 flex h-full flex-col">
         {sidebarContent()}
       </div>
     </aside>

@@ -1,13 +1,14 @@
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
+import { BrainCircuit, BriefcaseBusiness, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const platformLinks = [
-  { label: "Games", href: "/" },
-  { label: "Inventory", href: "/inventory" },
-  { label: "AI Arena", href: "/ai-arena" },
-  { label: "Moments", href: "/moments" },
-  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Games", href: "/", icon: Gamepad2 },
+  { label: "Inventory", href: "/inventory", icon: BriefcaseBusiness },
+  { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit },
+  { label: "Moments", href: "/moments", icon: Video },
+  { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
 ];
 
 const socials = [
@@ -54,60 +55,60 @@ const Footer = () => {
 
       <div className="container relative mx-auto px-4 sm:px-6">
         <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
-          <div className="relative overflow-hidden rounded-[1.25rem] border border-[hsl(278_100%_70%/0.18)] bg-white/[0.035] p-5 shadow-[0_24px_80px_hsl(278_100%_55%/0.12)] backdrop-blur">
-            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(278_100%_70%/0.12)] via-transparent to-[hsl(190_100%_60%/0.08)]" />
-            <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-              <div className="flex h-16 shrink-0 items-center gap-5 rounded-2xl border border-[hsl(278_100%_70%/0.24)] bg-black/30 px-5 shadow-[0_0_35px_hsl(278_100%_60%/0.22)]">
-                <img src={kultLogo} alt="Kult Games" className="h-8 w-auto max-w-[92px] object-contain" />
-                <span className="h-8 w-px bg-white/16" aria-hidden />
-                <img src={zeroGLogo} alt="0G" className="h-7 w-auto max-w-[64px] object-contain" />
+          <div className="group/brand relative w-full max-w-[390px] overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_6%_0%,rgba(130,91,255,0.28),transparent_32%)] transition duration-300 group-hover/brand:opacity-80" />
+            <div className="relative flex min-w-0 flex-col items-start gap-5 text-left">
+              <div className="flex h-[72px] w-full max-w-[300px] shrink-0 items-center justify-center gap-5 rounded-lg bg-black/48 px-4 shadow-[0_0_26px_rgba(112,73,255,0.16)] transition duration-300 group-hover/brand:bg-black/65 group-hover/brand:shadow-[0_0_34px_rgba(112,73,255,0.28)]">
+                <img src={kultLogo} alt="Kult Games" className="h-9 w-auto max-w-[132px] object-contain transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]" />
+                <span className="h-10 w-px bg-white/16 transition duration-300 group-hover/brand:bg-[#a790ff]/55" aria-hidden />
+                <img src={zeroGLogo} alt="0G" className="h-9 w-auto max-w-[78px] object-contain transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]" />
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-mono uppercase tracking-[0.36em] text-[hsl(278_100%_82%)]">
-                  Kult Games
-                </p>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/72">
-                  The next generation of AI-powered, on-chain gaming.
+              <div className="min-w-0 max-w-[320px]">
+                <h2 className="font-tech text-[15px] font-black uppercase leading-[1.5] tracking-[0.22em] text-[#dce5ff] transition duration-300 group-hover/brand:text-white">
+                  THE OPERATING LAYER FOR <span className="text-[#a790ff] transition duration-300 group-hover/brand:text-[#cbbcff]">INTELLIGENT GAMING.</span>
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-white/56 transition duration-300 group-hover/brand:text-white/78">
+                  Autonomous agents. Persistent identities. Connected worlds.
                 </p>
               </div>
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-2 lg:justify-center" aria-label="Footer navigation">
-            {platformLinks.map((link, i) => (
-              <span key={link.href} className="flex items-center">
-                {link.href.startsWith("http") ? (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
+          <nav
+            className="group/explore flex flex-col justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 lg:min-h-[168px] lg:border-x lg:px-6"
+            aria-label="Footer navigation"
+          >
+            <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/explore:text-[#d8c7ff] group-hover/explore:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">EXPLORE</p>
+            <div className="flex flex-wrap gap-3">
+              {platformLinks.map((link) => {
+                const Icon = link.icon;
+                return (
                   <Link
+                    key={link.href}
                     to={link.href}
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
+                    className="group inline-flex h-11 items-center justify-start gap-2.5 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 text-[13px] font-medium text-white/86 shadow-[inset_0_0_0_1px_rgba(130,98,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:text-white hover:shadow-[0_0_20px_rgba(112,73,255,0.2)]"
                   >
-                    {link.label}
+                    <Icon className="h-4 w-4 shrink-0 text-[#8b6dff] transition group-hover:scale-110 group-hover:text-[#cbbcff]" />
+                    <span className="whitespace-nowrap transition group-hover:text-white">{link.label}</span>
                   </Link>
-                )}
-              </span>
-            ))}
+                );
+              })}
+            </div>
           </nav>
 
-          <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-white/40">Follow</span>
-              <div className="flex items-center gap-2">
+          <div className="group/social flex flex-col justify-center gap-7 lg:min-h-[168px] lg:items-start">
+            <div>
+              <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/social:text-[#d8c7ff] group-hover/social:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">
+                FOLLOW KULT GAMES
+              </p>
+              <div className="flex flex-wrap gap-3">
                 {socials.map((s) => (
                   <a
                     key={s.key}
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] text-white/70 transition-all hover:-translate-y-1 hover:border-[hsl(278_100%_78%/0.58)] hover:bg-[hsl(278_100%_70%/0.18)] hover:text-white hover:shadow-[0_0_34px_hsl(278_100%_62%/0.35)]"
+                    className="group flex h-12 w-12 items-center justify-center rounded-full border border-[#6645ff]/48 bg-black/20 text-[#a790ff] transition hover:-translate-y-0.5 hover:border-[#9d86ff] hover:bg-[#140f35] hover:text-white hover:shadow-[0_0_24px_rgba(112,73,255,0.32)]"
                     aria-label={s.label}
                     title={s.label}
                   >
@@ -116,20 +117,20 @@ const Footer = () => {
                 ))}
               </div>
             </div>
-            <div className="flex w-fit items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-white/38">Powered by</span>
-              <img src={zeroGLogo} alt="0G" className="h-5 w-auto opacity-90" />
+            <div className="group/powered flex h-12 w-full max-w-[250px] items-center gap-4 rounded-full border border-white/10 bg-black/24 px-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:shadow-[0_0_22px_rgba(112,73,255,0.24)]">
+              <span className="font-tech text-[10px] font-black uppercase tracking-[0.36em] text-white/72 transition group-hover/powered:text-white">POWERED BY</span>
+              <img src={zeroGLogo} alt="0G" className="h-7 w-auto object-contain transition group-hover/powered:scale-105 group-hover/powered:drop-shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 sm:flex-row">
+        <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/42 font-mono">
-            <span>© 2026 Kult Games</span>
-            <span className="text-white/20">·</span>
-            <span>Powered by 0G</span>
+            <span className="transition group-hover/legal:text-white/68">© 2026 Kult Games</span>
+            <span className="text-white/20 transition group-hover/legal:text-[#a790ff]/60">·</span>
+            <span className="transition group-hover/legal:text-white/68">Powered by 0G</span>
           </div>
-          <span className="text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
+          <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)] transition group-hover/legal:text-[#d8c7ff]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED
           </span>
         </div>

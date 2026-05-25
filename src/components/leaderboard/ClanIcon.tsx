@@ -45,12 +45,12 @@ export function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; cl
 
 export function clanFromArchetype(archetype: string) {
   const map: Record<string, { name: string; type: string }> = {
-    BERSERKER: { name: "Rebel Unit", type: "rebel" },
-    TACTICIAN: { name: "Solana Clan", type: "solana" },
-    DEFENDER: { name: "Base Clan", type: "base" },
-    ASSASSIN: { name: "Shadow Legion", type: "shadow" },
+    BERSERKER: { name: "Rebel", type: "rebel" },
+    TACTICIAN: { name: "Solana", type: "solana" },
+    DEFENDER: { name: "Base", type: "base" },
+    ASSASSIN: { name: "Shadow", type: "shadow" },
     SUPPORT: { name: "Kult Clan", type: "kult" },
-    HYBRID: { name: "ZeroG Clan", type: "zerog" },
+    HYBRID: { name: "Zerog", type: "zerog" },
   };
   return map[archetype] ?? { name: "Kult Clan", type: "kult" };
 }

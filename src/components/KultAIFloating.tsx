@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import KultAIMessageContent from "@/components/KultAIMessageContent";
 import { KultAiBotAvatar } from "@/components/KultAiBotAvatar";
 import { useKultAIChat } from "@/hooks/useKultAIChat";
+import chatbotBackgroundVideo from "@/assets/SC_1-3.mp4";
 
 const quickPrompts = [
   { icon: Sparkles, text: "Find my first game" },
@@ -40,7 +41,7 @@ const KultAIFloating = () => {
             whileTap={{ scale: 0.96 }}
             onClick={() => setOpen(true)}
             aria-label="Open KULT AI chat"
-            className="group fixed bottom-6 right-6 z-50 h-16 w-16 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group fixed bottom-28 right-5 z-50 h-16 w-16 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:bottom-6 sm:right-6"
           >
             {/* Soft breathing halo */}
             <motion.div
@@ -82,8 +83,17 @@ const KultAIFloating = () => {
               boxShadow: "0 25px 60px -12px hsl(270 82% 25% / 0.38), 0 0 0 1px hsl(278 100% 75% / 0.12), 0 0 40px hsl(270 82% 58% / 0.12), inset 0 1px 0 0 hsl(278 100% 82% / 0.08)",
             }}
           >
+            <video
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              src={chatbotBackgroundVideo}
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-hidden="true"
+            />
             {/* Header */}
-            <div className="relative flex items-center justify-between px-5 py-4 border-b border-border/40 flex-shrink-0 overflow-hidden">
+            <div className="relative z-10 flex items-center justify-between px-5 py-4 border-b border-border/40 flex-shrink-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-[hsl(278_100%_70%/0.12)] via-[hsl(270_82%_52%/0.08)] to-transparent" />
               <div className="flex items-center gap-3 relative z-10">
                 <KultAiBotAvatar className="h-10 w-10 shrink-0" alt="KULT AI" />
@@ -101,7 +111,7 @@ const KultAIFloating = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
+            <div className="relative z-10 flex-1 min-h-0 overflow-y-auto scrollbar-none">
               <div className="p-5 space-y-4">
                 {messages.length === 0 && (
                   <div className="text-center py-8">
@@ -183,7 +193,7 @@ const KultAIFloating = () => {
 
             {/* 0G Compute session proof */}
             {computeSessionId && (
-              <div className="px-4 py-2 border-t border-border/20 flex items-center gap-2 flex-shrink-0">
+              <div className="relative z-10 px-4 py-2 border-t border-border/20 flex items-center gap-2 flex-shrink-0">
                 <Shield className="w-3 h-3 text-sky-400 shrink-0" />
                 <span className="text-[9px] font-mono text-muted-foreground/60 truncate">
                   0G session: {computeSessionId}
@@ -192,7 +202,7 @@ const KultAIFloating = () => {
             )}
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border/40 flex-shrink-0">
+            <form onSubmit={handleSubmit} className="relative z-10 p-4 border-t border-border/40 flex-shrink-0">
               {error && (
                 <p className="mb-3 text-xs text-destructive/80">
                   {error}

@@ -292,16 +292,16 @@ const AutonomousPage = () => {
                         <tr className="hover:bg-white/[0.01] transition">
                           <td className="px-5 py-4 flex items-center gap-3">
                             <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentNexus} alt="NEXUS-01" className="w-full h-full object-cover" />
+                              <img src={agentNexus} alt="HYBRID" className="w-full h-full object-cover" />
                             </div>
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">NEXUS-01</span>
+                                <span className="font-bold text-white text-xs leading-none">HYBRID</span>
                                 <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
                               </div>
                               <div className="flex items-center gap-1 text-[9px] text-white/40">
                                 <ClanIcon type="zerog" className="h-3 w-3" />
-                                <span>ZeroG Clan &bull; Assassin</span>
+                                <span>Zerog &bull; Assassin</span>
                               </div>
                             </div>
                           </td>
@@ -342,16 +342,16 @@ const AutonomousPage = () => {
                         <tr className="hover:bg-white/[0.01] transition">
                           <td className="px-5 py-4 flex items-center gap-3">
                             <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentAegis} alt="AEGIS-07" className="w-full h-full object-cover" />
+                              <img src={agentAegis} alt="TACTICIAN" className="w-full h-full object-cover" />
                             </div>
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">AEGIS-07</span>
+                                <span className="font-bold text-white text-xs leading-none">TACTICIAN</span>
                                 <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
                               </div>
                               <div className="flex items-center gap-1 text-[9px] text-white/40">
                                 <ClanIcon type="base" className="h-3 w-3" />
-                                <span>Base Clan &bull; Guardian</span>
+                                <span>Base &bull; Defender</span>
                               </div>
                             </div>
                           </td>
@@ -392,16 +392,16 @@ const AutonomousPage = () => {
                         <tr className="hover:bg-white/[0.01] transition">
                           <td className="px-5 py-4 flex items-center gap-3">
                             <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentShadow} alt="SHADOW-9" className="w-full h-full object-cover" />
+                              <img src={agentShadow} alt="DEFENDER" className="w-full h-full object-cover" />
                             </div>
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">SHADOW-9</span>
+                                <span className="font-bold text-white text-xs leading-none">DEFENDER</span>
                                 <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
                               </div>
                               <div className="flex items-center gap-1 text-[9px] text-white/40">
                                 <ClanIcon type="solana" className="h-3 w-3" />
-                                <span>Solana Clan &bull; Tactician</span>
+                                <span>Solana &bull; Tactician</span>
                               </div>
                             </div>
                           </td>
@@ -762,7 +762,7 @@ const AutonomousPage = () => {
                       <div className="flex gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
                         <span className="text-white/60">
-                          <strong className="text-white font-bold">NEXUS-01</strong> completed Resource Raid
+                          <strong className="text-white font-bold">HYBRID</strong> completed Resource Raid
                         </span>
                       </div>
                       <div className="text-right shrink-0">
@@ -775,7 +775,7 @@ const AutonomousPage = () => {
                       <div className="flex gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
                         <span className="text-white/60">
-                          <strong className="text-white font-bold">AEGIS-07</strong> completed Adaptability Drill
+                          <strong className="text-white font-bold">TACTICIAN</strong> completed Adaptability Drill
                         </span>
                       </div>
                       <div className="text-right shrink-0">
@@ -788,7 +788,7 @@ const AutonomousPage = () => {
                       <div className="flex gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
                         <span className="text-white/60">
-                          <strong className="text-white font-bold">SHADOW-9</strong> won Arena Battle
+                          <strong className="text-white font-bold">DEFENDER</strong> won Arena Battle
                         </span>
                       </div>
                       <div className="text-right shrink-0">

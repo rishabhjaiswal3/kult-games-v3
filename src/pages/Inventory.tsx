@@ -198,14 +198,15 @@ const Inventory = () => {
   return (
     <ArenaPageLayout contentClassName="max-w-none">
       <div className="inventory-hero sticky top-0 z-40 -mx-4 border-b border-white/8 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <div className="relative overflow-hidden rounded-lg border border-white/6 bg-[#04080f]/95 p-3 sm:p-3.5">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(154,53,255,0.12),transparent_55%)]" />
-          <div className="relative flex flex-col gap-2.5 lg:flex-row lg:items-stretch lg:gap-3">
-            <div className="min-w-0 shrink-0 lg:max-w-[42%] xl:max-w-[38%]">
-              <h1 className="font-tech text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
+        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#060b16]/60 p-4 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-5">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(154,53,255,0.2),transparent_65%)]" />
+          <div className="pointer-events-none absolute -left-10 -top-10 h-64 w-64 rounded-full bg-[#9a35ff]/20 blur-[100px]" />
+          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+            <div className="min-w-0 shrink-0 lg:max-w-[45%] xl:max-w-[40%]">
+              <h1 className="font-tech text-3xl font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-[#f0e6ff] to-[#d6acff] drop-shadow-[0_0_15px_rgba(214,172,255,0.4)] sm:text-4xl">
                 Inventory
               </h1>
-              <p className="mt-1 text-[11px] leading-relaxed text-white/55 sm:text-xs">
+              <p className="mt-2 text-xs leading-relaxed text-white/60 sm:text-sm">
                 Browse on-chain assets, preview listings, and purchase for your agents and games.
               </p>
             </div>
