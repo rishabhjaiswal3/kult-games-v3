@@ -2,6 +2,7 @@ import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
 import { BrainCircuit, BriefcaseBusiness, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
+import sceneVideo from "@/assets/Scene 1.mp4";
 
 const platformLinks = [
   { label: "Games", href: "/", icon: Gamepad2 },
@@ -117,18 +118,28 @@ const Footer = () => {
                 ))}
               </div>
             </div>
-            <div className="group/powered flex h-12 w-full max-w-[250px] items-center gap-4 rounded-full border border-white/10 bg-black/24 px-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:shadow-[0_0_22px_rgba(112,73,255,0.24)]">
-              <span className="font-tech text-[10px] font-black uppercase tracking-[0.36em] text-white/72 transition group-hover/powered:text-white">POWERED BY</span>
-              <img src={zeroGLogo} alt="0G" className="h-7 w-auto object-contain transition group-hover/powered:scale-105 group-hover/powered:drop-shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
+
+
+            <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px]">
+              <video
+                src={sceneVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
+              />
             </div>
           </div>
         </div>
 
         <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">
-          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/42 font-mono">
-            <span className="transition group-hover/legal:text-white/68">© 2026 Kult Games</span>
+          <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px] text-white/42 font-mono">
+            <span className="transition group-hover/legal:text-white/68">© 2026</span>
+            <img src={kultLogo} alt="Kult Games" className="h-3.5 w-auto object-contain opacity-60 transition group-hover/legal:opacity-100" />
             <span className="text-white/20 transition group-hover/legal:text-[#a790ff]/60">·</span>
-            <span className="transition group-hover/legal:text-white/68">Powered by 0G</span>
+            <span className="transition group-hover/legal:text-white/68">Powered by</span>
+            <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain opacity-60 transition group-hover/legal:opacity-100" />
           </div>
           <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)] transition group-hover/legal:text-[#d8c7ff]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED

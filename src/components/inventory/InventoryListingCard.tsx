@@ -1,11 +1,13 @@
 import { type MouseEvent } from "react";
 import { ShoppingCart } from "lucide-react";
 import { InventoryAssetImage } from "@/components/inventory/InventoryAssetImage";
+import inventoryPanelVideo from "@/assets/SC_1-3.mp4";
 import { cn } from "@/lib/utils";
 import type { MarketplaceListing } from "@/types/api";
 
 type InventoryListingCardProps = {
   item: MarketplaceListing;
+  gameName?: string;
   selected?: boolean;
   onSelect?: (item: MarketplaceListing) => void;
   onBuy: (item: MarketplaceListing) => void;
@@ -22,8 +24,9 @@ function getCategoryBadgeStyle(category: string) {
   return "bg-purple-950/90 border-purple-500/45 text-[#d6acff]";
 }
 
-export function InventoryListingCard({ item, selected, onSelect, onBuy }: InventoryListingCardProps) {
+export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy }: InventoryListingCardProps) {
   const badgeClass = getCategoryBadgeStyle(item.category);
+  const gameBadgeLabel = gameName?.trim() || item.gameIdentification;
 
   const handleCardClick = () => {
     if (onSelect) onSelect(item);
@@ -62,12 +65,24 @@ export function InventoryListingCard({ item, selected, onSelect, onBuy }: Invent
         onClick={handleCardClick}
         className="relative w-full cursor-pointer overflow-hidden text-left"
       >
-        <div className="overflow-hidden">
+        <div className="relative overflow-hidden">
+          <video
+            src={inventoryPanelVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
+            aria-hidden
+          />
+          <div className="pointer-events-none absolute inset-0 bg-[#04080f]/48" aria-hidden />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,rgba(154,53,255,0.12),transparent_62%)]" aria-hidden />
           <InventoryAssetImage
             src={item.assetUrl}
             alt={item.name}
             compact
-            className="aspect-[4/3] w-full min-h-[112px] max-h-[128px] sm:max-h-[140px] transition-transform duration-500 group-hover:scale-105"
+            className="relative aspect-[4/3] w-full min-h-[112px] max-h-[128px] sm:max-h-[140px] transition-transform duration-500 group-hover:scale-105"
           />
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#04080f] to-transparent" />
@@ -78,6 +93,12 @@ export function InventoryListingCard({ item, selected, onSelect, onBuy }: Invent
           )}
         >
           {item.category}
+        </span>
+        <span
+          className="absolute right-2 top-2 z-[2] max-w-[42%] truncate rounded border border-cyan-300/30 bg-cyan-950/75 px-1.5 py-px text-right font-tech text-[7px] font-black uppercase tracking-wide text-cyan-200 shadow-[0_0_10px_rgba(103,232,249,0.12)] backdrop-blur-sm transition duration-300 group-hover:border-cyan-200/50 group-hover:bg-cyan-900/85 group-hover:text-white"
+          title={gameBadgeLabel}
+        >
+          {gameBadgeLabel}
         </span>
       </button>
 
