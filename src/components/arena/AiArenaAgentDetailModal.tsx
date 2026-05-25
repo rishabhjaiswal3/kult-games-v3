@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Database, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaAgent, AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
@@ -174,6 +174,70 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agentId, seed }: A
                 </p>
               </section>
             )}
+
+            {profile && (() => {
+              const meta = profile.metadata as Record<string, unknown> | null | undefined;
+              const metadataHash = (profile.metadataRootHash ?? meta?.metadataRootHash) as string | null | undefined;
+              const avatarHash = (profile.avatarRootHash ?? meta?.avatarRootHash) as string | null | undefined;
+              if (!metadataHash && !avatarHash) return null;
+              return (
+                <section className="rounded-xl border border-[#9a35ff]/25 bg-[#9a35ff]/5 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Database className="h-3.5 w-3.5 text-[#9a35ff]" />
+                    <h4 className="font-display text-[11px] font-bold tracking-wider text-[#9a35ff]">0G Storage</h4>
+                  </div>
+                  <div className="space-y-2 text-[11px]">
+                    {metadataHash && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="shrink-0 text-white/40">Metadata root hash</span>
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 font-mono text-neon-cyan/80 hover:text-neon-cyan transition"
+                          onClick={() => void copyText("Metadata root hash", metadataHash)}
+                          title="Click to copy"
+                        >
+                          <span className="break-all">{metadataHash.slice(0, 20)}…</span>
+                          <Copy className="h-2.5 w-2.5 shrink-0" />
+                        </button>
+                        <a
+                          href={`https://storagescan.0g.ai/tx/${metadataHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-[#9a35ff]/60 hover:text-[#9a35ff] transition underline"
+                        >
+                          view on 0G scan
+                        </a>
+                      </div>
+                    )}
+                    {avatarHash && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="shrink-0 text-white/40">Avatar root hash</span>
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 font-mono text-neon-cyan/80 hover:text-neon-cyan transition"
+                          onClick={() => void copyText("Avatar root hash", avatarHash)}
+                          title="Click to copy"
+                        >
+                          <span className="break-all">{avatarHash.slice(0, 20)}…</span>
+                          <Copy className="h-2.5 w-2.5 shrink-0" />
+                        </button>
+                        <a
+                          href={`https://storagescan.0g.ai/tx/${avatarHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-[#9a35ff]/60 hover:text-[#9a35ff] transition underline"
+                        >
+                          view on 0G scan
+                        </a>
+                      </div>
+                    )}
+                    <p className="mt-1 text-[10px] text-white/30">
+                      Agent metadata and avatar are permanently stored on 0G Storage Network.
+                    </p>
+                  </div>
+                </section>
+              );
+            })()}
 
             <section className="rounded-xl border border-white/10 bg-background/40 p-4">
               <div className="mb-2 flex items-center justify-between gap-2">

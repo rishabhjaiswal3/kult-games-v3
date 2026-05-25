@@ -549,15 +549,27 @@ export const aiArenaGatewayApi = {
     return { job: normalizeTrainingJob(data.job) };
   },
 
-  /** POST /v1/training */
+  /**
+   * POST /v1/agents/:agentId/train
+   * Creates a training job — uses the same route as startAgentTraining.
+   * agentId must be present in body.
+   */
   createTrainingJob: async (
     body: AiArenaCreateTrainingJobRequest
   ): Promise<AiArenaCreateTrainingJobResponse> => {
-    const { data } = await http().post<AiArenaCreateTrainingJobResponse>("/v1/training", body);
+    if (!body.agentId) throw new Error("agentId is required to create a training job");
+    const { data } = await http().post<AiArenaCreateTrainingJobResponse>(
+      `/v1/agents/${encodeURIComponent(body.agentId)}/train`,
+      { type: body.type, priority: body.priority, config: body.config }
+    );
     return { job: normalizeTrainingJob(data.job) };
   },
 
-  /** GET /v1/training or GET /v1/agents/:agentId/training */
+  /**
+   * List training jobs.
+   * Per-agent: GET /v1/agents/:agentId/training
+   * Global feed: GET /v1/agents/all-training
+   */
   listTrainingJobs: async (
     params: { agentId?: string; status?: string } = {}
   ): Promise<AiArenaTrainingJobsResponse> => {
@@ -567,23 +579,23 @@ export const aiArenaGatewayApi = {
         jobs: params.status ? jobs.filter((job) => job.status === params.status) : jobs,
       };
     }
-
-    const { data } = await http().get<AiArenaTrainingJobsResponse>("/v1/training", { params });
+    // Global training feed — GET /v1/agents/all-training
+    const { data } = await http().get<AiArenaTrainingJobsResponse>("/v1/agents/all-training");
     return { jobs: (data.jobs ?? []).map(normalizeTrainingJob) };
   },
 
-  /** GET /v1/training/:jobId */
+  /** GET /v1/agents/training-job/:jobId — fetch a single training job by its ID */
   getTrainingJob: async (jobId: string): Promise<AiArenaTrainingJobResponse> => {
     const { data } = await http().get<AiArenaTrainingJobResponse>(
-      `/v1/training/${encodeURIComponent(jobId)}`
+      `/v1/agents/training-job/${encodeURIComponent(jobId)}`
     );
     return { job: normalizeTrainingJob(data.job) };
   },
 
-  /** DELETE /v1/training/:jobId */
+  /** DELETE /v1/agents/training-job/:jobId — cancel a training job */
   cancelTrainingJob: async (jobId: string): Promise<AiArenaCancelTrainingJobResponse> => {
     const { data } = await http().delete<AiArenaCancelTrainingJobResponse>(
-      `/v1/training/${encodeURIComponent(jobId)}`
+      `/v1/agents/training-job/${encodeURIComponent(jobId)}`
     );
     return data;
   },

@@ -56,6 +56,10 @@ export interface AiArenaAgent {
   inftTokenId?: string | null;
   createdAt?: string;
   metadata?: Record<string, unknown> | null;
+  /** 0G Storage root hash for this agent's metadata blob (set on creation). */
+  metadataRootHash?: string | null;
+  /** 0G Storage root hash for this agent's avatar PNG (set on creation). */
+  avatarRootHash?: string | null;
 }
 
 export interface AiArenaCreateAgentRequest {
