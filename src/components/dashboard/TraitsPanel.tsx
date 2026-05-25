@@ -22,11 +22,11 @@ const traitPositions = [
 
 export function TraitsPanel() {
   return (
-    <section className="arena-panel p-4">
-      <h3 className="font-tech text-xs uppercase">Traits Overview</h3>
-      <div className="mt-3 grid place-items-center">
-        <div className="relative h-[210px] w-[250px] max-w-full">
-          <svg viewBox="0 0 250 210" className="h-full w-full">
+    <section className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8531ff]/30 hover:shadow-[0_8px_40px_rgba(133,49,255,0.15)]">
+      <h3 className="font-tech text-xs font-bold uppercase tracking-wider text-white drop-shadow-sm">Traits Overview</h3>
+      <div className="mt-5 grid place-items-center">
+        <div className="relative h-[210px] w-full max-w-[260px]">
+          <svg viewBox="-20 -20 290 250" className="h-full w-full drop-shadow-[0_0_15px_rgba(133,49,255,0.5)]">
             <polygon
               points="125,18 180,42 216,96 194,158 125,190 56,158 34,96 70,42"
               fill="rgba(123,37,255,.24)"
@@ -50,19 +50,19 @@ export function TraitsPanel() {
             ))}
           </svg>
           {traits.map((trait, i) => (
-            <div key={trait.name} className={`absolute text-[10px] text-white/70 ${traitPositions[i]}`}>
+            <div key={trait.name} className={`absolute text-[10px] text-white/70 ${traitPositions[i]} whitespace-nowrap`}>
               <div>{trait.name}</div>
-              <strong className="font-tech text-[#c896ff]">{trait.value}</strong>
+              <strong className="font-tech text-[#c896ff] drop-shadow-[0_0_5px_rgba(200,150,255,0.6)]">{trait.value}</strong>
             </div>
           ))}
         </div>
       </div>
-      <div className="mt-2 flex justify-center gap-8 text-xs text-white/58">
-        <span className="flex items-center gap-2">
-          <span className="h-px w-6 bg-[#a833ff]" /> This Agent
+      <div className="mt-4 flex justify-center gap-8 text-xs text-white/58">
+        <span className="flex items-center gap-2 drop-shadow-sm">
+          <span className="h-1 w-6 rounded-full bg-[#a833ff] shadow-[0_0_5px_#a833ff]" /> This Agent
         </span>
-        <span className="flex items-center gap-2">
-          <span className="h-px w-6 border-t border-dashed border-white/40" /> Average
+        <span className="flex items-center gap-2 drop-shadow-sm">
+          <span className="h-px w-6 border-t border-dashed border-white/50" /> Average
         </span>
       </div>
     </section>

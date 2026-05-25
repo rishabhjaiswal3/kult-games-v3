@@ -35,15 +35,16 @@ import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/are
 import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import agentNexus from "@/assets/agent-nexus.jpg";
-import agentShadow from "@/assets/agent-shadow.jpg";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import agentVoid from "@/assets/agent-voidwalker.jpg";
-import agentRage from "@/assets/agent-rageborn.jpg";
-import agentLumen from "@/assets/agent-lumen.jpg";
+import agentNexus from "@/assets/hybrid.mp4";
+import agentShadow from "@/assets/defender.mp4";
+import agentAegis from "@/assets/tactician.mp4";
+import agentVoid from "@/assets/support.mp4";
+import agentRage from "@/assets/berserker.mp4";
+import agentLumen from "@/assets/assassin.gif";
 import iconTrain from "@/assets/icon-train.png";
 import iconBattle from "@/assets/icon-battle.png";
 import iconEarn from "@/assets/icon-earn.png";
+import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 const agents = [
@@ -687,7 +688,7 @@ function HowItWorks() {
       desc: "Win battles, earn rewards and climb the leaderboard.",
       img: iconEarn,
     },
-    { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: agentVoid },
+    { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
   ];
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -701,14 +702,25 @@ function HowItWorks() {
           <div key={s.n} className="relative">
             <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
               <div className="aspect-square overflow-hidden bg-background/50">
-                <img
-                  src={s.img}
-                  alt={s.title}
-                  loading="lazy"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
+                {s.img.endsWith(".mp4") ? (
+                  <video
+                    src={s.img}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={s.img}
+                    alt={s.title}
+                    loading="lazy"
+                    width={400}
+                    height={400}
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
               <div className="p-4 text-center md:text-left">
                 <div className="font-display text-xl text-primary glow-text">{s.n}</div>
@@ -794,14 +806,25 @@ function TopAgents() {
             className="card-glass group min-w-[86vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] md:min-w-[calc((100%-2rem)/3)] lg:min-w-[calc((100%-4rem)/5)]"
           >
             <div className="relative aspect-[4/5] overflow-hidden">
-              <img
-                src={a.img}
-                alt={a.name}
-                loading="lazy"
-                width={640}
-                height={800}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
+              {a.img.endsWith(".mp4") ? (
+                <video
+                  src={a.img}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                />
+              ) : (
+                <img
+                  src={a.img}
+                  alt={a.name}
+                  loading="lazy"
+                  width={640}
+                  height={800}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
               <div
                 className="absolute top-3 left-3 px-2.5 py-1 rounded-md font-tech text-xs"
