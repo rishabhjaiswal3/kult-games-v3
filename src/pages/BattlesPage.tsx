@@ -660,7 +660,6 @@ const BattlesPage = () => {
   const [statusAgentId, setStatusAgentId] = useState<string | null>(null);
   const [challengeAgentId, setChallengeAgentId] = useState<string | null>(null);
   const [manualBattleAgentId, setManualBattleAgentId] = useState<string | null>(null);
-  const [manualOpponentId, setManualOpponentId] = useState("");
   const [manualMode, setManualMode] = useState<(typeof AI_ARENA_MATCH_MODES)[number]["value"]>("RANKED");
   const [manualGameId, setManualGameId] = useState(AI_ARENA_DEFAULT_GAME_ID);
   const [manualWagerAmount, setManualWagerAmount] = useState("");
@@ -861,10 +860,8 @@ const BattlesPage = () => {
   const createBattleMut = useMutation({
     mutationFn: async () => {
       if (!manualBattleAgentId) throw new Error("Select your fighter first.");
-      if (!manualOpponentId.trim()) throw new Error("Paste an opponent ID first.");
       return aiArenaGatewayApi.createBattle({
         agentId: manualBattleAgentId,
-        opponentId: manualOpponentId.trim(),
         mode: manualMode,
         gameId: manualGameId,
         wagerAmount: manualMode === "WAGER" && manualWagerAmount.trim() ? Number(manualWagerAmount) : undefined,
@@ -1200,13 +1197,6 @@ const BattlesPage = () => {
                       </select>
                     </label>
 
-                    <BattleInput
-                      label="Opponent ID"
-                      value={manualOpponentId}
-                      onChange={setManualOpponentId}
-                      placeholder="Paste target agent id"
-                    />
-
                     <label className="space-y-2">
                       <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Mode</span>
                       <select
@@ -1249,7 +1239,7 @@ const BattlesPage = () => {
                       <button
                         type="button"
                         onClick={() => createBattleMut.mutate()}
-                        disabled={createBattleMut.isPending || !manualBattleAgentId || !manualOpponentId.trim()}
+                        disabled={createBattleMut.isPending || !manualBattleAgentId}
                         className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/28 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(11,19,30,0.72))] px-[18px] py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/55 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {createBattleMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Swords className="h-3.5 w-3.5" />}

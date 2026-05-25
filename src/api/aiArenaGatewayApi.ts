@@ -457,6 +457,22 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
+  /** GET /v1/financial/transactions/:agentId */
+  getAgentWalletTransactions: async (
+    agentId: string,
+    page = 1,
+    limit = 20
+  ): Promise<AiArenaFinancialTransactionsResponse> => {
+    const { data } = await http().get<AiArenaFinancialTransactionsResponse>(
+      `/v1/financial/transactions/${encodeURIComponent(agentId)}`,
+      { params: { page, limit } }
+    );
+    return {
+      transactions: Array.isArray(data?.transactions) ? data.transactions : [],
+      total: data?.total,
+    };
+  },
+
   /** GET /v1/matchmaking/status/:agentId */
   getMatchmakingStatus: async (agentId: string): Promise<AiArenaMatchmakingStatusResponse> => {
     const { data } = await http().get<AiArenaMatchmakingStatusResponse>(

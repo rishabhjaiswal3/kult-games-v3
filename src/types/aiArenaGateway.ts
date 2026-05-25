@@ -237,6 +237,18 @@ export interface AiArenaFinancialWithdrawalResponse {
   };
 }
 
+export interface AiArenaFinancialTransaction {
+  id: string;
+  walletId: string;
+  type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  txHash?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
 export interface AiArenaFinancialDepositResponse {
   result: {
     success?: boolean;
@@ -244,6 +256,11 @@ export interface AiArenaFinancialDepositResponse {
     depositId?: string;
     status?: string;
   };
+}
+
+export interface AiArenaFinancialTransactionsResponse {
+  transactions: AiArenaFinancialTransaction[];
+  total?: number;
 }
 
 /** GET /v1/agents/:agentId/evolution */

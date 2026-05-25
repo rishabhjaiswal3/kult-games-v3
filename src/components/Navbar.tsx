@@ -3,10 +3,11 @@ import { Menu, X, LogOut, Plus, Sparkles, User, Copy, UserCircle } from "lucide-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { subscribeOpenLoginModal } from "@/lib/loginModalBus";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
-import { clearAiAgentInfo, getStoredAiAgentInfo, patchAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
+import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
+import { clearAiAgentInfo, getStoredAiAgentInfo, saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultBrandLogo from "@/assets/Kult Logo.png";
 import { ArenaTokenAmount } from "@/components/arena/ArenaTokenAmount";
@@ -15,8 +16,6 @@ import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasArenaAgent, MY_ARENA_AGENTS_QUERY_KEY, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
-import { ArenaAgentRowListSkeleton } from "@/components/skeleton";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +38,6 @@ type ProfileDropdownBodyProps = {
   displayName: string;
   walletAddress: string | null;
   hasArenaAgent: boolean;
-  agentWalletReady: boolean;
   agentWalletBalanceArena: number;
   onCreateAgent: () => void;
   onFundAgent: () => void;
@@ -59,7 +57,6 @@ function ProfileDropdownBody({
   displayName,
   walletAddress,
   hasArenaAgent: userHasArenaAgent,
-  agentWalletReady,
   agentWalletBalanceArena,
   onCreateAgent,
   onFundAgent,
@@ -189,25 +186,11 @@ const Navbar = () => {
   const [agentWalletReady, setAgentWalletReady] = useState(false);
   const [agentWalletBalanceArena, setAgentWalletBalanceArena] = useState(0);
   const [agentId, setAgentId] = useState<string | null>(null);
-  const [isFunding, setIsFunding] = useState(false);
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [walletModalTab, setWalletModalTab] = useState<"fund" | "withdraw">("fund");
-  const [fundAmountInput, setFundAmountInput] = useState("");
-  const [withdrawAmountInput, setWithdrawAmountInput] = useState("");
-  const [withdrawDestination, setWithdrawDestination] = useState("");
-  const [fundAgentId, setFundAgentId] = useState<string | null>(null);
   const { isAuthenticated, player, walletAddress, logout } = useAuth();
   const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
   const queryClient = useQueryClient();
   const myAgentsQ = useMyArenaAgents(1, 50);
   const userHasArenaAgent = hasArenaAgent(myAgentsQ.data);
-
-  const fundWalletPreviewQ = useQuery({
-    queryKey: ["aiArenaGateway", "navbarFundWalletPreview", fundAgentId],
-    queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(fundAgentId!),
-    enabled: walletModalOpen && !!fundAgentId && userHasArenaAgent,
-    retry: false,
-  });
 
   const applyAgent = useCallback((agent: AiArenaAgent) => {
     saveAiAgentInfo(agent);
@@ -297,120 +280,6 @@ const Navbar = () => {
     syncAgentWalletBalance,
   ]);
 
-  /** POST /v1/wallets/deposits — credit the selected agent custodial wallet. */
-  const fundWallet = async (amount: number) => {
-    const targetAgentId = fundAgentId ?? agentId ?? getStoredAiAgentInfo()?.id ?? null;
-    if (!targetAgentId) {
-      toast.error("Select an AI agent to fund, or create one first.");
-      return;
-    }
-    setIsFunding(true);
-    try {
-      await aiArenaGatewayApi.depositToAgentWallet({
-        agentId: targetAgentId,
-        amount,
-        currency: "ARENA",
-        txHash: `demo_tx_${Date.now()}`,
-      });
-      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
-      const bal = Number(walletRes.wallet.balanceArena ?? 0);
-      if (targetAgentId === agentId) {
-        setAgentWalletBalanceArena(bal);
-        setAgentWalletReady(true);
-      }
-      await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
-      patchAiAgentInfo({});
-      toast.success(`Funded +${amount} ARENA`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Fund request failed");
-    } finally {
-      setIsFunding(false);
-    }
-  };
-
-  const submitFundFromInput = async () => {
-    const raw = fundAmountInput.trim();
-    const n = Number.parseInt(raw, 10);
-    if (!Number.isFinite(n) || n < 1) {
-      toast.error("Enter a valid whole amount (minimum 1)");
-      return;
-    }
-    if (!fundAgentId && !agentId && !getStoredAiAgentInfo()?.id) {
-      toast.error("Select an AI agent to fund.");
-      return;
-    }
-    await fundWallet(n);
-  };
-
-  /** POST /v1/wallets/withdrawals — withdraw ARENA from the selected agent wallet. */
-  const withdrawWallet = async (amount: number, destination: string) => {
-    const targetAgentId = fundAgentId ?? agentId ?? getStoredAiAgentInfo()?.id ?? null;
-    if (!targetAgentId) {
-      toast.error("Select an AI agent to withdraw from, or create one first.");
-      return;
-    }
-    const dest = destination.trim();
-    if (!dest) {
-      toast.error("Enter a Solana destination address.");
-      return;
-    }
-    setIsWithdrawing(true);
-    try {
-      const res = await aiArenaGatewayApi.requestWithdrawal({
-        agentId: targetAgentId,
-        amount,
-        destination: dest,
-      });
-      const walletRes = await aiArenaGatewayApi.getAgentWalletBalance(targetAgentId);
-      const bal = Number(walletRes.wallet.balanceArena ?? 0);
-      if (targetAgentId === agentId) {
-        setAgentWalletBalanceArena(bal);
-        setAgentWalletReady(true);
-      }
-      await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "navbarFundWalletPreview", targetAgentId] });
-      const withdrawalId = res?.result?.withdrawalId;
-      toast.success(
-        withdrawalId
-          ? `Withdrawal queued (${withdrawalId.slice(0, 8)}…)`
-          : "Withdrawal queued"
-      );
-      setWithdrawAmountInput("");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Withdrawal request failed");
-    } finally {
-      setIsWithdrawing(false);
-    }
-  };
-
-  const submitWithdrawFromInput = async () => {
-    const raw = withdrawAmountInput.trim();
-    const n = Number.parseInt(raw, 10);
-    if (!Number.isFinite(n) || n < 1) {
-      toast.error("Enter a valid whole amount (minimum 1)");
-      return;
-    }
-    if (!fundAgentId && !agentId && !getStoredAiAgentInfo()?.id) {
-      toast.error("Select an AI agent to withdraw from.");
-      return;
-    }
-    await withdrawWallet(n, withdrawDestination);
-  };
-
-  useEffect(() => {
-    if (!walletModalOpen) return;
-    setFundAmountInput("");
-    setWithdrawAmountInput("");
-    setWithdrawDestination("");
-    setWalletModalTab("fund");
-    const agents = myAgentsQ.data?.agents ?? [];
-    const preferred = agentId ?? getStoredAiAgentInfo()?.id ?? null;
-    setFundAgentId((cur) => {
-      if (cur && agents.some((a) => a.id === cur)) return cur;
-      if (preferred && agents.some((a) => a.id === preferred)) return preferred;
-      return agents[0]?.id ?? preferred ?? null;
-    });
-  }, [walletModalOpen, myAgentsQ.data?.agents, agentId]);
-
   const logLoginEvent = (message: string) => {
     if (typeof window === "undefined") return;
     console.info(`[Auth] ${message}`, {
@@ -465,7 +334,6 @@ const Navbar = () => {
     displayName: profileDisplayName,
     walletAddress,
     hasArenaAgent: userHasArenaAgent,
-    agentWalletReady,
     agentWalletBalanceArena,
     onCreateAgent: handleCreateAgentClick,
     onFundAgent: () => setWalletModalOpen(true),
@@ -674,138 +542,20 @@ const Navbar = () => {
       </div>
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-      {walletModalOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWalletModalOpen(false)} aria-label="Close wallet modal" />
-          <motion.div
-            initial={{ opacity: 0, y: 14, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="relative w-full max-w-md max-h-[min(90vh,640px)] overflow-y-auto rounded-2xl border border-neon-cyan/35 bg-card/90 backdrop-blur-xl p-5 shadow-[0_0_80px_hsl(195_100%_55%_/_0.2)]"
-          >
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neon-cyan mb-2">Agent Wallet</p>
-            <h3 className="font-display text-xl font-black text-foreground mb-1">Manage agent wallet</h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Fund or withdraw $ARENA for the selected agent.
-            </p>
-
-            {!userHasArenaAgent ? (
-              <div className="rounded-xl border border-violet-500/25 bg-violet-500/10 p-5 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No AI agent on this wallet yet. Create one to unlock funding and arena play.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setWalletModalOpen(false);
-                    handleCreateAgentClick();
-                  }}
-                  className="mt-4 w-full rounded-lg border border-violet-400/40 bg-violet-500/15 px-3 py-2.5 text-sm font-semibold text-violet-200 hover:bg-violet-500/25 transition-colors"
-                >
-                  Create AI Agent
-                </button>
-              </div>
-            ) : (
-              <>
-            <motion.div
-              className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-background/40 p-1"
-              layout
-            >
-              {(["fund", "withdraw"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setWalletModalTab(tab)}
-                  className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
-                    walletModalTab === tab
-                      ? tab === "fund"
-                        ? "bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/35"
-                        : "bg-orange-500/15 text-orange-300 border border-orange-500/35"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {tab === "fund" ? "Fund" : "Withdraw"}
-                </button>
-              ))}
-            </motion.div>
-
-            <div className="mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Your agents</p>
-              {myAgentsQ.isLoading ? (
-                <ArenaAgentRowListSkeleton count={3} className="rounded-xl border border-white/10 bg-background/40 p-2" />
-              ) : !(myAgentsQ.data?.agents?.length) ? (
-                <p className="text-xs text-muted-foreground">No agents yet. Create one to continue.</p>
-              ) : (
-                <ul className="max-h-40 space-y-1.5 overflow-y-auto rounded-xl border border-white/10 bg-background/40 p-2 [scrollbar-width:thin]">
-                  {(myAgentsQ.data?.agents ?? []).map((a) => (
-                    <li key={a.id}>
-                      <button
-                        type="button"
-                        onClick={() => setFundAgentId(a.id)}
-                        className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition ${
-                          fundAgentId === a.id
-                            ? "border border-neon-cyan/50 bg-neon-cyan/10 text-foreground"
-                            : "border border-transparent hover:bg-white/5"
-                        }`}
-                      >
-                        <span className="min-w-0 flex-1 truncate font-semibold">{a.name}</span>
-                        <span className="shrink-0 text-[10px] text-muted-foreground">{a.clan}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="rounded-xl border border-neon-purple/35 bg-neon-purple/10 px-4 py-3 mb-3">
-              <p className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Balance</p>
-              {fundWalletPreviewQ.isLoading ? (
-                <Skeleton className="h-7 w-28 bg-muted/70" />
-              ) : fundWalletPreviewQ.isError ? (
-                <p className="text-sm text-amber-200/90">Wallet not available yet for this agent.</p>
-              ) : (
-                <ArenaTokenAmount amount={Number(fundWalletPreviewQ.data?.wallet.balanceArena ?? 0)} size="md" />
-              )}
-            </div>
-
-            {walletModalTab === "fund" ? (
-            <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">Credit the agent custodial wallet with Arena tokens.</p>
-              <div className="space-y-2">
-                <label htmlFor="fund-amount" className="text-xs font-medium text-muted-foreground">Amount (ARENA)</label>
-                <input id="fund-amount" type="number" min={1} step={1} inputMode="numeric" value={fundAmountInput} onChange={(e) => setFundAmountInput(e.target.value)} placeholder="e.g. 100" disabled={isFunding} className="w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-neon-cyan/30 disabled:opacity-50" />
-                <div className="grid grid-cols-4 gap-2">
-                  {[10, 50, 200, 500].map((v) => (
-                    <button key={v} type="button" disabled={isFunding} onClick={() => setFundAmountInput(String(v))} className="rounded-lg border border-border/45 bg-card/50 px-2 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-neon-cyan hover:border-neon-cyan/35 disabled:opacity-50">{v}</button>
-                  ))}
-                </div>
-                <button type="button" onClick={() => void submitFundFromInput()} disabled={isFunding || !fundAmountInput.trim() || !fundAgentId} className="w-full rounded-lg border border-neon-cyan/40 bg-neon-cyan/12 px-3 py-2.5 text-neon-cyan text-sm font-semibold hover:bg-neon-cyan/22 disabled:opacity-50">{isFunding ? "Funding…" : "Fund wallet"}</button>
-              </div>
-            </div>
-            ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">Withdraw Arena tokens to a Solana wallet.</p>
-              <div>
-                <label htmlFor="withdraw-amount" className="text-xs font-medium text-muted-foreground">Amount (ARENA)</label>
-                <input id="withdraw-amount" type="number" min={1} value={withdrawAmountInput} onChange={(e) => setWithdrawAmountInput(e.target.value)} placeholder="e.g. 50" disabled={isWithdrawing} className="mt-1 w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 disabled:opacity-50" />
-              </div>
-              <div>
-                <label htmlFor="withdraw-dest" className="text-xs font-medium text-muted-foreground">Solana destination</label>
-                <input id="withdraw-dest" value={withdrawDestination} onChange={(e) => setWithdrawDestination(e.target.value)} placeholder="Base58 address" disabled={isWithdrawing} className="mt-1 w-full h-11 px-3 rounded-lg border border-border/50 bg-background/80 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 disabled:opacity-50" />
-              </div>
-              <button type="button" onClick={() => void submitWithdrawFromInput()} disabled={isWithdrawing || !withdrawAmountInput.trim() || !withdrawDestination.trim() || !fundAgentId} className="w-full rounded-lg border border-orange-500/40 bg-orange-500/12 px-3 py-2.5 text-sm font-semibold text-orange-200 hover:bg-orange-500/22 disabled:opacity-50">{isWithdrawing ? "Withdrawing…" : "Withdraw Arena tokens"}</button>
-            </div>
-            )}
-              </>
-            )}
-            <button
-              onClick={() => setWalletModalOpen(false)}
-              className="mt-4 w-full rounded-lg border border-border/45 bg-card/50 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-neon-cyan/35 transition-colors"
-            >
-              Close
-            </button>
-          </motion.div>
-        </div>
-      )}
+      <ArenaAgentWalletManagerModal
+        open={walletModalOpen}
+        onOpenChange={setWalletModalOpen}
+        agents={myAgentsQ.data?.agents ?? []}
+        agentsLoading={myAgentsQ.isLoading}
+        initialAgentId={agentId ?? getStoredAiAgentInfo()?.id ?? null}
+        onCreateAgent={handleCreateAgentClick}
+        onWalletUpdated={async (updatedAgentId) => {
+          setAgentId(updatedAgentId);
+          const updatedAgent = (myAgentsQ.data?.agents ?? []).find((agent) => agent.id === updatedAgentId);
+          if (updatedAgent) saveAiAgentInfo(updatedAgent);
+          await syncAgentWalletBalance(updatedAgentId);
+        }}
+      />
     </>
   );
 };
