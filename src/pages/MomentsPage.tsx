@@ -122,9 +122,9 @@ const INITIAL_MOMENTS: Moment[] = [
     title: "Clutch 1v5 Victory",
     game: "WARZONE WARRIORS",
     duration: "00:45",
-    creator: "NEXUS-01",
+    creator: "HYBRID",
     creatorAvatar: agentNexus,
-    clanName: "ZeroG Clan",
+    clanName: "Zerog",
     clanIconType: "zerog",
     views: "12.4K",
     likes: "2.1K",
@@ -137,9 +137,9 @@ const INITIAL_MOMENTS: Moment[] = [
     title: "Last Bot Standing",
     game: "ROBOWARS",
     duration: "01:12",
-    creator: "AEGIS-07",
+    creator: "TACTICIAN",
     creatorAvatar: agentAegis,
-    clanName: "Base Clan",
+    clanName: "Base",
     clanIconType: "base",
     views: "8.7K",
     likes: "1.6K",
@@ -152,9 +152,9 @@ const INITIAL_MOMENTS: Moment[] = [
     title: "Helicopter Rampage",
     game: "WARZONE WARRIORS",
     duration: "00:30",
-    creator: "SHADOW-9",
+    creator: "DEFENDER",
     creatorAvatar: agentShadow,
-    clanName: "Solana Clan",
+    clanName: "Solana",
     clanIconType: "solana",
     views: "8.7K",
     likes: "1.6K",
@@ -167,9 +167,9 @@ const INITIAL_MOMENTS: Moment[] = [
     title: "Perfect Counter Attack",
     game: "ROBOWARS",
     duration: "01:45",
-    creator: "VOIDWALKER",
+    creator: "SUPPORT",
     creatorAvatar: agentVoid,
-    clanName: "ZeroG Clan",
+    clanName: "Zerog",
     clanIconType: "zerog",
     views: "9.3K",
     likes: "1.8K",
@@ -184,7 +184,7 @@ const INITIAL_MOMENTS: Moment[] = [
     duration: "00:28",
     creator: "IRONFIST",
     creatorAvatar: agentLumen,
-    clanName: "Rebel Unit",
+    clanName: "Berserker",
     clanIconType: "rebel",
     views: "5.6K",
     likes: "892",
@@ -197,9 +197,9 @@ const INITIAL_MOMENTS: Moment[] = [
     title: "Double Kill Machine",
     game: "ROBOWARS",
     duration: "01:08",
-    creator: "RAGEBORN",
+    creator: "BERSERKER",
     creatorAvatar: agentRage,
-    clanName: "Base Clan",
+    clanName: "Base",
     clanIconType: "base",
     views: "7.1K",
     likes: "1.3K",
@@ -214,7 +214,7 @@ const INITIAL_MOMENTS: Moment[] = [
     duration: "00:37",
     creator: "SPECTER",
     creatorAvatar: agentAegis,
-    clanName: "Shadow Legion",
+    clanName: "Assassin",
     clanIconType: "shadow",
     views: "4.9K",
     likes: "721",
@@ -229,7 +229,7 @@ const INITIAL_MOMENTS: Moment[] = [
     duration: "02:01",
     creator: "OMEGA PRIME",
     creatorAvatar: agentLumen,
-    clanName: "Mecha Force",
+    clanName: "Hybrid",
     clanIconType: "mecha",
     views: "10.2K",
     likes: "2.3K",
@@ -711,7 +711,7 @@ export function MomentsPage() {
                         Unstoppable Dominance
                       </h4>
                       <div className="flex items-center gap-1 text-[10px] text-white/50">
-                        <span>by NEXUS-01</span>
+                        <span>by HYBRID</span>
                         <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
                       </div>
                     </div>
@@ -813,11 +813,11 @@ export function MomentsPage() {
 
                   <div className="space-y-3 font-semibold text-xs">
                     {[
-                      { rank: 1, name: "NEXUS-01", avatar: agentNexus, views: "12.4K" },
-                      { rank: 2, name: "AEGIS-07", avatar: agentAegis, views: "9.8K" },
-                      { rank: 3, name: "SHADOW-9", avatar: agentShadow, views: "7.6K" },
-                      { rank: 4, name: "VOIDWALKER", avatar: agentVoid, views: "6.3K" },
-                      { rank: 5, name: "RAGEBORN", avatar: agentRage, views: "5.9K" },
+                      { rank: 1, name: "HYBRID", avatar: agentNexus, views: "12.4K" },
+                      { rank: 2, name: "TACTICIAN", avatar: agentAegis, views: "9.8K" },
+                      { rank: 3, name: "DEFENDER", avatar: agentShadow, views: "7.6K" },
+                      { rank: 4, name: "SUPPORT", avatar: agentVoid, views: "6.3K" },
+                      { rank: 5, name: "BERSERKER", avatar: agentRage, views: "5.9K" },
                     ].map((creator) => (
                       <div key={creator.rank} className="flex items-center justify-between py-0.5 hover:bg-white/[0.01] transition">
                         

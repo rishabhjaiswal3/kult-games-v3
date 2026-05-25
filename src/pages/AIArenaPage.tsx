@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
+  BrainCircuit,
+  BriefcaseBusiness,
   Box,
   ArrowUp,
   Swords,
+  Gamepad2,
   Globe,
   TrendingUp,
   ChevronLeft,
@@ -13,6 +16,8 @@ import {
   ArrowRight,
   Sparkles,
   Radio,
+  Trophy,
+  Video,
   Zap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +36,7 @@ import iconEarn from "@/assets/icon-earn.png";
 const agents = [
   {
     rank: "01",
-    name: "NEXUS-01",
+    name: "HYBRID",
     chain: "0G",
     tier: "Legendary",
     lvl: 12,
@@ -41,8 +46,8 @@ const agents = [
   },
   {
     rank: "02",
-    name: "SHADOW-9",
-    chain: "Helios",
+    name: "DEFENDER",
+    chain: "Base",
     tier: "Epic",
     lvl: 11,
     power: "13,420",
@@ -51,8 +56,8 @@ const agents = [
   },
   {
     rank: "03",
-    name: "AEGIS-07",
-    chain: "Aether",
+    name: "TACTICIAN",
+    chain: "Solana",
     tier: "Epic",
     lvl: 12,
     power: "12,980",
@@ -61,7 +66,7 @@ const agents = [
   },
   {
     rank: "04",
-    name: "VOIDWALKER",
+    name: "SUPPORT",
     chain: "0G",
     tier: "Epic",
     lvl: 11,
@@ -71,8 +76,8 @@ const agents = [
   },
   {
     rank: "05",
-    name: "RAGEBORN",
-    chain: "Helios",
+    name: "BERSERKER",
+    chain: "Base",
     tier: "Legendary",
     lvl: 12,
     power: "11,870",
@@ -81,8 +86,8 @@ const agents = [
   },
   {
     rank: "06",
-    name: "LUMEN-22",
-    chain: "Aether",
+    name: "ASSASSIN",
+    chain: "Solana",
     tier: "Epic",
     lvl: 11,
     power: "11,430",
@@ -96,53 +101,53 @@ const battles = [
     tag: "Arena Championship",
     round: "Round 2",
     time: "02:45",
-    a: { name: "NEXUS-01", chain: "0G", img: agentNexus },
-    b: { name: "SHADOW-9", chain: "Helios", img: agentShadow },
+    a: { name: "HYBRID", chain: "0G", img: agentNexus },
+    b: { name: "DEFENDER", chain: "Base", img: agentShadow },
     views: "1,245",
   },
   {
     tag: "Ranked Battle",
     round: "Diamond League",
     time: "01:15",
-    a: { name: "AEGIS-07", chain: "Aether", img: agentAegis },
-    b: { name: "VOIDWALKER", chain: "0G", img: agentVoid },
+    a: { name: "TACTICIAN", chain: "Solana", img: agentAegis },
+    b: { name: "SUPPORT", chain: "0G", img: agentVoid },
     views: "856",
   },
   {
     tag: "Community Battle",
     round: "Open Arena",
     time: "00:45",
-    a: { name: "RAGEBORN", chain: "Helios", img: agentRage },
-    b: { name: "LUMEN-22", chain: "Aether", img: agentLumen },
+    a: { name: "BERSERKER", chain: "Base", img: agentRage },
+    b: { name: "ASSASSIN", chain: "Solana", img: agentLumen },
     views: "624",
   },
 ];
 
 const liveSignals = [
-  "NEXUS-01 defeated VOIDWALKER",
-  "RAGEBORN initiated revenge protocol",
-  "LUMEN-22 learned a new counter",
-  "SHADOW-9 switched to flank logic",
-  "AEGIS-07 blocked 3 critical strikes",
+  "HYBRID defeated SUPPORT",
+  "BERSERKER initiated revenge protocol",
+  "ASSASSIN learned a new counter",
+  "DEFENDER switched to flank logic",
+  "TACTICIAN blocked 3 critical strikes",
   "0G faction signal detected",
 ];
 
 const arenaMoments = [
   {
     title: "Revenge Arc",
-    desc: "VOIDWALKER hunted NEXUS-01 across three matches after a late-round betrayal.",
+    desc: "SUPPORT hunted HYBRID across three matches after a late-round betrayal.",
     img: agentVoid,
     meta: "12.8K replays",
   },
   {
     title: "Learning Moment",
-    desc: "LUMEN-22 lost twice, rebuilt its dodge pattern, then countered the same tactic live.",
+    desc: "ASSASSIN lost twice, rebuilt its dodge pattern, then countered the same tactic live.",
     img: agentLumen,
     meta: "AI commentary",
   },
   {
     title: "Faction Break",
-    desc: "AEGIS-07 ignored alliance orders and triggered a full Aether signal storm.",
+    desc: "TACTICIAN ignored alliance orders and triggered a full Solana signal storm.",
     img: agentAegis,
     meta: "Trending rivalry",
   },
@@ -864,7 +869,7 @@ function ArenaMoments() {
 }
 
 function PartnersBlock() {
-  const partners = ["0G", "Helios", "Aether", "Nexus Wallet", "Spectre"];
+  const partners = ["0G", "Base", "Solana"];
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
       <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 relative overflow-hidden">
@@ -887,10 +892,10 @@ function PartnersBlock() {
             {partners.map((p) => (
               <div
                 key={p}
-                className="px-3 py-2 rounded-md border border-border bg-card/50 font-tech text-xs flex items-center gap-2"
+                className="group/partner px-3 py-2 rounded-md border border-border bg-card/50 font-tech text-xs flex items-center gap-2 transition duration-300 hover:-translate-y-1 hover:border-accent/60 hover:bg-accent/10 hover:text-white hover:shadow-[0_0_22px_hsl(var(--accent)/0.22)]"
               >
-                <span className="w-2 h-2 rounded-full bg-accent" />
-                <ChainLogo name={p} className="h-3.5 w-auto" />
+                <span className="w-2 h-2 rounded-full bg-accent transition duration-300 group-hover/partner:scale-125 group-hover/partner:shadow-[0_0_14px_hsl(var(--accent)/0.85)]" />
+                <ChainLogo name={p} className="h-3.5 w-auto transition duration-300 group-hover/partner:scale-105" />
               </div>
             ))}
           </div>
@@ -902,11 +907,11 @@ function PartnersBlock() {
 
 function ArenaLandingFooter() {
   const platformLinks = [
-    { label: "Games", href: "/" },
-    { label: "Inventory", href: "/inventory" },
-    { label: "AI Arena", href: "/ai-arena" },
-    { label: "Moments", href: "/moments" },
-    { label: "Leaderboard", href: "/leaderboard" },
+    { label: "Games", href: "/", icon: Gamepad2 },
+    { label: "Inventory", href: "/inventory", icon: BriefcaseBusiness },
+    { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit },
+    { label: "Moments", href: "/moments", icon: Video },
+    { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
   ];
 
   const socials = [
@@ -952,58 +957,58 @@ function ArenaLandingFooter() {
 
       <div className="container relative mx-auto px-4 sm:px-6">
         <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
-          <div className="relative overflow-hidden rounded-[1.25rem] border border-[hsl(278_100%_70%/0.18)] bg-white/[0.035] p-5 shadow-[0_24px_80px_hsl(278_100%_55%/0.12)] backdrop-blur">
-            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(278_100%_70%/0.12)] via-transparent to-[hsl(190_100%_60%/0.08)]" />
-            <div className="relative flex min-w-0 flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-5 sm:text-left">
-              <div className="flex h-16 shrink-0 items-center gap-5 rounded-2xl border border-[hsl(278_100%_70%/0.24)] bg-black/30 px-5 shadow-[0_0_35px_hsl(278_100%_60%/0.22)]">
-                <span className="font-display text-xl text-gradient glow-text whitespace-nowrap">AI ARENA</span>
+          <div className="group/brand relative w-full max-w-[390px] overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_6%_0%,rgba(130,91,255,0.28),transparent_32%)] transition duration-300 group-hover/brand:opacity-80" />
+            <div className="relative flex min-w-0 flex-col items-start gap-5 text-left">
+              <div className="flex h-[72px] w-full max-w-[300px] shrink-0 items-center justify-center rounded-lg bg-black/48 px-4 shadow-[0_0_26px_rgba(112,73,255,0.16)] transition duration-300 group-hover/brand:bg-black/65 group-hover/brand:shadow-[0_0_34px_rgba(112,73,255,0.28)]">
+                <span className="whitespace-nowrap font-display text-3xl text-gradient glow-text transition duration-300 group-hover/brand:scale-105">AI ARENA</span>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-mono uppercase tracking-[0.36em] text-[hsl(278_100%_82%)]">
-                  Presented by Kult Games
+              <div className="min-w-0 max-w-[320px]">
+                <p className="font-tech text-[12px] font-black uppercase tracking-[0.36em] text-[#d8c7ff] transition duration-300 group-hover/brand:text-white">
+                  PRESENTED BY KULT GAMES
                 </p>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/72">
+                <p className="mt-3 text-sm leading-relaxed text-white/56 transition duration-300 group-hover/brand:text-white/78">
                   AI Arena is a next-gen AI gaming ecosystem where intelligent agents battle, evolve and dominate.
                 </p>
               </div>
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-2" aria-label="Footer navigation">
-            {platformLinks.map((link, i) => (
-              <span key={link.href} className="flex items-center">
-                {link.href.startsWith("http") ? (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
+          <nav
+            className="group/explore flex flex-col justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 lg:min-h-[168px] lg:border-x lg:px-6"
+            aria-label="Footer navigation"
+          >
+            <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/explore:text-[#d8c7ff] group-hover/explore:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">EXPLORE</p>
+            <div className="flex flex-wrap gap-3">
+              {platformLinks.map((link) => {
+                const Icon = link.icon;
+                return (
                   <Link
+                    key={link.href}
                     to={link.href}
-                    className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/62 transition-all hover:-translate-y-0.5 hover:border-[hsl(278_100%_70%/0.42)] hover:bg-[hsl(278_100%_70%/0.12)] hover:text-[hsl(278_100%_86%)] hover:shadow-[0_0_28px_hsl(278_100%_60%/0.18)]"
+                    className="group inline-flex h-11 items-center justify-start gap-2.5 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 text-[13px] font-medium text-white/86 shadow-[inset_0_0_0_1px_rgba(130,98,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:text-white hover:shadow-[0_0_20px_rgba(112,73,255,0.2)]"
                   >
-                    {link.label}
+                    <Icon className="h-4 w-4 shrink-0 text-[#8b6dff] transition group-hover:scale-110 group-hover:text-[#cbbcff]" />
+                    <span className="whitespace-nowrap transition group-hover:text-white">{link.label}</span>
                   </Link>
-                )}
-              </span>
-            ))}
+                );
+              })}
+            </div>
           </nav>
 
-          <div className="flex flex-col items-center gap-4 lg:items-end">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-white/40">Follow</span>
-              <div className="flex items-center gap-2">
+          <div className="group/social flex flex-col justify-center gap-7 lg:min-h-[168px] lg:items-start">
+            <div>
+              <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/social:text-[#d8c7ff] group-hover/social:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">
+                FOLLOW KULT GAMES
+              </p>
+              <div className="flex flex-wrap gap-3">
                 {socials.map((s) => (
                   <a
                     key={s.key}
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(278_100%_70%/0.22)] bg-[hsl(278_100%_70%/0.08)] text-white/70 transition-all hover:-translate-y-1 hover:border-[hsl(278_100%_78%/0.58)] hover:bg-[hsl(278_100%_70%/0.18)] hover:text-white hover:shadow-[0_0_34px_hsl(278_100%_62%/0.35)]"
+                    className="group flex h-12 w-12 items-center justify-center rounded-full border border-[#6645ff]/48 bg-black/20 text-[#a790ff] transition hover:-translate-y-0.5 hover:border-[#9d86ff] hover:bg-[#140f35] hover:text-white hover:shadow-[0_0_24px_rgba(112,73,255,0.32)]"
                     aria-label={s.label}
                     title={s.label}
                   >
@@ -1012,20 +1017,20 @@ function ArenaLandingFooter() {
                 ))}
               </div>
             </div>
-            <div className="flex w-fit items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-white/38">Powered by</span>
-              <img src={zeroGLogo} alt="0G" className="h-5 w-auto opacity-90" />
+            <div className="group/powered flex h-12 w-full max-w-[250px] items-center gap-4 rounded-full border border-white/10 bg-black/24 px-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:shadow-[0_0_22px_rgba(112,73,255,0.24)]">
+              <span className="font-tech text-[10px] font-black uppercase tracking-[0.36em] text-white/72 transition group-hover/powered:text-white">POWERED BY</span>
+              <img src={zeroGLogo} alt="0G" className="h-7 w-auto object-contain transition group-hover/powered:scale-105 group-hover/powered:drop-shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 sm:flex-row">
+        <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/42 font-mono">
-            <span>© 2026 AI Arena</span>
-            <span className="text-white/20">·</span>
-            <span>Powered by 0G</span>
+            <span className="transition group-hover/legal:text-white/68">© 2026 AI Arena</span>
+            <span className="text-white/20 transition group-hover/legal:text-[#a790ff]/60">·</span>
+            <span className="transition group-hover/legal:text-white/68">Powered by 0G</span>
           </div>
-          <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)]">
+          <span className="text-center text-[9px] font-mono tracking-[0.28em] text-[hsl(278_100%_82%/0.58)] transition group-hover/legal:text-[#d8c7ff]">
             BUILT ON-CHAIN · AI-NATIVE · DECENTRALIZED
           </span>
         </div>

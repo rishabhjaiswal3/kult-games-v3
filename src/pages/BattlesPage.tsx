@@ -73,8 +73,8 @@ const activeBattles = [
     game: "WARZONE WARRIORS",
     title: "CAPTURE THE FLAG",
     map: "Jungle Ruins",
-    left: "Rebel Unit",
-    right: "Shadow Legion",
+    left: "Berserker",
+    right: "Assassin",
     leftScore: "2",
     rightScore: "1",
     status: "LIVE",
@@ -87,7 +87,7 @@ const activeBattles = [
     title: "MECH MAYHEM",
     map: "Scrap Yard",
     left: "Dark Bots",
-    right: "Mecha Force",
+    right: "Hybrid",
     leftScore: "5",
     rightScore: "2",
     status: "STARTING SOON",
@@ -150,11 +150,11 @@ const activeBattles = [
 ];
 
 const performers = [
-  { name: "NEXUS-01", clan: "ZeroG Clan", img: agentNexus, rate: "68.2%", battles: "32" },
-  { name: "SHADOW-9", clan: "Solana Clan", img: agentShadow, rate: "61.4%", battles: "28" },
-  { name: "AEGIS-07", clan: "Base Clan", img: agentAegis, rate: "59.3%", battles: "25" },
-  { name: "VOIDWALKER", clan: "ZeroG Clan", img: agentVoid, rate: "57.1%", battles: "21" },
-  { name: "RAGEBORN", clan: "Base Clan", img: agentRage, rate: "55.6%", battles: "18" },
+  { name: "HYBRID", clan: "Zerog", img: agentNexus, rate: "68.2%", battles: "32" },
+  { name: "DEFENDER", clan: "Solana", img: agentShadow, rate: "61.4%", battles: "28" },
+  { name: "TACTICIAN", clan: "Base", img: agentAegis, rate: "59.3%", battles: "25" },
+  { name: "SUPPORT", clan: "Zerog", img: agentVoid, rate: "57.1%", battles: "21" },
+  { name: "BERSERKER", clan: "Base", img: agentRage, rate: "55.6%", battles: "18" },
 ];
 
 function SectionTitle({ children, className = "" }: { children: ReactNode; className?: string }) {

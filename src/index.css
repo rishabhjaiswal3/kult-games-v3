@@ -686,6 +686,184 @@
   to   { left: 130%; }
 }
 
+@keyframes footer-arena-cta-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(176, 151, 255, 0.65) inset,
+      0 0 24px rgba(113, 78, 255, 0.46),
+      0 0 54px rgba(91, 52, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(225, 218, 255, 0.92) inset,
+      0 0 34px rgba(139, 103, 255, 0.72),
+      0 0 78px rgba(119, 66, 255, 0.34);
+  }
+}
+
+@keyframes footer-arena-cta-shine {
+  0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  18% { opacity: 0.82; }
+  46%, 100% { transform: translateX(160%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes footer-arena-cta-scan {
+  0%, 100% { transform: translateX(-16%) translateY(-22%); opacity: 0.22; }
+  50% { transform: translateX(16%) translateY(18%); opacity: 0.5; }
+}
+
+.footer-arena-cta {
+  appearance: none;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-height: 76px;
+  width: min(100%, 440px);
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(173, 150, 255, 0.78);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.24), transparent 25%),
+    radial-gradient(circle at 88% 78%, rgba(184, 135, 255, 0.28), transparent 28%),
+    linear-gradient(135deg, rgba(92, 65, 255, 0.88), rgba(46, 25, 166, 0.94) 48%, rgba(61, 41, 198, 0.9));
+  color: #f4f2ff;
+  font-family: var(--font-tech, inherit);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.36);
+  transform: translateZ(0);
+  cursor: pointer;
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    filter 220ms ease;
+  animation: footer-arena-cta-pulse 2.8s ease-in-out infinite;
+}
+
+.footer-arena-cta--compact {
+  min-height: 56px;
+  width: min(100%, 296px);
+  gap: 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.footer-arena-cta::before,
+.footer-arena-cta::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  height: 3px;
+  width: 76px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #ffffff, #9deeff);
+  box-shadow: 0 0 14px rgba(180, 221, 255, 0.92);
+  transition: width 220ms ease, opacity 220ms ease;
+}
+
+.footer-arena-cta::before {
+  bottom: 0;
+  left: 18px;
+}
+
+.footer-arena-cta::after {
+  top: 0;
+  right: 18px;
+  transform: rotate(180deg);
+}
+
+.footer-arena-cta:hover {
+  border-color: rgba(239, 235, 255, 0.96);
+  filter: saturate(1.2) brightness(1.08);
+  transform: translateY(-3px);
+}
+
+.footer-arena-cta:hover::before,
+.footer-arena-cta:hover::after {
+  width: 112px;
+}
+
+.footer-arena-cta__shine,
+.footer-arena-cta__scan {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.footer-arena-cta__shine {
+  z-index: -1;
+  width: 42%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  animation: footer-arena-cta-shine 3.2s ease-in-out infinite;
+}
+
+.footer-arena-cta__scan {
+  z-index: -2;
+  background:
+    linear-gradient(115deg, transparent 0 32%, rgba(255, 255, 255, 0.18) 38%, transparent 46%),
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 13px);
+  mix-blend-mode: screen;
+  animation: footer-arena-cta-scan 4s ease-in-out infinite;
+}
+
+.footer-arena-cta__label,
+.footer-arena-cta__icon {
+  position: relative;
+  z-index: 3;
+}
+
+.footer-arena-cta__icon {
+  height: 24px;
+  width: 24px;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.footer-arena-cta:hover .footer-arena-cta__icon {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.72));
+  transform: translate(3px, -3px);
+}
+
+.footer-arena-cta--compact .footer-arena-cta__icon {
+  height: 20px;
+  width: 20px;
+}
+
+@media (max-width: 640px) {
+  .footer-arena-cta {
+    min-height: 64px;
+    width: min(100%, 340px);
+    gap: 12px;
+    border-radius: 16px;
+    font-size: 16px;
+  }
+
+  .footer-arena-cta__icon {
+    height: 20px;
+    width: 20px;
+  }
+
+  .footer-arena-cta--compact {
+    min-height: 54px;
+    width: min(100%, 280px);
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-arena-cta,
+  .footer-arena-cta__shine,
+  .footer-arena-cta__scan {
+    animation: none;
+  }
+}
+
 @keyframes ecosystem-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }

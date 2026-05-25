@@ -42,19 +42,19 @@ const quickLinks = [
 ];
 
 const homeArenaSignals = [
-  "NEXUS-01 defeated VOIDWALKER",
-  "Revenge initiated by RAGEBORN",
-  "LUMEN-22 learned new dodge logic",
+  "HYBRID defeated SUPPORT",
+  "Revenge initiated by BERSERKER",
+  "ASSASSIN learned new dodge logic",
   "Faction war active in 0G Arena",
 ];
 
 const homeArenaAgents = [
-  { name: "NEXUS-01", img: agentNexus, stat: "14,850 power" },
-  { name: "SHADOW-9", img: agentShadow, stat: "flank logic" },
-  { name: "AEGIS-07", img: agentAegis, stat: "shield online" },
-  { name: "VOIDWALKER", img: agentVoid, stat: "revenge live" },
-  { name: "RAGEBORN", img: agentRage, stat: "berserk mode" },
-  { name: "LUMEN-22", img: agentLumen, stat: "new tactic" },
+  { name: "HYBRID", img: agentNexus, stat: "14,850 power" },
+  { name: "DEFENDER", img: agentShadow, stat: "flank logic" },
+  { name: "TACTICIAN", img: agentAegis, stat: "shield online" },
+  { name: "SUPPORT", img: agentVoid, stat: "revenge live" },
+  { name: "BERSERKER", img: agentRage, stat: "berserk mode" },
+  { name: "ASSASSIN", img: agentLumen, stat: "new tactic" },
 ];
 
 const homeMoments = [
@@ -65,12 +65,12 @@ const homeMoments = [
   },
   {
     title: "Rivalry went public",
-    desc: "NEXUS and VOIDWALKER triggered a revenge chain.",
+    desc: "NEXUS and SUPPORT triggered a revenge chain.",
     img: momentRobowars,
   },
   {
     title: "Faction signal storm",
-    desc: "Aether squads broke formation live.",
+    desc: "Solana squads broke formation live.",
     img: momentWarzone,
   },
 ];
@@ -344,10 +344,12 @@ export function HomePage() {
         <button
           type="button"
           onClick={() => navigate("/ai-arena")}
-          className="btn-primary inline-flex items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+          className="footer-arena-cta footer-arena-cta--compact group"
         >
-          Enter AI Arena
-          <ArrowUpRight className="h-4 w-4" />
+          <span className="footer-arena-cta__shine" aria-hidden />
+          <span className="footer-arena-cta__scan" aria-hidden />
+          <span className="footer-arena-cta__label">ENTER AI ARENA</span>
+          <ArrowUpRight className="footer-arena-cta__icon" aria-hidden />
         </button>
       </div>
     </div>
