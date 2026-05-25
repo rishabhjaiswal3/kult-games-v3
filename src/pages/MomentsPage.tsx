@@ -1,31 +1,34 @@
-import { useDeferredValue, useEffect, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { useCallback, useEffect, useRef } from "react";
+import { MOMENTS_IFRAME_URL } from "@/lib/momentsUrl";
 import { useAuth } from "@/contexts/AuthContext";
-import { momentsApi } from "@/api/momentsApi";
-import type { Moment as ApiMoment } from "@/types/api";
+import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import {
   ArrowUpRight,
-  Calendar,
   ChevronDown,
-  Clock,
-  Eye,
-  Flame,
-  Heart,
-  Hexagon,
-  Play,
   Search,
-  Share2,
-  Shield,
   SlidersHorizontal,
-  Bookmark,
+  Flame,
+  Zap,
+  Trophy,
   Swords,
   Target,
-  ThumbsUp,
+  Shield,
+  Eye,
+  Heart,
+  Bookmark,
+  Share2,
+  Play,
+  Clock,
+  Hexagon,
   TrendingUp,
-  Trophy,
   Video,
-  Zap,
+  ThumbsUp,
+  Calendar,
 } from "lucide-react";
+
+// Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import agentNexus from "@/assets/agent-nexus.jpg";
@@ -34,66 +37,12 @@ import agentAegis from "@/assets/agent-aegis.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
 import agentLumen from "@/assets/agent-lumen.jpg";
+
 import momentWarzone from "@/assets/moment-warzone.png";
 import momentRobowars from "@/assets/moment-robowars.png";
 import momentFeatured from "@/assets/moment-featured.png";
 
-type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
-type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
-type ClanIconType = "solana" | "base" | "zerog" | "kult" | "rebel" | "shadow" | "mecha";
-
-type DisplayMoment = {
-  id: string;
-  title: string;
-  game: string;
-  mode: string;
-  duration: string;
-  durationSeconds: number | null;
-  creator: string;
-  creatorAvatar: string;
-  clanName: string;
-  clanIconType: ClanIconType;
-  views: string;
-  likes: string;
-  isBookmarked: boolean;
-  category: SubCategory;
-  thumbnail: string;
-  assetUrl?: string;
-  createdAt?: string;
-  likeCount: number;
-  viewCount: number | null;
-  source: ApiMoment;
-};
-
-type CreatorSummary = {
-  rank: number;
-  name: string;
-  avatar: string;
-  metric: number;
-  metricLabel: string;
-};
-
-const PAGE_SIZE = 12;
-const BOOKMARKED_MOMENTS_KEY = "kult_moments_bookmarked";
-const RECENT_MOMENTS_KEY = "kult_moments_recent";
-const CATEGORY_PILLS: Array<{ label: SubCategory; icon: typeof Flame; desc: string }> = [
-  { label: "TRENDING", icon: Flame, desc: "Most popular" },
-  { label: "EPIC PLAYS", icon: Zap, desc: "Insane plays" },
-  { label: "TOP PLAYS", icon: Trophy, desc: "Community voted" },
-  { label: "CLUTCH", icon: Swords, desc: "1vX & Comebacks" },
-  { label: "KILLS", icon: Target, desc: "Multi kills" },
-  { label: "VICTORIES", icon: Shield, desc: "Epic wins" },
-];
-const CLAN_FALLBACKS: Array<{ name: string; type: ClanIconType; avatar: string }> = [
-  { name: "ZeroG Clan", type: "zerog", avatar: agentNexus },
-  { name: "Base Clan", type: "base", avatar: agentAegis },
-  { name: "Solana Clan", type: "solana", avatar: agentShadow },
-  { name: "Kult Unit", type: "kult", avatar: agentLumen },
-  { name: "Rebel Unit", type: "rebel", avatar: agentRage },
-  { name: "Shadow Legion", type: "shadow", avatar: agentVoid },
-  { name: "Mecha Force", type: "mecha", avatar: agentLumen },
-];
-
+// Clan Icon helper matching the Leaderboard page
 function SolanaIcon({ className = "h-3 w-3" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 397 311" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -121,996 +70,786 @@ function KultClanIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return <img src={kultLogo} alt="Kult Logo" className={`${className} object-contain`} />;
 }
 
-function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: ClanIconType; className?: string }) {
+function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; className?: string }) {
   if (type === "solana") return <SolanaIcon className={`${className} text-teal-400`} />;
   if (type === "base") return <BaseIcon className={`${className} text-blue-500`} />;
   if (type === "zerog") return <ZeroGClanIcon className={className} />;
   if (type === "kult") return <KultClanIcon className={className} />;
   if (type === "rebel") {
     return (
-      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-amber-400/20 text-[9px] font-bold text-amber-400">
+      <span className="w-3.5 h-3.5 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-[9px] shrink-0">
         R
       </span>
     );
   }
   if (type === "shadow") {
     return (
-      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-[9px] font-bold text-red-500">
+      <span className="w-3.5 h-3.5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center font-bold text-[9px] shrink-0">
         S
       </span>
     );
   }
-  return (
-    <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-gray-500/20 text-[9px] font-bold text-gray-400">
-      M
-    </span>
-  );
-}
-
-function hashSeed(value: string) {
-  let hash = 0;
-  for (const char of value) {
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  if (type === "mecha") {
+    return (
+      <span className="w-3.5 h-3.5 rounded-full bg-gray-500/20 text-gray-400 flex items-center justify-center font-bold text-[9px] shrink-0">
+        M
+      </span>
+    );
   }
-  return hash;
-}
-
-function readStoredIds(key: string) {
-  if (typeof localStorage === "undefined") return [] as string[];
-  try {
-    const parsed = JSON.parse(localStorage.getItem(key) ?? "[]");
-    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredIds(key: string, values: string[]) {
-  if (typeof localStorage === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(values));
-  } catch {
-    /* ignore storage failures */
-  }
-}
-
-function shortenWallet(wallet: string) {
-  if (!wallet) return "Unknown";
-  return wallet.length <= 12 ? wallet : `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
-}
-
-function compactNumber(value: number | null | undefined) {
-  if (value == null || !Number.isFinite(value)) return "--";
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: value >= 1000 ? 1 : 0,
-  }).format(value);
-}
-
-function normalizeForMatch(value: string) {
-  return value.replace(/\s+/g, "").toUpperCase();
-}
-
-function momentMeta(moment: ApiMoment) {
-  return (moment.assetMetadata ?? {}) as Record<string, unknown>;
-}
-
-function metaString(meta: Record<string, unknown>, keys: string[]) {
-  for (const key of keys) {
-    const value = meta[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return undefined;
-}
-
-function metaNumber(meta: Record<string, unknown>, keys: string[]) {
-  for (const key of keys) {
-    const value = meta[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string") {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-  }
-  return undefined;
-}
-
-function parseDurationSeconds(value: string) {
-  const parts = value.split(":").map((part) => Number.parseInt(part, 10));
-  if (parts.some((part) => !Number.isFinite(part))) return null;
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
   return null;
 }
 
-function formatDuration(seconds: number | null) {
-  if (seconds == null || !Number.isFinite(seconds)) return "--:--";
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  if (hrs > 0) {
-    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  }
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+interface Moment {
+  id: number;
+  title: string;
+  game: string;
+  duration: string;
+  creator: string;
+  creatorAvatar: string;
+  clanName: string;
+  clanIconType: string;
+  views: string;
+  likes: string;
+  isBookmarked: boolean;
+  category: string;
+  thumbnail: string;
 }
 
-function dedupeMoments(moments: ApiMoment[]) {
-  const seen = new Set<string>();
-  const deduped: ApiMoment[] = [];
-  for (const moment of moments) {
-    if (!moment.momentId || seen.has(moment.momentId)) continue;
-    seen.add(moment.momentId);
-    deduped.push(moment);
-  }
-  return deduped;
-}
+// 8 Moment items matching mockup list
+const INITIAL_MOMENTS: Moment[] = [
+  {
+    id: 1,
+    title: "Clutch 1v5 Victory",
+    game: "WARZONE WARRIORS",
+    duration: "00:45",
+    creator: "HYBRID",
+    creatorAvatar: agentNexus,
+    clanName: "Zerog",
+    clanIconType: "zerog",
+    views: "12.4K",
+    likes: "2.1K",
+    isBookmarked: false,
+    category: "CLUTCH",
+    thumbnail: momentWarzone,
+  },
+  {
+    id: 2,
+    title: "Last Bot Standing",
+    game: "ROBOWARS",
+    duration: "01:12",
+    creator: "TACTICIAN",
+    creatorAvatar: agentAegis,
+    clanName: "Base",
+    clanIconType: "base",
+    views: "8.7K",
+    likes: "1.6K",
+    isBookmarked: true,
+    category: "TRENDING",
+    thumbnail: momentRobowars,
+  },
+  {
+    id: 3,
+    title: "Helicopter Rampage",
+    game: "WARZONE WARRIORS",
+    duration: "00:30",
+    creator: "DEFENDER",
+    creatorAvatar: agentShadow,
+    clanName: "Solana",
+    clanIconType: "solana",
+    views: "8.7K",
+    likes: "1.6K",
+    isBookmarked: false,
+    category: "EPIC PLAYS",
+    thumbnail: momentWarzone,
+  },
+  {
+    id: 4,
+    title: "Perfect Counter Attack",
+    game: "ROBOWARS",
+    duration: "01:45",
+    creator: "SUPPORT",
+    creatorAvatar: agentVoid,
+    clanName: "Zerog",
+    clanIconType: "zerog",
+    views: "9.3K",
+    likes: "1.8K",
+    isBookmarked: false,
+    category: "TOP PLAYS",
+    thumbnail: momentRobowars,
+  },
+  {
+    id: 5,
+    title: "Flag Capture Under Fire",
+    game: "WARZONE WARRIORS",
+    duration: "00:28",
+    creator: "IRONFIST",
+    creatorAvatar: agentLumen,
+    clanName: "Berserker",
+    clanIconType: "rebel",
+    views: "5.6K",
+    likes: "892",
+    isBookmarked: false,
+    category: "VICTORIES",
+    thumbnail: momentWarzone,
+  },
+  {
+    id: 6,
+    title: "Double Kill Machine",
+    game: "ROBOWARS",
+    duration: "01:08",
+    creator: "BERSERKER",
+    creatorAvatar: agentRage,
+    clanName: "Base",
+    clanIconType: "base",
+    views: "7.1K",
+    likes: "1.3K",
+    isBookmarked: false,
+    category: "KILLS",
+    thumbnail: momentRobowars,
+  },
+  {
+    id: 7,
+    title: "Sniper God Mode",
+    game: "WARZONE WARRIORS",
+    duration: "00:37",
+    creator: "SPECTER",
+    creatorAvatar: agentAegis,
+    clanName: "Assassin",
+    clanIconType: "shadow",
+    views: "4.9K",
+    likes: "721",
+    isBookmarked: false,
+    category: "TRENDING",
+    thumbnail: momentWarzone,
+  },
+  {
+    id: 8,
+    title: "Comeback of the Century",
+    game: "ROBOWARS",
+    duration: "02:01",
+    creator: "OMEGA PRIME",
+    creatorAvatar: agentLumen,
+    clanName: "Hybrid",
+    clanIconType: "mecha",
+    views: "10.2K",
+    likes: "2.3K",
+    isBookmarked: false,
+    category: "CLUTCH",
+    thumbnail: momentRobowars,
+  },
+];
 
-function dedupeDisplayMoments(moments: DisplayMoment[]) {
-  const seen = new Set<string>();
-  const deduped: DisplayMoment[] = [];
-  for (const moment of moments) {
-    if (!moment.id || seen.has(moment.id)) continue;
-    seen.add(moment.id);
-    deduped.push(moment);
-  }
-  return deduped;
-}
-
-function detectCreator(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  return (
-    metaString(meta, ["creatorName", "playerName", "authorName", "uploaderName", "walletAlias", "username"]) ??
-    shortenWallet(moment.playerWalletAddress)
-  );
-}
-
-function detectGame(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  const game =
-    moment.relatedGames[0] ??
-    metaString(meta, ["game", "gameName", "titleGame", "gameTitle"]) ??
-    "KULT ARENA";
-  return game.toUpperCase();
-}
-
-function detectMode(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  return (
-    metaString(meta, ["mode", "gameMode", "matchMode", "queueMode"]) ??
-    moment.tags.find((tag) => /1v1|5v5|autonomous/i.test(tag)) ??
-    "ALL MODES"
-  ).toUpperCase();
-}
-
-function detectCategory(moment: ApiMoment): SubCategory {
-  const haystack = [
-    moment.aiMomentType,
-    ...moment.tags,
-    moment.title,
-    moment.description,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  if (haystack.includes("clutch") || haystack.includes("comeback")) return "CLUTCH";
-  if (haystack.includes("kill") || haystack.includes("elimination") || haystack.includes("frag")) return "KILLS";
-  if (haystack.includes("victory") || haystack.includes("winner") || haystack.includes("domination") || haystack.includes("win")) {
-    return "VICTORIES";
-  }
-  if (haystack.includes("strategy") || haystack.includes("top play") || haystack.includes("tactic")) return "TOP PLAYS";
-  if (haystack.includes("epic") || haystack.includes("highlight") || haystack.includes("speedrun") || haystack.includes("duel")) {
-    return "EPIC PLAYS";
-  }
-  return "TRENDING";
-}
-
-function detectDuration(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  const seconds =
-    metaNumber(meta, ["durationSeconds", "durationSec", "lengthSeconds", "seconds", "clipLengthSeconds"]) ??
-    (() => {
-      const ms = metaNumber(meta, ["durationMs", "durationMilliseconds"]);
-      return ms != null ? Math.round(ms / 1000) : null;
-    })();
-
-  if (seconds != null) {
-    return { label: formatDuration(seconds), seconds };
-  }
-
-  const label = metaString(meta, ["duration", "durationLabel", "clipDuration"]);
-  if (!label) return { label: "--:--", seconds: null };
-
-  const parsed = parseDurationSeconds(label);
-  return { label, seconds: parsed };
-}
-
-function detectViewCount(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  return metaNumber(meta, ["views", "viewCount", "numViews", "playCount", "plays"]);
-}
-
-function detectClan(moment: ApiMoment) {
-  const meta = momentMeta(moment);
-  const clan = metaString(meta, ["clan", "clanName", "faction", "team"])?.toLowerCase() ?? "";
-
-  if (clan.includes("solana")) return { name: "Solana Clan", type: "solana" as ClanIconType, avatar: agentShadow };
-  if (clan.includes("base")) return { name: "Base Clan", type: "base" as ClanIconType, avatar: agentAegis };
-  if (clan.includes("zero") || clan.includes("0g") || clan.includes("zerog")) {
-    return { name: "ZeroG Clan", type: "zerog" as ClanIconType, avatar: agentNexus };
-  }
-  if (clan.includes("rebel")) return { name: "Rebel Unit", type: "rebel" as ClanIconType, avatar: agentRage };
-  if (clan.includes("shadow")) return { name: "Shadow Legion", type: "shadow" as ClanIconType, avatar: agentVoid };
-  if (clan.includes("mecha")) return { name: "Mecha Force", type: "mecha" as ClanIconType, avatar: agentLumen };
-  if (clan.includes("kult")) return { name: "Kult Unit", type: "kult" as ClanIconType, avatar: agentLumen };
-
-  return CLAN_FALLBACKS[hashSeed(moment.playerWalletAddress || moment.title) % CLAN_FALLBACKS.length]!;
-}
-
-function detectThumbnail(moment: ApiMoment, game: string, category: SubCategory) {
-  const meta = momentMeta(moment);
-  const thumbnail = metaString(meta, ["thumbnailUrl", "thumbnail", "posterUrl", "poster", "previewImageUrl", "coverImageUrl"]);
-  if (thumbnail) return thumbnail;
-
-  const assetUrl = moment.assetUrl?.trim();
-  const fileType = metaString(meta, ["fileType", "mimeType", "assetType"]) ?? "";
-  if (assetUrl && (fileType.startsWith("image/") || /\.(png|jpe?g|webp|gif|avif)$/i.test(assetUrl))) {
-    return assetUrl;
-  }
-
-  if (game.includes("ROBOWARS")) return momentRobowars;
-  if (game.includes("WARZONE")) return momentWarzone;
-  if (category === "TOP PLAYS" || category === "EPIC PLAYS") return momentRobowars;
-  return momentWarzone;
-}
-
-function engagementScore(moment: DisplayMoment) {
-  return (moment.viewCount ?? 0) + moment.likeCount * 8 + (moment.source.aiRankScore ?? 0) * 10 + (moment.source.numComments ?? 0) * 3;
-}
-
-function toDisplayMoment(moment: ApiMoment, bookmarkedIds: Set<string>): DisplayMoment {
-  const category = detectCategory(moment);
-  const game = detectGame(moment);
-  const clan = detectClan(moment);
-  const duration = detectDuration(moment);
-  const viewCount = detectViewCount(moment);
-
-  return {
-    id: moment.momentId,
-    title: moment.title || "Untitled Moment",
-    game,
-    mode: detectMode(moment),
-    duration: duration.label,
-    durationSeconds: duration.seconds,
-    creator: detectCreator(moment),
-    creatorAvatar: clan.avatar,
-    clanName: clan.name,
-    clanIconType: clan.type,
-    views: compactNumber(viewCount),
-    likes: compactNumber(moment.numLikes),
-    isBookmarked: bookmarkedIds.has(moment.momentId),
-    category,
-    thumbnail: detectThumbnail(moment, game, category),
-    assetUrl: moment.assetUrl,
-    createdAt: moment.createdAt,
-    likeCount: moment.numLikes,
-    viewCount,
-    source: moment,
-  };
-}
-
-function matchesTimeframe(createdAt: string | undefined, selectedTime: string) {
-  if (selectedTime === "ANY TIME") return true;
-  if (!createdAt) return false;
-
-  const createdMs = new Date(createdAt).getTime();
-  if (!Number.isFinite(createdMs)) return false;
-
-  const now = Date.now();
-  const delta = now - createdMs;
-  if (selectedTime === "LAST 24 HOURS") return delta <= 24 * 60 * 60 * 1000;
-  if (selectedTime === "THIS WEEK") return delta <= 7 * 24 * 60 * 60 * 1000;
-  if (selectedTime === "THIS MONTH") return delta <= 30 * 24 * 60 * 60 * 1000;
-  return true;
-}
-
-function sortMoments(moments: DisplayMoment[], selectedBestOf: string) {
-  const sorted = [...moments];
-
-  if (selectedBestOf === "MOST VIEWS") {
-    sorted.sort((left, right) => (right.viewCount ?? -1) - (left.viewCount ?? -1) || right.likeCount - left.likeCount);
-    return sorted;
-  }
-
-  if (selectedBestOf === "MOST LIKES") {
-    sorted.sort((left, right) => right.likeCount - left.likeCount || engagementScore(right) - engagementScore(left));
-    return sorted;
-  }
-
-  if (selectedBestOf === "TOP CREATORS") {
-    sorted.sort((left, right) => right.likeCount + (right.viewCount ?? 0) - (left.likeCount + (left.viewCount ?? 0)));
-    return sorted;
-  }
-
-  sorted.sort((left, right) => engagementScore(right) - engagementScore(left));
-  return sorted;
-}
-
-function averageDurationLabel(moments: DisplayMoment[]) {
-  const durations = moments.map((moment) => moment.durationSeconds).filter((value): value is number => value != null && value > 0);
-  if (durations.length === 0) return "--:--";
-  const total = durations.reduce((sum, value) => sum + value, 0);
-  return formatDuration(Math.round(total / durations.length));
-}
-
-function recentMomentList(moments: DisplayMoment[], recentIds: string[]) {
-  const byId = new Map(moments.map((moment) => [moment.id, moment]));
-  return recentIds.map((id) => byId.get(id)).filter((value): value is DisplayMoment => Boolean(value));
-}
+type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
+type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
 
 export function MomentsPage() {
-  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<MainTab>("DISCOVER");
   const [activeCategory, setActiveCategory] = useState<SubCategory>("TRENDING");
+  const [moments, setMoments] = useState<Moment[]>(INITIAL_MOMENTS);
+
+  // Filters State
   const [selectedGame, setSelectedGame] = useState("ALL GAMES");
   const [selectedMode, setSelectedMode] = useState("ALL MODES");
   const [selectedBestOf, setSelectedBestOf] = useState("BEST OF");
   const [selectedTime, setSelectedTime] = useState("ANY TIME");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Dropdown UI triggers
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [bookmarkedMomentIds, setBookmarkedMomentIds] = useState<string[]>(() => readStoredIds(BOOKMARKED_MOMENTS_KEY));
-  const [recentMomentIds, setRecentMomentIds] = useState<string[]>(() => readStoredIds(RECENT_MOMENTS_KEY));
-  const deferredSearchQuery = useDeferredValue(searchQuery.trim().toLowerCase());
+
+  
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { isAuthenticated, player } = useAuth();
+
+  const sendAuthToIframe = useCallback(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+
+    const token = localStorage.getItem(TOKEN_KEY);
+    const walletAddress = localStorage.getItem(WALLET_KEY);
+
+    iframe.contentWindow.postMessage(
+      {
+        type: "KULT_AUTH",
+        payload: token
+          ? { token, player: { walletAddress, name: player?.name ?? null } }
+          : null,
+      },
+      MOMENTS_IFRAME_URL,
+    );
+  }, [isAuthenticated, player]);
 
   useEffect(() => {
-    writeStoredIds(BOOKMARKED_MOMENTS_KEY, bookmarkedMomentIds);
-  }, [bookmarkedMomentIds]);
-
-  useEffect(() => {
-    writeStoredIds(RECENT_MOMENTS_KEY, recentMomentIds);
-  }, [recentMomentIds]);
-
-  const discoverQ = useInfiniteQuery({
-    queryKey: ["moments", "discover"],
-    queryFn: ({ pageParam }) => momentsApi.list({ page: pageParam, perPage: PAGE_SIZE }),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => (lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined),
-    staleTime: 30_000,
-    retry: 1,
-  });
-
-  const mineQ = useInfiniteQuery({
-    queryKey: ["moments", "mine"],
-    queryFn: ({ pageParam }) => momentsApi.getMine(pageParam, PAGE_SIZE),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => (lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-    retry: 1,
-  });
-
-  const bookmarkedIds = new Set(bookmarkedMomentIds);
-  const discoverMoments = dedupeMoments((discoverQ.data?.pages ?? []).flatMap((page) => page.moments)).map((moment) =>
-    toDisplayMoment(moment, bookmarkedIds)
-  );
-  const myMoments = dedupeMoments((mineQ.data?.pages ?? []).flatMap((page) => page.moments)).map((moment) =>
-    toDisplayMoment(moment, bookmarkedIds)
-  );
-  const allKnownMoments = dedupeDisplayMoments([...discoverMoments, ...myMoments]);
-
-  const activeFeed = (() => {
-    if (activeTab === "MY MOMENTS") return myMoments;
-    if (activeTab === "BOOKMARKS") return allKnownMoments.filter((moment) => moment.isBookmarked);
-    if (activeTab === "RECENTLY WATCHED") return recentMomentList(allKnownMoments, recentMomentIds);
-    return discoverMoments;
-  })();
-
-  const filteredMoments = sortMoments(
-    activeFeed.filter((moment) => {
-      if (activeCategory !== "TRENDING" && moment.category !== activeCategory) return false;
-      if (deferredSearchQuery) {
-        const haystack = `${moment.title} ${moment.creator} ${moment.game}`.toLowerCase();
-        if (!haystack.includes(deferredSearchQuery)) return false;
-      }
-      if (selectedGame !== "ALL GAMES") {
-        const requested = normalizeForMatch(selectedGame);
-        const current = normalizeForMatch(moment.game);
-        if (!current.includes(requested) && !requested.includes(current)) return false;
-      }
-      if (selectedMode !== "ALL MODES" && normalizeForMatch(moment.mode) !== normalizeForMatch(selectedMode)) return false;
-      if (!matchesTimeframe(moment.createdAt, selectedTime)) return false;
-      return true;
-    }),
-    selectedBestOf
-  );
-
-  const featuredMoment = [...discoverMoments].sort((left, right) => engagementScore(right) - engagementScore(left))[0] ?? null;
-  const activeQuery = activeTab === "MY MOMENTS" ? mineQ : discoverQ;
-  const totalMoments = discoverQ.data?.pages[0]?.total ?? discoverMoments.length;
-  const momentsThisWeek = discoverMoments.filter((moment) => matchesTimeframe(moment.createdAt, "THIS WEEK")).length;
-  const previousWeek = discoverMoments.filter((moment) => {
-    if (!moment.createdAt) return false;
-    const createdMs = new Date(moment.createdAt).getTime();
-    if (!Number.isFinite(createdMs)) return false;
-    const age = Date.now() - createdMs;
-    return age > 7 * 24 * 60 * 60 * 1000 && age <= 14 * 24 * 60 * 60 * 1000;
-  }).length;
-  const weeklyDelta = previousWeek > 0 ? Math.round(((momentsThisWeek - previousWeek) / previousWeek) * 100) : null;
-  const totalViews = discoverMoments.reduce((sum, moment) => sum + (moment.viewCount ?? 0), 0);
-  const hasViews = discoverMoments.some((moment) => moment.viewCount != null);
-  const totalLikes = discoverMoments.reduce((sum, moment) => sum + moment.likeCount, 0);
-  const topCreators = (() => {
-    const byCreator = new Map<string, CreatorSummary & { likeTotal: number; viewTotal: number }>();
-    for (const moment of discoverMoments) {
-      const current = byCreator.get(moment.creator);
-      if (current) {
-        current.likeTotal += moment.likeCount;
-        current.viewTotal += moment.viewCount ?? 0;
-        current.metric = current.viewTotal > 0 ? current.viewTotal : current.likeTotal;
-        current.metricLabel = compactNumber(current.metric);
-      } else {
-        byCreator.set(moment.creator, {
-          rank: 0,
-          name: moment.creator,
-          avatar: moment.creatorAvatar,
-          likeTotal: moment.likeCount,
-          viewTotal: moment.viewCount ?? 0,
-          metric: moment.viewCount ?? moment.likeCount,
-          metricLabel: compactNumber(moment.viewCount ?? moment.likeCount),
-        });
-      }
-    }
-
-    return [...byCreator.values()]
-      .sort((left, right) => right.metric - left.metric)
-      .slice(0, 5)
-      .map((creator, index) => ({
-        rank: index + 1,
-        name: creator.name,
-        avatar: creator.avatar,
-        metric: creator.metric,
-        metricLabel: creator.metricLabel,
-      }));
-  })();
+    sendAuthToIframe();
+  }, [sendAuthToIframe]);
 
   const toggleDropdown = (name: string) => {
     setActiveDropdown(activeDropdown === name ? null : name);
   };
 
-  const handleDropdownSelect = (dropdown: string, value: string) => {
-    if (dropdown === "game") setSelectedGame(value);
-    if (dropdown === "mode") setSelectedMode(value);
-    if (dropdown === "bestOf") setSelectedBestOf(value);
-    if (dropdown === "time") setSelectedTime(value);
+  const handleDropdownSelect = (dropdown: string, val: string) => {
+    if (dropdown === "game") setSelectedGame(val);
+    if (dropdown === "mode") setSelectedMode(val);
+    if (dropdown === "bestOf") setSelectedBestOf(val);
+    if (dropdown === "time") setSelectedTime(val);
     setActiveDropdown(null);
   };
 
-  const handleBookmarkToggle = (id: string) => {
-    setBookmarkedMomentIds((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [id, ...current]
+  const handleBookmarkToggle = (id: number) => {
+    setMoments(
+      moments.map((m) => (m.id === id ? { ...m, isBookmarked: !m.isBookmarked } : m))
     );
   };
 
-  const markRecentlyViewed = (id: string) => {
-    setRecentMomentIds((current) => [id, ...current.filter((value) => value !== id)].slice(0, 30));
-  };
+  // Filter moments array based on Search, Tabs, and Filters
+  const filteredMoments = moments.filter((m) => {
+    // Search filter
+    if (
+      searchQuery &&
+      !m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !m.creator.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
+      return false;
+    }
+    // Main Tabs filter
+    if (activeTab === "BOOKMARKS" && !m.isBookmarked) return false;
+    if (activeTab === "MY MOMENTS") return false; // Mock empty
 
-  const openMoment = (moment: DisplayMoment) => {
-    markRecentlyViewed(moment.id);
-    if (moment.assetUrl) {
-      window.open(moment.assetUrl, "_blank", "noopener,noreferrer");
+    // Game filter
+    if (selectedGame !== "ALL GAMES") {
+      const formattedGame = selectedGame.replace(/\s+/g, "").toUpperCase();
+      const formattedMGame = m.game.replace(/\s+/g, "").toUpperCase();
+      if (!formattedMGame.includes(formattedGame) && !formattedGame.includes(formattedMGame)) {
+        return false;
+      }
     }
-  };
 
-  const resetFilters = () => {
-    setSelectedGame("ALL GAMES");
-    setSelectedMode("ALL MODES");
-    setSelectedBestOf("BEST OF");
-    setSelectedTime("ANY TIME");
-    setSearchQuery("");
-    setActiveCategory("TRENDING");
-  };
-
-  const emptyMessage = (() => {
-    if (activeTab === "MY MOMENTS" && !isAuthenticated) {
-      return "Connect your wallet to load your moments from the backend.";
-    }
-    if (activeTab === "BOOKMARKS") {
-      return "Bookmark moments from the live feed to keep them here.";
-    }
-    if (activeTab === "RECENTLY WATCHED") {
-      return "Open a few moments and your recent history will appear here.";
-    }
-    if (activeQuery.isError) {
-      return "We could not load moments from the backend right now.";
-    }
-    if (activeQuery.isLoading) {
-      return "Loading moments from the backend…";
-    }
-    return "No moments found matching filters";
-  })();
+    return true;
+  });
 
   return (
-    <div className="min-h-full bg-transparent text-foreground">
-      <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
+    <div className="min-h-full text-foreground bg-transparent">
+      {/* Background Glow */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
-          <div className="min-w-0 space-y-4">
-            <div>
-              <h1 className="font-tech text-3xl font-bold tracking-tight text-white">MOMENTS</h1>
-              <p className="mt-1 text-[11px] font-medium text-white/55">
-                Epic plays, insane clutches, and legendary victories. Replay and share your best battles.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-6 border-b border-white/8 text-xs font-bold tracking-wide select-none">
-              {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`relative cursor-pointer pb-2.5 uppercase transition-all hover:text-white ${
-                    activeTab === tab ? "text-white" : "text-white/45"
-                  }`}
-                >
-                  <span>{tab}</span>
-                  {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9a35ff]" />}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative z-30 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown("game")}
-                    className="flex h-[34px] cursor-pointer items-center justify-between gap-2.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white"
-                  >
-                    <span>{selectedGame}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  </button>
-                  {activeDropdown === "game" && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("game")} />
-                      <div className="absolute left-0 z-50 mt-1 w-48 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl">
-                        {["ALL GAMES", "WARZONE WARRIORS", "ROBOWARS", "KULT ARENA"].map((game) => (
-                          <button
-                            key={game}
-                            onClick={() => handleDropdownSelect("game", game)}
-                            className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${
-                              selectedGame === game ? "bg-white/[0.02] text-purple-400" : "text-white/60"
-                            }`}
-                          >
-                            {game}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
+          <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
+              
+              {/* Left Column Feed area */}
+              <div className="min-w-0 space-y-4">
+                
+                {/* Header */}
+                <div>
+                  <h1 className="font-tech text-3xl font-bold tracking-tight text-white">MOMENTS</h1>
+                  <p className="mt-1 text-[11px] text-white/55 font-medium">
+                    Epic plays, insane clutches, and legendary victories. Replay and share your best battles.
+                  </p>
                 </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown("mode")}
-                    className="flex h-[34px] cursor-pointer items-center justify-between gap-2.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white"
-                  >
-                    <span>{selectedMode}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  </button>
-                  {activeDropdown === "mode" && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("mode")} />
-                      <div className="absolute left-0 z-50 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl">
-                        {["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"].map((mode) => (
-                          <button
-                            key={mode}
-                            onClick={() => handleDropdownSelect("mode", mode)}
-                            className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${
-                              selectedMode === mode ? "bg-white/[0.02] text-purple-400" : "text-white/60"
-                            }`}
-                          >
-                            {mode}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown("bestOf")}
-                    className="flex h-[34px] cursor-pointer items-center justify-between gap-2.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white"
-                  >
-                    <span>{selectedBestOf}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  </button>
-                  {activeDropdown === "bestOf" && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("bestOf")} />
-                      <div className="absolute left-0 z-50 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl">
-                        {["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"].map((bestOf) => (
-                          <button
-                            key={bestOf}
-                            onClick={() => handleDropdownSelect("bestOf", bestOf)}
-                            className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${
-                              selectedBestOf === bestOf ? "bg-white/[0.02] text-purple-400" : "text-white/60"
-                            }`}
-                          >
-                            {bestOf}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown("time")}
-                    className="flex h-[34px] cursor-pointer items-center justify-between gap-2.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white"
-                  >
-                    <span>{selectedTime}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-white/40" />
-                  </button>
-                  {activeDropdown === "time" && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("time")} />
-                      <div className="absolute left-0 z-50 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl">
-                        {["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"].map((time) => (
-                          <button
-                            key={time}
-                            onClick={() => handleDropdownSelect("time", time)}
-                            className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${
-                              selectedTime === time ? "bg-white/[0.02] text-purple-400" : "text-white/60"
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 max-sm:w-full">
-                <div className="relative max-sm:flex-1">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
-                  <input
-                    type="text"
-                    placeholder="Search moments..."
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    className="h-[34px] w-[200px] rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none max-sm:w-full"
-                  />
-                </div>
-                <button className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/60 transition hover:border-white/15 hover:text-white">
-                  <SlidersHorizontal className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative z-10 grid grid-cols-3 gap-2 pt-1 sm:flex sm:flex-wrap">
-              {CATEGORY_PILLS.map((category) => {
-                const Icon = category.icon;
-                const isActive = activeCategory === category.label;
-                return (
-                  <button
-                    key={category.label}
-                    onClick={() => setActiveCategory(category.label)}
-                    className={`arena-panel flex min-w-[100px] flex-1 cursor-pointer flex-col items-start border-white/8 bg-[#04080f]/90 p-3 text-left transition ${
-                      isActive
-                        ? "border-purple-500/40 bg-gradient-to-br from-purple-950/40 to-purple-900/10 shadow-[0_0_12px_rgba(154,53,255,0.1)]"
-                        : "hover:border-white/15 hover:bg-white/5"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#b95cff]" : "text-white/45"}`} />
-                      <span className="font-tech text-[10px] font-bold tracking-wider">{category.label}</span>
-                    </div>
-                    <span className="mt-1 text-[8px] font-semibold uppercase leading-none text-white/45">
-                      {category.desc}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center justify-between pt-3">
-              <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">
-                {activeCategory} MOMENTS
-              </h2>
-              <button onClick={resetFilters} className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 transition hover:text-purple-300">
-                View All &rarr;
-              </button>
-            </div>
-
-            {filteredMoments.length === 0 ? (
-              <div className="arena-panel border-white/8 bg-[#04080f]/80 p-12 text-center">
-                <Video className="mx-auto h-10 w-10 text-white/20" />
-                <p className="mt-3 text-sm font-semibold text-white/60">{emptyMessage}</p>
-                <button
-                  onClick={resetFilters}
-                  className="mt-4 rounded border border-purple-500/25 px-4 py-2 font-tech text-[10px] font-bold uppercase text-purple-400 transition hover:bg-purple-500/10"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredMoments.map((item) => (
-                  <div key={item.id} className="flex flex-col">
-                    <div
-                      className="group relative aspect-[16/9] cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40"
-                      onClick={() => openMoment(item)}
+                {/* Sub Navigation tabs */}
+                <div className="border-b border-white/8 flex items-center gap-6 text-xs font-bold tracking-wide select-none">
+                  {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`pb-2.5 relative transition-all uppercase cursor-pointer hover:text-white ${
+                        activeTab === tab ? "text-white" : "text-white/45"
+                      }`}
                     >
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
+                      <span>{tab}</span>
+                      {activeTab === tab && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9a35ff]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
 
-                      <div
-                        className={`absolute left-3 top-3 select-none rounded border px-2 py-0.5 font-tech text-[9px] font-black uppercase tracking-wide ${
-                          item.game === "ROBOWARS"
-                            ? "border-sky-500/35 bg-sky-950/80 text-sky-400"
-                            : "border-purple-500/35 bg-purple-950/80 text-[#d6acff]"
+                {/* Filters Row */}
+                <div className="flex flex-wrap items-center justify-between gap-3 relative z-30">
+                  <div className="flex flex-wrap items-center gap-2">
+                    
+                    {/* ALL GAMES Filter */}
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown("game")}
+                        className="bg-[#0a0f1b]/60 border border-white/8 rounded px-3 py-1.5 text-[10px] uppercase font-tech font-bold text-white/70 flex items-center justify-between gap-2.5 cursor-pointer hover:border-white/15 hover:text-white transition h-[34px]"
+                      >
+                        <span>{selectedGame}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                      </button>
+                      {activeDropdown === "game" && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("game")} />
+                          <div className="absolute left-0 mt-1 w-48 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl z-50">
+                            {["ALL GAMES", "WARZONE WARRIORS", "ROBOWARS", "HIGHWAY HUSTLE"].map((g) => (
+                              <button
+                                key={g}
+                                onClick={() => handleDropdownSelect("game", g)}
+                                className={`w-full text-left rounded px-2.5 py-1.5 text-[10px] uppercase font-tech font-bold transition hover:bg-white/5 hover:text-white ${
+                                  selectedGame === g ? "text-purple-400 bg-white/[0.02]" : "text-white/60"
+                                }`}
+                              >
+                                {g}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* ALL MODES Filter */}
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown("mode")}
+                        className="bg-[#0a0f1b]/60 border border-white/8 rounded px-3 py-1.5 text-[10px] uppercase font-tech font-bold text-white/70 flex items-center justify-between gap-2.5 cursor-pointer hover:border-white/15 hover:text-white transition h-[34px]"
+                      >
+                        <span>{selectedMode}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                      </button>
+                      {activeDropdown === "mode" && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("mode")} />
+                          <div className="absolute left-0 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl z-50">
+                            {["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"].map((m) => (
+                              <button
+                                key={m}
+                                onClick={() => handleDropdownSelect("mode", m)}
+                                className={`w-full text-left rounded px-2.5 py-1.5 text-[10px] uppercase font-tech font-bold transition hover:bg-white/5 hover:text-white ${
+                                  selectedMode === m ? "text-purple-400 bg-white/[0.02]" : "text-white/60"
+                                }`}
+                              >
+                                {m}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* BEST OF Filter */}
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown("bestOf")}
+                        className="bg-[#0a0f1b]/60 border border-white/8 rounded px-3 py-1.5 text-[10px] uppercase font-tech font-bold text-white/70 flex items-center justify-between gap-2.5 cursor-pointer hover:border-white/15 hover:text-white transition h-[34px]"
+                      >
+                        <span>{selectedBestOf}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                      </button>
+                      {activeDropdown === "bestOf" && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("bestOf")} />
+                          <div className="absolute left-0 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl z-50">
+                            {["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"].map((b) => (
+                              <button
+                                key={b}
+                                onClick={() => handleDropdownSelect("bestOf", b)}
+                                className={`w-full text-left rounded px-2.5 py-1.5 text-[10px] uppercase font-tech font-bold transition hover:bg-white/5 hover:text-white ${
+                                  selectedBestOf === b ? "text-purple-400 bg-white/[0.02]" : "text-white/60"
+                                }`}
+                              >
+                                {b}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* TIME Filter */}
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown("time")}
+                        className="bg-[#0a0f1b]/60 border border-white/8 rounded px-3 py-1.5 text-[10px] uppercase font-tech font-bold text-white/70 flex items-center justify-between gap-2.5 cursor-pointer hover:border-white/15 hover:text-white transition h-[34px]"
+                      >
+                        <span>{selectedTime}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+                      </button>
+                      {activeDropdown === "time" && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => toggleDropdown("time")} />
+                          <div className="absolute left-0 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl z-50">
+                            {["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"].map((t) => (
+                              <button
+                                key={t}
+                                onClick={() => handleDropdownSelect("time", t)}
+                                className={`w-full text-left rounded px-2.5 py-1.5 text-[10px] uppercase font-tech font-bold transition hover:bg-white/5 hover:text-white ${
+                                  selectedTime === t ? "text-purple-400 bg-white/[0.02]" : "text-white/60"
+                                }`}
+                              >
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {/* Search and Sliders filter icons */}
+                  <div className="flex items-center gap-2 max-sm:w-full">
+                    <div className="relative max-sm:flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+                      <input
+                        type="text"
+                        placeholder="Search moments..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-[#0a0f1b]/60 border border-white/8 rounded pl-9 pr-3 py-1.5 text-xs text-white/86 placeholder-white/30 focus:outline-none focus:border-purple-500/50 w-[200px] max-sm:w-full h-[34px] transition"
+                      />
+                    </div>
+                    <button className="bg-[#0a0f1b]/60 border border-white/8 rounded p-2 text-white/60 hover:text-white hover:border-white/15 transition cursor-pointer flex items-center justify-center h-[34px] w-[34px]">
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subcategory Pills Row */}
+                <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 pt-1 relative z-10">
+                  {[
+                    { label: "TRENDING", icon: Flame, desc: "Most popular" },
+                    { label: "EPIC PLAYS", icon: Zap, desc: "Insane plays" },
+                    { label: "TOP PLAYS", icon: Trophy, desc: "Community voted" },
+                    { label: "CLUTCH", icon: Swords, desc: "1vX & Comebacks" },
+                    { label: "KILLS", icon: Target, desc: "Multi kills" },
+                    { label: "VICTORIES", icon: Shield, desc: "Epic wins" },
+                  ].map((cat) => {
+                    const Icon = cat.icon;
+                    const isActive = activeCategory === cat.label;
+                    return (
+                      <button
+                        key={cat.label}
+                        onClick={() => setActiveCategory(cat.label as SubCategory)}
+                        className={`arena-panel flex flex-col items-start p-3 text-left transition cursor-pointer flex-1 min-w-[100px] border-white/8 bg-[#04080f]/90 ${
+                          isActive
+                            ? "border-purple-500/40 bg-gradient-to-br from-purple-950/40 to-purple-900/10 shadow-[0_0_12px_rgba(154,53,255,0.1)]"
+                            : "hover:bg-white/5 hover:border-white/15"
                         }`}
                       >
-                        {item.game}
-                      </div>
-
-                      <div className="absolute right-3 top-3 rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">
-                        {item.duration}
-                      </div>
-
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]">
-                          <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
+                        <div className="flex items-center gap-1.5">
+                          <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#b95cff]" : "text-white/45"}`} />
+                          <span className="font-tech text-[10px] font-bold tracking-wider">{cat.label}</span>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-1 flex-col justify-between">
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => openMoment(item)}
-                          className="truncate text-left text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400"
-                        >
-                          {item.title}
-                        </button>
-                        <div className="mt-1.5 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-[11px] text-white/50">
-                            <span>by {item.creator}</span>
-                            <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                          </div>
-
-                          <div className="flex items-center gap-1.5 text-[10px] text-white/40">
-                            <ClanIcon type={item.clanIconType} className="h-3.5 w-3.5 shrink-0" />
-                            <span className="max-w-[90px] truncate">{item.clanName}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 flex items-center justify-between border-t border-white/6 pt-3 text-xs font-semibold text-white/45">
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-4 w-4 text-white/30" />
-                            <span>{item.views}</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-4 w-4 text-white/30" />
-                            <span>{item.likes}</span>
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleBookmarkToggle(item.id)}
-                          className="cursor-pointer text-white/30 transition hover:text-purple-400"
-                        >
-                          <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="relative z-10 flex justify-center pt-4">
-              <button
-                onClick={() => {
-                  if (activeQuery.hasNextPage) {
-                    void activeQuery.fetchNextPage();
-                  }
-                }}
-                disabled={!activeQuery.hasNextPage || activeQuery.isFetchingNextPage}
-                className="flex cursor-pointer items-center gap-2 rounded border border-white/8 bg-[#0a0f1b]/60 px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400/90 transition hover:border-purple-500/30 hover:bg-purple-950/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <TrendingUp className={`h-3.5 w-3.5 ${activeQuery.isFetchingNextPage ? "animate-spin" : "animate-bounce"}`} />
-                <span>
-                  {activeQuery.isFetchingNextPage
-                    ? "LOADING MORE"
-                    : activeQuery.hasNextPage
-                      ? "LOAD MORE MOMENTS"
-                      : "ALL MOMENTS LOADED"}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <aside className="space-y-4">
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">FEATURED MOMENT</h3>
-
-              <div
-                className="group relative aspect-[16/10] cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40"
-                onClick={() => {
-                  if (featuredMoment) openMoment(featuredMoment);
-                }}
-              >
-                <img
-                  src={featuredMoment?.thumbnail ?? momentFeatured}
-                  alt={featuredMoment?.title ?? "Featured Moment"}
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                <div className="absolute left-3 top-3 select-none rounded border border-sky-500/35 bg-sky-950/80 px-2 py-0.5 font-tech text-[8px] font-black uppercase tracking-wide text-sky-400">
-                  {featuredMoment?.game ?? "FEATURED"}
+                        <span className="mt-1 text-[8px] font-semibold text-white/45 leading-none uppercase">
+                          {cat.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="absolute right-3 top-3 rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[8px] font-black tracking-wide text-white">
-                  {featuredMoment?.duration ?? "--:--"}
-                </div>
-
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.5)]">
-                    <Play className="ml-0.5 h-5.5 w-5.5 fill-white text-white" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (featuredMoment) openMoment(featuredMoment);
-                    }}
-                    className="text-left text-sm font-bold text-white transition hover:text-purple-400"
-                  >
-                    {featuredMoment?.title ?? "Loading featured moment…"}
+                {/* Trending Grid Title */}
+                <div className="flex items-center justify-between pt-3">
+                  <h2 className="font-tech text-xs tracking-wider uppercase font-semibold text-white/86">
+                    {activeCategory} MOMENTS
+                  </h2>
+                  <button className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider hover:text-purple-300 transition">
+                    View All &rarr;
                   </button>
-                  <div className="flex items-center gap-1 text-[10px] text-white/50">
-                    <span>by {featuredMoment?.creator ?? "Kult"}</span>
-                    <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                  </div>
-                </div>
-                <p className="text-[11px] font-medium leading-relaxed text-white/55">
-                  {featuredMoment?.source.description?.trim() ||
-                    featuredMoment?.source.aiCaption?.trim() ||
-                    "Moments from the backend automatically fill this spotlight card."}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-white/6 pt-3 text-[10px] font-semibold text-white/45">
-                <span className="flex items-center gap-1.5">
-                  <Eye className="h-4 w-4 text-white/30" />
-                  <span>{featuredMoment?.views ?? "--"}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Heart className="h-4 w-4 text-white/30" />
-                  <span>{featuredMoment?.likes ?? "--"}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Share2 className="h-4 w-4 text-white/30" />
-                  <span>{compactNumber(featuredMoment?.source.numComments ?? null)}</span>
-                </span>
-              </div>
-
-              <button
-                onClick={() => {
-                  if (featuredMoment) openMoment(featuredMoment);
-                }}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-[#9a35ff] py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)] shadow-[0_0_15px_rgba(154,53,255,0.3)]"
-              >
-                <span>WATCH NOW</span>
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">MOMENTS STATS</h3>
-
-              <div className="divide-y divide-white/6 text-[11px] font-medium">
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-2.5 text-white/55">
-                    <Video className="h-4 w-4 text-white/30" />
-                    <span>Total Moments</span>
-                  </div>
-                  <span className="font-tech font-bold text-white">{compactNumber(totalMoments)}</span>
                 </div>
 
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-2.5 text-white/55">
-                    <Calendar className="h-4 w-4 text-white/30" />
-                    <span>This Week</span>
+                {/* Moments Grid Feed (8 Cards) */}
+                {filteredMoments.length === 0 ? (
+                  <div className="arena-panel p-12 text-center border-white/8 bg-[#04080f]/80">
+                    <Video className="h-10 w-10 text-white/20 mx-auto" />
+                    <p className="mt-3 text-sm font-semibold text-white/60">No moments found matching filters</p>
+                    <button
+                      onClick={() => {
+                        setSelectedGame("ALL GAMES");
+                        setSelectedMode("ALL MODES");
+                        setSearchQuery("");
+                      }}
+                      className="mt-4 text-[10px] font-tech font-bold uppercase text-purple-400 border border-purple-500/25 rounded px-4 py-2 hover:bg-purple-500/10 transition"
+                    >
+                      Clear All Filters
+                    </button>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-tech font-bold text-white">{compactNumber(momentsThisWeek)}</span>
-                    <span className="ml-1 rounded border border-emerald-500/20 bg-emerald-500/10 px-1 py-0.5 text-[8px] font-bold text-emerald-400 select-none">
-                      {weeklyDelta == null ? "LIVE" : `${weeklyDelta >= 0 ? "+" : ""}${weeklyDelta}%`}
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredMoments.map((item) => (
+                      <div key={item.id} className="flex flex-col">
+                        
+                        {/* Hover Playable Thumbnail Video Card */}
+                        <div className="relative aspect-[16/9] rounded overflow-hidden bg-black/40 border border-white/8 group cursor-pointer">
+                          
+                          {/* Image Thumbnail */}
+                          <img
+                            src={item.thumbnail}
+                            alt={item.title}
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                          
+                          {/* Dark overlay backdrop */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent group-hover:via-black/30 transition-all duration-300" />
+                          
+                          {/* Game Mode label badge */}
+                          <div
+                            className={`absolute top-3 left-3 text-[9px] font-tech font-black px-2 py-0.5 rounded tracking-wide border uppercase select-none ${
+                              item.game === "ROBOWARS"
+                                ? "bg-sky-950/80 border-sky-500/35 text-sky-400"
+                                : "bg-purple-950/80 border-purple-500/35 text-[#d6acff]"
+                            }`}
+                          >
+                            {item.game === "ROBOWARS" ? "ROBOWARS" : "WARZONE WARRIORS"}
+                          </div>
+
+                          {/* Video Duration Badge */}
+                          <div className="absolute top-3 right-3 bg-[#03070d]/80 border border-white/10 text-white text-[9px] font-tech font-black px-1.5 py-0.5 rounded tracking-wide">
+                            {item.duration}
+                          </div>
+
+                          {/* Play button overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#9a35ff] group-hover:border-purple-400 group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)] transition duration-300">
+                              <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                            </div>
+                          </div>
+
+                        </div>
+
+                        {/* Title and stats detail */}
+                        <div className="mt-3 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h3 className="font-semibold text-sm text-white/90 leading-snug hover:text-purple-400 transition cursor-pointer truncate">
+                              {item.title}
+                            </h3>
+                            <div className="mt-1.5 flex items-center justify-between">
+                              
+                              {/* Creator line */}
+                              <div className="flex items-center gap-1.5 text-[11px] text-white/50">
+                                <span>by {item.creator}</span>
+                                <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
+                              </div>
+
+                              {/* Clan Name and Icon */}
+                              <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+                                <ClanIcon type={item.clanIconType} className="h-3.5 w-3.5 shrink-0" />
+                                <span className="truncate max-w-[90px]">{item.clanName}</span>
+                              </div>
+
+                            </div>
+                          </div>
+
+                          {/* Stats footer row */}
+                          <div className="mt-3 pt-3 border-t border-white/6 flex items-center justify-between text-xs text-white/45 font-semibold">
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-4 w-4 text-white/30" />
+                                <span>{item.views}</span>
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Heart className="h-4 w-4 text-white/30 hover:text-red-500 transition cursor-pointer" />
+                                <span>{item.likes}</span>
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleBookmarkToggle(item.id)}
+                              className="text-white/30 hover:text-purple-400 transition cursor-pointer"
+                            >
+                              <Bookmark
+                                className={`h-4 w-4 ${
+                                  item.isBookmarked ? "fill-purple-500 text-purple-500" : ""
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Load More moments bar */}
+                <div className="flex justify-center pt-4 relative z-10">
+                  <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/30 hover:bg-purple-950/10 rounded px-6 py-2.5 text-[10px] font-tech font-bold uppercase tracking-wider text-purple-400/90 transition cursor-pointer flex items-center gap-2">
+                    <TrendingUp className="h-3.5 w-3.5 animate-bounce" />
+                    <span>LOAD MORE MOMENTS</span>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Right Column sidebar info details */}
+              <aside className="space-y-4">
+                
+                {/* FEATURED MOMENT card */}
+                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                    FEATURED MOMENT
+                  </h3>
+                  
+                  {/* Aspect video player card */}
+                  <div className="relative aspect-[16/10] rounded overflow-hidden bg-black/40 border border-white/8 group cursor-pointer">
+                    <img
+                      src={momentFeatured}
+                      alt="Featured Moment"
+                      className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    
+                    <div className="absolute top-3 left-3 text-[8px] font-tech font-black px-2 py-0.5 rounded tracking-wide border bg-sky-950/80 border-sky-500/35 text-sky-400 uppercase select-none">
+                      ROBOWARS
+                    </div>
+
+                    <div className="absolute top-3 right-3 bg-[#03070d]/80 border border-white/10 text-white text-[8px] font-tech font-black px-1.5 py-0.5 rounded tracking-wide">
+                      01:28
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#9a35ff] group-hover:border-purple-400 group-hover:shadow-[0_0_15px_rgba(154,53,255,0.5)] transition duration-300">
+                        <Play className="h-5.5 w-5.5 text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Creator details and description */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-white hover:text-purple-400 cursor-pointer transition">
+                        Unstoppable Dominance
+                      </h4>
+                      <div className="flex items-center gap-1 text-[10px] text-white/50">
+                        <span>by HYBRID</span>
+                        <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
+                      </div>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-white/55 font-medium">
+                      Perfect strategy, flawless execution. That's how legends are made.
+                    </p>
+                  </div>
+
+                  {/* Share Stats */}
+                  <div className="pt-3 border-t border-white/6 flex items-center justify-between text-[10px] text-white/45 font-semibold">
+                    <span className="flex items-center gap-1.5">
+                      <Eye className="h-4 w-4 text-white/30" />
+                      <span>15.2K</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Heart className="h-4 w-4 text-white/30" />
+                      <span>2.8K</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Share2 className="h-4 w-4 text-white/30 hover:text-purple-400 cursor-pointer" />
+                      <span>345</span>
                     </span>
                   </div>
+
+                  {/* Glow purple watch button */}
+                  <button className="w-full bg-[#9a35ff] hover:bg-[#8525eb] text-white text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded shadow-[0_0_15px_rgba(154,53,255,0.3)] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)] transition flex items-center justify-center gap-2 cursor-pointer">
+                    <span>WATCH NOW</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </button>
+
                 </div>
 
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-2.5 text-white/55">
-                    <Eye className="h-4 w-4 text-white/30" />
-                    <span>Total Views</span>
-                  </div>
-                  <span className="font-tech font-bold text-white">{hasViews ? compactNumber(totalViews) : "--"}</span>
-                </div>
+                {/* MOMENTS STATS card */}
+                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                    MOMENTS STATS
+                  </h3>
 
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-2.5 text-white/55">
-                    <ThumbsUp className="h-4 w-4 text-white/30" />
-                    <span>Total Likes</span>
-                  </div>
-                  <span className="font-tech font-bold text-white">{compactNumber(totalLikes)}</span>
-                </div>
-
-                <div className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-2.5 text-white/55">
-                    <Clock className="h-4 w-4 text-white/30" />
-                    <span>Avg. Watch Time</span>
-                  </div>
-                  <span className="font-tech font-bold text-white">{averageDurationLabel(discoverMoments)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
-              <div className="flex items-center justify-between">
-                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP CREATORS</h3>
-                <button className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 transition hover:text-purple-300">
-                  View All
-                </button>
-              </div>
-
-              <div className="space-y-3 text-xs font-semibold">
-                {topCreators.length > 0 ? (
-                  topCreators.map((creator) => (
-                    <div key={creator.name} className="flex items-center justify-between py-0.5 transition hover:bg-white/[0.01]">
-                      <div className="flex items-center gap-3">
-                        <span className="w-3 text-center font-tech text-[10px] font-black text-white/45">{creator.rank}</span>
-                        <div className="h-7 w-7 overflow-hidden rounded-full border border-white/10 bg-white/5">
-                          <img src={creator.avatar} alt={creator.name} className="h-full w-full object-cover" />
-                        </div>
-                        <div className="flex items-center gap-1 text-white/90">
-                          <span>{creator.name}</span>
-                          <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                        </div>
+                  <div className="divide-y divide-white/6 text-[11px] font-medium">
+                    
+                    <div className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-2.5 text-white/55">
+                        <Video className="h-4 w-4 text-white/30" />
+                        <span>Total Moments</span>
                       </div>
+                      <span className="font-tech font-bold text-white">1,268</span>
+                    </div>
 
-                      <div className="flex items-center gap-1 text-[10px] text-white/55">
-                        <Eye className="h-3.5 w-3.5 text-white/30" />
-                        <span>{creator.metricLabel}</span>
+                    <div className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-2.5 text-white/55">
+                        <Calendar className="h-4 w-4 text-white/30" />
+                        <span>This Week</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-tech font-bold text-white">156</span>
+                        <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded text-[8px] ml-1 select-none animate-pulse">
+                          +18%
+                        </span>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-[11px] text-white/50">Top creators will populate once the feed loads.</p>
-                )}
-              </div>
+
+                    <div className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-2.5 text-white/55">
+                        <Eye className="h-4 w-4 text-white/30" />
+                        <span>Total Views</span>
+                      </div>
+                      <span className="font-tech font-bold text-white">2.48M</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-2.5 text-white/55">
+                        <ThumbsUp className="h-4 w-4 text-white/30" />
+                        <span>Total Likes</span>
+                      </div>
+                      <span className="font-tech font-bold text-white">412K</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-2.5 text-white/55">
+                        <Clock className="h-4 w-4 text-white/30" />
+                        <span>Avg. Watch Time</span>
+                      </div>
+                      <span className="font-tech font-bold text-white">00:47</span>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* TOP CREATORS card */}
+                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                      TOP CREATORS
+                    </h3>
+                    <button className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider hover:text-purple-300 transition">
+                      View All
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 font-semibold text-xs">
+                    {[
+                      { rank: 1, name: "HYBRID", avatar: agentNexus, views: "12.4K" },
+                      { rank: 2, name: "TACTICIAN", avatar: agentAegis, views: "9.8K" },
+                      { rank: 3, name: "DEFENDER", avatar: agentShadow, views: "7.6K" },
+                      { rank: 4, name: "SUPPORT", avatar: agentVoid, views: "6.3K" },
+                      { rank: 5, name: "BERSERKER", avatar: agentRage, views: "5.9K" },
+                    ].map((creator) => (
+                      <div key={creator.rank} className="flex items-center justify-between py-0.5 hover:bg-white/[0.01] transition">
+                        
+                        <div className="flex items-center gap-3">
+                          <span className="font-tech text-[10px] font-black text-white/45 w-3 text-center">
+                            {creator.rank}
+                          </span>
+                          <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-white/5">
+                            <img src={creator.avatar} alt={creator.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex items-center gap-1 text-white/90">
+                            <span>{creator.name}</span>
+                            <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[10px] text-white/55">
+                          <Eye className="h-3.5 w-3.5 text-white/30" />
+                          <span>{creator.views}</span>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+
+              </aside>
+
             </div>
-          </aside>
+          </section>
         </div>
-      </section>
-    </div>
   );
 }
 

@@ -4,15 +4,15 @@ export function RecentActivity() {
   const items = [
     {
       icon: Trophy,
-      title: "NEXUS-01 won a Ranked Battle",
-      sub: "vs VOIDWALKER",
+      title: "HYBRID won a Ranked Battle",
+      sub: "vs SUPPORT",
       value: "+24 $ARENA",
       color: "#00e88f",
       time: "2h ago",
     },
     {
       icon: Shield,
-      title: "NEXUS-01 completed training",
+      title: "HYBRID completed training",
       sub: "Stealth Mastery Lv. 3",
       value: "+150 XP",
       color: "#a036ff",
@@ -28,7 +28,7 @@ export function RecentActivity() {
     },
     {
       icon: Swords,
-      title: "NEXUS-01 joined Arena Championship",
+      title: "HYBRID joined Arena Championship",
       sub: "Round 2",
       value: "",
       color: "#0089ff",

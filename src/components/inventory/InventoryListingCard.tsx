@@ -38,10 +38,10 @@ export function InventoryListingCard({ item, selected, onSelect, onBuy }: Invent
   return (
     <article
       className={cn(
-        "inventory-listing-card group relative flex flex-col overflow-hidden rounded-lg border bg-[#04080f]/95 transition-all duration-300",
+        "inventory-listing-card group relative flex flex-col overflow-hidden rounded-xl border bg-[#04080f]/90 transition-all duration-300 hover:-translate-y-1",
         selected
-          ? "border-[#9a35ff]/55 shadow-[0_0_24px_rgba(154,53,255,0.22)] ring-1 ring-[#9a35ff]/40"
-          : "border-white/10 hover:border-[#9a35ff]/35 hover:shadow-[0_12px_40px_rgba(0,0,0,0.45),0_0_20px_rgba(154,53,255,0.08)]"
+          ? "border-[#9a35ff]/80 shadow-[0_0_30px_rgba(154,53,255,0.3)] ring-1 ring-[#9a35ff]/60"
+          : "border-white/10 hover:border-[#9a35ff]/50 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6),0_0_25px_rgba(154,53,255,0.15)]"
       )}
     >
       <div
@@ -62,12 +62,14 @@ export function InventoryListingCard({ item, selected, onSelect, onBuy }: Invent
         onClick={handleCardClick}
         className="relative w-full cursor-pointer overflow-hidden text-left"
       >
-        <InventoryAssetImage
-          src={item.assetUrl}
-          alt={item.name}
-          compact
-          className="aspect-[4/3] w-full min-h-[112px] max-h-[128px] sm:max-h-[140px]"
-        />
+        <div className="overflow-hidden">
+          <InventoryAssetImage
+            src={item.assetUrl}
+            alt={item.name}
+            compact
+            className="aspect-[4/3] w-full min-h-[112px] max-h-[128px] sm:max-h-[140px] transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#04080f] to-transparent" />
         <span
           className={cn(
@@ -104,7 +106,7 @@ export function InventoryListingCard({ item, selected, onSelect, onBuy }: Invent
           <button
             type="button"
             onClick={handleBuy}
-            className="btn-primary flex h-8 shrink-0 items-center gap-1.5 rounded-md px-3 font-tech text-[9px] font-bold uppercase tracking-wider shadow-[0_0_16px_rgba(154,53,255,0.2)]"
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-gradient-to-r from-[#9a35ff] to-[#7430ff] px-3 font-tech text-[9px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition-all hover:scale-105 hover:from-[#a855ff] hover:to-[#884dff] hover:shadow-[0_0_25px_rgba(154,53,255,0.5)]"
             aria-label={`Buy ${item.name}`}
           >
             <ShoppingCart className="h-3.5 w-3.5" />

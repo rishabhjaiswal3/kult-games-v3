@@ -9,7 +9,7 @@ export const ARENA_LIVE_BATTLES_SECTION_ID = "arena-live-battles";
 const FALLBACK_BATTLES = [
   { a: "ShadowByte", b: "NovaStrike", eloA: 2056, eloB: 1987, watch: "1.2K" },
   { a: "QuantumSoul", b: "VoidWalker", eloA: 2124, eloB: 1888, watch: "956" },
-  { a: "InfernoX", b: "AetherX", eloA: 2011, eloB: 1756, watch: "743" },
+  { a: "InfernoX", b: "SolanaX", eloA: 2011, eloB: 1756, watch: "743" },
   { a: "NeuralReaper-7", b: "CipherX", eloA: 1789, eloB: 1642, watch: "532" },
 ];
 

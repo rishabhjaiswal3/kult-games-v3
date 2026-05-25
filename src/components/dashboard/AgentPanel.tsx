@@ -9,7 +9,7 @@ export function AgentPanel() {
       <div className="grid lg:grid-cols-[352px_minmax(0,1fr)]">
         <img
           src={agentNexus}
-          alt="NEXUS-01"
+          alt="HYBRID"
           className="h-[286px] w-full object-cover object-center lg:h-full"
         />
         <div className="p-5 sm:p-6">
@@ -18,9 +18,9 @@ export function AgentPanel() {
               <span className="rounded border border-[#8b29ff] px-2 py-1 font-tech text-[10px] text-[#a84cff]">
                 GENESIS
               </span>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight">NEXUS-01</h2>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight">HYBRID</h2>
               <div className="mt-2 text-sm text-[#b8a7ff]">
-                ZeroG Clan <span className="px-2 text-white/45">•</span>{" "}
+                Zerog <span className="px-2 text-white/45">•</span>{" "}
                 <span className="text-[#c645ff]">Assassin ♧</span>
               </div>
             </div>
