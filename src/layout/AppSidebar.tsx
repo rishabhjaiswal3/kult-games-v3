@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 type AppSidebarProps = {
   activeLabel?: string;
   isCollapsed?: boolean;
+  isHidden?: boolean;
   onToggleCollapse?: () => void;
 };
 
@@ -192,7 +193,7 @@ function SidebarPromo({ isCollapsed }: { isCollapsed?: boolean }) {
 }
 
 /* ─── Main Sidebar Component ─── */
-export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse }: AppSidebarProps) {
+export function AppSidebar({ activeLabel = "Home", isCollapsed, isHidden, onToggleCollapse }: AppSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
@@ -223,7 +224,16 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
   );
 
   const desktopAside = (
-    <aside className={cn("sidebar-shell hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col overflow-hidden transition-[width] duration-300", isCollapsed ? "w-[72px]" : "w-[225px]")}>
+    <aside
+      className={cn(
+        "sidebar-shell hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col overflow-hidden transition-[width,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        isHidden
+          ? "w-0 -translate-x-3 opacity-0 pointer-events-none"
+          : isCollapsed
+            ? "w-[72px] translate-x-0 opacity-100"
+            : "w-[225px] translate-x-0 opacity-100"
+      )}
+    >
       {/* Background layers */}
       <div className="absolute inset-0 bg-[#040810]/[0.97]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(154,53,255,0.08),transparent_60%)]" />
@@ -234,7 +244,12 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
       <div className="pointer-events-none absolute right-0 top-0 h-32 w-px shadow-[0_0_12px_rgba(154,53,255,0.3)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col">
+      <div
+        className={cn(
+          "relative z-10 flex h-full flex-col transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          isHidden ? "-translate-x-2 opacity-0" : "translate-x-0 opacity-100"
+        )}
+      >
         {sidebarContent()}
       </div>
     </aside>

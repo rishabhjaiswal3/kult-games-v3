@@ -16,13 +16,19 @@ import {
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameDownloadUrl, hasGameDownloadUrl, isGameDownloadable } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
+import { HighwayHustleModeModal } from "@/components/highway/HighwayHustleModeModal";
+import {
+  getHighwayAggregateRouteId,
+  isHighwayHustleFamily,
+  type HighwayHustleModeConfig,
+} from "@/constants/highwayHustleModes";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import type { Game } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
@@ -30,6 +36,16 @@ import type { LucideIcon } from "lucide-react";
 const GAME_FALLBACK_INTROS: Record<string, string> = {
   "highway-hustle":
     "Highway Hustle drops you into a neon-soaked expressway where reaction time is everything. Race through traffic, collect power-ups, and chain multipliers to dominate the on-chain leaderboard.",
+  highwayhustle:
+    "Highway Hustle drops you into a neon-soaked expressway where reaction time is everything. Race through traffic, collect power-ups, and chain multipliers to dominate the on-chain leaderboard.",
+  "highwayhustle-oneway":
+    "One Way mode: classic endless highway racing. Dodge traffic, maximize distance, and post your best run to the global leaderboard.",
+  "highwayhustle-twoway":
+    "Two Way mode: oncoming lanes from both directions. Test directional awareness and survive medium-difficulty traffic waves.",
+  "highwayhustle-speedrun":
+    "Speed Run mode: short burst races focused on acceleration and reflex speed. Built for hard-difficulty score chasing.",
+  "highwayhustle-timebomb":
+    "Time Bomb mode: race the clock before detonation. Expert pacing and high-risk scoring on the neon expressway.",
   "robo-wars":
     "Robo Wars is a real-time PvP battle arena where you assemble a custom combat robot and clash with opponents worldwide. Upgrade your chassis, swap weapon modules, and unleash special abilities.",
 };
@@ -40,6 +56,10 @@ type FactItem = {
   icon: LucideIcon;
   color: string;
 };
+
+function isHighwayHustleGame(id: string, game: Game | null | undefined): boolean {
+  return isHighwayHustleFamily(id) || (game ? isHighwayHustleFamily(game) : false);
+}
 
 function buildFacts(game: Game): FactItem[] {
   const meta = game.metadata ?? {};
@@ -82,6 +102,7 @@ const GameDetail = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [modeModalOpen, setModeModalOpen] = useState(false);
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ["game", id],
@@ -108,6 +129,14 @@ const GameDetail = () => {
     }, 4500);
     return () => window.clearInterval(timer);
   }, [galleryImages.length]);
+
+  const launchHighwayMode = useCallback(
+    (mode: HighwayHustleModeConfig) => {
+      const routeId = game ? getHighwayAggregateRouteId(game) : id ?? "highwayhustle";
+      navigate(`/game/${routeId}/play?mode=${encodeURIComponent(mode.mode)}`);
+    },
+    [game, id, navigate],
+  );
 
   if (isLoading) return <GameDetailSkeleton />;
 
@@ -147,11 +176,15 @@ const GameDetail = () => {
   const canDownload = hasGameDownloadUrl(game);
 
   const handlePlayAccess = () => {
-    if (isAuthenticated) {
-      navigate(`/game/${id}/play`);
+    if (!isAuthenticated) {
+      navigate("/?login=1");
       return;
     }
-    navigate("/?login=1");
+    if (isHighwayHustleGame(id ?? "", game)) {
+      setModeModalOpen(true);
+      return;
+    }
+    navigate(`/game/${id}/play`);
   };
 
   const handleDownloadClick = () => {
@@ -407,6 +440,14 @@ const GameDetail = () => {
           </div>
         </aside>
       </div>
+      <HighwayHustleModeModal
+        open={modeModalOpen}
+        onClose={() => setModeModalOpen(false)}
+        onSelectMode={(mode) => {
+          setModeModalOpen(false);
+          launchHighwayMode(mode);
+        }}
+      />
     </ArenaPageLayout>
   );
 };
