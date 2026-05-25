@@ -163,8 +163,8 @@ const App = () => {
                 <Route path="/achievements" element={<AchievementsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/game/:id" element={<GameDetail />} />
+                <Route path="/game/:id/play" element={<GamePlay />} />
               </Route>
-              <Route path="/game/:id/play" element={<GamePlay />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

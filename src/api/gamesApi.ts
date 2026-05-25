@@ -1,3 +1,7 @@
+import {
+  normalizeHighwayHustleCatalog,
+  resolveHighwayHustleGameById,
+} from "@/constants/highwayHustleModes";
 import apiClient from "@/lib/apiClient";
 import { isRecord, pickBoolean, pickLocalizedText, pickNumber, pickString, unwrapApiData } from "@/api/utils";
 import type {
@@ -148,7 +152,13 @@ export const gamesApi = {
     const { data } = await apiClient.get<ApiEnvelope<unknown>>("/games/all", {
       params: { page, page_size: limit, search },
     });
-    return normalizeGamesResponse(unwrapApiData(data), page, limit);
+    const response = normalizeGamesResponse(unwrapApiData(data), page, limit);
+    const games = normalizeHighwayHustleCatalog(response.games);
+    return {
+      ...response,
+      games,
+      totalCount: games.length,
+    };
   },
 
   getCategories: async (): Promise<string[]> => {
@@ -164,11 +174,16 @@ export const gamesApi = {
   },
 
   getById: async (id: string): Promise<Game> => {
+    const localHighway = resolveHighwayHustleGameById(id);
+    if (localHighway) return localHighway;
+
     const { data } = await apiClient.get<ApiEnvelope<unknown>>(`/games/${id}`);
     const payload = unwrapApiData(data);
-    if (isRecord(payload) && payload.game !== undefined) {
-      return normalizeGame(payload.game);
-    }
-    return normalizeGame(payload);
+    const normalized =
+      isRecord(payload) && payload.game !== undefined
+        ? normalizeGame(payload.game)
+        : normalizeGame(payload);
+
+    return normalized;
   },
 };
