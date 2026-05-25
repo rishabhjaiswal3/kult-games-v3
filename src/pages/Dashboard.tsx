@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { AutonomousPanel } from "@/components/dashboard/AutonomousPanel";
@@ -21,6 +22,7 @@ import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 const Dashboard = () => {
   const { isAuthenticated, walletAddress } = useAuth();
   const { openCreateAgent } = useCreateAgent();
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   const {
     data: profile,
@@ -35,7 +37,24 @@ const Dashboard = () => {
   });
 
   const myAgentsQ = useMyArenaAgents(1, 50);
-  const primaryAgent = myAgentsQ.data?.agents?.[0] ?? null;
+  const agents = useMemo(() => myAgentsQ.data?.agents ?? [], [myAgentsQ.data?.agents]);
+
+  useEffect(() => {
+    if (!agents.length) {
+      setSelectedAgentId(null);
+      return;
+    }
+
+    setSelectedAgentId((current) => {
+      if (current && agents.some((agent) => agent.id === current)) return current;
+      return agents[0]?.id ?? null;
+    });
+  }, [agents]);
+
+  const selectedAgent = useMemo(
+    () => agents.find((agent) => agent.id === selectedAgentId) ?? agents[0] ?? null,
+    [agents, selectedAgentId]
+  );
 
   if (!isAuthenticated) {
     return <DashboardSignInGate />;
@@ -61,7 +80,10 @@ const Dashboard = () => {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
         <div className="min-w-0 space-y-4">
           <DashboardLiveAgentPanel
-            agent={primaryAgent}
+            agent={selectedAgent}
+            agents={agents}
+            selectedAgentId={selectedAgentId}
+            onSelectAgent={setSelectedAgentId}
             isLoading={myAgentsQ.isLoading}
             onCreateAgent={openCreateAgent}
           />
@@ -77,8 +99,8 @@ const Dashboard = () => {
 
         <aside className="space-y-4">
           {profile ? <DashboardAccountPanel profile={profile} /> : null}
-          <BalancePanel />
-          <TraitsPanel />
+          <BalancePanel agent={selectedAgent} />
+          <TraitsPanel agent={selectedAgent} />
           <AutonomousPanel />
           <QuickActions />
         </aside>

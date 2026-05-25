@@ -26,14 +26,16 @@ export interface ZgDaReceipt {
 }
 
 export interface AiArenaAgentTraits {
-  aggression: number;
-  intelligence: number;
-  adaptability: number;
-  resilience: number;
-  creativity: number;
-  loyalty: number;
-  deception: number;
-  patience: number;
+  aggression?: number;
+  intelligence?: number;
+  adaptability?: number;
+  resilience?: number;
+  creativity?: number;
+  loyalty?: number;
+  deception?: number;
+  patience?: number;
+  precision?: number;
+  [key: string]: number | undefined;
 }
 
 export interface AiArenaAgent {
@@ -271,7 +273,7 @@ export interface AiArenaAgentEvolutionResponse {
   eligibleForEvolution: boolean;
 }
 
-/** GET /v1/leaderboards/global/rank/:agentId */
+/** GET /v1/leaderboards/:leaderboardId/rank/:agentId */
 export interface AiArenaAgentRankResponse {
   rank: number;
   agentId: string;

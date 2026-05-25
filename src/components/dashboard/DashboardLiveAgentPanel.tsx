@@ -2,10 +2,14 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Metric } from "@/components/dashboard/Metric";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 type DashboardLiveAgentPanelProps = {
   agent: AiArenaAgent | null;
+  agents: AiArenaAgent[];
+  selectedAgentId: string | null;
+  onSelectAgent: (agentId: string) => void;
   isLoading: boolean;
   onCreateAgent: () => void;
 };
@@ -21,7 +25,18 @@ function winRate(agent: AiArenaAgent): string {
   return `${winRatePct(agent)}%`;
 }
 
-export function DashboardLiveAgentPanel({ agent, isLoading, onCreateAgent }: DashboardLiveAgentPanelProps) {
+function formatAgentOption(agent: AiArenaAgent) {
+  return `${agent.name} — ${agent.archetype} — ELO ${agent.eloRating.toLocaleString()}`;
+}
+
+export function DashboardLiveAgentPanel({
+  agent,
+  agents,
+  selectedAgentId,
+  onSelectAgent,
+  isLoading,
+  onCreateAgent,
+}: DashboardLiveAgentPanelProps) {
   if (isLoading) {
     return (
       <section className="arena-panel flex min-h-[200px] items-center justify-center border-white/8 bg-[#04080f]/95 p-8">
@@ -58,7 +73,7 @@ export function DashboardLiveAgentPanel({ agent, isLoading, onCreateAgent }: Das
           />
         </div>
         <div className="p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <span className="inline-block rounded border border-[#8b29ff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff] shadow-[0_0_10px_rgba(139,41,255,0.3)]">
                 {agent.archetype}
@@ -68,15 +83,41 @@ export function DashboardLiveAgentPanel({ agent, isLoading, onCreateAgent }: Das
                 {agent.clan} · {agent.evolutionStage}
               </p>
             </div>
-            <span
-              className={`rounded-full border px-3 py-1 font-tech text-[9px] font-bold uppercase ${
-                agent.status?.toLowerCase() === "inactive"
-                  ? "border-amber-500/35 bg-amber-950/50 text-amber-400"
-                  : "border-emerald-500/35 bg-emerald-950/50 text-[#00f080]"
-              }`}
-            >
-              {agent.status || "Active"}
-            </span>
+            <div className="w-full space-y-3 sm:max-w-[320px] sm:text-right">
+              <div>
+                <div className="mb-1.5 font-tech text-[9px] uppercase tracking-[0.18em] text-white/40">Your agents</div>
+                <Select value={selectedAgentId ?? agent.id} onValueChange={onSelectAgent}>
+                  <SelectTrigger className="h-11 rounded-md border-white/10 bg-[#0a0f1b]/70 text-left font-tech text-[11px] uppercase tracking-wide text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] focus:border-[#8b29ff]/40 focus:ring-[#8b29ff]/20 focus:ring-offset-0">
+                    <SelectValue placeholder="Select agent" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[120] border-white/10 bg-[#070c14] text-white">
+                    {agents.map((row) => (
+                      <SelectItem
+                        key={row.id}
+                        value={row.id}
+                        className="font-tech text-[11px] uppercase tracking-wide focus:bg-white/10 focus:text-white"
+                      >
+                        {formatAgentOption(row)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
+                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-tech text-[9px] uppercase tracking-wider text-white/45">
+                  {agents.length} fighter{agents.length === 1 ? "" : "s"}
+                </span>
+                <span
+                  className={`rounded-full border px-3 py-1 font-tech text-[9px] font-bold uppercase ${
+                    agent.status?.toLowerCase() === "inactive"
+                      ? "border-amber-500/35 bg-amber-950/50 text-amber-400"
+                      : "border-emerald-500/35 bg-emerald-950/50 text-[#00f080]"
+                  }`}
+                >
+                  {agent.status || "Active"}
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="mt-4 flex items-center gap-3">

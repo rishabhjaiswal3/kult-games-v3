@@ -4,6 +4,7 @@ import { ArrowUpRight, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import dashboardLiveCard from "@/assets/battle-4.gif";
+import { useAuth } from "@/contexts/AuthContext";
 import { APP_NAV_ITEMS } from "@/layout/navConfig";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +25,12 @@ function SidebarNav({
   onNavigate?: () => void;
 }) {
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  const visibleNavItems = APP_NAV_ITEMS.filter((item) => !item.requiresAuth || isAuthenticated);
 
   return (
     <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1">
-      {APP_NAV_ITEMS.map((item, idx) => {
+      {visibleNavItems.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
           (item.path !== "/" && location.pathname.startsWith(item.path));

@@ -30,7 +30,7 @@ export function AutonomousPanel() {
         </div>
       </div>
       <Link
-        to="/ai-arena"
+        to="/autonomous"
         className="mt-4 relative flex h-10 w-full items-center justify-center gap-3 rounded-md border border-[#8b29ff]/60 bg-[#46136f]/70 font-tech text-xs uppercase tracking-wider text-white transition-all duration-300 hover:border-[#c78aff]/80 hover:bg-[#5b1499]/80 hover:shadow-[0_4px_15px_rgba(154,53,255,0.3)] z-10"
       >
         MANAGE AUTONOMOUS <ArrowUpRight className="h-4 w-4" />

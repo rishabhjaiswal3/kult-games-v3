@@ -423,10 +423,13 @@ export const aiArenaGatewayApi = {
     return Array.isArray(data) ? data.map(normalizeTrainingJob) : [];
   },
 
-  /** GET /v1/leaderboards/global/rank/:agentId */
-  getLeaderboardRankForAgent: async (agentId: string): Promise<AiArenaAgentRankResponse> => {
+  /** GET /v1/leaderboards/:leaderboardId/rank/:agentId */
+  getLeaderboardRankForAgent: async (
+    agentId: string,
+    leaderboardId = "global"
+  ): Promise<AiArenaAgentRankResponse> => {
     const { data } = await http().get<AiArenaAgentRankResponse>(
-      `/v1/leaderboards/global/rank/${encodeURIComponent(agentId)}`
+      `/v1/leaderboards/${encodeURIComponent(leaderboardId)}/rank/${encodeURIComponent(agentId)}`
     );
     return data;
   },
