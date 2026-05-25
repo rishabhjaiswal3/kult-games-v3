@@ -36,9 +36,9 @@ import agentAegis from "@/assets/agent-aegis.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
 import agentLumen from "@/assets/agent-lumen.jpg";
-import iconTrain from "@/assets/icon-train.jpg";
-import iconBattle from "@/assets/icon-battle.jpg";
-import iconEarn from "@/assets/icon-earn.jpg";
+import iconTrain from "@/assets/icon-train.png";
+import iconBattle from "@/assets/icon-battle.png";
+import iconEarn from "@/assets/icon-earn.png";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 const agents = [
   {

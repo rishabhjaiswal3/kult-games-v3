@@ -3,6 +3,7 @@ import { getApiClient } from "@/lib/apiClientFactory";
 import { StorageKeys } from "@/constants/storageKeys";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
 import { mergeAgentIntoMineResult } from "@/lib/mergeMyArenaAgents";
+import { AI_ARENA_GATEWAY_URL } from "@/lib/serviceUrls";
 import type {
   AiArenaAgent,
   AiArenaAgentEvolutionResponse,
@@ -14,6 +15,7 @@ import type {
   AiArenaCreateAgentResponse,
   AiArenaCreateTrainingJobRequest,
   AiArenaCreateTrainingJobResponse,
+  AiArenaStartAgentTrainingRequest,
   AiArenaCancelTrainingJobResponse,
   AiArenaDisputeBattleRequest,
   AiArenaDisputeBattleResponse,
@@ -508,6 +510,24 @@ export const aiArenaGatewayApi = {
   getReplay: async (battleId: string): Promise<AiArenaReplayResponse> => {
     const { data } = await http().get<AiArenaReplayResponse>(`/v1/replays/${encodeURIComponent(battleId)}`);
     return data;
+  },
+
+  /** wss://.../v1/battles/ws/battle/:id */
+  getBattleWebSocketUrl: (battleId: string) => {
+    const base = AI_ARENA_GATEWAY_URL.replace(/^http/i, "ws");
+    return `${base}/v1/battles/ws/battle/${encodeURIComponent(battleId)}`;
+  },
+
+  /** POST /v1/agents/:id/train */
+  startAgentTraining: async (
+    agentId: string,
+    body: AiArenaStartAgentTrainingRequest = {}
+  ): Promise<AiArenaCreateTrainingJobResponse> => {
+    const { data } = await http().post<AiArenaCreateTrainingJobResponse>(
+      `/v1/agents/${encodeURIComponent(agentId)}/train`,
+      body
+    );
+    return { job: normalizeTrainingJob(data.job) };
   },
 
   /** POST /v1/training */
