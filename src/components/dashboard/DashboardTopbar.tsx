@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, ChevronRight, Hexagon, Menu, Wallet, Copy, Check } from "lucide-react";
+import { Bell, ChevronRight, Menu, Wallet, Copy, Check } from "lucide-react";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { subscribeOpenLoginModal } from "@/lib/loginModalBus";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
 export function DashboardTopbar() {
-  const [openPanel, setOpenPanel] = useState<"arena" | "wallet" | "notifications" | null>(null);
+  const [openPanel, setOpenPanel] = useState<"wallet" | "notifications" | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -40,7 +40,7 @@ export function DashboardTopbar() {
 
   useEffect(() => subscribeOpenLoginModal(() => setLoginOpen(true)), []);
 
-  const togglePanel = (panel: "arena" | "wallet" | "notifications") => {
+  const togglePanel = (panel: "wallet" | "notifications") => {
     setOpenPanel((current) => (current === panel ? null : panel));
   };
 
@@ -65,21 +65,7 @@ export function DashboardTopbar() {
     <>
       <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[58px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:min-h-[68px] sm:gap-4 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            <div className="relative shrink-0 rounded-md bg-gradient-to-r from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff] max-[379px]:hidden">
-              <button
-                type="button"
-                onClick={() => togglePanel("arena")}
-                className="flex h-[38px] w-full min-w-0 max-w-[8.75rem] items-center gap-1.5 rounded-[5px] bg-[#03070d]/95 px-2 py-2 font-tech text-[10px] transition hover:bg-white/5 min-[430px]:max-w-none sm:gap-3 sm:px-2.5 sm:text-xs"
-              >
-                <span className="flex min-w-0 items-center gap-1.5 text-[#ffc000] sm:gap-2">
-                  <Hexagon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">$ARENA 1.00</span>
-                </span>
-                <span className="hidden shrink-0 text-[#00f080] min-[430px]:inline">+4.35%</span>
-              </button>
-            </div>
-          </div>
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3" />
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
             <div className="relative shrink-0 rounded-md bg-gradient-to-l from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
               <button
@@ -136,20 +122,6 @@ export function DashboardTopbar() {
         </div>
         {openPanel && (
           <div className="absolute right-4 top-full z-50 w-[calc(100vw-2rem)] max-w-sm rounded-md border border-white/12 bg-[#060b15] p-4 shadow-2xl shadow-black/40 sm:right-6 lg:right-8">
-            {openPanel === "arena" && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="font-tech text-xs uppercase text-white/55">$Arena Market</span>
-                  <span className="font-tech text-xs text-[#00f080]">+4.35%</span>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-2xl font-semibold">$1.00</span>
-                  <Link to="/leaderboard" className="font-tech text-[10px] text-[#b65cff] hover:text-white">
-                    VIEW RANKS
-                  </Link>
-                </div>
-              </div>
-            )}
             {openPanel === "wallet" && (
               <div>
                 <div className="flex items-center justify-between">
