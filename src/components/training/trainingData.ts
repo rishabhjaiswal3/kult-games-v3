@@ -24,8 +24,8 @@ export function getRadarPoints(stats: number[], scale = 1) {
 
 export const queueSessions = [
   {
-    agent: "NEXUS-01",
-    clan: "ZeroG Clan",
+    agent: "HYBRID",
+    clan: "Zerog",
     image: agentNexus,
     title: "Battle Simulation",
     pct: 68,
@@ -34,8 +34,8 @@ export const queueSessions = [
     cost: 50,
   },
   {
-    agent: "AEGIS-07",
-    clan: "Base Clan",
+    agent: "TACTICIAN",
+    clan: "Base",
     image: agentAegis,
     title: "Strategy Analysis",
     pct: 42,
@@ -44,8 +44,8 @@ export const queueSessions = [
     cost: 40,
   },
   {
-    agent: "SHADOW-9",
-    clan: "Solana Clan",
+    agent: "DEFENDER",
+    clan: "Solana",
     image: agentShadow,
     title: "Adaptability Drill",
     pct: 25,

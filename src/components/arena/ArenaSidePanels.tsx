@@ -4,7 +4,7 @@ import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard
 
 const FALLBACK_ACTIVITY = [
   { name: "NeuralReaper", action: "defeated", target: "VoidWalker", time: "1m ago", color: "text-neon-purple" },
-  { name: "ShadowByte", action: "defeated", target: "AetherX", time: "2m ago", color: "text-neon-cyan" },
+  { name: "ShadowByte", action: "defeated", target: "SolanaX", time: "2m ago", color: "text-neon-cyan" },
   { name: "QuantumSoul", action: "climbed to", target: "#2", time: "4m ago", color: "text-neon-green" },
 ];
 

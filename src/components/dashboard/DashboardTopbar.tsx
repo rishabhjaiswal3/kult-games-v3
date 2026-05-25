@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, ChevronRight, Hexagon, Menu, Wallet } from "lucide-react";
+import { Bell, ChevronRight, Hexagon, Menu, Wallet, Copy, Check } from "lucide-react";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { subscribeOpenLoginModal } from "@/lib/loginModalBus";
@@ -10,8 +10,20 @@ export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"arena" | "wallet" | "notifications" | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  const [copied, setCopied] = useState(false);
   const { isAuthenticated, walletAddress, logout } = useAuth();
   const location = useLocation();
+  const containerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpenPanel(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const shortWallet = useMemo(() => {
     if (!isAuthenticated || !walletAddress) return "Wallet";
@@ -32,6 +44,13 @@ export function DashboardTopbar() {
     setOpenPanel((current) => (current === panel ? null : panel));
   };
 
+  const handleCopy = () => {
+    if (!walletAddress) return;
+    navigator.clipboard.writeText(walletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleConnectWallet = () => {
     if (isAuthenticated) {
       void logout();
@@ -44,7 +63,7 @@ export function DashboardTopbar() {
 
   return (
     <>
-      <header className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
+      <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[58px] max-w-[1284px] flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:min-h-[68px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
             <div className="relative shrink-0 rounded-md bg-gradient-to-r from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff] max-[379px]:hidden">
@@ -140,7 +159,20 @@ export function DashboardTopbar() {
                   </span>
                 </div>
                 <div className="mt-3 rounded border border-white/10 bg-white/[0.02] p-3 font-tech text-xs">
-                  {isAuthenticated && walletAddress ? shortWallet : "Connect a wallet to access your arena balance."}
+                  {isAuthenticated && walletAddress ? (
+                    <div className="flex items-center justify-between">
+                      <span>{shortWallet}</span>
+                      <button
+                        onClick={handleCopy}
+                        className="text-white/60 hover:text-white transition-colors"
+                        aria-label="Copy wallet address"
+                      >
+                        {copied ? <Check className="h-4 w-4 text-[#00f080]" /> : <Copy className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  ) : (
+                    "Connect a wallet to access your arena balance."
+                  )}
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <Link
@@ -173,7 +205,7 @@ export function DashboardTopbar() {
                 </div>
                 <div className="mt-3 space-y-3 text-xs">
                   <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    NEXUS-01 battle result is ready.
+                    HYBRID battle result is ready.
                   </Link>
                   <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
                     Training slot completed.
