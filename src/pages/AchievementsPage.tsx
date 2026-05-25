@@ -329,54 +329,53 @@ const AchievementsPage = () => {
                       return (
                         <div
                           key={item.id}
-                          className={`arena-panel p-4.5 border bg-[#04080f]/95 flex items-start gap-4 transition relative overflow-hidden group border-white/8 ${
+                          className={`rounded-2xl p-5 border bg-gradient-to-br from-[#0a0f1b]/95 to-[#04080f]/95 flex flex-col sm:flex-row items-start gap-4 transition-all duration-300 relative overflow-visible group hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 border-white/10 ${
                             !item.unlocked ? "opacity-60" : ""
                           }`}
                         >
                           {/* Inner glow shadow for completed items */}
                           {item.unlocked && (
-                            <div className="absolute inset-0 bg-gradient-to-br opacity-5 pointer-events-none transition group-hover:opacity-10" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl pointer-events-none transition group-hover:opacity-100 opacity-50" />
                           )}
 
                           {/* Lock Overlays */}
                           {!item.unlocked && (
-                            <div className="absolute top-2.5 right-2.5 bg-black/40 border border-white/10 text-white/40 text-[9px] font-tech font-black px-1.5 py-0.5 rounded tracking-wide select-none flex items-center gap-1 z-10">
-                              <Lock className="h-2.5 w-2.5" />
+                            <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white/50 text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
+                              <Lock className="h-3 w-3" />
                               <span>LOCKED</span>
                             </div>
                           )}
 
                           {/* Achievement badge/logo */}
-                          <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 relative bg-gradient-to-b ${item.color}`}>
-                            <Icon className="h-5.5 w-5.5 fill-current" />
+                          <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shrink-0 relative bg-gradient-to-br shadow-inner ${item.color}`}>
+                            <Icon className="h-7 w-7 fill-current drop-shadow-md" />
                             {item.unlocked && (
-                              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#04080f] flex items-center justify-center text-white">
-                                <CheckCircle className="h-2.5 w-2.5 fill-current" />
+                              <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-emerald-500 border-4 border-[#04080f] flex items-center justify-center text-white shadow-sm z-10">
+                                <CheckCircle className="h-3 w-3 fill-current" />
                               </div>
                             )}
                           </div>
 
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <h4 className="font-bold text-xs text-white/90 leading-tight uppercase truncate">
+                          <div className="flex-1 min-w-0 flex flex-col h-full justify-center">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h4 className="font-bold text-sm text-white leading-tight uppercase truncate drop-shadow-sm">
                                 {item.name}
                               </h4>
                               {item.unlocked && (
-                                <span className="text-[8px] text-white/40 font-semibold uppercase font-tech tracking-wider select-none">
+                                <span className="text-[10px] text-white/50 font-semibold uppercase font-tech tracking-wider select-none shrink-0">
                                   {item.unlockedDate}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-white/50 leading-relaxed font-semibold">
+                            <p className="text-xs text-white/60 leading-relaxed font-medium mb-3">
                               {item.desc}
                             </p>
                             
                             {/* Points badge */}
-                            <div className="pt-1.5 flex items-center gap-1 text-[9px] font-bold font-tech text-[#b85eff]">
-                              <span>+{item.points} PTS</span>
+                            <div className="mt-auto flex items-center gap-1.5 text-[11px] font-bold font-tech text-[#b85eff] bg-[#b85eff]/10 self-start px-2.5 py-1 rounded-md border border-[#b85eff]/20">
+                              <span className="drop-shadow-sm">+{item.points} PTS</span>
                             </div>
                           </div>
-
                         </div>
                       );
                     })}
