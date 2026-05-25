@@ -22,12 +22,12 @@ import { ClanIcon } from "@/components/arena/ClanIcon";
 import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
-import agentNexus from "@/assets/agent-nexus.jpg";
-import agentShadow from "@/assets/agent-shadow.jpg";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import agentVoid from "@/assets/agent-voidwalker.jpg";
-import agentRage from "@/assets/agent-rageborn.jpg";
-import agentLumen from "@/assets/agent-lumen.jpg";
+import tacticianPortrait from "@/assets/tactician.mp4";
+import assassinPortrait from "@/assets/assassin.gif";
+import berserkerPortrait from "@/assets/berserker.mp4";
+import defenderPortrait from "@/assets/defender.mp4";
+import hybridPortrait from "@/assets/hybrid.mp4";
+import supportPortrait from "@/assets/support.mp4";
 
 const sortOptions = ["Recently Used", "Level", "Win Rate", "Power Score"] as const;
 
@@ -80,7 +80,7 @@ function stageRank(stage?: string) {
 }
 
 function stageLabel(stage?: string) {
-  return (stage?.trim() || "GENESIS").replaceAll("_", " ");
+  return (stage?.trim() || "GENESIS").replace(/_/g, " ");
 }
 
 function progressFromAgent(agent: AiArenaAgent) {
@@ -93,17 +93,17 @@ function progressFromAgent(agent: AiArenaAgent) {
 
 function resolveAgentImage(agent: AiArenaAgent, index: number) {
   const archetype = agent.archetype?.toUpperCase();
-  if (archetype?.includes("ASSASSIN")) return agentNexus;
-  if (archetype?.includes("TACTICIAN")) return agentShadow;
-  if (archetype?.includes("DEFENDER")) return agentAegis;
-  if (archetype?.includes("BERSERKER")) return agentRage;
-  if (archetype?.includes("SUPPORT")) return agentLumen;
-  if (archetype?.includes("STRIKER")) return agentVoid;
+  if (archetype?.includes("ASSASSIN")) return assassinPortrait;
+  if (archetype?.includes("TACTICIAN")) return tacticianPortrait;
+  if (archetype?.includes("DEFENDER")) return defenderPortrait;
+  if (archetype?.includes("BERSERKER")) return berserkerPortrait;
+  if (archetype?.includes("SUPPORT")) return supportPortrait;
+  if (archetype?.includes("HYBRID")) return hybridPortrait;
 
   const byClan = clanTypeFromAgent(agent);
-  if (byClan === "solana") return index % 2 === 0 ? agentShadow : agentLumen;
-  if (byClan === "base") return index % 2 === 0 ? agentAegis : agentRage;
-  return index % 2 === 0 ? agentNexus : agentVoid;
+  if (byClan === "solana") return index % 2 === 0 ? tacticianPortrait : supportPortrait;
+  if (byClan === "base") return index % 2 === 0 ? defenderPortrait : berserkerPortrait;
+  return index % 2 === 0 ? assassinPortrait : hybridPortrait;
 }
 
 function sortAgents(agents: AiArenaAgent[], sortBy: string) {
@@ -254,8 +254,8 @@ const MyAgentsPage = () => {
             </button>
           ))}
         </div>
-        <div className="flex max-sm:w-full items-center gap-2">
-          <div className="relative max-sm:flex-1">
+        <div className="flex max-sm:flex-wrap max-sm:w-full items-center gap-2">
+          <div className="relative max-sm:w-full">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
             <input
               type="text"
@@ -265,11 +265,11 @@ const MyAgentsPage = () => {
               className="w-[180px] max-sm:w-full rounded border border-white/8 bg-[#03070d]/60 py-1.5 pl-9 pr-4 text-xs font-semibold text-white outline-none transition placeholder:text-white/20 focus:border-purple-500/50"
             />
           </div>
-          <div className="relative">
+          <div className="relative max-sm:flex-1">
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as (typeof sortOptions)[number])}
-              className="cursor-pointer appearance-none rounded border border-white/8 bg-[#03070d]/60 py-1.5 pl-3 pr-8 text-xs font-semibold text-white/70 outline-none hover:text-white"
+              className="cursor-pointer max-sm:w-full appearance-none rounded border border-white/8 bg-[#03070d]/60 py-1.5 pl-3 pr-8 text-xs font-semibold text-white/70 outline-none hover:text-white"
             >
               {sortOptions.map((option) => (
                 <option key={option} value={option}>
@@ -282,7 +282,7 @@ const MyAgentsPage = () => {
           <button
             type="button"
             onClick={() => openCreateAgent()}
-            className="flex cursor-pointer items-center gap-1.5 rounded bg-[#9a35ff] px-3.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-purple-600"
+            className="flex cursor-pointer items-center justify-center max-sm:flex-1 gap-1.5 rounded bg-[#9a35ff] px-3.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-purple-600"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>CREATE AGENT</span>
@@ -329,11 +329,22 @@ const MyAgentsPage = () => {
                 }`}
               >
                 <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-white/6 bg-black/45">
-                  <img
-                    src={resolveAgentImage(agent, index)}
-                    alt={agent.name}
-                    className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
-                  />
+                  {resolveAgentImage(agent, index).endsWith(".mp4") ? (
+                    <video
+                      src={resolveAgentImage(agent, index)}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <img
+                      src={resolveAgentImage(agent, index)}
+                      alt={agent.name}
+                      className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-[#04080f]/10 to-transparent" />
                   <div className="absolute left-3.5 top-3.5 flex items-center gap-1 rounded border border-white/10 bg-black/40 px-2 py-0.5 font-tech text-[8px] font-black tracking-wide">
                     <span className={`h-1.5 w-1.5 rounded-full ${active ? "animate-pulse bg-emerald-500" : "bg-white/30"}`} />
