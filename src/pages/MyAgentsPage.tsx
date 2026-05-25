@@ -13,7 +13,9 @@ import {
   Swords,
   TrendingUp,
   UserRound,
+  WalletCards,
 } from "lucide-react";
+import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { useAuth } from "@/contexts/AuthContext";
@@ -134,6 +136,8 @@ const MyAgentsPage = () => {
   const [activeFilterTab, setActiveFilterTab] = useState<string>("ALL AGENTS");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("Recently Used");
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [walletAgentId, setWalletAgentId] = useState<string | null>(null);
   const myAgentsQ = useMyArenaAgents(1, 50);
   const totalAgentsQ = useArenaAgentsList(1, 1);
 
@@ -174,6 +178,11 @@ const MyAgentsPage = () => {
     }),
     sortBy
   );
+
+  const openWalletManager = (agentId: string) => {
+    setWalletAgentId(agentId);
+    setWalletModalOpen(true);
+  };
 
   return (
     <ArenaPageLayout>
@@ -396,7 +405,16 @@ const MyAgentsPage = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 border-t border-white/6 pt-2">
+                  <div className="space-y-2 border-t border-white/6 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => openWalletManager(agent.id)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded border border-cyan-500/20 bg-cyan-500/8 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-400/40 hover:bg-cyan-500/14"
+                    >
+                      <WalletCards className="h-3.5 w-3.5" />
+                      Wallet & Funds
+                    </button>
+                    <div className="flex items-center gap-1.5">
                     <Link
                       to="/ai-arena"
                       className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
@@ -410,6 +428,7 @@ const MyAgentsPage = () => {
                     >
                       <Swords className="h-3.5 w-3.5" />
                     </Link>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -444,6 +463,15 @@ const MyAgentsPage = () => {
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
+
+      <ArenaAgentWalletManagerModal
+        open={walletModalOpen}
+        onOpenChange={setWalletModalOpen}
+        agents={agents}
+        agentsLoading={myAgentsQ.isLoading || waitingForArenaSession}
+        initialAgentId={walletAgentId}
+        onCreateAgent={() => openCreateAgent()}
+      />
     </ArenaPageLayout>
   );
 };
