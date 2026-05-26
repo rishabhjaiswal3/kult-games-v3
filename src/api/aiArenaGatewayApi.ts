@@ -396,6 +396,14 @@ export const aiArenaGatewayApi = {
     };
   },
 
+  /** DELETE /v1/agents/:agentId — retire (soft-delete) an agent. Requires JWT. */
+  retireAgent: async (agentId: string): Promise<{ success: boolean }> => {
+    const { data } = await http().delete<{ success: boolean }>(
+      `/v1/agents/${encodeURIComponent(agentId)}`
+    );
+    return data;
+  },
+
   /** GET /v1/agents/:agentId (gateway; may require JWT depending on deployment) */
   getAgentById: async (agentId: string): Promise<AiArenaAgent> => {
     const { data } = await http().get<{ agent: AiArenaAgent } | AiArenaAgent>(
