@@ -138,7 +138,7 @@ export function GameListingCard({
         </div>
         <div className="absolute bottom-3 left-3 flex translate-y-2 items-center gap-1.5 rounded border border-cyan-300/20 bg-black/60 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-cyan-200 opacity-0 backdrop-blur-sm transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <Radio className="h-3 w-3" />
-          {trailerUrl ? "Trailer autoplay" : "Trailer preview"}
+          {trailerUrl ? "Trailer autoplay" : "Preview"}
         </div>
         <div className="absolute left-3 right-3 top-12 translate-y-2 rounded border border-[#9a35ff]/30 bg-black/70 p-2 opacity-0 shadow-[0_0_28px_rgba(154,53,255,0.18)] backdrop-blur-sm transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <div className="mb-1 flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-[#d6acff]">
