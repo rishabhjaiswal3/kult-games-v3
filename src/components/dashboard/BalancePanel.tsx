@@ -114,7 +114,7 @@ export function BalancePanel({ agent }: BalancePanelProps) {
               src={leagueInfo.image}
               alt={leagueInfo.name}
               title={leagueInfo.name}
-              className="h-12 w-12 object-contain"
+              className="h-[72px] w-[72px] object-contain"
             />
           ) : null}
         </div>

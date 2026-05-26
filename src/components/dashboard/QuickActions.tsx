@@ -6,7 +6,7 @@ export function QuickActions() {
     { label: "Create Agent", icon: Box, color: "#9b4dff", href: "/ai-arena" },
     { label: "Train Agent", icon: Home, color: "#0089ff", href: "/ai-arena" },
     { label: "Find Battle", icon: Swords, color: "#ffc000", href: "/ai-arena" },
-    { label: "Inventory", icon: ShoppingCart, color: "#00e68a", href: "/inventory" },
+    { label: "My Inventory", icon: ShoppingCart, color: "#00e68a", href: "/inventory" },
   ];
 
   return (
@@ -23,7 +23,7 @@ export function QuickActions() {
               className="h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110"
               style={{ color: action.color, filter: `drop-shadow(0 0 8px ${action.color}66)` }}
             />
-            <span className="font-tech text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-white/70">
+            <span className="font-tech text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-white/70 text-center leading-tight break-words w-full">
               {action.label}
             </span>
           </Link>
