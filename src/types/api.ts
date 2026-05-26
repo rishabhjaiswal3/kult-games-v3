@@ -245,6 +245,7 @@ export interface Moment {
   playerWalletAddress: string;
   assetUrl?: string;
   assetMetadata?: Record<string, unknown>;
+  assetZgUrl?: string;
   title: string;
   description?: string;
   tags: string[];
@@ -282,6 +283,8 @@ export interface CreateMomentRequest {
 }
 
 export interface UpdateMomentRequest {
+  assetUrl?: string;
+  assetMetadata?: Record<string, unknown>;
   title?: string;
   description?: string;
   tags?: string[];
