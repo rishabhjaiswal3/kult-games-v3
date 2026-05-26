@@ -485,7 +485,7 @@ function Hero() {
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
       </div>
-      <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black">
+      <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
         <video
           aria-hidden
           autoPlay
