@@ -8,6 +8,8 @@ export interface AiArenaLeaderboardEntry {
   clan?: string;
   eloRating?: number;
   wins?: number;
+  losses?: number;
+  draws?: number;
   archetype?: string;
 }
 

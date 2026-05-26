@@ -1,5 +1,6 @@
-import { getLeaderboardPlayerVisual } from "@/constants/arenaAgentArchetypes";
+import { getLeaderboardPlayerVisual, getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import type { LeaderboardEntry } from "@/types/api";
+import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { clanFromArchetype } from "./ClanIcon";
 
 export type LeaderboardTab = "GLOBAL" | "MY RANK";
@@ -59,6 +60,63 @@ export function entryToDisplayPlayer(entry: LeaderboardEntry, opts?: { isYou?: b
     isYou: opts?.isYou,
     showHexagon: entry.rank <= 5,
   };
+}
+
+/** Maps an actual AI Arena clan string (ZEROG | BASE | SOLANA) to ClanIcon type. */
+function clanFromArenaClean(clan?: string | null): { name: string; type: string } {
+  const c = (clan ?? "").toUpperCase();
+  if (c === "ZEROG") return { name: "ZeroG", type: "zerog" };
+  if (c === "BASE")  return { name: "Base",  type: "base"  };
+  if (c === "SOLANA") return { name: "Solana", type: "solana" };
+  return { name: "ZeroG", type: "zerog" };
+}
+
+/**
+ * Map a real AI Arena leaderboard entry (enriched with agent data) to DisplayPlayer.
+ * Uses actual name, clan, wins, losses, draws from the agent record.
+ */
+export function arenaEntryToDisplayPlayer(
+  entry: AiArenaLeaderboardEntry,
+  opts?: { isYou?: boolean },
+): DisplayPlayer {
+  const archetype = entry.archetype?.trim().toUpperCase() ?? "HYBRID";
+  const portrait = getArenaAgentPortrait({ id: entry.agentId, archetype });
+  const clan = entry.clan ? clanFromArenaClean(entry.clan) : clanFromArchetype(archetype);
+  const name = entry.name?.trim() || `Agent ${entry.agentId.slice(0, 8)}`;
+
+  const wins    = entry.wins    ?? undefined;
+  const losses  = entry.losses  ?? undefined;
+  const draws   = entry.draws   ?? 0;
+  const totalBattles =
+    wins != null && losses != null ? wins + losses + draws : undefined;
+  const winRate =
+    wins != null && totalBattles && totalBattles > 0
+      ? `${Math.round((wins / totalBattles) * 100)}%`
+      : undefined;
+
+  return {
+    rank: entry.rank,
+    name: opts?.isYou ? `${name} (YOU)` : name,
+    avatar: portrait,
+    clanName: clan.name,
+    clanIconType: clan.type,
+    points: Math.round(entry.eloRating ?? entry.score).toLocaleString(),
+    wins,
+    winRate,
+    battles: totalBattles,
+    wallet: entry.agentId,
+    isYou: opts?.isYou,
+    showHexagon: entry.rank <= 5,
+  };
+}
+
+export function arenaEntriesToDisplayPlayers(
+  entries: AiArenaLeaderboardEntry[],
+  myAgentIds?: Set<string>,
+): DisplayPlayer[] {
+  return entries.map((e) =>
+    arenaEntryToDisplayPlayer(e, { isYou: myAgentIds?.has(e.agentId) }),
+  );
 }
 
 export function entriesToDisplayPlayers(
