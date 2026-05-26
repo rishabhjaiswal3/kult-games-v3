@@ -16,6 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
+import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { useAuth } from "@/contexts/AuthContext";
@@ -138,6 +139,7 @@ const MyAgentsPage = () => {
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]>("Recently Used");
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [walletAgentId, setWalletAgentId] = useState<string | null>(null);
+  const [detailAgent, setDetailAgent] = useState<AiArenaAgent | null>(null);
   const myAgentsQ = useMyArenaAgents(1, 50);
   const totalAgentsQ = useArenaAgentsList(1, 1);
 
@@ -415,12 +417,13 @@ const MyAgentsPage = () => {
                       Wallet & Funds
                     </button>
                     <div className="flex items-center gap-1.5">
-                    <Link
-                      to="/ai-arena"
+                    <button
+                      type="button"
+                      onClick={() => setDetailAgent(agent)}
                       className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
                     >
-                      MANAGE AGENT
-                    </Link>
+                      VIEW DETAILS
+                    </button>
                     <Link
                       to="/battles"
                       className="flex items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/40 transition hover:border-white/20 hover:text-white"
@@ -471,6 +474,12 @@ const MyAgentsPage = () => {
         agentsLoading={myAgentsQ.isLoading || waitingForArenaSession}
         initialAgentId={walletAgentId}
         onCreateAgent={() => openCreateAgent()}
+      />
+
+      <AiArenaAgentDetailModal
+        open={!!detailAgent}
+        onOpenChange={(open) => { if (!open) setDetailAgent(null); }}
+        agent={detailAgent}
       />
     </ArenaPageLayout>
   );
