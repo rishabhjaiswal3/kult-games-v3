@@ -1,6 +1,7 @@
 import { Hexagon, Trophy } from "lucide-react";
 import { ClanIcon } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
+import { getRankFromElo } from "@/utils/rankSystem";
 
 function AgentAvatar({ src, alt, className }: { src: string; alt: string; className: string }) {
   if (src.endsWith(".mp4")) {
@@ -94,9 +95,26 @@ function PodiumCard({
         </div>
       </div>
 
-      <div className="relative z-10 mt-2 flex items-center gap-1.5 text-sm font-semibold text-white">
-        <Trophy className="h-4 w-4 text-[#ffc000]" />
-        <span>{player.points} PTS</span>
+      <div className="relative z-10 mt-2 flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
+          <Trophy className="h-4 w-4 text-[#ffc000]" />
+          <span>{player.points} PTS</span>
+        </div>
+        {player.eloRating != null ? (
+          <div className="flex items-center gap-1.5">
+            <img
+              src={getRankFromElo(player.eloRating).image}
+              alt={getRankFromElo(player.eloRating).name}
+              className="h-5 w-5 object-contain"
+            />
+            <span
+              className="font-tech text-[9px] uppercase tracking-wider"
+              style={{ color: getRankFromElo(player.eloRating).color }}
+            >
+              {getRankFromElo(player.eloRating).shortName}
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

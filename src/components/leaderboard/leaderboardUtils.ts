@@ -18,6 +18,8 @@ export type DisplayPlayer = {
   wallet: string;
   isYou?: boolean;
   showHexagon?: boolean;
+  /** Raw ELO value — used to derive rank tier badge. */
+  eloRating?: number;
 };
 
 function shortenWallet(addr: string) {
@@ -120,6 +122,7 @@ export function arenaEntryToDisplayPlayer(
     wallet: entry.agentId,
     isYou: opts?.isYou,
     showHexagon: entry.rank <= 5,
+    eloRating: Math.round(entry.eloRating ?? entry.score),
   };
 }
 
