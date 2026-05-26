@@ -663,6 +663,7 @@ const BattlesPage = () => {
   const [manualMode, setManualMode] = useState<(typeof AI_ARENA_MATCH_MODES)[number]["value"]>("RANKED");
   const [manualGameId, setManualGameId] = useState(AI_ARENA_DEFAULT_GAME_ID);
   const [manualWagerAmount, setManualWagerAmount] = useState("");
+  const [manualOpponentId, setManualOpponentId] = useState("");
   const [battleLookupInput, setBattleLookupInput] = useState("");
   const [selectedBattleId, setSelectedBattleId] = useState<string | null>(null);
   const [disputeReason, setDisputeReason] = useState("");
@@ -860,8 +861,10 @@ const BattlesPage = () => {
   const createBattleMut = useMutation({
     mutationFn: async () => {
       if (!manualBattleAgentId) throw new Error("Select your fighter first.");
+      if (!manualOpponentId.trim()) throw new Error("Enter an opponent ID.");
       return aiArenaGatewayApi.createBattle({
         agentId: manualBattleAgentId,
+        opponentId: manualOpponentId.trim(),
         mode: manualMode,
         gameId: manualGameId,
         wagerAmount: manualMode === "WAGER" && manualWagerAmount.trim() ? Number(manualWagerAmount) : undefined,
@@ -1221,6 +1224,16 @@ const BattlesPage = () => {
                           </option>
                         ))}
                       </select>
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">Opponent ID</span>
+                      <BattleInput
+                        label=""
+                        value={manualOpponentId}
+                        onChange={setManualOpponentId}
+                        placeholder="Agent ID to fight"
+                      />
                     </label>
                     </div>
 

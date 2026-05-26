@@ -4,14 +4,22 @@ import agentNexus from "@/assets/agent-nexus.jpg";
 import agentRage from "@/assets/agent-rageborn.jpg";
 import agentShadow from "@/assets/agent-shadow.jpg";
 import agentVoid from "@/assets/agent-voidwalker.jpg";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 
 export function BattleStrip() {
+  const { data } = useMyArenaAgents();
+  const agents = data?.agents ?? [];
+
+  const fallbackAllies = [agentAegis, agentNexus, agentRage];
+  const fallbackOpponents = [agentShadow, agentVoid, agentVoid];
+
   const cards = [
     {
       title: "Ranked Battle",
       sub: "Diamond League",
-      left: agentAegis,
-      right: agentShadow,
+      left: agents[0] ? getArenaAgentPortrait(agents[0]) : fallbackAllies[0],
+      right: agents[1] ? getArenaAgentPortrait(agents[1]) : fallbackOpponents[0],
       time: "Today, 08:00 PM",
       reward: "+25 $ARENA",
       color: "#0089ff",
@@ -19,8 +27,8 @@ export function BattleStrip() {
     {
       title: "Arena Championship",
       sub: "Round 2",
-      left: agentNexus,
-      right: agentVoid,
+      left: agents[1] ? getArenaAgentPortrait(agents[1]) : fallbackAllies[1],
+      right: agents[2] ? getArenaAgentPortrait(agents[2]) : fallbackOpponents[1],
       time: "Tomorrow, 06:00 PM",
       reward: "+50 $ARENA",
       color: "#8b29ff",
@@ -28,13 +36,29 @@ export function BattleStrip() {
     {
       title: "Community Battle",
       sub: "Open Arena",
-      left: agentRage,
-      right: agentVoid,
+      left: agents[2] ? getArenaAgentPortrait(agents[2]) : fallbackAllies[2],
+      right: agents[0] ? getArenaAgentPortrait(agents[0]) : fallbackOpponents[2],
       time: "May 18, 07:00 PM",
       reward: "+10 $ARENA",
       color: "#f4b400",
     },
   ];
+
+  const renderMedia = (src: string) => {
+    if (src.endsWith(".mp4")) {
+      return (
+        <video
+          src={src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-28 w-full object-cover object-top opacity-90"
+        />
+      );
+    }
+    return <img src={src} alt="" className="h-28 w-full object-cover object-top opacity-90" />;
+  };
 
   return (
     <section>
@@ -60,9 +84,9 @@ export function BattleStrip() {
               </div>
             </div>
             <div className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_auto_1fr] items-end gap-1 px-3">
-              <img src={card.left} alt="" className="h-28 w-full object-cover object-top opacity-90" />
+              {renderMedia(card.left)}
               <span className="pb-12 font-tech text-5xl italic text-white/52">VS</span>
-              <img src={card.right} alt="" className="h-28 w-full object-cover object-top opacity-90" />
+              {renderMedia(card.right)}
             </div>
             <div className="absolute inset-x-0 bottom-0 z-10 flex justify-between bg-gradient-to-t from-[#070a13] to-transparent px-4 pb-3 pt-8 text-xs">
               <span className="text-white/58">{card.time}</span>

@@ -18,13 +18,12 @@ import {
   Hexagon,
 } from "lucide-react";
 
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+
 // Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import agentNexus from "@/assets/agent-nexus.jpg";
-import agentShadow from "@/assets/agent-shadow.jpg";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import agentVoid from "@/assets/agent-voidwalker.jpg";
 import rewardCrate from "@/assets/reward-crate.png";
 
 
@@ -61,6 +60,10 @@ function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; className
 
 const AutonomousPage = () => {
   const [autonomousMode, setAutonomousMode] = useState(true);
+
+  const myAgentsQ = useMyArenaAgents(1, 10);
+  const myAgents = myAgentsQ.data?.agents ?? [];
+  const activeAgents = myAgents.slice(0, 3);
 
   // Radar chart projections for 6 axes (Earnings, Win Rate, Efficiency, Safety, Growth, Adaptability)
   const radarLabels = ["Earnings", "Win Rate", "Efficiency", "Safety", "Growth", "Adaptability"];
@@ -270,15 +273,15 @@ const AutonomousPage = () => {
                       ACTIVE AUTONOMOUS AGENTS
                     </h3>
                     <span className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider select-none">
-                      3 Agents Active
+                      {activeAgents.length} Agents Active
                     </span>
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="w-full min-w-[860px] text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-white/6 text-white/40 font-bold uppercase tracking-wider text-[9px] bg-white/[0.01]">
-                          <th className="px-5 py-3">Agent</th>
+                          <th className="w-[240px] px-5 py-3">Agent</th>
                           <th className="px-5 py-3">Current Mission</th>
                           <th className="px-5 py-3">Status</th>
                           <th className="px-5 py-3">Earnings (24h)</th>
@@ -288,156 +291,68 @@ const AutonomousPage = () => {
                       </thead>
                       <tbody className="divide-y divide-white/6 font-medium">
                         
-                        {/* Agent 1 */}
-                        <tr className="hover:bg-white/[0.01] transition">
-                          <td className="px-5 py-4 flex items-center gap-3">
-                            <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentNexus} alt="HYBRID" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">HYBRID</span>
-                                <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                              </div>
-                              <div className="flex items-center gap-1 text-[9px] text-white/40">
-                                <ClanIcon type="zerog" className="h-3 w-3" />
-                                <span>Zerog &bull; Assassin</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="space-y-0.5">
-                              <span className="text-white/86 text-xs leading-tight font-semibold">Resource Raid</span>
-                              <p className="text-[9px] text-white/40 leading-none">Dusty Outpost</p>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-1.5 text-emerald-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-[10px] font-bold uppercase tracking-wider font-tech">In Progress</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-baseline gap-1 font-tech">
-                              <span className="font-bold text-white">85.40</span>
-                              <span className="text-[8px] font-bold text-white/40">$ARENA</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4 text-center font-tech font-bold text-white/70">
-                            6h 24m
-                          </td>
-                          <td className="px-5 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
-                                VIEW AGENT
-                              </button>
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-white/20 rounded p-1 text-white/40 hover:text-white transition cursor-pointer">
-                                &bull;&bull;&bull;
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {/* Agent 2 */}
-                        <tr className="hover:bg-white/[0.01] transition">
-                          <td className="px-5 py-4 flex items-center gap-3">
-                            <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentAegis} alt="TACTICIAN" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">TACTICIAN</span>
-                                <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                              </div>
-                              <div className="flex items-center gap-1 text-[9px] text-white/40">
-                                <ClanIcon type="base" className="h-3 w-3" />
-                                <span>Base &bull; Defender</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="space-y-0.5">
-                              <span className="text-white/86 text-xs leading-tight font-semibold">Training Focus</span>
-                              <p className="text-[9px] text-white/40 leading-none">Adaptability Drill</p>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-1.5 text-emerald-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-[10px] font-bold uppercase tracking-wider font-tech">In Progress</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-baseline gap-1 font-tech">
-                              <span className="font-bold text-white">72.30</span>
-                              <span className="text-[8px] font-bold text-white/40">$ARENA</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4 text-center font-tech font-bold text-white/70">
-                            5h 58m
-                          </td>
-                          <td className="px-5 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
-                                VIEW AGENT
-                              </button>
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-white/20 rounded p-1 text-white/40 hover:text-white transition cursor-pointer">
-                                &bull;&bull;&bull;
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {/* Agent 3 */}
-                        <tr className="hover:bg-white/[0.01] transition">
-                          <td className="px-5 py-4 flex items-center gap-3">
-                            <div className="w-9 h-9 rounded overflow-hidden border border-white/10 shrink-0 bg-white/5">
-                              <img src={agentShadow} alt="DEFENDER" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-xs leading-none">DEFENDER</span>
-                                <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                              </div>
-                              <div className="flex items-center gap-1 text-[9px] text-white/40">
-                                <ClanIcon type="solana" className="h-3 w-3" />
-                                <span>Solana &bull; Tactician</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="space-y-0.5">
-                              <span className="text-white/86 text-xs leading-tight font-semibold">Arena Battles</span>
-                              <p className="text-[9px] text-white/40 leading-none">3v3 Skirmish</p>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-1.5 text-emerald-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-[10px] font-bold uppercase tracking-wider font-tech">In Progress</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-baseline gap-1 font-tech">
-                              <span className="font-bold text-white">87.90</span>
-                              <span className="text-[8px] font-bold text-white/40">$ARENA</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4 text-center font-tech font-bold text-white/70">
-                            6h 05m
-                          </td>
-                          <td className="px-5 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
-                                VIEW AGENT
-                              </button>
-                              <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-white/20 rounded p-1 text-white/40 hover:text-white transition cursor-pointer">
-                                &bull;&bull;&bull;
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
+                        {activeAgents.length > 0 ? (
+                          activeAgents.map((agent, i) => (
+                            <tr key={agent.id} className="hover:bg-white/[0.01] transition">
+                              <td className="w-[240px] px-5 py-4">
+                                <div className="flex min-w-0 items-center gap-4">
+                                  <ArenaAgentThumbnail agent={agent} className="h-14 w-14 rounded-lg" size="md" />
+                                  <div className="min-w-0 flex-1 space-y-1">
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                      <span className="min-w-0 truncate font-bold text-white text-sm leading-tight">{agent.name}</span>
+                                      <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
+                                    </div>
+                                    <div className="flex min-w-0 items-center gap-1.5 text-[10px] text-white/45">
+                                      <ClanIcon type={agent.clan.toLowerCase()} className="h-3.5 w-3.5 shrink-0" />
+                                      <span className="min-w-0 truncate uppercase tracking-wide">{agent.clan} &bull; {agent.archetype}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4">
+                                <div className="space-y-0.5">
+                                  <span className="text-white/86 text-xs leading-tight font-semibold">
+                                    {i === 0 ? "Resource Raid" : i === 1 ? "Training Focus" : "Arena Battles"}
+                                  </span>
+                                  <p className="text-[9px] text-white/40 leading-none">
+                                    {i === 0 ? "Dusty Outpost" : i === 1 ? "Adaptability Drill" : "3v3 Skirmish"}
+                                  </p>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-1.5 text-emerald-400">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span className="text-[10px] font-bold uppercase tracking-wider font-tech">In Progress</span>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4">
+                                <div className="flex items-baseline gap-1 font-tech">
+                                  <span className="font-bold text-white">{[85.40, 72.30, 87.90][i % 3]}</span>
+                                  <span className="text-[8px] font-bold text-white/40">$ARENA</span>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4 text-center font-tech font-bold text-white/70">
+                                {["6h 24m", "5h 58m", "6h 05m"][i % 3]}
+                              </td>
+                              <td className="px-5 py-4 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
+                                    VIEW AGENT
+                                  </button>
+                                  <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-white/20 rounded p-1 text-white/40 hover:text-white transition cursor-pointer">
+                                    &bull;&bull;&bull;
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="px-5 py-8 text-center text-white/40 text-sm">
+                              No active agents available.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -590,34 +505,35 @@ const AutonomousPage = () => {
                 </div>
 
                 {/* STRATEGY PERFORMANCE radar card */}
-                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
-                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+                  <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold leading-snug sm:text-xs">
                     STRATEGY PERFORMANCE (7D)
                   </h3>
 
                   {/* SVG Spider Radar Chart */}
-                  <div className="flex justify-center py-2 relative">
-                    <svg className="w-full max-w-[210px] aspect-square overflow-visible" viewBox="0 0 200 200">
+                  <div className="relative flex justify-center py-1 sm:py-2">
+                    <svg className="w-full max-w-[300px] aspect-[1.22/1]" viewBox="0 0 244 200" role="img" aria-label="Strategy performance radar chart">
                       {/* Grid Hexagons */}
                       {[0.25, 0.5, 0.75, 1.0].map((scale) => (
-                        <polygon
-                          key={scale}
-                          points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)}
-                          fill="none"
-                          stroke="rgba(255, 255, 255, 0.04)"
-                          strokeWidth="1"
-                        />
+                        <g key={scale} transform="translate(22 0)">
+                          <polygon
+                            points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)}
+                            fill="none"
+                            stroke="rgba(255, 255, 255, 0.04)"
+                            strokeWidth="1"
+                          />
+                        </g>
                       ))}
 
                       {/* Radial Grid lines */}
                       {Array.from({ length: 6 }).map((_, i) => {
                         const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 100 + 70 * Math.cos(angle);
+                        const x = 122 + 70 * Math.cos(angle);
                         const y = 100 + 70 * Math.sin(angle);
                         return (
                           <line
                             key={i}
-                            x1="100"
+                            x1="122"
                             y1="100"
                             x2={x}
                             y2={y}
@@ -628,28 +544,32 @@ const AutonomousPage = () => {
                       })}
 
                       {/* Average Strategy polygon (dashed grey line) */}
-                      <polygon
-                        points={getRadarPoints(averageStats)}
-                        fill="none"
-                        stroke="rgba(255, 255, 255, 0.25)"
-                        strokeDasharray="2,2"
-                        strokeWidth="1"
-                      />
+                      <g transform="translate(22 0)">
+                        <polygon
+                          points={getRadarPoints(averageStats)}
+                          fill="none"
+                          stroke="rgba(255, 255, 255, 0.25)"
+                          strokeDasharray="2,2"
+                          strokeWidth="1"
+                        />
+                      </g>
 
                       {/* Active Strategy polygon (glowing purple fill) */}
-                      <polygon
-                        points={getRadarPoints(strategyStats)}
-                        fill="rgba(154, 53, 255, 0.15)"
-                        stroke="#9a35ff"
-                        strokeWidth="1.5"
-                        className="drop-shadow-[0_0_8px_rgba(154,53,255,0.4)]"
-                      />
+                      <g transform="translate(22 0)">
+                        <polygon
+                          points={getRadarPoints(strategyStats)}
+                          fill="rgba(154, 53, 255, 0.15)"
+                          stroke="#9a35ff"
+                          strokeWidth="1.5"
+                          className="drop-shadow-[0_0_8px_rgba(154,53,255,0.4)]"
+                        />
+                      </g>
 
                       {/* Grid Corners Anchor Nodes */}
                       {strategyStats.map((val, i) => {
                         const angle = (i * 60 - 90) * (Math.PI / 180);
                         const r = (val / 100) * 70;
-                        const x = 100 + r * Math.cos(angle);
+                        const x = 122 + r * Math.cos(angle);
                         const y = 100 + r * Math.sin(angle);
                         return (
                           <circle
@@ -667,7 +587,7 @@ const AutonomousPage = () => {
                       {/* Axis Label Labels */}
                       {radarLabels.map((lbl, i) => {
                         const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 100 + 82 * Math.cos(angle);
+                        const x = 122 + 87 * Math.cos(angle);
                         const y = 100 + 82 * Math.sin(angle);
                         const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
                         
@@ -683,7 +603,7 @@ const AutonomousPage = () => {
                               fill="rgba(255, 255, 255, 0.5)"
                               fontSize="7.5"
                               fontWeight="600"
-                              className="font-sans uppercase tracking-wider"
+                              className="font-sans uppercase"
                             >
                               {lbl}
                             </text>
@@ -705,12 +625,12 @@ const AutonomousPage = () => {
                   </div>
 
                   {/* Legend */}
-                  <div className="flex justify-center items-center gap-4 text-[9px] font-semibold tracking-wider text-white/50">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[9px] font-semibold tracking-wider text-white/50">
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
                       <div className="w-2.5 h-2.5 bg-[#9a35ff]/20 border border-[#9a35ff] rounded-sm" />
                       <span>THIS STRATEGY</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
                       <div className="w-2.5 h-0.5 border-t border-white/35 border-dashed" />
                       <span>AVERAGE</span>
                     </div>
