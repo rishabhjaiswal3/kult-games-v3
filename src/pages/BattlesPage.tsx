@@ -830,7 +830,14 @@ const BattlesPage = () => {
       const battleId = result.match.battleId;
       setSelectedBattleId(battleId);
       setBattleLookupInput(battleId);
-      toast.success("Battle created from the open lobby.");
+      toast.success("Battle starting — watch the live state below.");
+      // Open status modal for the joiner's agent so they see the faceoff too.
+      // The matchmaking-service writes a match:found Redis key for both agents;
+      // the modal's polling will pick it up and transition to "Match found".
+      if (challengeAgentId) {
+        setStatusAgentId(challengeAgentId);
+        setStatusModalOpen(true);
+      }
       await invalidateBattleOps();
     },
     onError: (error) => {
