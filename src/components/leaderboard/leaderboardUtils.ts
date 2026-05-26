@@ -1,4 +1,4 @@
-import { getLeaderboardPlayerVisual, getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
+import { getLeaderboardPlayerVisual, getArenaAgentPortrait, ARENA_AGENT_ARCHETYPE_CARDS } from "@/constants/arenaAgentArchetypes";
 import type { LeaderboardEntry } from "@/types/api";
 import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { clanFromArchetype } from "./ClanIcon";
@@ -75,12 +75,25 @@ function clanFromArenaClean(clan?: string | null): { name: string; type: string 
  * Map a real AI Arena leaderboard entry (enriched with agent data) to DisplayPlayer.
  * Uses actual name, clan, wins, losses, draws from the agent record.
  */
+/**
+ * Returns the same archetype-specific animated asset that My Agents uses
+ * (mp4 for most archetypes, gif for Assassin). Falls back to the jpg pool.
+ */
+function getLeaderboardAvatarByArchetype(archetype: string, agentId: string): string {
+  const normalized = archetype.trim().toUpperCase();
+  const card = ARENA_AGENT_ARCHETYPE_CARDS.find((c) => c.archetype === normalized);
+  // card.image is the animated asset (mp4/gif) — same as My Agents page
+  if (card?.image) return card.image;
+  // Fallback: stable jpg from pool (works in <img> tag)
+  return getArenaAgentPortrait({ id: agentId, archetype });
+}
+
 export function arenaEntryToDisplayPlayer(
   entry: AiArenaLeaderboardEntry,
   opts?: { isYou?: boolean },
 ): DisplayPlayer {
   const archetype = entry.archetype?.trim().toUpperCase() ?? "HYBRID";
-  const portrait = getArenaAgentPortrait({ id: entry.agentId, archetype });
+  const portrait = getLeaderboardAvatarByArchetype(archetype, entry.agentId);
   const clan = entry.clan ? clanFromArenaClean(entry.clan) : clanFromArchetype(archetype);
   const name = entry.name?.trim() || `Agent ${entry.agentId.slice(0, 8)}`;
 
