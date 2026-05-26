@@ -10,17 +10,17 @@ export function Quests() {
 
   return (
     <section className="arena-panel p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-tech text-xs uppercase">Quests</h3>
-        <span className="font-tech text-[10px] text-white/40">RESETS IN 12:45:30</span>
+        <span className="whitespace-nowrap font-tech text-[10px] text-white/40">RESETS IN 12:45:30</span>
       </div>
       <div className="mt-3 space-y-2">
         {quests.map(([title, count, reward, pct]) => (
           <div key={title} className="rounded-md border border-white/7 bg-white/[0.015] p-3">
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span>{title}</span>
-              <span className="font-semibold">{count}</span>
-              <span className="text-[#00f080]">{reward}</span>
+            <div className="grid grid-cols-[minmax(0,1fr)_max-content_max-content] items-start gap-x-3 gap-y-1 text-xs">
+              <span className="min-w-0 pr-1 leading-snug">{title}</span>
+              <span className="whitespace-nowrap font-semibold leading-snug">{count}</span>
+              <span className="whitespace-nowrap leading-snug text-[#00f080]">{reward}</span>
             </div>
             <div className="mt-3 h-1 rounded-full bg-white/8">
               <div
