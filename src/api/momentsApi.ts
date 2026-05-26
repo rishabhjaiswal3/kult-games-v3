@@ -21,6 +21,31 @@ type ListMomentsParams = {
   searchQuery?: string;
 };
 
+type PresignUploadResponse = {
+  upload_url: string;
+  public_url: string;
+  required_headers: Record<string, string>;
+};
+
+type MomentAssetMetadata = {
+  mediaType: "image" | "video";
+  fileType: string;
+  fileSizeBytes: number;
+  durationMs?: number;
+  width?: number;
+  height?: number;
+};
+
+type CreateMomentFromFileInput = Omit<CreateMomentRequest, "assetUrl" | "assetMetadata"> & {
+  assetFile: File;
+  assetMetadata?: Record<string, unknown>;
+};
+
+const MAX_VIDEO_DURATION_MS = 60_000;
+const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]);
+const SUPPORTED_VIDEO_TYPES = new Set(["video/mp4", "video/webm"]);
+const DEFAULT_ASSET_CONTENT_TYPE = "application/octet-stream";
+
 function normalizeMoment(rawValue: unknown): Moment {
   const raw = isRecord(rawValue) ? rawValue : {};
 
@@ -29,6 +54,7 @@ function normalizeMoment(rawValue: unknown): Moment {
     playerWalletAddress: pickString(raw.playerWalletAddress, raw.player_wallet_address) ?? "",
     assetUrl: pickString(raw.assetUrl, raw.asset_url),
     assetMetadata: isRecord(raw.assetMetadata) ? raw.assetMetadata : undefined,
+    assetZgUrl: pickString(raw.assetZgUrl, raw.asset_zg_url),
     title: pickString(raw.title) ?? "",
     description: pickString(raw.description),
     tags: Array.isArray(raw.tags) ? raw.tags.filter((value): value is string => typeof value === "string") : [],
@@ -58,6 +84,121 @@ function normalizeMoment(rawValue: unknown): Moment {
     createdAt: pickString(raw.createdAt, raw.created_at),
     updatedAt: pickString(raw.updatedAt, raw.updated_at),
   };
+}
+
+function sanitizeFilenameSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function inferExtension(file: File) {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  if (fromName) return fromName;
+
+  if (file.type === "image/jpeg" || file.type === "image/jpg") return "jpg";
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/gif") return "gif";
+  if (file.type === "image/webp") return "webp";
+  if (file.type === "video/mp4") return "mp4";
+  if (file.type === "video/webm") return "webm";
+
+  return "bin";
+}
+
+function buildUploadFilename(file: File) {
+  const originalBase = file.name.replace(/\.[^.]+$/, "");
+  const sanitizedBase = sanitizeFilenameSegment(originalBase) || "moment";
+  const randomPart =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+
+  return `${Date.now()}-${randomPart}-${sanitizedBase}.${inferExtension(file)}`;
+}
+
+function readVideoMetadata(file: File) {
+  return new Promise<Pick<MomentAssetMetadata, "durationMs" | "width" | "height">>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const video = document.createElement("video");
+
+    const cleanup = () => URL.revokeObjectURL(objectUrl);
+
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      cleanup();
+      const durationMs = Math.round(video.duration * 1000);
+      if (!Number.isFinite(durationMs) || durationMs <= 0) {
+        reject(new Error("Could not read video duration"));
+        return;
+      }
+      if (durationMs > MAX_VIDEO_DURATION_MS) {
+        reject(new Error("Video clips must be 60 seconds or shorter"));
+        return;
+      }
+      resolve({
+        durationMs,
+        width: video.videoWidth || undefined,
+        height: video.videoHeight || undefined,
+      });
+    };
+    video.onerror = () => {
+      cleanup();
+      reject(new Error("Could not read video metadata"));
+    };
+    video.src = objectUrl;
+  });
+}
+
+async function buildAssetMetadata(file: File, extraMetadata?: Record<string, unknown>): Promise<MomentAssetMetadata> {
+  const fileType = file.type || DEFAULT_ASSET_CONTENT_TYPE;
+
+  if (SUPPORTED_IMAGE_TYPES.has(fileType)) {
+    return {
+      ...extraMetadata,
+      mediaType: "image",
+      fileType,
+      fileSizeBytes: file.size,
+    };
+  }
+
+  if (SUPPORTED_VIDEO_TYPES.has(fileType)) {
+    return {
+      ...extraMetadata,
+      mediaType: "video",
+      fileType,
+      fileSizeBytes: file.size,
+      ...(await readVideoMetadata(file)),
+    };
+  }
+
+  throw new Error("Unsupported moment media type. Use JPG, PNG, GIF, WebP, MP4, or WebM.");
+}
+
+async function presignMomentUpload(file: File) {
+  const { data } = await apiClient.post<ApiEnvelope<PresignUploadResponse>>("/upload/presign", {
+    filename: buildUploadFilename(file),
+    contentType: file.type || DEFAULT_ASSET_CONTENT_TYPE,
+  });
+
+  return unwrapApiData(data);
+}
+
+async function uploadMomentAsset(presignedUpload: PresignUploadResponse, file: File) {
+  const response = await fetch(presignedUpload.upload_url, {
+    method: "PUT",
+    headers: new Headers(presignedUpload.required_headers),
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw new Error((await response.text()) || `Upload failed with status ${response.status}`);
+  }
+
+  return presignedUpload.public_url;
 }
 
 function normalizeMomentsFeed(payload: unknown, fallbackPage: number, fallbackPerPage: number): MomentsFeedResponse {
@@ -151,6 +292,18 @@ export const momentsApi = {
   create: async (payload: CreateMomentRequest): Promise<CreateMomentResponse> => {
     const { data } = await apiClient.post<ApiEnvelope<CreateMomentResponse>>("/moments/register", payload);
     return unwrapApiData(data);
+  },
+
+  createFromFile: async ({ assetFile, assetMetadata, ...payload }: CreateMomentFromFileInput): Promise<CreateMomentResponse> => {
+    const metadata = await buildAssetMetadata(assetFile, assetMetadata);
+    const presignedUpload = await presignMomentUpload(assetFile);
+    const assetUrl = await uploadMomentAsset(presignedUpload, assetFile);
+
+    return momentsApi.create({
+      ...payload,
+      assetUrl,
+      assetMetadata: metadata,
+    });
   },
 
   update: async (momentId: string, payload: UpdateMomentRequest): Promise<Moment> => {
