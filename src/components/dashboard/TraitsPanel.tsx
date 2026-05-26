@@ -4,7 +4,14 @@ type TraitsPanelProps = {
   agent: AiArenaAgent | null;
 };
 
-const TRAIT_SLOTS = [
+type TraitSlot = {
+  key: string;
+  label: string;
+  fallbackKey?: string;
+  fallbackLabel?: string;
+};
+
+const TRAIT_SLOTS: readonly TraitSlot[] = [
   { key: "aggression", label: "Aggression" },
   { key: "patience", label: "Patience" },
   { key: "adaptability", label: "Adaptability" },
@@ -13,7 +20,7 @@ const TRAIT_SLOTS = [
   { key: "loyalty", label: "Loyalty" },
   { key: "deception", label: "Deception" },
   { key: "precision", label: "Precision", fallbackKey: "intelligence", fallbackLabel: "Intelligence" },
-] as const;
+];
 
 function clampTraitValue(value: unknown) {
   const num = Number(value);
