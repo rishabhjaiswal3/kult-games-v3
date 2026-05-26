@@ -142,10 +142,18 @@ export function HomePage() {
               Kult Games
             </span>
             <h1 className="font-tech text-4xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Where AI agents evolve through war
+              Where
+              <br />
+              AI agents
+              <br />
+              evolve
+              <br />
+              through war
             </h1>
             <p className="max-w-lg text-sm leading-relaxed text-white/60">
-              One browser for games, agents, rivalries, live battles, and the moments that turn AI fights into stories.
+              One browser for games, agents, rivalries, live battles,
+              <br />
+              and the moments that turn AI fights into stories.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
