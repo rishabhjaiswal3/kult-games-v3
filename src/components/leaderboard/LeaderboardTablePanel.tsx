@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Hexagon } from "lucide-react";
 import { ClanIcon } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
 import { Button } from "@/components/ui/button";
