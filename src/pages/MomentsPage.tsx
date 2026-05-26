@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef } from "react";
 import { MOMENTS_IFRAME_URL } from "@/lib/momentsUrl";
 import { useAuth } from "@/contexts/AuthContext";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { momentsApi } from "@/api/momentsApi";
+import { toast } from "sonner";
 import {
   ArrowUpRight,
   ChevronDown,
@@ -26,6 +28,9 @@ import {
   Video,
   ThumbsUp,
   Calendar,
+  Loader2,
+  Upload,
+  X,
 } from "lucide-react";
 
 // Asset Imports
@@ -113,6 +118,8 @@ interface Moment {
   isBookmarked: boolean;
   category: string;
   thumbnail: string;
+  mediaType?: "image" | "video";
+  assetUrl?: string;
 }
 
 // 8 Moment items matching mockup list
@@ -246,6 +253,7 @@ export function MomentsPage() {
   const [activeTab, setActiveTab] = useState<MainTab>("DISCOVER");
   const [activeCategory, setActiveCategory] = useState<SubCategory>("TRENDING");
   const [moments, setMoments] = useState<Moment[]>(INITIAL_MOMENTS);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Filters State
   const [selectedGame, setSelectedGame] = useState("ALL GAMES");
@@ -259,7 +267,7 @@ export function MomentsPage() {
 
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { isAuthenticated, player } = useAuth();
+  const { isAuthenticated, login, player } = useAuth();
 
   const sendAuthToIframe = useCallback(() => {
     const iframe = iframeRef.current;
@@ -301,6 +309,19 @@ export function MomentsPage() {
     );
   };
 
+  const handleOpenCreate = () => {
+    if (!isAuthenticated) {
+      toast.error("Connect wallet first");
+      login();
+      return;
+    }
+    setCreateOpen(true);
+  };
+
+  const handleMomentCreated = (moment: Moment) => {
+    setMoments((current) => [moment, ...current]);
+  };
+
   // Filter moments array based on Search, Tabs, and Filters
   const filteredMoments = moments.filter((m) => {
     // Search filter
@@ -328,7 +349,8 @@ export function MomentsPage() {
   });
 
   return (
-    <div className="min-h-full text-foreground bg-transparent">
+    <>
+      <div className="min-h-full text-foreground bg-transparent">
       {/* Background Glow */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
@@ -344,6 +366,16 @@ export function MomentsPage() {
                   <p className="mt-1 text-[11px] text-white/55 font-medium">
                     Epic plays, insane clutches, and legendary victories. Replay and share your best battles.
                   </p>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleOpenCreate}
+                    className="flex h-9 items-center gap-2 rounded border border-purple-500/35 bg-purple-600/18 px-4 text-[10px] font-tech font-black uppercase tracking-wider text-purple-100 shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-purple-400/70 hover:bg-purple-600/28"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Create Moment
+                  </button>
                 </div>
 
                 {/* Sub Navigation tabs */}
@@ -572,12 +604,21 @@ export function MomentsPage() {
                         {/* Hover Playable Thumbnail Video Card */}
                         <div className="relative aspect-[16/9] rounded overflow-hidden bg-black/40 border border-white/8 group cursor-pointer">
                           
-                          {/* Image Thumbnail */}
-                          <img
-                            src={item.thumbnail}
-                            alt={item.title}
-                            className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
-                          />
+                          {item.mediaType === "video" && item.assetUrl ? (
+                            <video
+                              src={item.assetUrl}
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={item.thumbnail}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                            />
+                          )}
                           
                           {/* Dark overlay backdrop */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent group-hover:via-black/30 transition-all duration-300" />
@@ -849,8 +890,257 @@ export function MomentsPage() {
 
             </div>
           </section>
-        </div>
+      </div>
+      <CreateMomentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={handleMomentCreated}
+      />
+    </>
   );
 }
 
 export default MomentsPage;
+
+type CreateMomentDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: (moment: Moment) => void;
+};
+
+const ACCEPTED_MOMENT_MEDIA = "image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm";
+
+function formatDuration(seconds: number) {
+  const safe = Math.max(0, Math.round(seconds));
+  const mins = Math.floor(safe / 60);
+  const secs = safe % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMomentDialogProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+  const [game, setGame] = useState("WARZONE WARRIORS");
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const reset = (revokePreview = true) => {
+    setTitle("");
+    setDescription("");
+    setTags("");
+    setGame("WARZONE WARRIORS");
+    setFile(null);
+    setDuration(null);
+    if (revokePreview && previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFile = (nextFile: File | undefined) => {
+    if (!nextFile) return;
+    if (!ACCEPTED_MOMENT_MEDIA.split(",").includes(nextFile.type)) {
+      toast.error("Use JPG, PNG, GIF, WebP, MP4, or WebM");
+      return;
+    }
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const objectUrl = URL.createObjectURL(nextFile);
+    setFile(nextFile);
+    setPreviewUrl(objectUrl);
+    setDuration(null);
+
+    if (nextFile.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        const seconds = video.duration;
+        if (!Number.isFinite(seconds) || seconds <= 0) {
+          toast.error("Could not read video duration");
+          reset();
+          return;
+        }
+        if (seconds > 60) {
+          toast.error("Video clips must be 60 seconds or shorter");
+          reset();
+          return;
+        }
+        setDuration(seconds);
+      };
+      video.onerror = () => {
+        toast.error("Could not read video metadata");
+        reset();
+      };
+      video.src = objectUrl;
+    }
+  };
+
+  const submit = async () => {
+    if (!title.trim()) {
+      toast.error("Add a title");
+      return;
+    }
+    if (!file) {
+      toast.error("Choose an image or video clip");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await momentsApi.createFromFile({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        tags: tags
+          .split(",")
+          .map((tag) => tag.trim().replace(/^#/, ""))
+          .filter(Boolean)
+          .slice(0, 10),
+        relatedGames: [game.toLowerCase().replace(/\s+/g, "-")],
+        assetFile: file,
+      });
+
+      const mediaType = file.type.startsWith("video/") ? "video" : "image";
+      const localUrl = previewUrl ?? "";
+      onCreated({
+        id: Date.now(),
+        title: title.trim(),
+        game,
+        duration: mediaType === "video" ? formatDuration(duration ?? 0) : "00:00",
+        creator: "YOU",
+        creatorAvatar: agentNexus,
+        clanName: "Kult",
+        clanIconType: "kult",
+        views: "0",
+        likes: "0",
+        isBookmarked: false,
+        category: "RECENT",
+        thumbnail: mediaType === "image" ? localUrl : momentFeatured,
+        mediaType,
+        assetUrl: localUrl,
+      });
+
+      toast.success("Moment created", { description: result.momentId });
+      onOpenChange(false);
+      reset(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create moment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-white/10 bg-[#050914] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+          <div>
+            <h2 className="font-tech text-sm font-black uppercase tracking-wider text-white">Create Moment</h2>
+            <p className="mt-1 text-[11px] text-white/45">Share an image, GIF, or video clip up to 60 seconds.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              reset();
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded border border-white/10 text-white/50 hover:text-white"
+            aria-label="Close create moment"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-5">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded border border-dashed border-white/15 bg-white/[0.03] text-left transition hover:border-purple-400/50"
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_MOMENT_MEDIA}
+              onChange={(event) => handleFile(event.target.files?.[0])}
+              className="hidden"
+            />
+            {previewUrl ? (
+              file?.type.startsWith("video/") ? (
+                <video src={previewUrl} className="h-full w-full object-cover" controls playsInline preload="metadata" />
+              ) : (
+                <img src={previewUrl} alt="Moment preview" className="h-full w-full object-cover" />
+              )
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <Upload className="h-7 w-7 text-purple-300" />
+                <span className="text-xs font-bold text-white/75">Choose media</span>
+                <span className="text-[10px] text-white/38">JPG, PNG, GIF, WebP, MP4, WebM</span>
+              </div>
+            )}
+          </button>
+
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            maxLength={200}
+            placeholder="Moment title"
+            className="h-10 w-full rounded border border-white/10 bg-[#080d19] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-purple-400/60"
+          />
+
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={2000}
+            rows={3}
+            placeholder="Describe the play..."
+            className="w-full resize-none rounded border border-white/10 bg-[#080d19] px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-purple-400/60"
+          />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <select
+              value={game}
+              onChange={(event) => setGame(event.target.value)}
+              className="h-10 rounded border border-white/10 bg-[#080d19] px-3 text-xs font-bold uppercase text-white outline-none focus:border-purple-400/60"
+            >
+              <option>WARZONE WARRIORS</option>
+              <option>ROBOWARS</option>
+              <option>HIGHWAY HUSTLE</option>
+            </select>
+            <input
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder="Tags, comma separated"
+              className="h-10 rounded border border-white/10 bg-[#080d19] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-purple-400/60"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-white/8 px-5 py-4">
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              reset();
+            }}
+            className="h-9 rounded border border-white/10 px-4 text-[10px] font-tech font-bold uppercase text-white/60 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={isSubmitting}
+            className="flex h-9 items-center gap-2 rounded bg-purple-600 px-4 text-[10px] font-tech font-black uppercase tracking-wider text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
