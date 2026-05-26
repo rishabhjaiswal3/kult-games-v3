@@ -62,6 +62,48 @@ export interface AiArenaAgent {
   avatarRootHash?: string | null;
 }
 
+// ── Achievements ─────────────────────────────────────────────────────────────
+
+export type AchievementRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+export type AchievementCategory = "BATTLES" | "TRAINING" | "AGENTS" | "AUTONOMOUS" | "COLLECTION" | "SPECIAL";
+
+export interface AiArenaAchievement {
+  id: string;
+  name: string;
+  desc: string;
+  points: number;
+  category: AchievementCategory;
+  rarity: AchievementRarity;
+  unlocked: boolean;
+  progress?: { current: number; target: number };
+}
+
+export interface AiArenaAchievementsResponse {
+  agentId: string;
+  agentName: string;
+  stats: {
+    totalPoints: number;
+    unlockedCount: number;
+    totalCount: number;
+    categoriesCompleted: number;
+    totalCategories: number;
+    commonCount: number;
+    rareCount: number;
+    epicCount: number;
+    legendaryCount: number;
+    totalCommon: number;
+    totalRare: number;
+    totalEpic: number;
+    totalLegendary: number;
+  };
+  categories: {
+    name: AchievementCategory;
+    unlockedCount: number;
+    totalCount: number;
+  }[];
+  achievements: AiArenaAchievement[];
+}
+
 export interface AiArenaCreateAgentRequest {
   name: string;
   clan: "ZEROG" | "BASE" | "SOLANA";

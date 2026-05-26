@@ -38,6 +38,7 @@ import type {
   AiArenaTrainingJobsResponse,
   MyArenaAgentsResult,
   AiArenaProfileResponse,
+  AiArenaAchievementsResponse,
 } from "@/types/aiArenaGateway";
 
 const http = () => getApiClient("aiArenaGateway");
@@ -631,6 +632,14 @@ export const aiArenaGatewayApi = {
     }
   ): Promise<{ agentId: string; autonomousMode: boolean; autonomousConfig: Record<string, unknown> }> => {
     const { data } = await http().post(`/v1/agents/${encodeURIComponent(agentId)}/autonomous`, config);
+    return data;
+  },
+
+  /** GET /v1/agents/:agentId/achievements — computed achievements for an agent */
+  getAgentAchievements: async (agentId: string): Promise<AiArenaAchievementsResponse> => {
+    const { data } = await http().get<AiArenaAchievementsResponse>(
+      `/v1/agents/${encodeURIComponent(agentId)}/achievements`
+    );
     return data;
   },
 
