@@ -64,7 +64,7 @@ export function BalancePanel({ agent }: BalancePanelProps) {
         </div>
         <div className="mt-2 flex items-center gap-4">
           <span className="text-2xl font-semibold">{agent ? formatArenaBalance(balance) : "—"}</span>
-          <img src="/arena-token.png" className="h-9 w-9 object-contain" alt="ARENA" />
+          <img src="/arena-token-cropped.png" className="h-9 w-9 object-contain" alt="ARENA" />
         </div>
         {solanaAddress && !solanaAddress.startsWith("pending_") ? (
           <a
