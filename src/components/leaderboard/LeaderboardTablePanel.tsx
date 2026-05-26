@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import leaderboardBackgroundVideo from "@/assets/leaderboard_background.mp4";
 
+function AgentThumb({ src, className }: { src: string; className: string }) {
+  if (src.endsWith(".mp4")) {
+    return <video src={src} autoPlay loop muted playsInline className={className} />;
+  }
+  return <img src={src} alt="" className={className} />;
+}
+
 type LeaderboardTablePanelProps = {
   rows: DisplayPlayer[];
   userRow: DisplayPlayer | null;
@@ -33,7 +40,7 @@ function TableRow({ player, highlighted }: { player: DisplayPlayer; highlighted?
               highlighted ? "border-[#9a35ff]/40 bg-[#9a35ff]/25 shadow-[0_0_8px_rgba(154,53,255,0.2)]" : "border-white/10"
             }`}
           >
-            <img src={player.avatar} alt="" className="h-full w-full object-cover" />
+            <AgentThumb src={player.avatar} className="h-full w-full object-cover" />
           </div>
           <span className={`font-semibold tracking-wide ${highlighted ? "font-bold text-white" : ""}`}>
             {player.name}
