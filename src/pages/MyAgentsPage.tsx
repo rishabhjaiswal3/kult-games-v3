@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
 import {
   ChevronDown,
   ChevronRight,
@@ -7,14 +9,18 @@ import {
   Hexagon,
   Info,
   LineChart,
+  Loader2,
   Plus,
   Radio,
   Search,
+  Skull,
   Swords,
   TrendingUp,
   UserRound,
   WalletCards,
 } from "lucide-react";
+import { toast } from "sonner";
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
@@ -140,6 +146,21 @@ const MyAgentsPage = () => {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [walletAgentId, setWalletAgentId] = useState<string | null>(null);
   const [detailAgent, setDetailAgent] = useState<AiArenaAgent | null>(null);
+  const [confirmRetireId, setConfirmRetireId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const retireMutation = useMutation({
+    mutationFn: (agentId: string) => aiArenaGatewayApi.retireAgent(agentId),
+    onSuccess: () => {
+      toast.success("Agent retired successfully");
+      setConfirmRetireId(null);
+      void queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
+    },
+    onError: () => {
+      toast.error("Failed to retire agent. Try again.");
+      setConfirmRetireId(null);
+    },
+  });
   const myAgentsQ = useMyArenaAgents(1, 50);
   const totalAgentsQ = useArenaAgentsList(1, 1);
 
@@ -417,20 +438,43 @@ const MyAgentsPage = () => {
                       Wallet & Funds
                     </button>
                     <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setDetailAgent(agent)}
-                      className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
-                    >
-                      VIEW DETAILS
-                    </button>
-                    <Link
-                      to="/battles"
-                      className="flex items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/40 transition hover:border-white/20 hover:text-white"
-                      aria-label={`Open battles for ${agent.name}`}
-                    >
-                      <Swords className="h-3.5 w-3.5" />
-                    </Link>
+                      <button
+                        type="button"
+                        onClick={() => setDetailAgent(agent)}
+                        className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+                      >
+                        VIEW DETAILS
+                      </button>
+                      {confirmRetireId === agent.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={retireMutation.isPending}
+                            onClick={() => retireMutation.mutate(agent.id)}
+                            className="flex items-center gap-1 rounded border border-rose-500/40 bg-rose-500/15 px-2 py-2 font-tech text-[8px] font-bold uppercase text-rose-400 transition hover:bg-rose-500/25 disabled:opacity-50"
+                          >
+                            {retireMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Skull className="h-3 w-3" />}
+                            CONFIRM
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmRetireId(null)}
+                            className="rounded border border-white/8 bg-[#0a0f1b]/60 px-2 py-2 font-tech text-[8px] font-bold uppercase text-white/40 transition hover:text-white"
+                          >
+                            CANCEL
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRetireId(agent.id)}
+                          className="flex items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/30 transition hover:border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-400"
+                          aria-label={`Retire ${agent.name}`}
+                          title="Retire agent"
+                        >
+                          <Skull className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
