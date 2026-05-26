@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Hexagon, Loader2 } from "lucide-react";
+import { ChevronRight, ExternalLink, Hexagon, Loader2 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import dashboardCrest from "@/assets/dashboard-crest.png";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
@@ -41,6 +41,7 @@ export function BalancePanel({ agent }: BalancePanelProps) {
   });
 
   const balance = walletQ.data?.wallet?.balanceArena;
+  const solanaAddress = walletQ.data?.wallet?.solanaAddress;
   const rank = rankQ.data?.rank;
   const totalAgents = totalAgentsQ.data?.total;
   const topPercent =
@@ -62,6 +63,17 @@ export function BalancePanel({ agent }: BalancePanelProps) {
           <span className="text-2xl font-semibold">{agent ? formatArenaBalance(balance) : "—"}</span>
           <Hexagon className="h-9 w-9 text-[#f4b400]" />
         </div>
+        {solanaAddress && !solanaAddress.startsWith("pending_") ? (
+          <a
+            href={`https://explorer.solana.com/address/${solanaAddress}?cluster=devnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono text-white/35 transition hover:text-neon-cyan"
+          >
+            <ExternalLink className="h-2.5 w-2.5" />
+            View on Solana
+          </a>
+        ) : null}
         {agent && walletQ.isError ? (
           <div className="mt-2 text-xs text-white/40">Wallet balance unavailable for this agent right now.</div>
         ) : null}
