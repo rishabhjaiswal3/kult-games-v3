@@ -16,6 +16,8 @@ async function enrichEntries(entries: AiArenaLeaderboardEntry[]): Promise<AiAren
           clan: agent.clan,
           eloRating: agent.eloRating ?? entry.score,
           wins: agent.wins,
+          losses: agent.losses,
+          draws: agent.draws ?? 0,
           archetype: agent.archetype,
         };
       } catch {
