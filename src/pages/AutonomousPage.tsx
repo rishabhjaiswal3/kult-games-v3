@@ -25,6 +25,7 @@ import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import rewardCrate from "@/assets/reward-crate.png";
+import graphSvg from "@/assets/Graph.svg";
 
 
 // Clan Icon helper matching other pages
@@ -512,116 +513,51 @@ const AutonomousPage = () => {
 
                   {/* SVG Spider Radar Chart */}
                   <div className="relative flex justify-center py-1 sm:py-2">
-                    <svg className="w-full max-w-[300px] aspect-[1.22/1]" viewBox="0 0 244 200" role="img" aria-label="Strategy performance radar chart">
-                      {/* Grid Hexagons */}
-                      {[0.25, 0.5, 0.75, 1.0].map((scale) => (
-                        <g key={scale} transform="translate(22 0)">
-                          <polygon
-                            points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)}
-                            fill="none"
-                            stroke="rgba(255, 255, 255, 0.04)"
-                            strokeWidth="1"
-                          />
-                        </g>
-                      ))}
-
-                      {/* Radial Grid lines */}
-                      {Array.from({ length: 6 }).map((_, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 122 + 70 * Math.cos(angle);
-                        const y = 100 + 70 * Math.sin(angle);
-                        return (
-                          <line
-                            key={i}
-                            x1="122"
-                            y1="100"
-                            x2={x}
-                            y2={y}
-                            stroke="rgba(255, 255, 255, 0.04)"
-                            strokeWidth="1"
-                          />
-                        );
-                      })}
-
-                      {/* Average Strategy polygon (dashed grey line) */}
-                      <g transform="translate(22 0)">
-                        <polygon
-                          points={getRadarPoints(averageStats)}
-                          fill="none"
-                          stroke="rgba(255, 255, 255, 0.25)"
-                          strokeDasharray="2,2"
-                          strokeWidth="1"
-                        />
-                      </g>
-
-                      {/* Active Strategy polygon (glowing purple fill) */}
-                      <g transform="translate(22 0)">
-                        <polygon
-                          points={getRadarPoints(strategyStats)}
-                          fill="rgba(154, 53, 255, 0.15)"
-                          stroke="#9a35ff"
-                          strokeWidth="1.5"
-                          className="drop-shadow-[0_0_8px_rgba(154,53,255,0.4)]"
-                        />
-                      </g>
-
-                      {/* Grid Corners Anchor Nodes */}
-                      {strategyStats.map((val, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const r = (val / 100) * 70;
-                        const x = 122 + r * Math.cos(angle);
-                        const y = 100 + r * Math.sin(angle);
-                        return (
-                          <circle
-                            key={i}
-                            cx={x}
-                            cy={y}
-                            r="3"
-                            fill="#9a35ff"
-                            stroke="#fff"
-                            strokeWidth="0.75"
-                          />
-                        );
-                      })}
-
-                      {/* Axis Label Labels */}
-                      {radarLabels.map((lbl, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 122 + 87 * Math.cos(angle);
-                        const y = 100 + 82 * Math.sin(angle);
-                        const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
-                        
-                        // Show stats value next to label
-                        const val = strategyStats[i];
-                        
-                        return (
-                          <g key={lbl}>
-                            <text
-                              x={x}
-                              y={y - 2}
-                              textAnchor={anchor}
-                              fill="rgba(255, 255, 255, 0.5)"
-                              fontSize="7.5"
-                              fontWeight="600"
-                              className="font-sans uppercase"
-                            >
-                              {lbl}
-                            </text>
-                            <text
-                              x={x}
-                              y={y + 6}
-                              textAnchor={anchor}
-                              fill="#fff"
-                              fontSize="8"
-                              fontWeight="bold"
-                              className="font-tech"
-                            >
-                              {val}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
+                    <div className="relative w-full max-w-[300px] aspect-[1.22/1]">
+                      {/* Centered Image */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                         <img src={graphSvg} alt="Strategy performance radar chart" className="w-[65%] h-[65%] object-contain" />
+                      </div>
+                      
+                      {/* SVG Overlay for text labels */}
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 244 200">
+                        {radarLabels.map((lbl, i) => {
+                          const angle = (i * 60 - 90) * (Math.PI / 180);
+                          const x = 122 + 87 * Math.cos(angle);
+                          const y = 100 + 82 * Math.sin(angle);
+                          const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
+                          
+                          const val = strategyStats[i];
+                          
+                          return (
+                            <g key={lbl}>
+                              <text
+                                x={x}
+                                y={y - 2}
+                                textAnchor={anchor}
+                                fill="rgba(255, 255, 255, 0.5)"
+                                fontSize="7.5"
+                                fontWeight="600"
+                                className="font-sans uppercase"
+                              >
+                                {lbl}
+                              </text>
+                              <text
+                                x={x}
+                                y={y + 6}
+                                textAnchor={anchor}
+                                fill="#fff"
+                                fontSize="8"
+                                fontWeight="bold"
+                                className="font-tech"
+                              >
+                                {val}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
                   </div>
 
                   {/* Legend */}
