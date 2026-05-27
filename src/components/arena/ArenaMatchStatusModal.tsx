@@ -108,11 +108,13 @@ export function ArenaMatchStatusModal({
     queryFn: () => aiArenaGatewayApi.getMatchmakingStatus(agentId!),
     enabled: open && !!agentId,
     refetchInterval: (query) => {
-      const inQueue = query.state.data?.status?.inQueue;
-      if (!open || !inQueue) return false;
-      return 2_000;
+      if (!open) return false;
+      const s = query.state.data?.status;
+      // Keep polling while searching OR while matched-but-battle-not-yet-loaded
+      if (s?.inQueue) return 2_000;
+      return false;
     },
-    staleTime: 2_000,
+    staleTime: 1_000,
     retry: 1,
   });
 
@@ -124,7 +126,14 @@ export function ArenaMatchStatusModal({
     queryKey: ["aiArenaGateway", "matchStatusModalBattle", battleId],
     queryFn: () => aiArenaGatewayApi.getBattle(battleId!),
     enabled: open && !!battleId && !!agentId,
-    staleTime: 5_000,
+    // Poll every 2s while PENDING so we catch the IN_PROGRESS transition
+    refetchInterval: (query) => {
+      if (!open || !battleId) return false;
+      const s = query.state.data?.battle?.status;
+      if (!s || s === "PENDING" || s === "INITIALIZING") return 2_000;
+      return false;
+    },
+    staleTime: 1_000,
     retry: 1,
   });
 
@@ -185,12 +194,26 @@ export function ArenaMatchStatusModal({
           ) : null}
 
           {phase === "matched" && opponentQ.data ? (
-            <ArenaMatchFaceoff
-              left={agent}
-              right={opponentQ.data}
-              battleId={battleId}
-              mode={status?.mode ?? battleQ.data?.battle?.mode ?? "RANKED"}
-            />
+            <>
+              <ArenaMatchFaceoff
+                left={agent}
+                right={opponentQ.data}
+                battleId={battleId}
+                mode={status?.mode ?? battleQ.data?.battle?.mode ?? "RANKED"}
+                pending={!battleQ.data?.battle?.status || battleQ.data.battle.status === "PENDING" || battleQ.data.battle.status === "INITIALIZING"}
+              />
+              {battleQ.data?.battle?.status === "IN_PROGRESS" ? (
+                <div className="flex items-center justify-center gap-2 rounded-xl border border-neon-green/25 bg-neon-green/10 px-4 py-3 text-sm font-semibold text-neon-green">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-neon-green" />
+                  Battle is live — track it in the Battle Lookup below
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 rounded-xl border border-neon-cyan/20 bg-neon-cyan/8 px-4 py-3 text-sm text-neon-cyan/80">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Starting battle — both agents entering the arena…
+                </div>
+              )}
+            </>
           ) : null}
 
           {phase === "matched" && !opponentQ.data && !opponentQ.isError ? (

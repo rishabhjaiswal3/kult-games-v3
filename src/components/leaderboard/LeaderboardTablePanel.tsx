@@ -4,6 +4,14 @@ import type { DisplayPlayer } from "./leaderboardUtils";
 import { Button } from "@/components/ui/button";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import leaderboardBackgroundVideo from "@/assets/leaderboard_background.mp4";
+import { getRankFromElo } from "@/utils/rankSystem";
+
+function AgentThumb({ src, className }: { src: string; className: string }) {
+  if (src.endsWith(".mp4")) {
+    return <video src={src} autoPlay loop muted playsInline className={className} />;
+  }
+  return <img src={src} alt="" className={className} />;
+}
 
 type LeaderboardTablePanelProps = {
   rows: DisplayPlayer[];
@@ -33,7 +41,7 @@ function TableRow({ player, highlighted }: { player: DisplayPlayer; highlighted?
               highlighted ? "border-[#9a35ff]/40 bg-[#9a35ff]/25 shadow-[0_0_8px_rgba(154,53,255,0.2)]" : "border-white/10"
             }`}
           >
-            <img src={player.avatar} alt="" className="h-full w-full object-cover" />
+            <AgentThumb src={player.avatar} className="h-full w-full object-cover" />
           </div>
           <span className={`font-semibold tracking-wide ${highlighted ? "font-bold text-white" : ""}`}>
             {player.name}
@@ -58,7 +66,14 @@ function TableRow({ player, highlighted }: { player: DisplayPlayer; highlighted?
         {player.points} PTS
       </td>
       <td className="px-3 py-4 text-center">
-        <Hexagon className="h-4 w-4 fill-[#9b33ff]/10 text-[#9b33ff]" />
+        {player.eloRating != null ? (
+          <img
+            src={getRankFromElo(player.eloRating).image}
+            alt={getRankFromElo(player.eloRating).name}
+            title={getRankFromElo(player.eloRating).name}
+            className="mx-auto h-7 w-7 object-contain"
+          />
+        ) : null}
       </td>
     </tr>
   );
@@ -94,7 +109,7 @@ export function LeaderboardTablePanel({
               <th className="px-5 py-4 text-center font-semibold">Win Rate</th>
               <th className="px-5 py-4 text-center font-semibold">Battles</th>
               <th className="px-5 py-4 text-right font-semibold">Points</th>
-              <th className="w-12" />
+              <th className="w-12 px-3 py-4 text-center font-semibold">League</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/6 font-medium text-white/86">

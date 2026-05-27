@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Radio,
   Coins,
@@ -7,27 +8,26 @@ import {
   Clock,
   Settings as SettingsIcon,
   ChevronRight,
-  TrendingUp,
   Sliders,
-  Sparkles,
-  Info,
-  Calendar,
-  Lock,
-  Activity,
   Zap,
+  Info,
   Hexagon,
+  Loader2,
+  BookOpen,
+  Swords,
 } from "lucide-react";
+import { toast } from "sonner";
 
+import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 // Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
-import kultLogo from "@/assets/Kult Logo.png";
 import rewardCrate from "@/assets/reward-crate.png";
 
-
-// Clan Icon helper matching other pages
+// ── Clan Icon helpers ─────────────────────────────────────────────────────────
 function SolanaIcon({ className = "h-3 w-3" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 397 311" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -37,7 +37,6 @@ function SolanaIcon({ className = "h-3 w-3" }: { className?: string }) {
     </svg>
   );
 }
-
 function BaseIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,11 +45,9 @@ function BaseIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
     </svg>
   );
 }
-
 function ZeroGClanIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return <img src={zeroGLogo} alt="0G Logo" className={`${className} object-contain`} />;
+  return <img src={zeroGLogo} alt="0G" className={`${className} object-contain`} />;
 }
-
 function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; className?: string }) {
   if (type === "solana") return <SolanaIcon className={`${className} text-teal-400`} />;
   if (type === "base") return <BaseIcon className={`${className} text-blue-500`} />;
@@ -58,681 +55,670 @@ function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; className
   return null;
 }
 
+// ── Per-agent autonomous toggle ───────────────────────────────────────────────
+function AgentAutonomousToggle({ agent }: { agent: AiArenaAgent }) {
+  const qc = useQueryClient();
+
+  const configQ = useQuery({
+    queryKey: ["agentAutonomous", agent.id],
+    queryFn: () => aiArenaGatewayApi.getAgentAutonomousConfig(agent.id),
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const toggleMut = useMutation({
+    mutationFn: (enabled: boolean) =>
+      aiArenaGatewayApi.setAgentAutonomousConfig(agent.id, { autonomousMode: enabled }),
+    onSuccess: (res) => {
+      qc.setQueryData(["agentAutonomous", agent.id], (old: any) =>
+        old ? { ...old, autonomousMode: res.autonomousMode } : old
+      );
+      qc.invalidateQueries({ queryKey: ["myArenaAgents"] });
+      toast.success(
+        res.autonomousMode
+          ? `${agent.name} is now autonomous — auto-queuing and training enabled`
+          : `${agent.name} autonomous mode disabled`
+      );
+    },
+    onError: () => toast.error("Could not update autonomous mode"),
+  });
+
+  const isOn = configQ.data?.autonomousMode ?? false;
+  const busy = configQ.isLoading || toggleMut.isPending;
+
+  return (
+    <button
+      disabled={busy}
+      onClick={() => !busy && toggleMut.mutate(!isOn)}
+      className={`relative w-9 h-5 rounded-full transition-colors duration-300 outline-none disabled:opacity-50 ${
+        isOn ? "bg-[#9a35ff]" : "bg-white/10"
+      }`}
+    >
+      {busy ? (
+        <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-white" />
+      ) : (
+        <div
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${
+            isOn ? "translate-x-4" : ""
+          }`}
+        />
+      )}
+    </button>
+  );
+}
+
+// ── Agent row in the table ────────────────────────────────────────────────────
+function AgentRow({ agent, trainingJobs }: { agent: AiArenaAgent; trainingJobs: any[] }) {
+  const configQ = useQuery({
+    queryKey: ["agentAutonomous", agent.id],
+    queryFn: () => aiArenaGatewayApi.getAgentAutonomousConfig(agent.id),
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const matchQ = useQuery({
+    queryKey: ["matchmakingStatus", agent.id, "autonomous"],
+    queryFn: () => aiArenaGatewayApi.getMatchmakingStatus(agent.id),
+    enabled: configQ.data?.autonomousMode === true,
+    refetchInterval: configQ.data?.autonomousMode ? 10_000 : false,
+    staleTime: 5_000,
+    retry: 1,
+  });
+
+  const isAutonomous = configQ.data?.autonomousMode ?? false;
+  const inQueue = matchQ.data?.status?.inQueue ?? false;
+  const matched = !!(matchQ.data?.status?.matchId);
+  const activeJob = trainingJobs.find((j) => j.agentId === agent.id && (j.status === "QUEUED" || j.status === "RUNNING"));
+
+  let missionLabel = "Idle";
+  let missionSub = "Awaiting autonomous command";
+  let statusLabel = "Standby";
+  let statusColor = "text-white/40";
+  let dotColor = "bg-white/30";
+
+  if (!isAutonomous) {
+    missionLabel = "Manual mode";
+    missionSub = "Enable autonomous to activate";
+  } else if (matched) {
+    missionLabel = "Arena Battle";
+    missionSub = "Match found";
+    statusLabel = "In Battle";
+    statusColor = "text-neon-green";
+    dotColor = "bg-neon-green";
+  } else if (inQueue) {
+    missionLabel = "Matchmaking";
+    missionSub = "Searching for opponent";
+    statusLabel = "Queued";
+    statusColor = "text-neon-cyan";
+    dotColor = "bg-neon-cyan";
+  } else if (activeJob) {
+    missionLabel = activeJob.status === "RUNNING" ? "Training" : "Training Queue";
+    missionSub = activeJob.type?.replace(/_/g, " ") ?? "Behaviour Cloning";
+    statusLabel = activeJob.status === "RUNNING" ? "Training" : "Queued";
+    statusColor = "text-amber-400";
+    dotColor = "bg-amber-400";
+  } else if (isAutonomous) {
+    statusLabel = "Active";
+    statusColor = "text-emerald-400";
+    dotColor = "bg-emerald-500 animate-pulse";
+    missionLabel = "Preparing";
+    missionSub = "Loop picks up next tick";
+  }
+
+  const totalBattles = (agent.wins ?? 0) + (agent.losses ?? 0);
+  const winRate = totalBattles > 0 ? Math.round(((agent.wins ?? 0) / totalBattles) * 100) : 0;
+
+  return (
+    <tr className="hover:bg-white/[0.01] transition">
+      <td className="w-[240px] px-5 py-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <ArenaAgentThumbnail agent={agent} className="h-14 w-14 rounded-lg" size="md" />
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="min-w-0 truncate font-bold text-white text-sm leading-tight">{agent.name}</span>
+              {isAutonomous && <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />}
+            </div>
+            <div className="flex min-w-0 items-center gap-1.5 text-[10px] text-white/45">
+              <ClanIcon type={agent.clan.toLowerCase()} className="h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0 truncate uppercase tracking-wide">{agent.clan} &bull; {agent.archetype}</span>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        <div className="space-y-0.5">
+          <span className="text-white/86 text-xs leading-tight font-semibold">{missionLabel}</span>
+          <p className="text-[9px] text-white/40 leading-none">{missionSub}</p>
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        <div className={`flex items-center gap-1.5 ${statusColor}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+          <span className="text-[10px] font-bold uppercase tracking-wider font-tech">{statusLabel}</span>
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        <div className="space-y-0.5">
+          <div className="flex items-baseline gap-1 font-tech">
+            <span className="font-bold text-white">{agent.eloRating}</span>
+            <span className="text-[8px] font-bold text-white/40">ELO</span>
+          </div>
+          <p className="text-[9px] text-white/40">{totalBattles} battles · {winRate}% win</p>
+        </div>
+      </td>
+      <td className="px-5 py-4 text-center">
+        <AgentAutonomousToggle agent={agent} />
+      </td>
+      <td className="px-5 py-4 text-center">
+        <div className="flex items-center justify-center gap-1.5">
+          <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
+            VIEW
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+// ── Activity log entry ────────────────────────────────────────────────────────
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+// ── Radar helpers ─────────────────────────────────────────────────────────────
+const radarLabels = ["Earnings", "Win Rate", "Efficiency", "Safety", "Growth", "Adaptability"];
+
+function getRadarPoints(stats: number[], scale = 1) {
+  const center = 100;
+  const rMax = 70;
+  return stats
+    .map((val, i) => {
+      const angle = (i * 60 - 90) * (Math.PI / 180);
+      const radius = (val / 100) * rMax * scale;
+      const x = center + radius * Math.cos(angle);
+      const y = center + radius * Math.sin(angle);
+      return `${x},${y}`;
+    })
+    .join(" ");
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 const AutonomousPage = () => {
-  const [autonomousMode, setAutonomousMode] = useState(true);
+  const [globalAutoMode, setGlobalAutoMode] = useState(true);
 
-  const myAgentsQ = useMyArenaAgents(1, 10);
-  const myAgents = myAgentsQ.data?.agents ?? [];
-  const activeAgents = myAgents.slice(0, 3);
+  const myAgentsQ = useMyArenaAgents(1, 20);
+  const myAgents: AiArenaAgent[] = myAgentsQ.data?.agents ?? [];
 
-  // Radar chart projections for 6 axes (Earnings, Win Rate, Efficiency, Safety, Growth, Adaptability)
-  const radarLabels = ["Earnings", "Win Rate", "Efficiency", "Safety", "Growth", "Adaptability"];
-  const strategyStats = [84, 72, 78, 88, 76, 72];
+  // Training jobs for all my agents (global feed)
+  const allJobsQ = useQuery({
+    queryKey: ["allTrainingJobs", "autonomous"],
+    queryFn: () => aiArenaGatewayApi.listTrainingJobs({}),
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+  });
+  const allJobs = allJobsQ.data?.jobs ?? [];
+
+  // Derive stats from real agent data
+  const autonomousAgents = myAgents.filter((a: AiArenaAgent) => {
+    const meta = (a as any).metadata as Record<string, unknown> | undefined;
+    return !!(meta?.autonomousMode);
+  });
+  const autonomousCount = autonomousAgents.length;
+
+  const totalWins = myAgents.reduce((s: number, a: AiArenaAgent) => s + (a.wins ?? 0), 0);
+  const totalBattles = myAgents.reduce((s: number, a: AiArenaAgent) => s + (a.wins ?? 0) + (a.losses ?? 0), 0);
+  const winRate = totalBattles > 0 ? ((totalWins / totalBattles) * 100).toFixed(1) : "0.0";
+  const completedJobs = allJobs.filter((j: any) => j.status === "COMPLETED").length;
+
+  // Radar stats computed from win rate and ELO
+  const avgElo = myAgents.length > 0 ? myAgents.reduce((s: number, a: AiArenaAgent) => s + (a.eloRating ?? 1000), 0) / myAgents.length : 1000;
+  const eloScore = Math.min(100, Math.round(((avgElo - 800) / 400) * 100));
+  const winRateScore = Math.min(100, parseFloat(winRate));
+  const strategyStats = [
+    Math.max(20, eloScore),
+    Math.max(20, winRateScore),
+    Math.max(20, Math.round(eloScore * 0.9)),
+    88,
+    Math.max(20, Math.round(winRateScore * 1.05)),
+    72,
+  ];
   const averageStats = [60, 65, 55, 62, 58, 60];
 
-  // Helper to generate SVG points for hexagon radar
-  const getRadarPoints = (stats: number[], scale = 1) => {
-    const center = 100;
-    const rMax = 70;
-    return stats
-      .map((val, i) => {
-        const angle = (i * 60 - 90) * (Math.PI / 180);
-        const radius = (val / 100) * rMax * scale;
-        const x = center + radius * Math.cos(angle);
-        const y = center + radius * Math.sin(angle);
-        return `${x},${y}`;
-      })
-      .join(" ");
-  };
+  // Recent activity log from training jobs
+  const recentJobs = [...allJobs]
+    .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 5);
+
+  // Active agents for table (max 5 shown)
+  const tableAgents = myAgents.slice(0, 5);
 
   return (
     <div className="min-h-full text-foreground bg-transparent">
       {/* Background Glow */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_80%_15%,rgba(155,51,255,0.14),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(33,150,255,0.08),transparent_35%)]" />
 
-          <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8 space-y-4">
-            
-            {/* Top Title Section */}
-            <div>
-              <h1 className="font-tech text-3xl font-bold tracking-tight text-white uppercase">AUTONOMOUS COMMAND</h1>
-              <p className="mt-1 text-[11px] text-white/55 font-medium">
-                Your agents operate, earn, and grow even when you're away.
-              </p>
+      <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8 space-y-4">
+
+        {/* Title */}
+        <div>
+          <h1 className="font-tech text-3xl font-bold tracking-tight text-white uppercase">AUTONOMOUS COMMAND</h1>
+          <p className="mt-1 text-[11px] text-white/55 font-medium">
+            Your agents operate, earn, and grow even when you are away.
+          </p>
+        </div>
+
+        {/* Metric Cards */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
+
+          <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
+            <div className="space-y-1">
+              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">AUTONOMOUS AGENTS</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-tech text-xl font-bold text-white">
+                  {myAgentsQ.isLoading ? "—" : `${autonomousCount} / ${myAgents.length}`}
+                </span>
+                <span className="text-[10px] text-white/45">Active</span>
+              </div>
             </div>
-
-            {/* Top Metric Boxes Strip */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
-              
-              {/* Box 1 */}
-              <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
-                    AUTONOMOUS AGENTS
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-tech text-xl font-bold text-white">3 / 5</span>
-                    <span className="text-[10px] text-white/45">Active</span>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                  <Radio className="h-4.5 w-4.5 animate-pulse" />
-                </div>
-              </div>
-
-              {/* Box 2 */}
-              <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
-                    TOTAL EARNED (24H)
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-tech text-xl font-bold text-white">245.60</span>
-                    <span className="text-[8px] font-tech font-bold text-[#b85eff]">$ARENA</span>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                  <Coins className="h-4.5 w-4.5" />
-                </div>
-              </div>
-
-              {/* Box 3 */}
-              <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
-                    MISSIONS COMPLETED
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-tech text-xl font-bold text-white">28</span>
-                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded select-none">
-                      +12%
-                    </span>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <CheckCircle className="h-4.5 w-4.5" />
-                </div>
-              </div>
-
-              {/* Box 4 */}
-              <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
-                    SUCCESS RATE
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-tech text-xl font-bold text-white">78.6%</span>
-                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded select-none">
-                      +8.4%
-                    </span>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                  <Target className="h-4.5 w-4.5" />
-                </div>
-              </div>
-
-              {/* Box 5 */}
-              <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
-                    ACTIVE TIME (24H)
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-tech text-xl font-bold text-white">18h 45m</span>
-                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded select-none animate-pulse">
-                      +15m
-                    </span>
-                  </div>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-                  <Clock className="h-4.5 w-4.5" />
-                </div>
-              </div>
-
+            <div className="w-9 h-9 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+              <Radio className={`h-4.5 w-4.5 ${autonomousCount > 0 ? "animate-pulse" : ""}`} />
             </div>
+          </div>
 
-            {/* Main Content Layout Grid */}
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
-              
-              {/* Left Column Feed area */}
-              <div className="min-w-0 space-y-4">
-                
-                {/* Autonomous Status Area */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  
-                  {/* Left Block: Brain pulse animation */}
-                  <div className="arena-panel p-5 flex flex-col items-center justify-center border-white/8 bg-[#04080f]/95 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(154,53,255,0.06),transparent_60%)]" />
-                    
-                    {/* Animated Scanning Circle */}
-                    <div className="relative w-40 h-40 flex items-center justify-center">
-                      <div className="absolute inset-0 rounded-full border border-purple-500/10 animate-[ping_3s_infinite]" />
-                      <div className="absolute inset-3 rounded-full border border-purple-500/25 animate-[spin_10s_linear_infinite]" style={{ borderTopColor: "#9a35ff" }} />
-                      <div className="absolute inset-6 rounded-full border border-purple-500/10 border-dashed" />
-                      
-                      {/* Interactive Brain SVG */}
-                      <svg className="w-16 h-16 text-[#9a35ff] drop-shadow-[0_0_15px_rgba(154,53,255,0.6)] animate-pulse" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88A2.5 2.5 0 0 1 9.5 2Z" fill="currentColor" opacity="0.9" />
-                        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88A2.5 2.5 0 0 0 14.5 2Z" fill="currentColor" opacity="0.9" />
-                      </svg>
-                    </div>
+          <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
+            <div className="space-y-1">
+              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">TOTAL BATTLES</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-tech text-xl font-bold text-white">{totalBattles}</span>
+                <span className="text-[10px] text-white/45">All time</span>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <Swords className="h-4.5 w-4.5" />
+            </div>
+          </div>
 
-                    <div className="mt-4 text-center space-y-1 relative z-10">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="font-tech text-xs tracking-wider uppercase font-bold text-white">
-                          SYSTEM ACTIVE
-                        </span>
+          <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
+            <div className="space-y-1">
+              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">TRAINING COMPLETED</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-tech text-xl font-bold text-white">{completedJobs}</span>
+                {completedJobs > 0 && (
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded">
+                    DONE
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <CheckCircle className="h-4.5 w-4.5" />
+            </div>
+          </div>
+
+          <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
+            <div className="space-y-1">
+              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">WIN RATE</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-tech text-xl font-bold text-white">{winRate}%</span>
+                {totalBattles > 0 && (
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.5 rounded">
+                    {totalWins}W
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Target className="h-4.5 w-4.5" />
+            </div>
+          </div>
+
+          <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
+            <div className="space-y-1">
+              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">AVG ELO</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-tech text-xl font-bold text-white">
+                  {myAgents.length > 0 ? Math.round(avgElo) : "—"}
+                </span>
+                <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-1 py-0.5 rounded">
+                  RATED
+                </span>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+              <Clock className="h-4.5 w-4.5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
+
+          {/* Left Column */}
+          <div className="min-w-0 space-y-4">
+
+            {/* Brain + Status panel */}
+            <div className="grid gap-4 md:grid-cols-2">
+
+              {/* Brain pulse */}
+              <div className="arena-panel p-5 flex flex-col items-center justify-center border-white/8 bg-[#04080f]/95 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(154,53,255,0.06),transparent_60%)]" />
+                <div className="relative w-40 h-40 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border border-purple-500/10 animate-[ping_3s_infinite]" />
+                  <div className="absolute inset-3 rounded-full border border-purple-500/25 animate-[spin_10s_linear_infinite]" style={{ borderTopColor: "#9a35ff" }} />
+                  <div className="absolute inset-6 rounded-full border border-purple-500/10 border-dashed" />
+                  <svg className="w-16 h-16 text-[#9a35ff] drop-shadow-[0_0_15px_rgba(154,53,255,0.6)] animate-pulse" viewBox="0 0 24 24" fill="none">
+                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88A2.5 2.5 0 0 1 9.5 2Z" fill="currentColor" opacity="0.9" />
+                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88A2.5 2.5 0 0 0 14.5 2Z" fill="currentColor" opacity="0.9" />
+                  </svg>
+                </div>
+                <div className="mt-4 text-center space-y-1 relative z-10">
+                  <div className="flex items-center justify-center gap-2">
+                    {autonomousCount > 0 ? (
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                    ) : (
+                      <span className="w-2.5 h-2.5 rounded-full bg-white/20" />
+                    )}
+                    <span className="font-tech text-xs tracking-wider uppercase font-bold text-white">
+                      {myAgentsQ.isLoading ? "LOADING..." : autonomousCount > 0 ? "SYSTEM ACTIVE" : "NO ACTIVE AGENTS"}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-white/45 uppercase font-semibold">
+                    {autonomousCount > 0
+                      ? `${autonomousCount} agent${autonomousCount > 1 ? "s" : ""} operating autonomously`
+                      : "Enable autonomous mode on any agent below"}
+                  </p>
+                </div>
+                <button className="mt-5 bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-5 py-2 text-[10px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer flex items-center gap-1.5">
+                  <SettingsIcon className="h-3.5 w-3.5" />
+                  <span>MANAGE SETTINGS</span>
+                </button>
+              </div>
+
+              {/* Capabilities */}
+              <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 space-y-4">
+                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTONOMOUS STATUS</h3>
+                <div className="space-y-3.5">
+                  {[
+                    { title: "Auto Matchmaking", desc: "Joins ranked queue every 60s when not in a battle", live: autonomousCount > 0 },
+                    { title: "Smart Decision Making", desc: "AI adapts to conditions and makes optimal decisions", live: false },
+                    { title: "Auto Training", desc: "Queues behaviour cloning when no job is running", live: autonomousCount > 0 },
+                    { title: "Continuous Loop", desc: "Train → Battle → Earn → Repeat — fully hands-free", live: autonomousCount > 0 },
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${item.live ? "bg-purple-500/10 border-purple-500/20 text-[#b85eff]" : "bg-white/5 border-white/10 text-white/30"}`}>
+                        <Zap className="h-2.5 w-2.5 fill-current" />
                       </div>
-                      <p className="text-[10px] text-white/45 uppercase font-semibold">
-                        Your agents are operating autonomously
-                      </p>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-semibold text-xs text-white/90 leading-tight">{item.title}</h4>
+                          {item.live && <span className="text-[8px] font-tech font-bold text-emerald-400 uppercase">LIVE</span>}
+                        </div>
+                        <p className="text-[10px] text-white/50 leading-relaxed font-medium">{item.desc}</p>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                    {/* Manage Settings Button */}
-                    <button className="mt-5 bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-5 py-2 text-[10px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer flex items-center gap-1.5">
-                      <SettingsIcon className="h-3.5 w-3.5" />
-                      <span>MANAGE SETTINGS</span>
-                    </button>
+            {/* Agents Table */}
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden">
+              <div className="p-5 border-b border-white/8 flex items-center justify-between">
+                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">MY AGENTS</h3>
+                <span className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider">
+                  {myAgentsQ.isLoading ? "Loading..." : `${autonomousCount} / ${myAgents.length} Autonomous`}
+                </span>
+              </div>
 
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[860px] text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-white/6 text-white/40 font-bold uppercase tracking-wider text-[9px] bg-white/[0.01]">
+                      <th className="w-[240px] px-5 py-3">Agent</th>
+                      <th className="px-5 py-3">Current Task</th>
+                      <th className="px-5 py-3">Status</th>
+                      <th className="px-5 py-3">Stats</th>
+                      <th className="px-5 py-3 text-center">Autonomous</th>
+                      <th className="px-5 py-3 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/6 font-medium">
+                    {myAgentsQ.isLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-10 text-center">
+                          <Loader2 className="mx-auto h-5 w-5 animate-spin text-purple-400" />
+                        </td>
+                      </tr>
+                    ) : tableAgents.length > 0 ? (
+                      tableAgents.map((agent: AiArenaAgent) => (
+                        <AgentRow key={agent.id} agent={agent} trainingJobs={allJobs} />
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-8 text-center text-white/40 text-sm">
+                          No agents found. Create an agent first to enable autonomous mode.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-4 border-t border-white/8 flex justify-center bg-white/[0.005]">
+                <button className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider hover:text-purple-300 transition cursor-pointer flex items-center gap-1.5">
+                  <span>VIEW ALL AGENTS</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* How it works */}
+            <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Info className="h-4.5 w-4.5 text-purple-400 shrink-0" />
+                <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white">HOW AUTONOMOUS MODE WORKS</span>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] text-white/50 font-semibold max-sm:w-full max-sm:justify-between">
+                {[
+                  ["1. ENABLE AGENT", "Toggle on any agent below"],
+                  ["2. AUTO-QUEUES", "Joins matchmaking every 60s"],
+                  ["3. AUTO-TRAINS", "Queues training after battles"],
+                  ["4. REVIEW", "Check results here anytime"],
+                ].map(([title, sub], i, arr) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="space-y-0.5">
+                      <div className="text-white">{title}</div>
+                      <p className="text-[8px] text-white/35 uppercase">{sub}</p>
+                    </div>
+                    {i < arr.length - 1 && <ChevronRight className="h-3 w-3 text-white/25" />}
                   </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="font-tech text-[10px] font-bold text-white/50 uppercase">GLOBAL LOOP</span>
+                <button
+                  onClick={() => setGlobalAutoMode(!globalAutoMode)}
+                  className={`relative w-9 h-5 rounded-full transition-colors duration-300 outline-none ${globalAutoMode ? "bg-[#9a35ff]" : "bg-white/10"}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${globalAutoMode ? "translate-x-4" : ""}`} />
+                </button>
+                <span className="font-tech text-[10px] font-black text-white">{globalAutoMode ? "ON" : "OFF"}</span>
+              </div>
+            </div>
+          </div>
 
-                  {/* Right Block: Characteristic highlights */}
-                  <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 space-y-4">
-                    <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
-                      AUTONOMOUS STATUS
-                    </h3>
+          {/* Right Sidebar */}
+          <aside className="space-y-4">
 
-                    <div className="space-y-3.5">
-                      {[
-                        { title: "Continuous Operations", desc: "Agents run missions, battles, and training 24/7", color: "text-[#b85eff]" },
-                        { title: "Smart Decision Making", desc: "AI adapts to conditions and makes optimal decisions", color: "text-[#b85eff]" },
-                        { title: "Risk Management", desc: "Automatic threat detection and resource protection", color: "text-[#b85eff]" },
-                        { title: "Auto Resource Optimization", desc: "Maximize earnings and growth efficiency", color: "text-[#b85eff]" },
-                      ].map((item, i) => (
-                        <div key={i} className="flex gap-3">
-                          <div className={`mt-0.5 w-5 h-5 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 ${item.color}`}>
-                            <Zap className="h-2.5 w-2.5 fill-current" />
-                          </div>
+            {/* Strategy card */}
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+              <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTONOMOUS STRATEGY</h3>
+              <div className="space-y-1">
+                <span className="text-[9px] font-semibold text-white/40 uppercase tracking-wide block">Current Strategy</span>
+                <div className="flex items-center gap-1.5 text-sm font-bold text-white font-tech uppercase">
+                  <span>Balanced Growth</span>
+                  <Sliders className="h-3.5 w-3.5 text-purple-400 hover:text-purple-300 transition cursor-pointer" />
+                </div>
+                <p className="text-[10px] text-white/50 leading-relaxed font-medium">
+                  Auto-queue ranked matches + behaviour cloning after each battle cycle.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <span className="text-[9px] font-semibold text-white/40 uppercase tracking-wide block">Allocation</span>
+                {[
+                  { label: "Matchmaking", pct: 50, color: "bg-[#9a35ff]" },
+                  { label: "Training", pct: 40, color: "bg-[#9a35ff]" },
+                  { label: "Rest / ELO guard", pct: 10, color: "bg-sky-400" },
+                ].map(({ label, pct, color }) => (
+                  <div key={label} className="space-y-1 text-[10px] font-semibold text-white/70">
+                    <div className="flex justify-between">
+                      <span>{label}</span>
+                      <span className="font-tech">{pct}%</span>
+                    </div>
+                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className={`${color} h-full rounded-full`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-2 cursor-pointer">
+                <span>EDIT STRATEGY</span>
+              </button>
+            </div>
+
+            {/* Radar chart */}
+            <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+              <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold">PERFORMANCE PROFILE (7D)</h3>
+              <div className="relative flex justify-center py-1 sm:py-2">
+                <svg className="w-full max-w-[300px] aspect-[1.22/1]" viewBox="0 0 244 200">
+                  {[0.25, 0.5, 0.75, 1.0].map((scale) => (
+                    <g key={scale} transform="translate(22 0)">
+                      <polygon points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                    </g>
+                  ))}
+                  {Array.from({ length: 6 }).map((_, i) => {
+                    const angle = (i * 60 - 90) * (Math.PI / 180);
+                    return (
+                      <line key={i} x1="122" y1="100" x2={122 + 70 * Math.cos(angle)} y2={100 + 70 * Math.sin(angle)} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                    );
+                  })}
+                  <g transform="translate(22 0)">
+                    <polygon points={getRadarPoints(averageStats)} fill="none" stroke="rgba(255,255,255,0.25)" strokeDasharray="2,2" strokeWidth="1" />
+                  </g>
+                  <g transform="translate(22 0)">
+                    <polygon points={getRadarPoints(strategyStats)} fill="rgba(154,53,255,0.15)" stroke="#9a35ff" strokeWidth="1.5" />
+                  </g>
+                  {strategyStats.map((val, i) => {
+                    const angle = (i * 60 - 90) * (Math.PI / 180);
+                    const r = (val / 100) * 70;
+                    return <circle key={i} cx={122 + r * Math.cos(angle)} cy={100 + r * Math.sin(angle)} r="3" fill="#9a35ff" stroke="#fff" strokeWidth="0.75" />;
+                  })}
+                  {radarLabels.map((lbl, i) => {
+                    const angle = (i * 60 - 90) * (Math.PI / 180);
+                    const x = 122 + 87 * Math.cos(angle);
+                    const y = 100 + 82 * Math.sin(angle);
+                    const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
+                    return (
+                      <g key={lbl}>
+                        <text x={x} y={y - 2} textAnchor={anchor} fill="rgba(255,255,255,0.5)" fontSize="7.5" fontWeight="600">{lbl}</text>
+                        <text x={x} y={y + 6} textAnchor={anchor} fill="#fff" fontSize="8" fontWeight="bold">{strategyStats[i]}</text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+              <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[9px] font-semibold tracking-wider text-white/50">
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#9a35ff]/20 border border-[#9a35ff] rounded-sm" /><span>YOUR AGENTS</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-0.5 border-t border-white/35 border-dashed" /><span>AVERAGE</span></div>
+              </div>
+            </div>
+
+            {/* Reward crate card */}
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 flex items-center justify-between gap-4">
+              <div className="space-y-2 flex-1">
+                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTO-LOOT & REWARDS</h3>
+                <p className="text-[10px] text-white/55 leading-relaxed font-semibold">Battle rewards collect automatically for all autonomous agents.</p>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] text-white/40 uppercase tracking-wide font-medium">All time wins</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-tech text-base font-bold text-white">{totalWins}</span>
+                    <span className="text-[8px] font-tech font-bold text-[#b85eff]">W</span>
+                  </div>
+                </div>
+                <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-5 py-2 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer w-full text-center">
+                  VIEW HISTORY
+                </button>
+              </div>
+              <div className="w-28 h-28 relative flex items-center justify-center shrink-0">
+                <div className="absolute inset-0 bg-[#9a35ff]/20 blur-xl rounded-full" />
+                <img src={rewardCrate} alt="Reward Crate" className="w-20 h-20 object-contain relative z-10 animate-bounce" style={{ animationDuration: "3s" }} />
+              </div>
+            </div>
+
+            {/* Activity Log */}
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">ACTIVITY LOG</h3>
+                {allJobsQ.isLoading && <Loader2 className="h-3 w-3 animate-spin text-purple-400" />}
+              </div>
+
+              {recentJobs.length > 0 ? (
+                <div className="space-y-3 text-[10px] font-semibold text-white/70">
+                  {recentJobs.map((job: any) => {
+                    const isDone = job.status === "COMPLETED";
+                    const isRunning = job.status === "RUNNING";
+                    const isQueued = job.status === "QUEUED";
+                    const isFailed = job.status === "FAILED";
+                    return (
+                      <div key={job.id} className="flex items-start justify-between gap-3">
+                        <div className="flex gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${isDone ? "bg-emerald-500" : isRunning ? "bg-amber-400 animate-pulse" : isQueued ? "bg-purple-500" : isFailed ? "bg-red-500" : "bg-white/30"}`} />
                           <div className="space-y-0.5">
-                            <h4 className="font-semibold text-xs text-white/90 leading-tight">{item.title}</h4>
-                            <p className="text-[10px] text-white/50 leading-relaxed font-medium">{item.desc}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <BookOpen className="h-3 w-3 text-white/40 shrink-0" />
+                              <span className="text-white/60 text-[9px]">
+                                {job.type?.replace(/_/g, " ") ?? "Training"}
+                              </span>
+                              <span className={`text-[8px] font-tech font-bold uppercase px-1 py-0.5 rounded ${isDone ? "bg-emerald-500/10 text-emerald-400" : isRunning ? "bg-amber-500/10 text-amber-400" : isQueued ? "bg-purple-500/10 text-purple-400" : "bg-red-500/10 text-red-400"}`}>
+                                {job.status}
+                              </span>
+                            </div>
+                            <p className="text-[8px] text-white/35 font-mono truncate max-w-[140px]">
+                              {job.agentId?.slice(0, 8)}...
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-
-                  </div>
-
+                        <div className="text-right shrink-0">
+                          <p className="text-[8px] text-white/35 font-medium">
+                            {job.createdAt ? timeAgo(job.createdAt) : "—"}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              ) : (
+                <p className="text-[10px] text-white/40 font-semibold text-center py-4">
+                  {allJobsQ.isLoading ? "Loading activity..." : "No recent activity. Enable autonomous mode to begin."}
+                </p>
+              )}
 
-                {/* Active Autonomous Agents Table */}
-                <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden">
-                  <div className="p-5 border-b border-white/8 flex items-center justify-between">
-                    <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
-                      ACTIVE AUTONOMOUS AGENTS
-                    </h3>
-                    <span className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider select-none">
-                      {activeAgents.length} Agents Active
-                    </span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[860px] text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="border-b border-white/6 text-white/40 font-bold uppercase tracking-wider text-[9px] bg-white/[0.01]">
-                          <th className="w-[240px] px-5 py-3">Agent</th>
-                          <th className="px-5 py-3">Current Mission</th>
-                          <th className="px-5 py-3">Status</th>
-                          <th className="px-5 py-3">Earnings (24h)</th>
-                          <th className="px-5 py-3 text-center">Uptime</th>
-                          <th className="px-5 py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/6 font-medium">
-                        
-                        {activeAgents.length > 0 ? (
-                          activeAgents.map((agent, i) => (
-                            <tr key={agent.id} className="hover:bg-white/[0.01] transition">
-                              <td className="w-[240px] px-5 py-4">
-                                <div className="flex min-w-0 items-center gap-4">
-                                  <ArenaAgentThumbnail agent={agent} className="h-14 w-14 rounded-lg" size="md" />
-                                  <div className="min-w-0 flex-1 space-y-1">
-                                    <div className="flex min-w-0 items-center gap-1.5">
-                                      <span className="min-w-0 truncate font-bold text-white text-sm leading-tight">{agent.name}</span>
-                                      <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
-                                    </div>
-                                    <div className="flex min-w-0 items-center gap-1.5 text-[10px] text-white/45">
-                                      <ClanIcon type={agent.clan.toLowerCase()} className="h-3.5 w-3.5 shrink-0" />
-                                      <span className="min-w-0 truncate uppercase tracking-wide">{agent.clan} &bull; {agent.archetype}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4">
-                                <div className="space-y-0.5">
-                                  <span className="text-white/86 text-xs leading-tight font-semibold">
-                                    {i === 0 ? "Resource Raid" : i === 1 ? "Training Focus" : "Arena Battles"}
-                                  </span>
-                                  <p className="text-[9px] text-white/40 leading-none">
-                                    {i === 0 ? "Dusty Outpost" : i === 1 ? "Adaptability Drill" : "3v3 Skirmish"}
-                                  </p>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-1.5 text-emerald-400">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  <span className="text-[10px] font-bold uppercase tracking-wider font-tech">In Progress</span>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4">
-                                <div className="flex items-baseline gap-1 font-tech">
-                                  <span className="font-bold text-white">{[85.40, 72.30, 87.90][i % 3]}</span>
-                                  <span className="text-[8px] font-bold text-white/40">$ARENA</span>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4 text-center font-tech font-bold text-white/70">
-                                {["6h 24m", "5h 58m", "6h 05m"][i % 3]}
-                              </td>
-                              <td className="px-5 py-4 text-center">
-                                <div className="flex items-center justify-center gap-1.5">
-                                  <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-2.5 py-1 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer">
-                                    VIEW AGENT
-                                  </button>
-                                  <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-white/20 rounded p-1 text-white/40 hover:text-white transition cursor-pointer">
-                                    &bull;&bull;&bull;
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={6} className="px-5 py-8 text-center text-white/40 text-sm">
-                              No active agents available.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="p-4 border-t border-white/8 flex justify-center bg-white/[0.005]">
-                    <button className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider hover:text-purple-300 transition cursor-pointer flex items-center gap-1.5">
-                      <span>VIEW ALL AGENTS</span>
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* How Autonomous Mode Works banner */}
-                <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <Info className="h-4.5 w-4.5 text-purple-400 shrink-0" />
-                    <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white">
-                      HOW AUTONOMOUS MODE WORKS
-                    </span>
-                  </div>
-
-                  {/* Step diagram */}
-                  <div className="flex items-center gap-4 text-[10px] text-white/50 font-semibold max-sm:w-full max-sm:justify-between">
-                    
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1 text-white">
-                        <span>1. SET STRATEGY</span>
-                      </div>
-                      <p className="text-[8px] text-white/35 font-medium uppercase">Choose goals and risk</p>
-                    </div>
-                    <ChevronRight className="h-3 w-3 text-white/25" />
-
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1 text-white">
-                        <span>2. AGENTS OPERATE</span>
-                      </div>
-                      <p className="text-[8px] text-white/35 font-medium uppercase">AI executes decisions</p>
-                    </div>
-                    <ChevronRight className="h-3 w-3 text-white/25" />
-
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1 text-white">
-                        <span>3. EARN & GROW</span>
-                      </div>
-                      <p className="text-[8px] text-white/35 font-medium uppercase">Earn rewards & XP</p>
-                    </div>
-                    <ChevronRight className="h-3 w-3 text-white/25" />
-
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1 text-white">
-                        <span>4. REVIEW</span>
-                      </div>
-                      <p className="text-[8px] text-white/35 font-medium uppercase">Optimize strategy</p>
-                    </div>
-
-                  </div>
-
-                  {/* Toggle button */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-tech text-[10px] font-bold text-white/50 uppercase">AUTONOMOUS MODE</span>
-                    <button
-                      onClick={() => setAutonomousMode(!autonomousMode)}
-                      className={`relative w-9 h-5 rounded-full transition-colors duration-300 outline-none ${
-                        autonomousMode ? "bg-[#9a35ff]" : "bg-white/10"
-                      }`}
-                    >
-                      <div
-                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${
-                          autonomousMode ? "translate-x-4" : ""
-                        }`}
-                      />
-                    </button>
-                    <span className="font-tech text-[10px] font-black text-white">{autonomousMode ? "ON" : "OFF"}</span>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Right Column sidebar info details */}
-              <aside className="space-y-4">
-                
-                {/* AUTONOMOUS STRATEGY card */}
-                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
-                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
-                    AUTONOMOUS STRATEGY
-                  </h3>
-
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-semibold text-white/40 uppercase tracking-wide block">Current Strategy</span>
-                    <div className="flex items-center gap-1.5 text-sm font-bold text-white font-tech uppercase">
-                      <span>Balanced Growth</span>
-                      <Sliders className="h-3.5 w-3.5 text-purple-400 hover:text-purple-300 transition cursor-pointer" />
-                    </div>
-                    <p className="text-[10px] text-white/50 leading-relaxed font-medium">
-                      A balanced approach focusing on earnings, training, and win rate improvement.
-                    </p>
-                  </div>
-
-                  {/* Strategy Allocations */}
-                  <div className="space-y-3">
-                    <span className="text-[9px] font-semibold text-white/40 uppercase tracking-wide block">Strategy Allocation</span>
-                    
-                    <div className="space-y-1 text-[10px] font-semibold text-white/70">
-                      <div className="flex justify-between">
-                        <span>Earnings</span>
-                        <span className="font-tech">40%</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="bg-[#9a35ff] h-full rounded-full" style={{ width: "40%" }} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 text-[10px] font-semibold text-white/70">
-                      <div className="flex justify-between">
-                        <span>Training</span>
-                        <span className="font-tech">30%</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="bg-[#9a35ff] h-full rounded-full" style={{ width: "30%" }} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 text-[10px] font-semibold text-white/70">
-                      <div className="flex justify-between">
-                        <span>Battles</span>
-                        <span className="font-tech">20%</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="bg-sky-400 h-full rounded-full" style={{ width: "20%" }} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 text-[10px] font-semibold text-white/70">
-                      <div className="flex justify-between">
-                        <span>Exploration</span>
-                        <span className="font-tech">10%</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="bg-emerald-400 h-full rounded-full" style={{ width: "10%" }} />
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-2 cursor-pointer">
-                    <span>EDIT STRATEGY</span>
-                  </button>
-
-                </div>
-
-                {/* STRATEGY PERFORMANCE radar card */}
-                <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
-                  <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold leading-snug sm:text-xs">
-                    STRATEGY PERFORMANCE (7D)
-                  </h3>
-
-                  {/* SVG Spider Radar Chart */}
-                  <div className="relative flex justify-center py-1 sm:py-2">
-                    <svg className="w-full max-w-[300px] aspect-[1.22/1]" viewBox="0 0 244 200" role="img" aria-label="Strategy performance radar chart">
-                      {/* Grid Hexagons */}
-                      {[0.25, 0.5, 0.75, 1.0].map((scale) => (
-                        <g key={scale} transform="translate(22 0)">
-                          <polygon
-                            points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)}
-                            fill="none"
-                            stroke="rgba(255, 255, 255, 0.04)"
-                            strokeWidth="1"
-                          />
-                        </g>
-                      ))}
-
-                      {/* Radial Grid lines */}
-                      {Array.from({ length: 6 }).map((_, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 122 + 70 * Math.cos(angle);
-                        const y = 100 + 70 * Math.sin(angle);
-                        return (
-                          <line
-                            key={i}
-                            x1="122"
-                            y1="100"
-                            x2={x}
-                            y2={y}
-                            stroke="rgba(255, 255, 255, 0.04)"
-                            strokeWidth="1"
-                          />
-                        );
-                      })}
-
-                      {/* Average Strategy polygon (dashed grey line) */}
-                      <g transform="translate(22 0)">
-                        <polygon
-                          points={getRadarPoints(averageStats)}
-                          fill="none"
-                          stroke="rgba(255, 255, 255, 0.25)"
-                          strokeDasharray="2,2"
-                          strokeWidth="1"
-                        />
-                      </g>
-
-                      {/* Active Strategy polygon (glowing purple fill) */}
-                      <g transform="translate(22 0)">
-                        <polygon
-                          points={getRadarPoints(strategyStats)}
-                          fill="rgba(154, 53, 255, 0.15)"
-                          stroke="#9a35ff"
-                          strokeWidth="1.5"
-                          className="drop-shadow-[0_0_8px_rgba(154,53,255,0.4)]"
-                        />
-                      </g>
-
-                      {/* Grid Corners Anchor Nodes */}
-                      {strategyStats.map((val, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const r = (val / 100) * 70;
-                        const x = 122 + r * Math.cos(angle);
-                        const y = 100 + r * Math.sin(angle);
-                        return (
-                          <circle
-                            key={i}
-                            cx={x}
-                            cy={y}
-                            r="3"
-                            fill="#9a35ff"
-                            stroke="#fff"
-                            strokeWidth="0.75"
-                          />
-                        );
-                      })}
-
-                      {/* Axis Label Labels */}
-                      {radarLabels.map((lbl, i) => {
-                        const angle = (i * 60 - 90) * (Math.PI / 180);
-                        const x = 122 + 87 * Math.cos(angle);
-                        const y = 100 + 82 * Math.sin(angle);
-                        const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
-                        
-                        // Show stats value next to label
-                        const val = strategyStats[i];
-                        
-                        return (
-                          <g key={lbl}>
-                            <text
-                              x={x}
-                              y={y - 2}
-                              textAnchor={anchor}
-                              fill="rgba(255, 255, 255, 0.5)"
-                              fontSize="7.5"
-                              fontWeight="600"
-                              className="font-sans uppercase"
-                            >
-                              {lbl}
-                            </text>
-                            <text
-                              x={x}
-                              y={y + 6}
-                              textAnchor={anchor}
-                              fill="#fff"
-                              fontSize="8"
-                              fontWeight="bold"
-                              className="font-tech"
-                            >
-                              {val}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-                  </div>
-
-                  {/* Legend */}
-                  <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[9px] font-semibold tracking-wider text-white/50">
-                    <div className="flex items-center gap-1.5 whitespace-nowrap">
-                      <div className="w-2.5 h-2.5 bg-[#9a35ff]/20 border border-[#9a35ff] rounded-sm" />
-                      <span>THIS STRATEGY</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 whitespace-nowrap">
-                      <div className="w-2.5 h-0.5 border-t border-white/35 border-dashed" />
-                      <span>AVERAGE</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* AUTO-LOOT & REWARDS card */}
-                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 flex items-center justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
-                      AUTO-LOOT & REWARDS
-                    </h3>
-                    <p className="text-[10px] text-white/55 leading-relaxed font-semibold">
-                      Auto-collect loot, rewards, and resources.
-                    </p>
-                    <div className="space-y-0.5">
-                      <span className="text-[9px] text-white/40 uppercase tracking-wide font-medium">Collected (24h)</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-tech text-base font-bold text-white">152.30</span>
-                        <span className="text-[8px] font-tech font-bold text-[#b85eff]">$ARENA</span>
-                      </div>
-                    </div>
-                    <button className="bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 rounded px-5 py-2 text-[9px] font-tech font-bold uppercase tracking-wider text-purple-400 transition cursor-pointer w-full text-center">
-                      VIEW LOOT
-                    </button>
-                  </div>
-
-                  <div className="w-28 h-28 relative flex items-center justify-center shrink-0">
-                    {/* Glowing background */}
-                    <div className="absolute inset-0 bg-[#9a35ff]/20 blur-xl rounded-full" />
-                    <img src={rewardCrate} alt="Auto Loot Crate" className="w-20 h-20 object-contain relative z-10 animate-bounce" style={{ animationDuration: "3s" }} />
-                  </div>
-                </div>
-
-                {/* AUTONOMOUS LOG card */}
-                <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
-                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
-                    AUTONOMOUS LOG
-                  </h3>
-                  <p className="text-[10px] text-white/45 font-semibold leading-none">
-                    View all autonomous activities and decisions.
-                  </p>
-
-                  {/* Log list */}
-                  <div className="space-y-3 text-[10px] font-semibold text-white/70">
-                    
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
-                        <span className="text-white/60">
-                          <strong className="text-white font-bold">HYBRID</strong> completed Resource Raid
-                        </span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-emerald-400 font-bold font-tech">+18.60 $ARENA</span>
-                        <p className="text-[8px] text-white/35 font-medium mt-0.5">2m ago</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
-                        <span className="text-white/60">
-                          <strong className="text-white font-bold">TACTICIAN</strong> completed Adaptability Drill
-                        </span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-emerald-400 font-bold font-tech">+12.40 $ARENA</span>
-                        <p className="text-[8px] text-white/35 font-medium mt-0.5">15m ago</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1 shrink-0" />
-                        <span className="text-white/60">
-                          <strong className="text-white font-bold">DEFENDER</strong> won Arena Battle
-                        </span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-emerald-400 font-bold font-tech">+22.30 $ARENA</span>
-                        <p className="text-[8px] text-white/35 font-medium mt-0.5">28m ago</p>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>VIEW FULL LOG</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-
-                </div>
-
-              </aside>
-
+              <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>VIEW FULL LOG</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
             </div>
-
-          </section>
+          </aside>
         </div>
+      </section>
+    </div>
   );
-}
+};
 
 export default AutonomousPage;

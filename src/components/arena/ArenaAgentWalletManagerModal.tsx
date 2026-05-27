@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownToLine, ArrowUpToLine, Copy, Loader2, ShieldCheck, WalletCards } from "lucide-react";
+import { ArrowDownToLine, ArrowUpToLine, Copy, ExternalLink, Loader2, ShieldCheck, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaTokenAmount } from "@/components/arena/ArenaTokenAmount";
@@ -44,6 +44,17 @@ function formatTxDate(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString();
+}
+
+const SOLANA_CLUSTER = "devnet";
+
+function solanaExplorerUrl(address: string) {
+  return `https://explorer.solana.com/address/${address}?cluster=${SOLANA_CLUSTER}`;
+}
+
+function isRealSolanaAddress(address?: string | null) {
+  if (!address) return false;
+  return !address.startsWith("pending_") && address.length >= 32;
 }
 
 function formatAgentSelectLabel(agent: AiArenaAgent) {
@@ -575,7 +586,20 @@ export function ArenaAgentWalletManagerModal({
                     </div>
 
                     <div className="rounded-xl border border-white/10 bg-[#05070d]/95 p-3">
-                      <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Solana Address</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">Solana Address</div>
+                        {isRealSolanaAddress(wallet.solanaAddress) ? (
+                          <a
+                            href={solanaExplorerUrl(wallet.solanaAddress)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md border border-neon-cyan/20 bg-neon-cyan/8 px-2 py-0.5 text-[10px] font-mono text-neon-cyan transition hover:bg-neon-cyan/15"
+                          >
+                            <ExternalLink className="h-2.5 w-2.5" />
+                            Devnet Explorer
+                          </a>
+                        ) : null}
+                      </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="min-w-0 flex-1 break-all font-mono text-xs text-foreground">{wallet.solanaAddress}</span>
                         <Button
