@@ -39,6 +39,8 @@ import type {
   MyArenaAgentsResult,
   AiArenaProfileResponse,
   AiArenaAchievementsResponse,
+  AiArenaEndBattleRequest,
+  AiArenaEndBattleResponse,
 } from "@/types/aiArenaGateway";
 
 const http = () => getApiClient("aiArenaGateway");
@@ -657,5 +659,28 @@ export const aiArenaGatewayApi = {
       `/v1/training/agents/${encodeURIComponent(agentId)}/eligibility`
     );
     return normalizeTrainingEligibilityResponse(data);
+  },
+
+  /**
+   * POST /v1/battles/:battleId/end
+   *
+   * Called by the game client (via the frontend) once the Unity match concludes.
+   * Transitions battle to COMPLETED, records result, persists to 0G DA.
+   *
+   * Production advice:
+   *   • Validate winnerId/loserId against battle.agentIds on the server.
+   *   • Compute ELO deltas server-side (K-factor 32, standard Elo formula).
+   *   • Store the action log to 0G DA and attach the rootHash to the battle row.
+   *   • Emit a WebSocket event so both clients receive the final state instantly.
+   */
+  endBattle: async (
+    battleId: string,
+    body: AiArenaEndBattleRequest
+  ): Promise<AiArenaEndBattleResponse> => {
+    const { data } = await http().post<AiArenaEndBattleResponse>(
+      `/v1/battles/${encodeURIComponent(battleId)}/end`,
+      body
+    );
+    return data;
   },
 };
