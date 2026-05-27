@@ -24,13 +24,13 @@ export type NavItem = {
 
 export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Home", path: "/", icon: Home },
+  { label: "AI Arena", path: "/ai-arena", icon: Sparkles },
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, requiresAuth: true },
   { label: "Games", path: "/games", icon: Gamepad2 },
   { label: "My Agents", path: "/my-agents", icon: UserRoundCog, requiresAuth: true },
   { label: "Training", path: "/training", icon: Cuboid },
   { label: "Battles", path: "/battles", icon: Swords },
   { label: "Inventory", path: "/inventory", icon: Package },
-  { label: "AI Arena", path: "/ai-arena", icon: Sparkles },
   { label: "Moments", path: "/moments", icon: FileText },
   { label: "Autonomous", path: "/autonomous", icon: Bot },
   { label: "Achievements", path: "/achievements", icon: Trophy },
