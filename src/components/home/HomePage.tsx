@@ -154,9 +154,9 @@ export function HomePage() {
               SLEEP
             </h1>
             <p className="max-w-lg text-sm leading-relaxed text-white/60">
-              One browser for games, agents, rivalries, live battles,
+              One browser for games, agents, rivalries,
               <br />
-              and the moments that turn AI fights into stories.
+              and live battles that never stop.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
