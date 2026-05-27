@@ -20,8 +20,8 @@
  */
 
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback, useMemo, type KeyboardEvent } from "react";
 import {
   Swords,
   Trophy,
@@ -30,12 +30,17 @@ import {
   Share2,
   Loader2,
   ArrowLeft,
-  Clock,
   Crown,
   Shield,
   Zap,
   MessageSquare,
 } from "lucide-react";
+
+/** Cloudflare R2 URL for the Unity WebGL build.
+ *  Set VITE_UNITY_BUILD_URL in your .env to activate the iframe.
+ *  e.g. VITE_UNITY_BUILD_URL=https://pub-xxxx.r2.dev/warzone/index.html
+ */
+const UNITY_BUILD_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? '';
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { getRankFromElo } from "@/utils/rankSystem";
@@ -50,7 +55,9 @@ import type {
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GamePhase = "countdown" | "live" | "ended";
+// "live"  — iframe loaded / battle in progress (Unity loading screen visible)
+// "ended" — battle completed / result card shown
+type GamePhase = "live" | "ended";
 
 type ChatMsg =
   | { id: string; kind: "system"; text: string; ts: Date }
@@ -253,83 +260,6 @@ function AgentBanner({
           isWinner={gamePhase === "ended" && !!oppWon}
           isLoser={gamePhase === "ended" && oppWon === false && !!result}
         />
-      </div>
-    </div>
-  );
-}
-
-/** 60-second countdown displayed over the dark iframe area */
-function CountdownOverlay({
-  countdown,
-  myAgent,
-  opponent,
-}: {
-  countdown: number | null;
-  myAgent: AiArenaAgent | null;
-  opponent: AiArenaAgent | null;
-}) {
-  const pct = countdown != null ? (countdown / 60) * 100 : 100;
-  const r = 44;
-  const circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ;
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-8 px-4 text-center w-full h-full">
-      {/* Countdown ring */}
-      <div className="relative flex h-[120px] w-[120px] sm:h-[140px] sm:w-[140px] items-center justify-center">
-        <svg
-          className="absolute inset-0 -rotate-90"
-          viewBox="0 0 100 100"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(139,92,246,0.12)" strokeWidth="6" />
-          <circle
-            cx="50"
-            cy="50"
-            r={r}
-            fill="none"
-            stroke="rgba(139,92,246,0.85)"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${circ}`}
-            style={{ transition: "stroke-dasharray 0.9s linear", filter: "drop-shadow(0 0 8px rgba(139,92,246,0.8))" }}
-          />
-        </svg>
-        <div className="relative text-center">
-          <div className="font-display text-5xl sm:text-6xl font-black text-gradient glow-text tabular-nums leading-none">
-            {countdown ?? "…"}
-          </div>
-          <div className="font-tech text-[8px] uppercase tracking-[0.25em] text-white/40 mt-1">
-            SECONDS
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div className="font-tech text-sm sm:text-base uppercase tracking-[0.2em] text-white/80 font-bold">
-          BATTLE STARTING SOON
-        </div>
-        <div className="text-xs text-white/35 mt-2 font-mono">
-          Waiting for arena to sync both agents…
-        </div>
-      </div>
-
-      {/* Agent names */}
-      {myAgent && opponent && (
-        <div className="flex items-center gap-4 mt-2">
-          <span className="font-tech text-xs font-bold" style={{ color: clanColor(myAgent.clan) }}>
-            {myAgent.name}
-          </span>
-          <span className="text-white/25 text-xs">vs</span>
-          <span className="font-tech text-xs font-bold" style={{ color: clanColor(opponent.clan) }}>
-            {opponent.name}
-          </span>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 text-[10px] text-white/25 font-tech mt-2">
-        <Clock className="h-3 w-3" />
-        PREPARE YOUR STRATEGY
       </div>
     </div>
   );
@@ -591,18 +521,18 @@ export default function ArenaGamePage() {
     {
       id: uid(),
       kind: "system",
-      text: "Arena lobby opened. Connecting to battle server…",
+      text: "Arena lobby opened. Loading battle…",
       ts: new Date(),
     },
   ]);
   const [chatInput, setChatInput] = useState("");
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [gamePhase, setGamePhase] = useState<GamePhase>("countdown");
+  // No countdown — Unity's loading screen (index.html) handles that visually.
+  const [gamePhase, setGamePhase] = useState<GamePhase>("live");
   const [observerCount] = useState(() => Math.floor(Math.random() * 80) + 12);
 
   const prevStatusRef = useRef<string | null>(null);
   const resultPostedRef = useRef(false);
-  const countdownStartedRef = useRef(false);
+  const iframeSrcSetRef = useRef(false);  // ensure iframe src is set only once
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -655,6 +585,31 @@ export default function ArenaGamePage() {
   const myAgent = myAgentQ.data ?? null;
   const opponent = opponentQ.data ?? null;
 
+  // ── Build Unity iframe URL (set once, contains all agent data as params) ──
+  // Waits until both agent queries have settled so all name/archetype params
+  // are populated.  battleId is also readable by Unity via Application.absoluteURL.
+  const iframeSrc = useMemo(() => {
+    if (!battleId || !UNITY_BUILD_URL) return '';
+    // Don't compute until queries have finished loading
+    if (myAgentQ.isLoading || opponentQ.isLoading) return '';
+    const sp = new URLSearchParams({
+      battleId,
+      myAgentId:         myAgentId          ?? '',
+      myAgentName:       myAgent?.name       ?? '',
+      myAgentArchetype:  myAgent?.archetype  ?? '',
+      myAgentElo:        String(myAgent?.eloRating ?? 1000),
+      myAgentClan:       myAgent?.clan        ?? '',
+      opponentId:        resolvedOpponentId  ?? '',
+      opponentName:      opponent?.name      ?? '',
+      opponentArchetype: opponent?.archetype ?? '',
+      opponentElo:       String(opponent?.eloRating ?? 1000),
+      opponentClan:      opponent?.clan      ?? '',
+      mode,
+    });
+    return `${UNITY_BUILD_URL}?${sp.toString()}`;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAgentQ.isLoading, opponentQ.isLoading, myAgent, opponent, battleId, myAgentId, resolvedOpponentId, mode]);
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   const addSystem = useCallback((text: string) => {
@@ -684,6 +639,8 @@ export default function ArenaGamePage() {
   );
 
   // ── Battle status transitions ─────────────────────────────────────────────
+  // Countdown is gone — Unity's loading screen handles that visually.
+  // Here we only watch for IN_PROGRESS (add live banner) and terminal states.
 
   useEffect(() => {
     const status = battle?.status ?? null;
@@ -692,26 +649,14 @@ export default function ArenaGamePage() {
     prevStatusRef.current = status;
     if (!status) return;
 
-    // Start countdown on PENDING / INITIALIZING / IN_PROGRESS (whichever arrives first).
-    // The battle-service transitions to IN_PROGRESS almost immediately, so by the time
-    // the frontend polls it may already be IN_PROGRESS — we still want the full 60 s.
-    if (
-      (status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS") &&
-      !countdownStartedRef.current
-    ) {
-      countdownStartedRef.current = true;
-      setCountdown(60);
-      addSystem("Match found! Battle starting in 60 seconds. Preparing arena…");
+    if ((status === "PENDING" || status === "INITIALIZING") && prev === null) {
+      addSystem("⏳  Battle created — arena loading…");
     }
 
-    // IN_PROGRESS: add a chat message but NEVER cancel the running countdown.
-    // The countdown tick effect (below) is the sole driver of the live transition —
-    // it fires setGamePhase("live") when the timer reaches 0.
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS") {
-      addSystem("⚔️  Arena ready — battle begins when countdown ends.");
+      addSystem("⚔️  Battle is LIVE! Agents are fighting.");
     }
 
-    // Completed
     if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {
       resultPostedRef.current = true;
       setGamePhase("ended");
@@ -731,18 +676,12 @@ export default function ArenaGamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battle?.status]);
 
-  // ── Countdown tick ────────────────────────────────────────────────────────
-
+  // ── Set iframe src once (when agent queries finish) ───────────────────────
   useEffect(() => {
-    if (countdown === null || gamePhase !== "countdown") return;
-    if (countdown <= 0) {
-      setGamePhase("live");
-      addSystem("⚔️  GO! Entering the arena…");
-      return;
-    }
-    const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1_000);
-    return () => clearTimeout(t);
-  }, [countdown, gamePhase, addSystem]);
+    if (iframeSrcSetRef.current || !iframeSrc || !iframeRef.current) return;
+    iframeSrcSetRef.current = true;
+    iframeRef.current.src = iframeSrc;
+  }, [iframeSrc]);
 
   // ── Auto-scroll chat ──────────────────────────────────────────────────────
 
@@ -750,36 +689,36 @@ export default function ArenaGamePage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ── postMessage TO Unity on phase change ──────────────────────────────────
-
+  // ── postMessage TO Unity once it's ready ─────────────────────────────────
+  // Unity also reads battleId from window.location.search (Application.absoluteURL).
+  // postMessage is kept as a belt-and-suspenders approach.
   useEffect(() => {
-    if (gamePhase === "live" && iframeRef.current && myAgent && opponent && battleId) {
-      iframeRef.current.contentWindow?.postMessage(
+    if (!iframeRef.current || !myAgent || !opponent || !battleId) return;
+    const frame = iframeRef.current;
+    const send = () => {
+      frame.contentWindow?.postMessage(
         {
           type: "arena_battle_start",
           battleId,
           myAgent: {
-            id: myAgent.id,
-            name: myAgent.name,
-            archetype: myAgent.archetype,
-            clan: myAgent.clan,
-            eloRating: myAgent.eloRating,
-            traits: myAgent.traits ?? {},
+            id: myAgent.id, name: myAgent.name,
+            archetype: myAgent.archetype, clan: myAgent.clan,
+            eloRating: myAgent.eloRating, traits: myAgent.traits ?? {},
           },
           opponent: {
-            id: opponent.id,
-            name: opponent.name,
-            archetype: opponent.archetype,
-            clan: opponent.clan,
-            eloRating: opponent.eloRating,
-            traits: opponent.traits ?? {},
+            id: opponent.id, name: opponent.name,
+            archetype: opponent.archetype, clan: opponent.clan,
+            eloRating: opponent.eloRating, traits: opponent.traits ?? {},
           },
           mode,
         },
         "*"
       );
-    }
-  }, [gamePhase, myAgent, opponent, battleId, mode]);
+    };
+    // Send once Unity frame is loaded (onload fires after Unity initialises)
+    frame.addEventListener("load", send);
+    return () => frame.removeEventListener("load", send);
+  }, [myAgent, opponent, battleId, mode]);
 
   // ── postMessage FROM Unity (game_over) ────────────────────────────────────
 
@@ -848,12 +787,6 @@ export default function ArenaGamePage() {
               LIVE
             </span>
           )}
-          {gamePhase === "countdown" && (
-            <span className="flex items-center gap-1 rounded-full border border-yellow-400/40 bg-yellow-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-yellow-400">
-              <Clock className="h-2.5 w-2.5" />
-              {countdown != null ? `${countdown}s` : "STARTING"}
-            </span>
-          )}
           {gamePhase === "ended" && (
             <span className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/40">
               ENDED
@@ -890,15 +823,7 @@ export default function ArenaGamePage() {
             <div className="absolute right-1/4 bottom-1/3 h-72 w-72 rounded-full bg-cyan-500/5 blur-3xl" />
           </div>
 
-          {/* Loading */}
-          {isLoading && (
-            <div className="relative flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary/60" />
-              <span className="font-tech text-xs text-white/30">CONNECTING TO ARENA…</span>
-            </div>
-          )}
-
-          {/* Error */}
+          {/* Battle load error */}
           {isError && (
             <div className="relative text-center">
               <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
@@ -911,82 +836,71 @@ export default function ArenaGamePage() {
             </div>
           )}
 
-          {/* Countdown overlay */}
-          {!isLoading && !isError && gamePhase === "countdown" && (
-            <div className="relative w-full h-full flex items-center justify-center">
-              <CountdownOverlay countdown={countdown} myAgent={myAgent} opponent={opponent} />
-            </div>
-          )}
-
-          {/* Game iframe (live & ended) */}
-          {!isLoading && !isError && (gamePhase === "live" || gamePhase === "ended") && (
-            <div className="relative flex w-full h-full items-center justify-center p-4">
+          {/* ── Unity iframe — always visible once battle is loaded ── */}
+          {!isError && (
+            <div className="relative flex w-full h-full items-center justify-center p-2 sm:p-4">
               <div
                 className="relative overflow-hidden rounded-xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
                 style={{
                   width: "min(900px, 100%)",
                   aspectRatio: "900 / 600",
-                  maxHeight: "calc(100vh - 260px)",
+                  maxHeight: "calc(100vh - 200px)",
                 }}
               >
-                {/* Actual iframe */}
+                {/* Connecting placeholder shown while agent data loads or no build URL set */}
+                {(!iframeSrc || isLoading) && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[#030710]">
+                    <div
+                      className="absolute inset-0 opacity-[0.04]"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(rgba(139,92,246,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.6) 1px,transparent 1px)",
+                        backgroundSize: "60px 60px",
+                      }}
+                    />
+                    <Loader2 className="h-7 w-7 animate-spin text-primary/50 relative z-10" />
+                    {!UNITY_BUILD_URL ? (
+                      <div className="relative z-10 text-center px-4">
+                        <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
+                          Unity Build URL not configured
+                        </p>
+                        <p className="font-mono text-[9px] text-white/20 mt-1">
+                          Set VITE_UNITY_BUILD_URL in .env to load the game
+                        </p>
+                        {myAgent && opponent && (
+                          <div className="flex items-center justify-center gap-3 mt-4">
+                            <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
+                              {myAgent.name}
+                            </span>
+                            <Swords className="h-3 w-3 text-white/20" />
+                            <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
+                              {opponent.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="relative z-10 font-tech text-xs text-white/30 uppercase tracking-wider">
+                        Preparing arena…
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* The actual Unity WebGL iframe.
+                    src is set imperatively (via ref) once agent queries settle,
+                    so the frame never reloads when React re-renders. */}
                 <iframe
                   ref={iframeRef}
-                  src="about:blank"
                   title="AI Arena Game"
-                  className="h-full w-full bg-[#050a14]"
+                  className="h-full w-full bg-[#030710]"
                   allow="fullscreen; autoplay"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
                 />
 
-                {/* Unity connection placeholder — hidden once Unity loads */}
-                <div
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[#050a14] pointer-events-none"
-                  aria-hidden
-                >
-                  {/* Grid lines */}
-                  <div
-                    className="absolute inset-0 opacity-[0.04]"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(rgba(139,92,246,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.6) 1px,transparent 1px)",
-                      backgroundSize: "60px 60px",
-                    }}
-                  />
-
-                  <div className="relative flex flex-col items-center gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
-                      <span className="font-tech text-xs uppercase tracking-[0.2em] text-white/35">
-                        Waiting for Unity to connect
-                      </span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
-                    </div>
-
-                    {myAgent && opponent && (
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
-                          {myAgent.name}
-                        </span>
-                        <Swords className="h-3 w-3 text-white/20" />
-                        <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
-                          {opponent.name}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="font-mono text-[9px] text-white/15 text-center max-w-xs leading-relaxed">
-                      Unity instance will receive:{" "}
-                      <span className="text-primary/40">arena_battle_start</span> via postMessage
-                      <br />
-                      battleId: <span className="text-white/30">{shortId(battleId)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* "ENDED" dim overlay */}
+                {/* GAME OVER overlay */}
                 {gamePhase === "ended" && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
                     <span className="font-display text-3xl font-black text-white/20 uppercase tracking-widest">
                       GAME OVER
                     </span>
@@ -996,13 +910,15 @@ export default function ArenaGamePage() {
             </div>
           )}
 
-          {/* Bottom hint */}
-          {!isLoading && !isError && gamePhase === "live" && (
+          {/* Bottom hint — battle ID + Zap */}
+          {!isError && gamePhase === "live" && (
             <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
               <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
                 <Zap className="h-2.5 w-2.5 text-primary/60" />
                 <span className="font-mono text-[8px] text-white/25">
-                  Unity connects via postMessage · window origin "*"
+                  {UNITY_BUILD_URL
+                    ? `battleId passed via URL query · ${shortId(battleId)}`
+                    : `configure VITE_UNITY_BUILD_URL · ${shortId(battleId)}`}
                 </span>
               </div>
             </div>
