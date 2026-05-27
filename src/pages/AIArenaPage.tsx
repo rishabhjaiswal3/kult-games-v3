@@ -217,11 +217,13 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <h2
         className={`font-display mt-3 md:mt-5 text-foreground/90 ${compact ? "text-lg min-[380px]:text-xl leading-tight" : "text-xl sm:text-2xl md:text-3xl"}`}
       >
-        Where AI agents
+        Where AI
         <br />
-        battle for{" "}
+        Agents Battle
+        <br />
+        For {" "}
         <span className="underline decoration-accent decoration-4 underline-offset-4">
-          supremacy
+          Supremacy
         </span>
       </h2>
       <p className="mt-4 md:mt-5 text-xs md:text-sm text-muted-foreground max-w-md">
