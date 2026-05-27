@@ -126,11 +126,15 @@ function AgentLoadingCard({
   const color = agent ? clanColor(agent.clan) : "#8b6dff";
 
   return (
-    <div className="flex flex-col items-center gap-3 w-36">
+    <div className="flex flex-col items-center gap-3" style={{ width: 180 }}>
       {/* Portrait frame */}
       <div
-        className="relative h-36 w-36 overflow-hidden rounded-2xl border border-white/15 bg-[#0d0f1a]"
-        style={{ boxShadow: `0 0 32px ${color}50, inset 0 0 20px ${color}15` }}
+        className="relative overflow-hidden rounded-2xl border border-white/20"
+        style={{
+          width: 180,
+          height: 220,
+          boxShadow: `0 0 48px ${color}55, 0 12px 40px rgba(0,0,0,0.7)`,
+        }}
       >
         {portrait ? (
           isVideo ? (
@@ -141,7 +145,7 @@ function AgentLoadingCard({
               muted
               playsInline
               className={cn(
-                "h-full w-full object-cover object-center",
+                "h-full w-full object-cover object-top",
                 side === "right" && "-scale-x-100"
               )}
             />
@@ -150,7 +154,7 @@ function AgentLoadingCard({
               src={portrait}
               alt={agent?.name ?? "agent"}
               className={cn(
-                "h-full w-full object-cover object-center",
+                "h-full w-full object-cover object-top",
                 side === "right" && "-scale-x-100"
               )}
               loading="eager"
@@ -159,47 +163,38 @@ function AgentLoadingCard({
         ) : (
           <div className="h-full w-full animate-pulse bg-white/5" />
         )}
-        {/* Bottom gradient */}
+
+        {/* Bottom name overlay */}
         <div
-          className="absolute inset-x-0 bottom-0 h-16"
-          style={{
-            background: `linear-gradient(to top, ${color}60, transparent)`,
-          }}
-        />
+          className="absolute inset-x-0 bottom-0 px-3 pb-3 pt-10"
+          style={{ background: `linear-gradient(to top, ${color}cc 0%, ${color}40 60%, transparent 100%)` }}
+        >
+          <div className="font-display text-base font-black leading-tight text-white drop-shadow-lg truncate">
+            {agent?.name ?? "???"}
+          </div>
+          <div className="font-tech text-[9px] uppercase tracking-widest text-white/70 mt-0.5">
+            {agent?.archetype ?? "—"}
+          </div>
+        </div>
       </div>
 
-      {/* Info */}
-      <div className="text-center space-y-0.5">
-        <div
-          className="font-display text-base font-bold leading-tight tracking-wide truncate max-w-[140px]"
-          style={{ color }}
-        >
-          {agent?.name ?? "???"}
+      {/* Stats panel — glassmorphism */}
+      <div
+        className="w-full rounded-xl border border-white/10 px-4 py-2.5 text-center"
+        style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
+      >
+        <div className="font-tech text-lg font-bold" style={{ color }}>
+          {agent?.eloRating?.toLocaleString() ?? "—"}
+          <span className="text-[9px] text-white/30 font-normal ml-1">ELO</span>
         </div>
-        <div className="font-tech text-[9px] uppercase tracking-widest text-white/40">
-          {agent?.archetype ?? "—"}
-        </div>
-        <div className="font-tech text-sm font-bold text-white/80 mt-1">
-          {agent?.eloRating?.toLocaleString() ?? "—"}{" "}
-          <span className="text-[9px] text-white/30 font-normal">ELO</span>
+        <div className="flex justify-center gap-3 mt-0.5">
+          <span className="font-mono text-[9px] text-white/35">{agent?.wins ?? 0}W</span>
+          <span className="text-white/15">·</span>
+          <span className="font-mono text-[9px] text-white/35">{agent?.losses ?? 0}L</span>
         </div>
         {agent?.clan && (
-          <div
-            className="font-tech text-[9px] uppercase tracking-wider mt-0.5"
-            style={{ color }}
-          >
+          <div className="font-tech text-[8px] uppercase tracking-wider mt-1" style={{ color }}>
             {agent.clan}
-          </div>
-        )}
-        {agent && (
-          <div className="flex items-center justify-center gap-1.5 mt-1">
-            <span className="font-mono text-[9px] text-white/25">
-              {agent.wins}W
-            </span>
-            <span className="text-white/15 text-[8px]">·</span>
-            <span className="font-mono text-[9px] text-white/25">
-              {agent.losses}L
-            </span>
           </div>
         )}
       </div>
@@ -207,7 +202,7 @@ function AgentLoadingCard({
   );
 }
 
-/** Full-screen Unity loading overlay with rain animation, agent cards, progress bar */
+/** Full-screen Unity loading overlay — video background, agent cards, progress bar */
 function UnityLoadingScreen({
   progress,
   myAgent,
@@ -222,140 +217,87 @@ function UnityLoadingScreen({
   const myColor = myAgent ? clanColor(myAgent.clan) : "#8b6dff";
   const oppColor = opponent ? clanColor(opponent.clan) : "#06b6d4";
 
-  // Stable rain drops (no re-render jitter)
-  const drops = useMemo(
-    () =>
-      Array.from({ length: 28 }, (_, i) => ({
-        id: i,
-        left: `${((i * 37 + 13) % 100).toFixed(1)}%`,
-        height: 30 + ((i * 17) % 50),
-        delay: `${((i * 0.23) % 3).toFixed(2)}s`,
-        duration: `${(1.4 + (i * 0.13) % 1.6).toFixed(2)}s`,
-        opacity: 0.08 + ((i * 0.07) % 0.18),
-        color: i % 3 === 0 ? "#9945ff" : i % 3 === 1 ? "#8b5cf6" : "#06b6d4",
-      })),
-    []
-  );
-
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#030710] overflow-hidden">
-      {/* CSS keyframes for rain + pulse rings */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes rainFall {
-            0%   { transform: translateY(-40px); opacity: 0; }
-            8%   { opacity: 1; }
-            88%  { opacity: 1; }
-            100% { transform: translateY(650px);  opacity: 0; }
-          }
-          @keyframes vsPulse {
-            0%, 100% { transform: scale(1);   opacity: 0.6; }
-            50%       { transform: scale(1.15); opacity: 0.15; }
-          }
-          @keyframes agentFloat {
-            0%, 100% { transform: translateY(0px);  }
-            50%       { transform: translateY(-6px); }
-          }
-        `,
-        }}
+    <div className="absolute inset-0 z-20 overflow-hidden">
+      {/* ── Background video ── */}
+      <video
+        src="/videos/loader.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0.55 }}
       />
 
-      {/* ── Rain drops ── */}
-      {drops.map((d) => (
-        <div
-          key={d.id}
-          className="absolute top-0 w-px rounded-full"
-          style={{
-            left: d.left,
-            height: `${d.height}px`,
-            background: `linear-gradient(to bottom, transparent, ${d.color})`,
-            opacity: d.opacity,
-            animationName: "rainFall",
-            animationDuration: d.duration,
-            animationDelay: d.delay,
-            animationTimingFunction: "linear",
-            animationIterationCount: "infinite",
-          }}
-        />
-      ))}
-
-      {/* ── Background grid ── */}
+      {/* ── Dark + blur overlay (sits between video and cards) ── */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(139,92,246,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.6) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to bottom, rgba(3,7,16,0.55) 0%, rgba(3,7,16,0.45) 50%, rgba(3,7,16,0.75) 100%)", backdropFilter: "blur(2px)" }}
       />
 
-      {/* ── Title ── */}
-      <div className="relative mb-8 text-center">
-        <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/30 mb-1">
-          ⚡ AI Battle ⚡
-        </div>
-        <div className="font-display text-3xl font-black tracking-[0.12em] text-gradient">
-          AI ARENA
-        </div>
-      </div>
+      {/* ── Content ── */}
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-8 px-6">
 
-      {/* ── Agent cards + VS ── */}
-      <div className="relative flex items-center gap-8 sm:gap-12">
-        {/* My agent */}
-        <div style={{ animationName: "agentFloat", animationDuration: "3.2s", animationTimingFunction: "ease-in-out", animationIterationCount: "infinite" }}>
-          <AgentLoadingCard agent={myAgent} side="left" />
-        </div>
-
-        {/* VS center */}
-        <div className="flex flex-col items-center gap-1.5 shrink-0">
-          {/* Pulsing rings */}
-          <div className="relative flex h-14 w-14 items-center justify-center">
-            <div
-              className="absolute inset-0 rounded-full border border-primary/40"
-              style={{ animationName: "vsPulse", animationDuration: "2s", animationTimingFunction: "ease-in-out", animationIterationCount: "infinite" }}
-            />
-            <div
-              className="absolute inset-2 rounded-full border border-cyan-400/30"
-              style={{ animationName: "vsPulse", animationDuration: "2s", animationDelay: "0.4s", animationTimingFunction: "ease-in-out", animationIterationCount: "infinite" }}
-            />
-            <Swords className="relative h-5 w-5 text-primary" />
+        {/* Title */}
+        <div className="text-center">
+          <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
+            ⚡ &nbsp;AI Battle&nbsp; ⚡
           </div>
-          <span className="font-display text-2xl font-black text-gradient">VS</span>
-          <span className="font-tech text-[8px] uppercase tracking-widest text-white/25">
-            {mode}
-          </span>
+          <div className="font-display text-4xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)]">
+            AI ARENA
+          </div>
         </div>
 
-        {/* Opponent */}
-        <div style={{ animationName: "agentFloat", animationDuration: "3.8s", animationDelay: "0.6s", animationTimingFunction: "ease-in-out", animationIterationCount: "infinite" }}>
+        {/* Agent cards + VS */}
+        <div className="flex items-center gap-10 sm:gap-16">
+
+          {/* My agent */}
+          <AgentLoadingCard agent={myAgent} side="left" />
+
+          {/* VS center — single column, perfectly centred */}
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-full border border-primary/60"
+              style={{
+                background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
+                boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
+              }}
+            >
+              <Swords className="h-7 w-7 text-primary" />
+            </div>
+            <span className="font-display text-3xl font-black text-gradient leading-none">VS</span>
+            <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
+              {mode}
+            </span>
+          </div>
+
+          {/* Opponent */}
           <AgentLoadingCard agent={opponent} side="right" />
         </div>
-      </div>
 
-      {/* ── Progress bar ── */}
-      <div className="relative mt-10 w-80 px-2">
-        <div className="flex justify-between font-tech text-[9px] text-white/30 mb-2 uppercase tracking-wider">
-          <span>
-            {progress < 100 ? "Loading Arena…" : "Launching…"}
-          </span>
-          <span>{progress}%</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-300 ease-out"
-            style={{
-              width: `${progress}%`,
-              background: `linear-gradient(90deg, ${myColor}, #8b5cf6, ${oppColor})`,
-              boxShadow: `0 0 12px #8b5cf6`,
-            }}
-          />
-        </div>
-        {progress === 0 && (
-          <p className="text-center font-mono text-[8px] text-white/20 mt-2">
-            Connecting to 0G network…
+        {/* Progress bar */}
+        <div className="w-[420px] max-w-[90vw]">
+          <div className="flex justify-between font-tech text-[10px] text-white/40 mb-2 uppercase tracking-wider">
+            <span>{progress < 100 ? "Loading Arena…" : "Launching…"}</span>
+            <span className="font-mono">{progress}%</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-300 ease-out"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(90deg, ${myColor}, #8b5cf6 50%, ${oppColor})`,
+                boxShadow: progress > 0 ? "0 0 14px rgba(139,92,246,0.8)" : "none",
+              }}
+            />
+          </div>
+          <p className="text-center font-mono text-[9px] text-white/25 mt-2">
+            {progress === 0
+              ? "Connecting to 0G network…"
+              : `Loading game assets — ${progress}%`}
           </p>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -1109,96 +1051,43 @@ export default function ArenaGamePage() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* Canvas area */}
-        <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center bg-[#040810] overflow-hidden">
+        <div className="relative min-h-0 flex-1 bg-[#040810] overflow-hidden">
 
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute left-1/4 top-1/3 h-72 w-72 rounded-full bg-primary/6 blur-3xl" />
-            <div className="absolute right-1/4 bottom-1/3 h-72 w-72 rounded-full bg-cyan-500/5 blur-3xl" />
-          </div>
-
-          {/* Battle load error */}
+          {/* Error state — centred */}
           {isError && (
-            <div className="relative text-center">
-              <div className="font-tech text-sm text-red-400/80 mb-2">
-                Failed to load battle
-              </div>
-              <button
-                onClick={() => battleQ.refetch()}
-                className="font-tech text-xs text-primary hover:text-primary/80 underline"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {/* No build URL configured */}
-          {!isError && !UNITY_BASE_URL && (
-            <div className="relative z-10 text-center px-4">
-              <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
-                Unity Build URL not configured
-              </p>
-              <p className="font-mono text-[9px] text-white/20 mt-1">
-                Set VITE_UNITY_BUILD_URL in .env to load the game
-              </p>
-              {myAgent && opponent && (
-                <div className="flex items-center justify-center gap-3 mt-4">
-                  <span
-                    className="font-tech text-[10px] font-bold"
-                    style={{ color: clanColor(myAgent.clan) }}
-                  >
-                    {myAgent.name}
-                  </span>
-                  <Swords className="h-3 w-3 text-white/20" />
-                  <span
-                    className="font-tech text-[10px] font-bold"
-                    style={{ color: clanColor(opponent.clan) }}
-                  >
-                    {opponent.name}
-                  </span>
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <div className="font-tech text-sm text-red-400/80 mb-2">
+                  Failed to load battle
                 </div>
-              )}
+                <button
+                  onClick={() => battleQ.refetch()}
+                  className="font-tech text-xs text-primary hover:text-primary/80 underline"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           )}
 
-          {/* ── Unity canvas container ── */}
-          {!isError && UNITY_BASE_URL && (
-            <div className="relative flex w-full h-full items-center justify-center p-2 sm:p-4">
-              <div
-                className="relative overflow-hidden rounded-xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]"
-                style={{
-                  width: "min(900px, 100%)",
-                  aspectRatio: "900 / 600",
-                  maxHeight: "calc(100vh - 200px)",
-                }}
-              >
-                {/* Unity renders directly into this canvas */}
-                <canvas
-                  ref={canvasRef}
-                  id="unity-canvas"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    display: "block",
-                    background: "#030710",
-                  }}
-                />
-
-                {/* React loading screen (shown until Unity finishes loading) */}
-                {!unityLoaded && (
-                  <UnityLoadingScreen
-                    progress={loadingProgress}
-                    myAgent={myAgent}
-                    opponent={opponent}
-                    mode={mode}
-                  />
-                )}
-
-                {/* GAME OVER overlay */}
-                {gamePhase === "ended" && unityLoaded && (
-                  <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
-                    <span className="font-display text-3xl font-black text-white/20 uppercase tracking-widest">
-                      GAME OVER
+          {/* No build URL configured — centred */}
+          {!isError && !UNITY_BASE_URL && (
+            <div className="flex h-full items-center justify-center px-4">
+              <div className="text-center">
+                <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
+                  Unity Build URL not configured
+                </p>
+                <p className="font-mono text-[9px] text-white/20 mt-1">
+                  Set VITE_UNITY_BUILD_URL in .env to load the game
+                </p>
+                {myAgent && opponent && (
+                  <div className="flex items-center justify-center gap-3 mt-4">
+                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
+                      {myAgent.name}
+                    </span>
+                    <Swords className="h-3 w-3 text-white/20" />
+                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
+                      {opponent.name}
                     </span>
                   </div>
                 )}
@@ -1206,17 +1095,49 @@ export default function ArenaGamePage() {
             </div>
           )}
 
-          {/* Bottom hint */}
-          {!isError && UNITY_BASE_URL && gamePhase === "live" && (
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
-              <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
-                <Zap className="h-2.5 w-2.5 text-primary/60" />
-                <span className="font-mono text-[8px] text-white/25">
-                  {unityLoaded
-                    ? `battle · ${shortId(battleId)}`
-                    : `loading · ${loadingProgress}%`}
-                </span>
-              </div>
+          {/* ── Unity canvas — fills entire game area ── */}
+          {!isError && UNITY_BASE_URL && (
+            <div className="absolute inset-0">
+              {/* Unity renders directly into this canvas; CSS fills the space,
+                  width/height attrs set the render resolution */}
+              <canvas
+                ref={canvasRef}
+                id="unity-canvas"
+                width={1280}
+                height={720}
+                style={{ width: "100%", height: "100%", display: "block", background: "#030710" }}
+              />
+
+              {/* React loading screen (shown until Unity finishes loading) */}
+              {!unityLoaded && (
+                <UnityLoadingScreen
+                  progress={loadingProgress}
+                  myAgent={myAgent}
+                  opponent={opponent}
+                  mode={mode}
+                />
+              )}
+
+              {/* GAME OVER overlay */}
+              {gamePhase === "ended" && unityLoaded && (
+                <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
+                  <span className="font-display text-3xl font-black text-white/20 uppercase tracking-widest">
+                    GAME OVER
+                  </span>
+                </div>
+              )}
+
+              {/* Bottom battle-ID hint */}
+              {gamePhase === "live" && (
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
+                    <Zap className="h-2.5 w-2.5 text-primary/60" />
+                    <span className="font-mono text-[8px] text-white/25">
+                      {unityLoaded ? `battle · ${shortId(battleId)}` : `loading · ${loadingProgress}%`}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
