@@ -74,6 +74,10 @@
     @apply border-border;
   }
 
+  html {
+    font-size: 17px;
+  }
+
   body {
     @apply bg-background text-foreground font-body antialiased text-base font-medium;
     background-image:
@@ -86,6 +90,12 @@
 
   button {
     border-radius: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  html {
+    font-size: 16.5px;
   }
 }
 
@@ -670,6 +680,24 @@
   80% { opacity: 0.7; filter: brightness(1); }
 }
 
+@keyframes stats-lightning-orbit {
+  to { transform: rotate(1turn); }
+}
+
+@keyframes stats-lightning-sweep {
+  0%, 46% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  54% {
+    opacity: 0.62;
+  }
+  72%, 100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
 @keyframes live-dot {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 hsl(0 85% 62% / 0.6); }
   50%       { opacity: 0.6; box-shadow: 0 0 0 5px hsl(0 85% 62% / 0); }
@@ -1041,8 +1069,11 @@
     font-family: "Orbitron", sans-serif;
   }
 
-  .font-display-marker,
   .font-display {
+    font-family: "Orbitron", sans-serif;
+  }
+
+  .font-display-marker {
     font-family: "Permanent Marker", sans-serif;
     letter-spacing: 0.02em;
   }
@@ -1089,6 +1120,133 @@
     background: linear-gradient(180deg, rgba(9, 14, 25, 0.88), rgba(4, 8, 15, 0.86));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
     backdrop-filter: blur(12px);
+  }
+
+  .home-stats-panel {
+    position: relative;
+    isolation: isolate;
+    border-color: rgba(168, 85, 255, 0.34);
+    background:
+      radial-gradient(circle at 8% 0%, rgba(17, 167, 255, 0.12), transparent 34%),
+      radial-gradient(circle at 92% 100%, rgba(0, 240, 128, 0.08), transparent 32%),
+      linear-gradient(180deg, rgba(7, 12, 23, 0.94), rgba(3, 7, 14, 0.92));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.055),
+      0 0 28px rgba(154, 53, 255, 0.14);
+  }
+
+  .home-stats-panel::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 2px;
+    background:
+      conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(17, 167, 255, 0.18) 46deg,
+        rgba(255, 255, 255, 0.88) 58deg,
+        rgba(168, 85, 255, 0.76) 72deg,
+        transparent 112deg,
+        transparent 360deg
+      );
+    animation: stats-lightning-orbit 5.4s linear infinite;
+    filter: drop-shadow(0 0 10px rgba(168, 85, 255, 0.55));
+    transform-origin: center;
+    will-change: transform;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+  }
+
+  .home-stats-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      linear-gradient(105deg, transparent 0 39%, rgba(255, 255, 255, 0.18) 48%, transparent 57%),
+      linear-gradient(90deg, transparent, rgba(17, 167, 255, 0.16), rgba(168, 85, 255, 0.12), transparent);
+    opacity: 0.5;
+    transform: translateX(-120%);
+    animation: stats-lightning-sweep 4.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .home-stat-tile {
+    min-width: 0;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    outline: none;
+    transition:
+      background-color 0.22s ease,
+      box-shadow 0.22s ease,
+      transform 0.22s ease;
+  }
+
+  .home-stat-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 18% 50%, color-mix(in srgb, var(--stat-color) 18%, transparent), transparent 44%),
+      linear-gradient(135deg, color-mix(in srgb, var(--stat-color) 11%, transparent), transparent 56%);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    pointer-events: none;
+  }
+
+  .home-stat-tile:hover,
+  .home-stat-tile:focus-visible {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--stat-color) 40%, transparent),
+      0 0 30px color-mix(in srgb, var(--stat-color) 18%, transparent);
+  }
+
+  .home-stat-tile:hover::before,
+  .home-stat-tile:focus-visible::before {
+    opacity: 1;
+  }
+
+  .home-stat-tile:focus-visible {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--stat-color) 70%, transparent),
+      0 0 0 3px rgba(255, 255, 255, 0.12),
+      0 0 34px color-mix(in srgb, var(--stat-color) 24%, transparent);
+  }
+
+  .home-stat-icon {
+    color: var(--stat-color);
+    background:
+      radial-gradient(circle at 35% 22%, color-mix(in srgb, var(--stat-color) 34%, transparent), transparent 42%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025));
+    border: 1px solid color-mix(in srgb, var(--stat-color) 38%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -14px 24px rgba(0, 0, 0, 0.2),
+      0 0 22px color-mix(in srgb, var(--stat-color) 24%, transparent);
+    transition:
+      transform 0.22s ease,
+      border-color 0.22s ease,
+      box-shadow 0.22s ease,
+      filter 0.22s ease;
+  }
+
+  .home-stat-tile:hover .home-stat-icon,
+  .home-stat-tile:focus-visible .home-stat-icon {
+    transform: scale(1.06);
+    border-color: color-mix(in srgb, var(--stat-color) 68%, rgba(255, 255, 255, 0.16));
+    filter: brightness(1.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -14px 24px rgba(0, 0, 0, 0.18),
+      0 0 30px color-mix(in srgb, var(--stat-color) 38%, transparent);
   }
 
   .card-glass-arena {
