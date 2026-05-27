@@ -356,7 +356,7 @@ function ResultCard({
   const oppEloDelta = opponent?.id ? result.eloChange?.[opponent.id] : undefined;
 
   const zgLink = battle.id
-    ? `https://storagescan-newton.0g.ai/tx/${battle.id}`
+    ? `https://storagescan.0g.ai/tx/${battle.id}`
     : null;
 
   const winnerColor = winner ? clanColor(winner.clan) : "#fbbf24";
