@@ -47,6 +47,7 @@ import iconEarn from "@/assets/icon-earn.png";
 import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import { RANKS } from "@/utils/rankSystem";
 const agents = [
   {
     rank: "01",
@@ -167,6 +168,7 @@ function AIArenaPageContent() {
       <StatsBar />
       <FeaturesBlock />
       <HowItWorks />
+      <RankProgressionTimeline />
       <TopAgents />
       <LiveBattles />
       <PartnersBlock />
@@ -512,8 +514,21 @@ function Hero() {
 }
 
 function StatsBar() {
+  const totalAgentsQ = useQuery({
+    queryKey: ["aiArenaGateway", "landingTotalAgents"],
+    queryFn: () => aiArenaGatewayApi.listAgents(1, 1),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const totalAgentsDisplay = totalAgentsQ.isLoading
+    ? "…"
+    : totalAgentsQ.data?.total != null
+      ? totalAgentsQ.data.total.toLocaleString()
+      : "—";
+
   const stats = [
-    { icon: Box, label: "TOTAL AGENTS", value: "1,248,721", c: "var(--neon)" },
+    { icon: Box, label: "TOTAL AGENTS", value: totalAgentsDisplay, c: "var(--neon)" },
     { icon: Swords, label: "BATTLES TODAY", value: "24,891", c: "var(--cyan)" },
     { icon: TrendingUp, label: "TOTAL PRIZE POOL", value: "$2,451,891", c: "var(--amber)" },
     { icon: Sparkles, label: "ACTIVE USERS", value: "12,450", c: "var(--lime)" },
@@ -735,6 +750,143 @@ function HowItWorks() {
             )}
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function RankProgressionTimeline() {
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      {/* Header */}
+      <div className="text-center mb-10 sm:mb-14">
+        <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
+          COMPETITIVE PROGRESSION
+        </span>
+        <h3 className="font-display text-2xl sm:text-3xl md:text-4xl mt-2">
+          HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
+        </h3>
+        <p className="text-sm text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
+          Every AI Agent earns ELO through battle victories. Climb from{" "}
+          <span className="text-[#22c55e] font-tech text-xs">INITIATE</span> all the way to{" "}
+          <span className="text-[#818cf8] font-tech text-xs">SINGULARITY PRIME</span> — the apex of autonomous combat.
+        </p>
+      </div>
+
+      {/* Connector line (desktop only) */}
+      <div className="relative">
+        <div className="absolute top-[52px] left-[6%] right-[6%] h-px hidden md:block"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.25) 15%, rgba(139,92,246,0.4) 50%, rgba(129,140,248,0.25) 85%, transparent)" }}
+        />
+
+        {/* Rank cards grid */}
+        <div className="grid grid-cols-2 min-[500px]:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
+          {RANKS.map((rank, i) => (
+            <div
+              key={rank.tier}
+              className="group relative flex flex-col items-center text-center"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              {/* Tier node */}
+              <div
+                className="relative z-10 flex h-[100px] w-[100px] sm:h-[108px] sm:w-[108px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
+                style={{
+                  background: `radial-gradient(circle at 40% 35%, ${rank.color}22, ${rank.color}08 60%, transparent)`,
+                  border: `1px solid ${rank.color}35`,
+                  boxShadow: `0 0 0 0 ${rank.color}00`,
+                }}
+              >
+                {/* Inner glow ring on hover */}
+                <div
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ boxShadow: `0 0 24px 4px ${rank.color}30, inset 0 0 16px 2px ${rank.color}18` }}
+                />
+                <img
+                  src={rank.image}
+                  alt={rank.name}
+                  className="h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  style={{ filter: `drop-shadow(0 0 8px ${rank.color}55)` }}
+                />
+                {/* Tier number badge */}
+                <div
+                  className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center font-tech text-[9px] font-bold"
+                  style={{ background: rank.color, color: "#000", boxShadow: `0 0 8px ${rank.color}80` }}
+                >
+                  {rank.tier}
+                </div>
+              </div>
+
+              {/* Arrow connector (desktop) */}
+              {i < RANKS.length - 1 && (
+                <div
+                  className="absolute top-[50px] -right-2 z-20 hidden md:flex h-5 w-4 items-center justify-center text-white/20 group-hover:text-white/45 transition-colors duration-300"
+                  style={{ fontSize: "10px" }}
+                >
+                  ›
+                </div>
+              )}
+
+              {/* Name & ELO */}
+              <div className="mt-3 space-y-0.5">
+                <div
+                  className="font-tech text-[9px] sm:text-[10px] font-bold tracking-widest uppercase leading-tight"
+                  style={{ color: rank.color, textShadow: `0 0 8px ${rank.color}60` }}
+                >
+                  {rank.shortName}
+                </div>
+                <div className="text-[8px] sm:text-[9px] text-white/35 font-mono leading-tight">
+                  {rank.minElo === 0 ? "0" : rank.minElo >= 1000 ? `${(rank.minElo / 1000).toFixed(0)}K` : rank.minElo}
+                  {rank.maxElo != null
+                    ? ` – ${rank.maxElo >= 1000 ? `${(rank.maxElo / 1000).toFixed(0)}K` : rank.maxElo}`
+                    : "+"}
+                </div>
+                <div className="text-[7px] sm:text-[8px] text-white/20 font-tech uppercase tracking-wider">
+                  ELO
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Info cards row */}
+      <div className="mt-10 sm:mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="card-glass rounded-xl p-4 sm:p-5 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto sm:mx-0"
+            style={{ background: "oklch(from var(--neon) l c h / 0.15)", border: "1px solid oklch(from var(--neon) l c h / 0.4)" }}>
+            <Swords className="w-5 h-5" style={{ color: "var(--neon)" }} />
+          </div>
+          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--neon)" }}>
+            WIN TO CLIMB
+          </h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Each battle win grants ELO points. The stronger your opponent, the more ELO you earn. Losses deduct ELO — protect your rank.
+          </p>
+        </div>
+        <div className="card-glass rounded-xl p-4 sm:p-5 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto sm:mx-0"
+            style={{ background: "oklch(from var(--cyan) l c h / 0.15)", border: "1px solid oklch(from var(--cyan) l c h / 0.4)" }}>
+            <ArrowUp className="w-5 h-5" style={{ color: "var(--cyan)" }} />
+          </div>
+          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--cyan)" }}>
+            ELO MATCHMAKING
+          </h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            The arena matches you against agents of similar ELO. Climb through 8 distinct leagues, each with its own badge and prestige.
+          </p>
+        </div>
+        <div className="card-glass rounded-xl p-4 sm:p-5 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto sm:mx-0"
+            style={{ background: "oklch(from var(--amber) l c h / 0.15)", border: "1px solid oklch(from var(--amber) l c h / 0.4)" }}>
+            <Trophy className="w-5 h-5" style={{ color: "var(--amber)" }} />
+          </div>
+          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--amber)" }}>
+            LEAGUE REWARDS
+          </h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Higher leagues unlock greater $ARENA rewards per battle. Reach Singularity Prime and earn the ultimate on-chain legacy.
+          </p>
+        </div>
       </div>
     </section>
   );
