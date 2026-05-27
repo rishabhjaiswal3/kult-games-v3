@@ -14,13 +14,11 @@ import MyAgentsPage from "./pages/MyAgentsPage";
 import TrainingPage from "./pages/TrainingPage";
 import BattlesPage from "./pages/BattlesPage";
 import Leaderboard from "./pages/Leaderboard";
-import Events from "./pages/Events";
 import GameDetail from "./pages/GameDetail";
 import GamePlay from "./pages/GamePlay";
 import NotFound from "./pages/NotFound";
 import AIArenaPage from "./pages/AIArenaPage";
 import MomentsPage from "./pages/MomentsPage";
-import ProfilePage from "./pages/ProfilePage";
 import Dashboard from "./pages/Dashboard";
 import AutonomousPage from "./pages/AutonomousPage";
 import AchievementsPage from "./pages/AchievementsPage";
@@ -156,12 +154,10 @@ const App = () => {
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route path="/events" element={<Events />} />
                 <Route path="/ai-arena" element={<AIArenaPage />} />
                 <Route path="/moments" element={<MomentsPage />} />
                 <Route path="/autonomous" element={<AutonomousPage />} />
                 <Route path="/achievements" element={<AchievementsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/game/:id" element={<GameDetail />} />
                 <Route path="/game/:id/play" element={<GamePlay />} />
               </Route>
