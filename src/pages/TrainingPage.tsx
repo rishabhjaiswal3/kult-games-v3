@@ -549,24 +549,24 @@ const TrainingPage = () => {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {trainingPrograms.map((program) => (
-                <div key={program.name} className={`arena-panel relative flex flex-col justify-between space-y-5 overflow-hidden border p-5 transition ${program.color}`}>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold uppercase leading-tight text-white/90">{program.name}</h4>
-                    <p className="text-[10px] font-semibold leading-relaxed text-white/50">{program.desc}</p>
+                <div key={program.name} className={`arena-panel relative flex flex-col justify-between space-y-4 overflow-hidden border p-5 transition ${program.color}`}>
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-bold uppercase leading-tight text-white/95">{program.name}</h4>
+                    <p className="text-xs font-semibold leading-relaxed opacity-80">{program.desc}</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="select-none rounded border bg-black/40 px-2 py-0.5 font-tech text-[8px] font-black uppercase tracking-wide">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="select-none rounded border bg-black/40 px-2.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wide">
                         {program.badge}
                       </span>
-                      <span className="font-tech text-[9px] font-bold text-emerald-400">{program.pct}</span>
-                      <span className="font-tech text-[9px] font-semibold text-white/40">{program.winRate}</span>
+                      <span className="font-tech text-[11px] font-bold text-emerald-300">{program.pct}</span>
+                      <span className="font-tech text-[11px] font-semibold text-white/55">{program.winRate}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => queueMut.mutate(program.name)}
                       disabled={!selectedAgentId || queueMut.isPending || !selectedEligibility?.eligible}
-                      className="cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 px-4 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-purple-500/35 hover:bg-[#9a35ff]/10 hover:text-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-purple-500/35 hover:bg-[#9a35ff]/10 hover:text-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       SELECT
                     </button>

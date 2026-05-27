@@ -411,20 +411,18 @@ const MyAgentsPage = () => {
                         <div className="h-full rounded-full bg-[#9a35ff]" style={{ width: `${progressFromAgent(agent)}%` }} />
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 pt-1">
-                      <div className="space-y-0.5">
-                        <span className="text-[8px] font-semibold uppercase text-white/30">Battles</span>
-                        <span className="font-tech text-[10px] font-bold text-white/86">{battles}</span>
+                    <div className="space-y-2 rounded border border-white/8 bg-white/[0.025] px-3 py-2.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Battles</span>
+                        <span className="font-tech text-[11px] font-bold text-white/90">{battles}</span>
                       </div>
-                      <div className="space-y-0.5">
-                        <span className="text-[8px] font-semibold uppercase text-white/30">Win Rate</span>
-                        <span className="font-tech text-[10px] font-bold text-white/86">{winRate}%</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Win Rate</span>
+                        <span className="font-tech text-[11px] font-bold text-white/90">{winRate}%</span>
                       </div>
-                      <div className="space-y-0.5">
-                        <span className="text-[8px] font-semibold uppercase text-white/30">Power Score</span>
-                        <span className="block truncate font-tech text-[10px] font-bold text-purple-400">
-                          {agent.eloRating.toLocaleString()}
-                        </span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Power Score</span>
+                        <span className="font-tech text-[11px] font-bold text-purple-300">{agent.eloRating.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>

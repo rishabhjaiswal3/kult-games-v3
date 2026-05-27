@@ -5,11 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
   Box,
+  BrainCircuit,
   Crown,
   Gamepad2,
+  Joystick,
   Package,
   Radio,
   Sparkles,
+  Store,
   Swords,
   TrendingUp,
   Zap,
@@ -124,7 +127,7 @@ export function HomePage() {
           muted
           playsInline
           preload="metadata"
-          className="absolute inset-0 h-full w-full object-cover object-center opacity-100 saturate-125 contrast-110"
+          className="absolute inset-0 h-full w-full object-cover object-[88%_center] sm:object-[72%_center] scale-[1.15] sm:scale-100 opacity-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
@@ -176,22 +179,29 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+      <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
         {[
-          { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Gamepad2, color: "#0089ff" },
-          { label: "AI Arena", value: "Live", icon: Sparkles, color: "#9a35ff" },
-          { label: "Marketplace", value: "Open", icon: Package, color: "#ffc000" },
-          { label: "Battles", value: "24/7", icon: Swords, color: "#00f080" },
+          { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Joystick, color: "#11a7ff", path: "/games" },
+          { label: "AI Arena", value: "Live", icon: BrainCircuit, color: "#a855ff", path: "/ai-arena" },
+          { label: "Marketplace", value: "Open", icon: Store, color: "#ffc42e", path: "/inventory" },
+          { label: "Battles", value: "24/7", icon: Swords, color: "#00f080", path: "/battles" },
         ].map((stat) => (
-          <div key={stat.label} className="flex items-center gap-4 p-4">
-            <div className="grid h-11 w-11 place-items-center rounded-md bg-white/[0.04]">
-              <stat.icon className="h-6 w-6" style={{ color: stat.color }} />
+          <Link
+            key={stat.label}
+            to={stat.path}
+            className="home-stat-tile relative z-10 flex items-center gap-5 p-5 sm:p-6"
+            style={{ "--stat-color": stat.color } as CSSProperties}
+          >
+            <div
+              className="home-stat-icon grid h-14 w-14 place-items-center rounded-lg"
+            >
+              <stat.icon className="h-7 w-7" />
             </div>
             <div>
-              <div className="font-tech text-[9px] text-white/48">{stat.label}</div>
-              <div className="mt-1 text-xl font-semibold text-white">{stat.value}</div>
+              <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+              <div className="mt-2 text-2xl font-semibold text-white sm:text-3xl">{stat.value}</div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

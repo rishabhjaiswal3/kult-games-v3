@@ -4,13 +4,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Crown,
   Download,
   Gamepad2,
   Play,
   Shield,
   ShoppingBag,
   Star,
-  Trophy,
   Users,
   Zap,
 } from "lucide-react";
@@ -187,11 +187,12 @@ const GameDetail = () => {
           <img
             src={showcaseSrc}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-700 group-hover:scale-[1.03] group-hover:opacity-75"
+            className="absolute inset-0 h-full w-full object-cover opacity-42 blur-[3px] transition duration-700 group-hover:scale-[1.03] group-hover:opacity-55"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#03070d] via-[#03070d]/86 to-[#03070d]/34" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#03070d] via-transparent to-purple-950/18" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#03070d] via-[#03070d]/92 to-[#03070d]/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#03070d] via-[#03070d]/30 to-purple-950/24" />
+        <div className="absolute inset-y-0 left-0 w-[68%] bg-[#03070d]/42 backdrop-blur-[2px]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(154,53,255,0.28),transparent_32%),radial-gradient(circle_at_82%_22%,rgba(0,240,128,0.10),transparent_28%)]" />
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-purple-300/80 to-transparent" />
 
@@ -217,7 +218,7 @@ const GameDetail = () => {
               <h1 className="font-tech text-4xl font-black uppercase leading-none tracking-tight text-white drop-shadow-[0_0_28px_rgba(154,53,255,0.24)] sm:text-5xl xl:text-6xl">
                 {title}
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/66 sm:text-base">
+              <p className="mt-4 max-w-2xl rounded-lg border border-white/12 bg-[#03070d]/68 p-4 text-sm font-medium leading-relaxed text-white/86 shadow-[0_18px_60px_rgba(0,0,0,0.34)] backdrop-blur-md sm:text-base">
                 {game.slogan || getGameDescription(game.description) || "Enter the arena, master the loop, and climb the Kult ecosystem."}
               </p>
             </div>
@@ -285,6 +286,36 @@ const GameDetail = () => {
             </div>
           </div>
         ))}
+        <button
+          type="button"
+          onClick={() => navigate("/leaderboard")}
+          className="arena-panel group relative flex items-center gap-3 overflow-hidden border-[#ffc000]/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-[#ffc000]/70 hover:shadow-[0_0_32px_rgba(255,192,0,0.18)]"
+        >
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_20%_50%,rgba(255,192,0,0.18),transparent_42%)]" />
+          <div className="relative grid h-11 w-11 place-items-center rounded-md border border-[#ffc000]/25 bg-[#ffc000]/10 text-[#ffc000] transition duration-300 group-hover:scale-105 group-hover:bg-[#ffc000]/16">
+            <Crown className="h-5 w-5" />
+          </div>
+          <div className="relative min-w-0">
+            <div className="font-tech text-[9px] text-white/48 transition group-hover:text-[#ffd768]">Leaderboard</div>
+            <div className="truncate text-lg font-semibold text-white">Ranks</div>
+          </div>
+          <ArrowUpRight className="relative ml-auto h-4 w-4 text-[#ffc000]/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#ffc000]" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/inventory")}
+          className="arena-panel group relative flex items-center gap-3 overflow-hidden border-purple-500/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0_0_34px_rgba(154,53,255,0.24)]"
+        >
+          <div className="pointer-events-none absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-transparent via-purple-300/16 to-transparent transition duration-700 group-hover:translate-x-[110%]" />
+          <div className="relative grid h-11 w-11 place-items-center rounded-md border border-purple-400/25 bg-purple-500/10 text-purple-300 transition duration-300 group-hover:rotate-3 group-hover:scale-105 group-hover:bg-purple-500/16">
+            <ShoppingBag className="h-5 w-5" />
+          </div>
+          <div className="relative min-w-0">
+            <div className="font-tech text-[9px] text-white/48 transition group-hover:text-purple-200">Marketplace</div>
+            <div className="truncate text-lg font-semibold text-white">Inventory</div>
+          </div>
+          <ArrowUpRight className="relative ml-auto h-4 w-4 text-purple-300/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-purple-200" />
+        </button>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -409,37 +440,15 @@ const GameDetail = () => {
             ) : null}
           </div>
 
-          <div className="arena-panel space-y-3 border-white/8 bg-[#04080f]/95 p-4">
-            <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Command links</h3>
-            <button
-              type="button"
-              onClick={() => navigate("/leaderboard")}
-              className="flex w-full items-center justify-between rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white/70 transition hover:border-purple-500/35 hover:text-white"
-            >
-              <span className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-[#ffc000]" />
-                Leaderboard
-              </span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/inventory")}
-              className="flex w-full items-center justify-between rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white/70 transition hover:border-purple-500/35 hover:text-white"
-            >
-              <span className="flex items-center gap-2">
-                <ShoppingBag className="h-4 w-4 text-purple-400" />
-                Marketplace items
-              </span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </button>
-            {game.platform?.length ? (
+          {game.platform?.length ? (
+            <div className="arena-panel space-y-3 border-white/8 bg-[#04080f]/95 p-4">
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Platforms</h3>
               <div className="rounded border border-white/8 bg-[#0a0f1b]/40 px-3 py-2.5">
                 <span className="font-tech text-[9px] uppercase text-white/40">Platforms</span>
                 <p className="mt-1 text-xs font-semibold text-white/80">{game.platform.join(", ")}</p>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </aside>
       </div>
     </ArenaPageLayout>
