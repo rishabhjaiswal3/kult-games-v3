@@ -221,7 +221,7 @@ function UnityLoadingScreen({
     <div className="absolute inset-0 z-20 overflow-hidden">
       {/* ── Background video ── */}
       <video
-        src="/videos/loader.mp4"
+        src="/videos/SC_2-3.mp4"
         autoPlay
         loop
         muted
