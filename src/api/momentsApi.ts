@@ -19,6 +19,7 @@ type ListMomentsParams = {
   perPage?: number;
   tags?: string[];
   searchQuery?: string;
+  mediaType?: "image" | "video";
 };
 
 type PresignUploadResponse = {
@@ -41,9 +42,12 @@ type CreateMomentFromFileInput = Omit<CreateMomentRequest, "assetUrl" | "assetMe
   assetMetadata?: Record<string, unknown>;
 };
 
-const MAX_VIDEO_DURATION_MS = 60_000;
-const SUPPORTED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]);
-const SUPPORTED_VIDEO_TYPES = new Set(["video/mp4", "video/webm"]);
+const MAX_VIDEO_DURATION_MS = 120_000;
+const SUPPORTED_IMAGE_TYPES = new Set([
+  "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp",
+  "image/svg+xml", "image/bmp", "image/tiff", "image/avif", "image/heic", "image/heif",
+]);
+const SUPPORTED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const DEFAULT_ASSET_CONTENT_TYPE = "application/octet-stream";
 
 function normalizeMoment(rawValue: unknown): Moment {
@@ -99,14 +103,15 @@ function inferExtension(file: File) {
   const fromName = file.name.split(".").pop()?.toLowerCase();
   if (fromName) return fromName;
 
-  if (file.type === "image/jpeg" || file.type === "image/jpg") return "jpg";
-  if (file.type === "image/png") return "png";
-  if (file.type === "image/gif") return "gif";
-  if (file.type === "image/webp") return "webp";
-  if (file.type === "video/mp4") return "mp4";
-  if (file.type === "video/webm") return "webm";
+  const mimeMap: Record<string, string> = {
+    "image/jpeg": "jpg", "image/jpg": "jpg", "image/png": "png",
+    "image/gif": "gif", "image/webp": "webp", "image/svg+xml": "svg",
+    "image/bmp": "bmp", "image/tiff": "tiff", "image/avif": "avif",
+    "image/heic": "heic", "image/heif": "heif",
+    "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
+  };
 
-  return "bin";
+  return mimeMap[file.type] ?? "bin";
 }
 
 function buildUploadFilename(file: File) {
@@ -136,7 +141,7 @@ function readVideoMetadata(file: File) {
         return;
       }
       if (durationMs > MAX_VIDEO_DURATION_MS) {
-        reject(new Error("Video clips must be 60 seconds or shorter"));
+        reject(new Error("Video clips must be 2 minutes or shorter"));
         return;
       }
       resolve({
@@ -175,7 +180,7 @@ async function buildAssetMetadata(file: File, extraMetadata?: Record<string, unk
     };
   }
 
-  throw new Error("Unsupported moment media type. Use JPG, PNG, GIF, WebP, MP4, or WebM.");
+  throw new Error("Unsupported moment media type. Use any image format, MP4, WebM, or MOV.");
 }
 
 async function presignMomentUpload(file: File) {
@@ -260,6 +265,7 @@ export const momentsApi = {
         per_page: perPage,
         tags: params.tags?.join(","),
         "search-query": params.searchQuery,
+        media_type: params.mediaType,
       },
     });
 
