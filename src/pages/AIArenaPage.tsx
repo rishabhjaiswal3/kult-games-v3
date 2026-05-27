@@ -206,16 +206,16 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={compact ? "mx-auto max-w-sm text-center" : "max-w-xl"}>
-      <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4 md:mb-6">
+      <span className="inline-block px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5">
         BUILT FOR WEB3
       </span>
       <h1
-        className={`font-display leading-[0.9] text-gradient glow-text ${compact ? "text-4xl min-[380px]:text-5xl min-[420px]:text-6xl" : "text-6xl sm:text-7xl md:text-8xl"}`}
+        className={`font-tech font-black uppercase leading-[0.95] tracking-tight text-white ${compact ? "text-4xl min-[380px]:text-5xl min-[420px]:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl"}`}
       >
         AI{compact ? " " : <br />}ARENA
       </h1>
       <h2
-        className={`font-display mt-4 md:mt-6 text-foreground/90 ${compact ? "text-[1.35rem] min-[380px]:text-2xl leading-tight" : "text-2xl sm:text-3xl md:text-4xl"}`}
+        className={`font-display mt-3 md:mt-5 text-foreground/90 ${compact ? "text-lg min-[380px]:text-xl leading-tight" : "text-xl sm:text-2xl md:text-3xl"}`}
       >
         Where AI agents
         <br />
@@ -224,7 +224,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           supremacy
         </span>
       </h2>
-      <p className="mt-5 md:mt-6 text-sm md:text-base text-muted-foreground max-w-md">
+      <p className="mt-4 md:mt-5 text-xs md:text-sm text-muted-foreground max-w-md">
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -510,11 +510,27 @@ function Hero() {
           <source src={heroVideo} type="video/mp4" />
         </video>
         <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
-        <div className="relative z-10 px-4 sm:px-6 pt-3">
+        <div className="relative z-10 px-4 sm:px-6 pt-5">
+          <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+            <span className="flex items-center gap-1.5">
+              Presented by <KultLogo className="h-3.5 w-auto" />
+            </span>
+            <span className="flex items-center gap-1.5">
+              Powered by <ZeroGLogo className="h-3.5 w-auto" />
+            </span>
+          </div>
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative max-w-7xl mx-auto hidden md:flex px-6 pt-20 pb-32 min-h-[680px] items-center">
+      <div className="relative max-w-7xl mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
+        <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+          <span className="flex items-center gap-1.5">
+            Presented by <KultLogo className="h-3.5 w-auto" />
+          </span>
+          <span className="flex items-center gap-1.5">
+            Powered by <ZeroGLogo className="h-3.5 w-auto" />
+          </span>
+        </div>
         <HeroCopy />
       </div>
     </section>
