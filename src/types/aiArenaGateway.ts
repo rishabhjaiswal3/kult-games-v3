@@ -439,3 +439,22 @@ export interface AiArenaBattleSocketMessage {
   battleId?: string;
   [key: string]: unknown;
 }
+
+// ── End Battle (called by game client after match concludes) ──────────────────
+
+export interface AiArenaEndBattleRequest {
+  /** Agent ID of the winner. */
+  winnerId: string;
+  /** Agent ID of the loser. */
+  loserId: string;
+  /** Number of rounds played. */
+  rounds?: number;
+  /** Action log from the game client. */
+  log?: Array<string | Record<string, unknown>>;
+  /** ELO deltas keyed by agentId, computed by the game or gateway. */
+  eloChange?: Record<string, number>;
+}
+
+export interface AiArenaEndBattleResponse {
+  battle: AiArenaBattle;
+}

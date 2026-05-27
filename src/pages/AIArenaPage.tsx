@@ -372,8 +372,12 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     setActiveBattleId(payload.battleId);
     setTrackedBattleId(payload.battleId);
     if (announcedBattleIdRef.current !== payload.battleId) {
-      toast.success(`Match found — battle ${shortBattleId(payload.battleId)} is ready`);
       announcedBattleIdRef.current = payload.battleId;
+      toast.success(`Match found! Entering arena…`);
+      // Navigate to the full-screen game page
+      navigate(
+        `/arena/game/${payload.battleId}?myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`
+      );
     }
   };
 
@@ -430,7 +434,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
       {trackedBattleId ? (
         <Link
-          to="/battles"
+          to={`/arena/game/${trackedBattleId}`}
           className={`min-w-0 rounded-md font-tech border border-white/15 bg-white/5 hover:bg-white/10 text-white/85 flex items-center justify-center transition whitespace-nowrap ${
             compact
               ? "w-[240px] px-4 py-2.5 text-[10px] tracking-[0.06em] gap-2"
@@ -1045,8 +1049,8 @@ function LiveBattles() {
             <ArenaBattleBoardCard
               key={item.id}
               item={item}
-              actionLabel="Watch Now"
-              actionTo="/battles"
+              actionLabel={item.kind === "ranked" ? "Watch Live" : "View Battle"}
+              actionTo={item.kind === "ranked" ? `/arena/game/${item.id}` : "/battles"}
             />
           ))}
         </div>
