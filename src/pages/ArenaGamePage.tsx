@@ -692,24 +692,23 @@ export default function ArenaGamePage() {
     prevStatusRef.current = status;
     if (!status) return;
 
-    // Start countdown on PENDING/INITIALIZING
+    // Start countdown on PENDING / INITIALIZING / IN_PROGRESS (whichever arrives first).
+    // The battle-service transitions to IN_PROGRESS almost immediately, so by the time
+    // the frontend polls it may already be IN_PROGRESS — we still want the full 60 s.
     if (
-      (status === "PENDING" || status === "INITIALIZING") &&
+      (status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS") &&
       !countdownStartedRef.current
     ) {
       countdownStartedRef.current = true;
       setCountdown(60);
-      addSystem("Match found! Battle starts in 60 seconds. Preparing arena…");
+      addSystem("Match found! Battle starting in 60 seconds. Preparing arena…");
     }
 
-    // Go live
-    if (
-      status === "IN_PROGRESS" &&
-      (prev === "PENDING" || prev === "INITIALIZING" || gamePhase === "countdown")
-    ) {
-      setCountdown(null);
-      setGamePhase("live");
-      addSystem("⚔️  Battle is LIVE! Agents are now fighting.");
+    // IN_PROGRESS: add a chat message but NEVER cancel the running countdown.
+    // The countdown tick effect (below) is the sole driver of the live transition —
+    // it fires setGamePhase("live") when the timer reaches 0.
+    if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS") {
+      addSystem("⚔️  Arena ready — battle begins when countdown ends.");
     }
 
     // Completed
