@@ -37,8 +37,8 @@ import battleStep2 from "@/assets/step2.mp4";
 import battleStep3 from "@/assets/step3.mp4";
 import battleStep4 from "@/assets/step4.mp4";
 import battleStep5 from "@/assets/step5.mp4";
-import dashboardCrest from "@/assets/dashboard-crest.png";
 import heroTrio from "@/assets/hero-trio.png";
+import { getRankFromElo } from "@/utils/rankSystem";
 import warzoneVideo from "@/assets/IMG_9260.MOV";
 import type {
   AiArenaAgent,
@@ -251,12 +251,16 @@ function modeLabel(mode?: string | null) {
   return mode ? mode.replace(/_/g, " ") : "Arena battle";
 }
 
-function StatsRail() {
+function StatsRail({ myAgents }: { myAgents: AiArenaAgent[] }) {
+  const totalBattles = myAgents.reduce((sum, a) => sum + a.wins + a.losses + (a.draws ?? 0), 0);
+  const totalWins    = myAgents.reduce((sum, a) => sum + a.wins, 0);
+  const winRate      = totalBattles > 0 ? `${((totalWins / totalBattles) * 100).toFixed(1)}%` : "—";
+
   const stats = [
-    { label: "TOTAL BATTLES", value: "128", icon: Swords, color: "#0089ff" },
-    { label: "WINS", value: "82", icon: Trophy, color: "#ffc000" },
-    { label: "WIN RATE", value: "64.1%", icon: Crosshair, color: "#b338ff" },
-    { label: "TOTAL REWARDS", value: "2,450", suffix: "$ARENA", icon: Hexagon, color: "#ffc000" },
+    { label: "TOTAL BATTLES", value: totalBattles.toLocaleString(), icon: Swords,   color: "#0089ff" },
+    { label: "WINS",          value: totalWins.toLocaleString(),    icon: Trophy,    color: "#ffc000" },
+    { label: "WIN RATE",      value: winRate,                       icon: Crosshair, color: "#b338ff" },
+    { label: "TOTAL REWARDS", value: "—", suffix: "$ARENA",         icon: Hexagon,   color: "#ffc000" },
   ];
   return (
     <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
@@ -277,13 +281,40 @@ function StatsRail() {
   );
 }
 
-function RankCard() {
+function RankCard({ firstAgent }: { firstAgent: AiArenaAgent | null }) {
+  const rankQ = useQuery({
+    queryKey: ["aiArenaGateway", "battlesPageRank", firstAgent?.id],
+    queryFn:  () => aiArenaGatewayApi.getLeaderboardRankForAgent(firstAgent!.id, "global"),
+    enabled:  !!firstAgent?.id,
+    staleTime: 60_000,
+    retry: false,
+  });
+
+  const elo        = firstAgent?.eloRating ?? 0;
+  const leagueInfo = elo > 0 ? getRankFromElo(elo) : null;
+  const rank       = rankQ.data?.rank;
+
   return (
-    <div className="arena-panel relative min-h-[94px] overflow-hidden p-4">
-      <div className="font-tech text-[9px] text-white/50">ARENA RANK</div>
-      <div className="mt-2 text-xl font-bold">#1,248</div>
-      <div className="mt-1 text-xs text-white/55">TOP 11%</div>
-      <img src={dashboardCrest} alt="" className="absolute right-4 top-0 h-[116px] w-[120px] object-contain" />
+    <div className="arena-panel relative min-h-[94px] overflow-hidden p-4 flex items-center justify-between gap-3">
+      <div>
+        <div className="font-tech text-[9px] text-white/50">ARENA RANK</div>
+        <div className="mt-2 text-xl font-bold">
+          {firstAgent ? (rank != null ? `#${rank.toLocaleString()}` : "UNRANKED") : "—"}
+        </div>
+        {leagueInfo && firstAgent ? (
+          <div className="mt-0.5 font-tech text-[9px] uppercase tracking-wider" style={{ color: leagueInfo.color }}>
+            {leagueInfo.name}
+          </div>
+        ) : null}
+      </div>
+      {leagueInfo && firstAgent ? (
+        <img
+          src={leagueInfo.image}
+          alt={leagueInfo.name}
+          title={leagueInfo.name}
+          className="h-[90px] w-[90px] object-contain shrink-0"
+        />
+      ) : null}
     </div>
   );
 }
@@ -830,7 +861,14 @@ const BattlesPage = () => {
       const battleId = result.match.battleId;
       setSelectedBattleId(battleId);
       setBattleLookupInput(battleId);
-      toast.success("Battle created from the open lobby.");
+      toast.success("Battle starting — watch the live state below.");
+      // Open status modal for the joiner's agent so they see the faceoff too.
+      // The matchmaking-service writes a match:found Redis key for both agents;
+      // the modal's polling will pick it up and transition to "Match found".
+      if (challengeAgentId) {
+        setStatusAgentId(challengeAgentId);
+        setStatusModalOpen(true);
+      }
       await invalidateBattleOps();
     },
     onError: (error) => {
@@ -916,8 +954,8 @@ const BattlesPage = () => {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
-        <StatsRail />
-        <RankCard />
+        <StatsRail myAgents={myAgents} />
+        <RankCard firstAgent={myAgents[0] ?? null} />
       </div>
 
       <SectionTitle>CHOOSE YOUR GAME</SectionTitle>

@@ -38,6 +38,7 @@ import type {
   AiArenaTrainingJobsResponse,
   MyArenaAgentsResult,
   AiArenaProfileResponse,
+  AiArenaAchievementsResponse,
 } from "@/types/aiArenaGateway";
 
 const http = () => getApiClient("aiArenaGateway");
@@ -598,6 +599,48 @@ export const aiArenaGatewayApi = {
       `/v1/agents/training-job/${encodeURIComponent(jobId)}`
     );
     return { job: normalizeTrainingJob(data.job) };
+  },
+
+  // ── Autonomous mode ──────────────────────────────────────────────────────────
+
+  /** GET /v1/agents/:agentId/autonomous */
+  getAgentAutonomousConfig: async (agentId: string): Promise<{
+    agentId: string;
+    autonomousMode: boolean;
+    autonomousConfig: {
+      gameId: string;
+      mode: string;
+      eloRange: number;
+      strategy: string;
+      autoTrain: boolean;
+    };
+  }> => {
+    const { data } = await http().get(`/v1/agents/${encodeURIComponent(agentId)}/autonomous`);
+    return data;
+  },
+
+  /** POST /v1/agents/:agentId/autonomous */
+  setAgentAutonomousConfig: async (
+    agentId: string,
+    config: {
+      autonomousMode: boolean;
+      gameId?: string;
+      mode?: string;
+      eloRange?: number;
+      strategy?: string;
+      autoTrain?: boolean;
+    }
+  ): Promise<{ agentId: string; autonomousMode: boolean; autonomousConfig: Record<string, unknown> }> => {
+    const { data } = await http().post(`/v1/agents/${encodeURIComponent(agentId)}/autonomous`, config);
+    return data;
+  },
+
+  /** GET /v1/agents/:agentId/achievements — computed achievements for an agent */
+  getAgentAchievements: async (agentId: string): Promise<AiArenaAchievementsResponse> => {
+    const { data } = await http().get<AiArenaAchievementsResponse>(
+      `/v1/agents/${encodeURIComponent(agentId)}/achievements`
+    );
+    return data;
   },
 
   /** DELETE /v1/agents/training-job/:jobId — cancel a training job */
