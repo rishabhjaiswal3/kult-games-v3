@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import dashboardLiveCard from "@/assets/battle-4.gif";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { APP_NAV_ITEMS } from "@/layout/navConfig";
 import { cn } from "@/lib/utils";
@@ -131,41 +131,7 @@ function SidebarBrand({
   );
 }
 
-/* ─── Promo card ─── */
-function SidebarPromo({ isCollapsed }: { isCollapsed?: boolean }) {
-  if (isCollapsed) return null;
 
-  return (
-    <div className="shrink-0 p-3">
-      <div className="sidebar-promo group relative overflow-hidden rounded-xl border border-[#8b29ff]/20 transition-all duration-500 hover:border-[#8b29ff]/60 hover:shadow-[0_0_25px_rgba(139,41,255,0.25)]">
-        {/* Background image */}
-        <img
-          src={dashboardLiveCard}
-          alt="Kult Games live"
-          className="h-[clamp(130px,16vh,180px)] w-full object-cover object-top transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
-        />
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050913] via-[#050913]/40 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#9a35ff]/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 mix-blend-overlay" />
-
-        {/* Text content */}
-        <div className="absolute bottom-3 left-4 right-4 flex flex-col gap-1 z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-          <span className="font-tech text-[10px] uppercase tracking-[0.1em] text-white/70 font-medium">AI ARENA</span>
-          <div className="flex items-center gap-2">
-            <span className="font-tech text-xl font-bold tracking-wide text-white">V1.0 IS LIVE</span>
-            <span className="relative flex h-2 w-2 mb-0.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c85cff]/80" />
-              <span className="relative inline-flex h-full w-full rounded-full bg-[#d074ff] shadow-[0_0_8px_#c85cff]" />
-            </span>
-          </div>
-        </div>
-
-        {/* Top edge glow on hover */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-      </div>
-    </div>
-  );
-}
 
 /* ─── Main Sidebar Component ─── */
 export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse }: AppSidebarProps) {
@@ -186,7 +152,6 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
     <>
       <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
       <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
-      <SidebarPromo isCollapsed={isCollapsed} />
     </>
   );
 
