@@ -22,6 +22,7 @@ import MomentsPage from "./pages/MomentsPage";
 import Dashboard from "./pages/Dashboard";
 import AutonomousPage from "./pages/AutonomousPage";
 import AchievementsPage from "./pages/AchievementsPage";
+import ArenaGamePage from "./pages/ArenaGamePage";
 import LoadingScreen from "./components/LoadingScreen";
 import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
@@ -161,6 +162,8 @@ const App = () => {
                 <Route path="/game/:id" element={<GameDetail />} />
                 <Route path="/game/:id/play" element={<GamePlay />} />
               </Route>
+              {/* Full-screen arena game page — no AppShell sidebar */}
+              <Route path="/arena/game/:battleId" element={<ArenaGamePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
