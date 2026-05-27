@@ -544,29 +544,29 @@ const TrainingPage = () => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-tech text-base font-semibold uppercase tracking-wider text-white/90">Training programs</h3>
-              <span className="font-tech text-xs uppercase tracking-[0.14em] text-white/50">Queue from the same page</span>
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training programs</h3>
+              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Queue from the same page</span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {trainingPrograms.map((program) => (
-                <div key={program.name} className={`arena-panel relative flex flex-col justify-between space-y-6 overflow-hidden border p-6 transition ${program.color}`}>
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-bold uppercase leading-tight text-white/95">{program.name}</h4>
-                    <p className="text-sm font-semibold leading-relaxed text-white/62">{program.desc}</p>
+                <div key={program.name} className={`arena-panel relative flex flex-col justify-between space-y-4 overflow-hidden border p-5 transition ${program.color}`}>
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-bold uppercase leading-tight text-white/95">{program.name}</h4>
+                    <p className="text-xs font-semibold leading-relaxed opacity-80">{program.desc}</p>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="select-none rounded border bg-black/40 px-3 py-2 font-tech text-sm font-black uppercase tracking-wide">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="select-none rounded border bg-black/40 px-2.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wide">
                         {program.badge}
                       </span>
-                      <span className="font-tech text-sm font-bold text-emerald-300">{program.pct}</span>
-                      <span className="font-tech text-sm font-semibold text-white/55">{program.winRate}</span>
+                      <span className="font-tech text-[11px] font-bold text-emerald-300">{program.pct}</span>
+                      <span className="font-tech text-[11px] font-semibold text-white/55">{program.winRate}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => queueMut.mutate(program.name)}
                       disabled={!selectedAgentId || queueMut.isPending || !selectedEligibility?.eligible}
-                      className="cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 px-6 py-3 font-tech text-sm font-bold uppercase tracking-wider text-white transition hover:border-purple-500/35 hover:bg-[#9a35ff]/10 hover:text-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="cursor-pointer rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-purple-500/35 hover:bg-[#9a35ff]/10 hover:text-purple-400 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       SELECT
                     </button>

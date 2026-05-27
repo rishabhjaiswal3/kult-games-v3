@@ -26,6 +26,7 @@ import type { AiArenaAgent } from "@/types/aiArenaGateway";
 // Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
 import rewardCrate from "@/assets/reward-crate.png";
+import autonomousGraph from "@/assets/autonomous graph.png";
 
 // ── Clan Icon helpers ─────────────────────────────────────────────────────────
 function SolanaIcon({ className = "h-3 w-3" }: { className?: string }) {
@@ -595,43 +596,8 @@ const AutonomousPage = () => {
             {/* Radar chart */}
             <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
               <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold">PERFORMANCE PROFILE (7D)</h3>
-              <div className="relative flex justify-center py-1 sm:py-2">
-                <svg className="w-full max-w-[300px] aspect-[1.22/1]" viewBox="0 0 244 200">
-                  {[0.25, 0.5, 0.75, 1.0].map((scale) => (
-                    <g key={scale} transform="translate(22 0)">
-                      <polygon points={getRadarPoints([100, 100, 100, 100, 100, 100], scale)} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                    </g>
-                  ))}
-                  {Array.from({ length: 6 }).map((_, i) => {
-                    const angle = (i * 60 - 90) * (Math.PI / 180);
-                    return (
-                      <line key={i} x1="122" y1="100" x2={122 + 70 * Math.cos(angle)} y2={100 + 70 * Math.sin(angle)} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                    );
-                  })}
-                  <g transform="translate(22 0)">
-                    <polygon points={getRadarPoints(averageStats)} fill="none" stroke="rgba(255,255,255,0.25)" strokeDasharray="2,2" strokeWidth="1" />
-                  </g>
-                  <g transform="translate(22 0)">
-                    <polygon points={getRadarPoints(strategyStats)} fill="rgba(154,53,255,0.15)" stroke="#9a35ff" strokeWidth="1.5" />
-                  </g>
-                  {strategyStats.map((val, i) => {
-                    const angle = (i * 60 - 90) * (Math.PI / 180);
-                    const r = (val / 100) * 70;
-                    return <circle key={i} cx={122 + r * Math.cos(angle)} cy={100 + r * Math.sin(angle)} r="3" fill="#9a35ff" stroke="#fff" strokeWidth="0.75" />;
-                  })}
-                  {radarLabels.map((lbl, i) => {
-                    const angle = (i * 60 - 90) * (Math.PI / 180);
-                    const x = 122 + 87 * Math.cos(angle);
-                    const y = 100 + 82 * Math.sin(angle);
-                    const anchor = i === 0 || i === 3 ? "middle" : i < 3 ? "start" : "end";
-                    return (
-                      <g key={lbl}>
-                        <text x={x} y={y - 2} textAnchor={anchor} fill="rgba(255,255,255,0.5)" fontSize="7.5" fontWeight="600">{lbl}</text>
-                        <text x={x} y={y + 6} textAnchor={anchor} fill="#fff" fontSize="8" fontWeight="bold">{strategyStats[i]}</text>
-                      </g>
-                    );
-                  })}
-                </svg>
+              <div className="relative flex justify-center py-4">
+                <img src={autonomousGraph} alt="Performance Profile radar chart" className="w-full max-w-[360px] aspect-[1.22/1] object-contain scale-[1.45]" />
               </div>
               <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[9px] font-semibold tracking-wider text-white/50">
                 <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#9a35ff]/20 border border-[#9a35ff] rounded-sm" /><span>YOUR AGENTS</span></div>
