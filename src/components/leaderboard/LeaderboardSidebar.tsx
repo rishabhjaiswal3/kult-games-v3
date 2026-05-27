@@ -1,21 +1,25 @@
-import { ArrowUpRight, Gift, Hexagon, Info, Swords, Trophy } from "lucide-react";
-import dashboardCrest from "@/assets/dashboard-crest.png";
+import { ArrowUpRight, Gift, Hexagon, Swords, Trophy } from "lucide-react";
 import rewardAvatar from "@/assets/reward-avatar.png";
 import rewardCrate from "@/assets/reward-crate.png";
 import rewardWeapon from "@/assets/reward-weapon.png";
+import { getRankFromElo } from "@/utils/rankSystem";
 
 type LeaderboardSidebarProps = {
   userRank?: number;
   userPoints?: number;
   seasonProgress?: number;
+  /** Raw ELO for deriving rank badge & league name. */
+  userElo?: number;
 };
 
 export function LeaderboardSidebar({
   userRank,
   userPoints = 0,
   seasonProgress = 62,
+  userElo,
 }: LeaderboardSidebarProps) {
   const rankLabel = userRank != null ? `#${userRank}` : "UNRANKED";
+  const leagueInfo = userElo != null ? getRankFromElo(userElo) : null;
 
   return (
     <aside className="space-y-4">
@@ -36,11 +40,24 @@ export function LeaderboardSidebar({
               <strong className="text-white">{userPoints.toLocaleString()}</strong> PTS
             </div>
           </div>
-          <img
-            src={dashboardCrest}
-            alt="Season crest"
-            className="h-[76px] w-[80px] object-contain drop-shadow-[0_0_12px_rgba(154,53,255,0.25)]"
-          />
+          {leagueInfo ? (
+            <div className="flex flex-col items-center gap-1">
+              <img
+                src={leagueInfo.image}
+                alt={leagueInfo.name}
+                title={leagueInfo.name}
+                className="h-[72px] w-[72px] object-contain drop-shadow-[0_0_12px_rgba(154,53,255,0.25)]"
+              />
+              <span
+                className="font-tech text-[8px] uppercase tracking-widest"
+                style={{ color: leagueInfo.color }}
+              >
+                {leagueInfo.shortName}
+              </span>
+            </div>
+          ) : (
+            <div className="h-[76px] w-[80px]" />
+          )}
         </div>
 
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full border border-white/8 bg-white/5">

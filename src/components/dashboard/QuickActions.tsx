@@ -1,95 +1,32 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import agentNexus from "@/assets/hybrid.mp4";
-import iconTrain from "@/assets/icon-train.png";
-import iconBattle from "@/assets/icon-battle.png";
-import iconEarn from "@/assets/icon-earn.png";
-import iconOwn from "@/assets/Own.png";
-
-const actions = [
-  {
-    n: "01",
-    title: "CREATE",
-    desc: "Create your AI Agent and choose its path.",
-    img: agentNexus,
-    href: "/ai-arena",
-  },
-  {
-    n: "02",
-    title: "TRAIN",
-    desc: "Train and evolve your agent to make it stronger.",
-    img: iconTrain,
-    href: "/training",
-  },
-  {
-    n: "03",
-    title: "BATTLE",
-    desc: "Enter the Arena and battle players worldwide.",
-    img: iconBattle,
-    href: "/battles",
-  },
-  {
-    n: "04",
-    title: "EARN",
-    desc: "Win battles, earn rewards and climb the leaderboard.",
-    img: iconEarn,
-    href: "/leaderboard",
-  },
-  {
-    n: "05",
-    title: "OWN",
-    desc: "Your AI. Your NFT. Your legacy.",
-    img: iconOwn,
-    href: "/inventory",
-  },
-];
+import { Box, Home, ShoppingCart, Swords } from "lucide-react";
 
 export function QuickActions() {
+  const actions = [
+    { label: "Create Agent", icon: Box, color: "#9b4dff", href: "/ai-arena" },
+    { label: "Train Agent", icon: Home, color: "#0089ff", href: "/ai-arena" },
+    { label: "Find Battle", icon: Swords, color: "#ffc000", href: "/ai-arena" },
+    { label: "My Inventory", icon: ShoppingCart, color: "#00e68a", href: "/inventory" },
+  ];
+
   return (
-    <section className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
-      <div className="mb-5 flex items-center justify-center gap-3 sm:gap-4">
-        <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
-        <h3 className="font-display text-2xl text-white sm:text-3xl">QUICK ACTIONS</h3>
-        <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
-      </div>
-      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-5">
-        {actions.map((action, i) => (
-          <div key={action.n} className="relative">
-            <Link
-              to={action.href}
-              className="card-glass group flex h-full flex-col overflow-hidden rounded-xl transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_12px_42px_rgba(154,53,255,0.22)]"
-            >
-              <div className="aspect-square overflow-hidden bg-background/50">
-                {action.img.endsWith(".mp4") ? (
-                  <video
-                    src={action.img}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <img
-                    src={action.img}
-                    alt={action.title}
-                    loading="lazy"
-                    width={400}
-                    height={400}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                )}
-              </div>
-              <div className="p-4 text-center md:text-left">
-                <div className="font-display text-xl text-primary glow-text">{action.n}</div>
-                <div className="mt-2 break-words font-tech text-sm tracking-wider text-white">{action.title}</div>
-                <p className="mt-2 text-xs text-muted-foreground">{action.desc}</p>
-              </div>
-            </Link>
-            {i < actions.length - 1 && (
-              <ArrowRight className="absolute -right-2 top-1/3 z-10 hidden h-5 w-5 text-primary md:block" />
-            )}
-          </div>
+    <section className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8b29ff]/20">
+      <h3 className="font-tech text-xs font-bold uppercase tracking-wider text-white drop-shadow-sm">Quick Actions</h3>
+      <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
+        {actions.map((action) => (
+          <Link
+            to={action.href}
+            key={action.label}
+            className="relative flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border border-white/5 bg-[#0a0f1b]/50 p-2 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-[#111626]/80 hover:shadow-[0_8px_20px_rgba(255,255,255,0.05)]"
+          >
+            <action.icon
+              className="h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110"
+              style={{ color: action.color, filter: `drop-shadow(0 0 8px ${action.color}66)` }}
+            />
+            <span className="font-tech text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-white/70 text-center leading-tight break-words w-full">
+              {action.label}
+            </span>
+          </Link>
         ))}
       </div>
     </section>
