@@ -22,6 +22,7 @@ import {
   useMemo,
   type KeyboardEvent,
 } from "react";
+// Note: useCallback kept for addSystem / addResult helpers below
 import {
   Swords,
   Trophy,
@@ -843,9 +844,31 @@ export default function ArenaGamePage() {
 
   // ── Unity loading ─────────────────────────────────────────────────────────
 
-  const loadUnity = useCallback(async () => {
-    if (unityLoadingRef.current || !canvasRef.current || !UNITY_BASE_URL) return;
+  // Load Unity once both agents are resolved (so we can write full data to localStorage)
+  useEffect(() => {
+    if (!battleId || !UNITY_BASE_URL) return;
+    if (myAgentQ.isLoading || opponentQ.isLoading) return;   // wait for agent data
+    if (unityLoadingRef.current || !canvasRef.current) return;
+
     unityLoadingRef.current = true;
+
+    // ── Store all battle/agent data in localStorage so Unity can read it ──
+    // (same pattern ZeroDash uses for JWT: localStorage → SendMessage after load)
+    const arenaPayload = {
+      battleId,
+      myAgentId:         myAgentId ?? '',
+      myAgentName:       myAgent?.name ?? '',
+      myAgentArchetype:  myAgent?.archetype ?? '',
+      myAgentElo:        myAgent?.eloRating ?? 1000,
+      myAgentClan:       myAgent?.clan ?? '',
+      opponentId:        resolvedOpponentId ?? '',
+      opponentName:      opponent?.name ?? '',
+      opponentArchetype: opponent?.archetype ?? '',
+      opponentElo:       opponent?.eloRating ?? 1000,
+      opponentClan:      opponent?.clan ?? '',
+      mode,
+    };
+    localStorage.setItem('arenaBattlePayload', JSON.stringify(arenaPayload));
 
     const buildUrl = `${UNITY_BASE_URL}/Build`;
 
@@ -853,17 +876,32 @@ export default function ArenaGamePage() {
     script.src = `${buildUrl}/WarzoneV4.loader.js`;
 
     script.onload = async () => {
+      // Guard — loader might fire after unmount
+      if (!canvasRef.current) return;
+
+      if (typeof (window as any).createUnityInstance !== 'function') {
+        console.error("[Arena] createUnityInstance not found after loader script");
+        toast.error("Game loader failed. Please refresh.");
+        unityLoadingRef.current = false;
+        return;
+      }
+
       try {
         const instance = await (window as any).createUnityInstance(
-          canvasRef.current!,
+          canvasRef.current,
           {
-            dataUrl: `${buildUrl}/WarzoneV4.data`,
-            frameworkUrl: `${buildUrl}/WarzoneV4.framework.js`,
-            codeUrl: `${buildUrl}/WarzoneV4.wasm`,
+            arguments: [],
+            dataUrl:       `${buildUrl}/WarzoneV4.data`,
+            frameworkUrl:  `${buildUrl}/WarzoneV4.framework.js`,
+            codeUrl:       `${buildUrl}/WarzoneV4.wasm`,
             streamingAssetsUrl: "StreamingAssets",
-            companyName: "Kult Games",
-            productName: "WarzoneV4",
+            companyName:   "Kult Games",
+            productName:   "WarzoneV4",
             productVersion: "1.0",
+            // ── Critical: prevents Unity from resizing the canvas
+            //    (omitting this causes the 0% stuck bug)
+            matchWebGLToCanvasSize: false,
+            devicePixelRatio: 1,
           },
           (progress: number) => {
             setLoadingProgress(Math.round(progress * 100));
@@ -871,38 +909,38 @@ export default function ArenaGamePage() {
         );
 
         unityInstanceRef.current = instance;
-
-        // Send battleId to Unity game manager
-        if (battleId) {
-          try {
-            instance.SendMessage("GameManager", "SetBattleId", battleId);
-          } catch (err) {
-            console.warn("[Arena] SendMessage SetBattleId failed:", err);
-          }
-        }
-
         setUnityLoaded(true);
+
+        // Send battle data to Unity after 1500ms delay
+        // (same pattern as ZeroDash: give Unity time to finish internal boot)
+        setTimeout(() => {
+          try {
+            instance.SendMessage("GameManager", "SetBattleId", battleId ?? '');
+            console.log("[Arena] ✅ battleId sent to Unity");
+          } catch (err) {
+            console.warn("[Arena] SendMessage failed (Unity may not have GameManager):", err);
+          }
+        }, 1500);
+
       } catch (err) {
         console.error("[Arena] createUnityInstance failed:", err);
-        toast.error("Failed to load game. Please refresh and try again.");
-        unityLoadingRef.current = false; // allow retry
+        toast.error("Failed to load game. Please refresh.");
+        unityLoadingRef.current = false;
       }
     };
 
     script.onerror = () => {
-      console.error("[Arena] Failed to load Unity loader script from:", script.src);
+      console.error("[Arena] Failed to load loader from:", script.src);
       toast.error("Game assets unavailable. Check your connection.");
       unityLoadingRef.current = false;
     };
 
     document.body.appendChild(script);
-  }, [battleId]);
 
-  // Load Unity once battleId is available and canvas is mounted
-  useEffect(() => {
-    if (!battleId || !UNITY_BASE_URL) return;
-    loadUnity();
-  }, [battleId, loadUnity]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battleId, myAgentQ.isLoading, opponentQ.isLoading]);
+  // ↑ intentionally omit myAgent/opponent — the guard ref means this only runs once,
+  //   but we read the latest values at execution time via the closure.
 
   // Cleanup on unmount
   useEffect(() => {
@@ -911,6 +949,7 @@ export default function ArenaGamePage() {
         unityInstanceRef.current.Quit?.().catch(() => {});
         unityInstanceRef.current = null;
       }
+      localStorage.removeItem('arenaBattlePayload');
     };
   }, []);
 
