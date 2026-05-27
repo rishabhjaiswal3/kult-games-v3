@@ -166,24 +166,24 @@ export function DashboardTopbar() {
             {openPanel === "notifications" && (
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="font-tech text-xs uppercase text-white/55">Notifications</span>
+                  <span className="text-sm font-semibold text-white/65">Notifications</span>
                   <button
                     type="button"
                     onClick={() => setOpenPanel(null)}
-                    className="font-tech text-[10px] text-[#b65cff] hover:text-white"
+                    className="text-xs font-semibold text-[#b65cff] hover:text-white"
                   >
-                    CLOSE
+                    Close
                   </button>
                 </div>
-                <div className="mt-3 space-y-3 text-xs">
+                <div className="mt-3 space-y-3 text-sm">
                   <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    HYBRID battle result is ready.
+                    HYBRID battle result is ready
                   </Link>
                   <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    Training slot completed.
+                    Training slot completed
                   </Link>
                   <Link to="/leaderboard" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    New achievement progress unlocked.
+                    New achievement progress unlocked
                   </Link>
                 </div>
               </div>

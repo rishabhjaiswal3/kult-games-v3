@@ -92,6 +92,7 @@ const Dashboard = () => {
             <RecentActivity />
             <Quests />
           </div>
+          <QuickActions />
           {/* <BattleStrip /> */}
           {profile?.gameScoresList?.length ? (
             <DashboardGameScoresPanel rows={profile.gameScoresList} />
@@ -102,7 +103,6 @@ const Dashboard = () => {
           {profile ? <DashboardAccountPanel profile={profile} /> : null}
           <BalancePanel agent={selectedAgent} />
           <AutonomousPanel />
-          <QuickActions />
         </aside>
       </div>
 
