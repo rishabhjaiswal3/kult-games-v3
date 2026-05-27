@@ -8,6 +8,8 @@ export interface AiArenaLeaderboardEntry {
   clan?: string;
   eloRating?: number;
   wins?: number;
+  losses?: number;
+  draws?: number;
   archetype?: string;
 }
 
@@ -60,6 +62,48 @@ export interface AiArenaAgent {
   metadataRootHash?: string | null;
   /** 0G Storage root hash for this agent's avatar PNG (set on creation). */
   avatarRootHash?: string | null;
+}
+
+// ── Achievements ─────────────────────────────────────────────────────────────
+
+export type AchievementRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+export type AchievementCategory = "BATTLES" | "TRAINING" | "AGENTS" | "AUTONOMOUS" | "COLLECTION" | "SPECIAL";
+
+export interface AiArenaAchievement {
+  id: string;
+  name: string;
+  desc: string;
+  points: number;
+  category: AchievementCategory;
+  rarity: AchievementRarity;
+  unlocked: boolean;
+  progress?: { current: number; target: number };
+}
+
+export interface AiArenaAchievementsResponse {
+  agentId: string;
+  agentName: string;
+  stats: {
+    totalPoints: number;
+    unlockedCount: number;
+    totalCount: number;
+    categoriesCompleted: number;
+    totalCategories: number;
+    commonCount: number;
+    rareCount: number;
+    epicCount: number;
+    legendaryCount: number;
+    totalCommon: number;
+    totalRare: number;
+    totalEpic: number;
+    totalLegendary: number;
+  };
+  categories: {
+    name: AchievementCategory;
+    unlockedCount: number;
+    totalCount: number;
+  }[];
+  achievements: AiArenaAchievement[];
 }
 
 export interface AiArenaCreateAgentRequest {

@@ -1,6 +1,23 @@
 import { Hexagon, Trophy } from "lucide-react";
 import { ClanIcon } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
+import { getRankFromElo } from "@/utils/rankSystem";
+
+function AgentAvatar({ src, alt, className }: { src: string; alt: string; className: string }) {
+  if (src.endsWith(".mp4")) {
+    return (
+      <video
+        src={src}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className={className}
+      />
+    );
+  }
+  return <img src={src} alt={alt} className={className} />;
+}
 
 type PodiumSlot = "first" | "second" | "third";
 
@@ -51,7 +68,7 @@ function PodiumCard({
       style={{ "--podium-glow-color": styles.glowColor } as React.CSSProperties}
     >
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20">
-        <img src={player.avatar} alt="" className="h-full w-full scale-105 object-cover object-[center_12%] blur-[0.5px]" />
+        <AgentAvatar src={player.avatar} alt="" className="h-full w-full scale-105 object-cover object-[center_12%] blur-[0.5px]" />
         <div className={`absolute inset-0 bg-gradient-to-b ${styles.gradient} via-transparent to-[#04080f]`} />
       </div>
 
@@ -63,7 +80,7 @@ function PodiumCard({
 
       <div className="relative z-10 mt-2">
         <div className={`overflow-hidden rounded-full ${styles.avatarSize} ${styles.avatarBorder}`}>
-          <img src={player.avatar} alt={player.name} className="h-full w-full object-cover object-[center_12%]" />
+          <AgentAvatar src={player.avatar} alt={player.name} className="h-full w-full object-cover object-[center_12%]" />
         </div>
       </div>
 
@@ -78,9 +95,26 @@ function PodiumCard({
         </div>
       </div>
 
-      <div className="relative z-10 mt-2 flex items-center gap-1.5 text-sm font-semibold text-white">
-        <Trophy className="h-4 w-4 text-[#ffc000]" />
-        <span>{player.points} PTS</span>
+      <div className="relative z-10 mt-2 flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
+          <Trophy className="h-4 w-4 text-[#ffc000]" />
+          <span>{player.points} PTS</span>
+        </div>
+        {player.eloRating != null ? (
+          <div className="flex items-center gap-1.5">
+            <img
+              src={getRankFromElo(player.eloRating).image}
+              alt={getRankFromElo(player.eloRating).name}
+              className="h-5 w-5 object-contain"
+            />
+            <span
+              className="font-tech text-[9px] uppercase tracking-wider"
+              style={{ color: getRankFromElo(player.eloRating).color }}
+            >
+              {getRankFromElo(player.eloRating).shortName}
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

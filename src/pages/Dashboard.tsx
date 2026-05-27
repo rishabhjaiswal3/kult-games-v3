@@ -89,8 +89,8 @@ const Dashboard = () => {
           />
           <TraitsPanel agent={selectedAgent} />
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.07fr)_minmax(0,0.93fr)]">
-            <RecentActivity />
-            <Quests />
+            <RecentActivity agentId={selectedAgentId} />
+            <Quests agent={selectedAgent} agentId={selectedAgentId} />
           </div>
           <QuickActions />
           {/* <BattleStrip /> */}
