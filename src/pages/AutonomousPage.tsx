@@ -597,7 +597,7 @@ const AutonomousPage = () => {
             <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
               <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold">PERFORMANCE PROFILE (7D)</h3>
               <div className="relative flex justify-center py-4">
-                <img src={autonomousGraph} alt="Performance Profile radar chart" className="w-full max-w-[360px] aspect-[1.22/1] object-contain scale-[1.45]" />
+                <img src={autonomousGraph} alt="Performance Profile radar chart" className="w-full max-w-[360px] aspect-[1.22/1] object-contain scale-[1.35]" />
               </div>
               <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-[9px] font-semibold tracking-wider text-white/50">
                 <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#9a35ff]/20 border border-[#9a35ff] rounded-sm" /><span>YOUR AGENTS</span></div>
