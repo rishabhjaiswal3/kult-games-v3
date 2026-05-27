@@ -289,7 +289,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
   const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
-  const announcedBattleIdRef = useRef<string | null>(getTrackedAiArenaBattleId());
+  // Always start null so the first match found in this session always triggers navigation,
+  // even if the same battle is still active in Redis after a page refresh.
+  const announcedBattleIdRef = useRef<string | null>(null);
 
   const agents = myAgentsQ.data?.agents ?? [];
 
@@ -374,6 +376,8 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     if (announcedBattleIdRef.current !== payload.battleId) {
       announcedBattleIdRef.current = payload.battleId;
       toast.success(`Match found! Entering arena…`);
+      // Close the status modal immediately so the navigate feels instant
+      setStatusModalAgent(null);
       // Navigate to the full-screen game page
       navigate(
         `/arena/game/${payload.battleId}?myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`

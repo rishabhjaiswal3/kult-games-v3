@@ -13,7 +13,7 @@ import {
   Swords,
   Trophy,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -680,6 +680,7 @@ function BattleInput({
 
 const BattlesPage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
   const { isAiArenaReady } = useAiArenaGatewaySession();
   const myAgentsQ = useMyArenaAgents(1, 50);
@@ -1411,9 +1412,11 @@ const BattlesPage = () => {
         agent={selectedStatusAgent}
         leaving={leaveQueueMut.isPending}
         onLeave={(agentId) => leaveQueueMut.mutate(agentId)}
-        onMatchFound={({ battleId }) => {
-          setSelectedBattleId(battleId);
-          setBattleLookupInput(battleId);
+        onMatchFound={({ battleId, agent, opponent, mode }) => {
+          setStatusModalOpen(false);
+          navigate(
+            `/arena/game/${battleId}?myAgentId=${encodeURIComponent(agent.id)}&opponentId=${encodeURIComponent(opponent.id)}&mode=${encodeURIComponent(mode)}`
+          );
         }}
       />
     </ArenaPageLayout>
