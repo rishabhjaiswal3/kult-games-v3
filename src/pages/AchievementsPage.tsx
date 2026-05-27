@@ -123,7 +123,10 @@ function DonutChart({
   const epicPct     = totalEpic     / total;
   const legendaryPct = totalLegendary / total;
 
+  const CIRC = 213.63; // 2 * Math.PI * 34
   const seg = (pct: number) => pct * CIRC;
+  const gap = 2;
+  const val = (pct: number) => Math.max(0, seg(pct) - (pct > 0 && pct < 1 ? gap : 0));
 
   const offset1 = 0;
   const offset2 = -(seg(commonPct));
@@ -133,46 +136,117 @@ function DonutChart({
   const pctLabel = (n: number, tot: number) =>
     tot === 0 ? "0%" : `${Math.round((n / tot) * 100)}%`;
 
+  const stars = useMemo(() => Array.from({ length: 120 }).map((_, i) => {
+    const x = Math.sin(i * 1234.56) * 120 + 50; 
+    const y = Math.cos(i * 3456.78) * 120 + 50;
+    const r = (Math.sin(i * 9876.54) + 1) * 0.6 + 0.2;
+    const op = (Math.cos(i * 5432.10) + 1) * 0.4 + 0.2;
+    return { x, y, r, op };
+  }), []);
+
   return (
     <>
-      <div className="flex justify-center items-center py-2 relative">
-        <svg className="w-full max-w-[150px] aspect-square" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="10" />
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#64748b" strokeWidth="10"
-            strokeDasharray={`${seg(commonPct)} ${CIRC}`} strokeDashoffset={offset1}
-            transform="rotate(-90 50 50)" />
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#3b82f6" strokeWidth="10"
-            strokeDasharray={`${seg(rarePct)} ${CIRC}`} strokeDashoffset={offset2}
-            transform="rotate(-90 50 50)" />
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#9a35ff" strokeWidth="10"
-            strokeDasharray={`${seg(epicPct)} ${CIRC}`} strokeDashoffset={offset3}
-            transform="rotate(-90 50 50)" />
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" strokeWidth="10"
-            strokeDasharray={`${seg(legendaryPct)} ${CIRC}`} strokeDashoffset={offset4}
-            transform="rotate(-90 50 50)" />
+      <div className="flex justify-center items-center py-6 relative">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-90 scale-[1.35]">
+          {/* Nebula clouds */}
+          <div className="absolute w-[180px] h-[180px] rounded-full bg-purple-600/30 blur-[35px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute -translate-x-[25%] -translate-y-[20%] w-[120px] h-[100px] rounded-full bg-blue-500/40 blur-[25px] mix-blend-screen" />
+          <div className="absolute translate-x-[20%] translate-y-[25%] w-[140px] h-[120px] rounded-full bg-fuchsia-600/30 blur-[30px] mix-blend-screen" />
+          <div className="absolute -translate-x-[15%] translate-y-[35%] w-[100px] h-[80px] rounded-full bg-indigo-500/40 blur-[20px] mix-blend-screen" />
+        </div>
+        <svg className="w-full max-w-[210px] aspect-square overflow-visible z-10 relative drop-shadow-2xl" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="epicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#9a35ff" />
+              <stop offset="100%" stopColor="#d18eff" />
+            </linearGradient>
+            <linearGradient id="rareGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#93c5fd" />
+            </linearGradient>
+            <linearGradient id="legendGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#f59e0b" />
+              <stop offset="100%" stopColor="#fde68a" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          
+          {/* Stars */}
           <g>
-            <text x="50" y="47" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold">{unlockedCount}</text>
-            <text x="50" y="58" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="6" fontWeight="bold">UNLOCKED</text>
+            {stars.map((s, i) => (
+              <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff" opacity={s.op} />
+            ))}
+          </g>
+
+          {/* Thin outer glowing rings */}
+          <circle cx="50" cy="50" r="45.5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="0.4" style={{ filter: "drop-shadow(0 0 4px rgba(154,53,255,0.9))" }} />
+          <circle cx="50" cy="50" r="47.5" fill="none" stroke="rgba(154,53,255,0.25)" strokeWidth="0.8" />
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.3" />
+
+          {/* Dark center background */}
+          <circle cx="50" cy="50" r="26" fill="#1c1c22" />
+
+          {/* Track */}
+          <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="14" />
+          
+          {commonPct > 0 && (
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#64748b" strokeWidth="14"
+              strokeDasharray={`${val(commonPct)} ${CIRC}`} strokeDashoffset={offset1}
+              transform="rotate(-90 50 50)" className="transition-all duration-1000 ease-out" />
+          )}
+          {rarePct > 0 && (
+            <circle cx="50" cy="50" r="34" fill="none" stroke="url(#rareGrad)" strokeWidth="14"
+              strokeDasharray={`${val(rarePct)} ${CIRC}`} strokeDashoffset={offset2}
+              transform="rotate(-90 50 50)" className="transition-all duration-1000 ease-out" />
+          )}
+          {epicPct > 0 && (
+            <circle cx="50" cy="50" r="34" fill="none" stroke="url(#epicGrad)" strokeWidth="14"
+              strokeDasharray={`${val(epicPct)} ${CIRC}`} strokeDashoffset={offset3}
+              transform="rotate(-90 50 50)" className="transition-all duration-1000 ease-out" />
+          )}
+          {legendaryPct > 0 && (
+            <circle cx="50" cy="50" r="34" fill="none" stroke="url(#legendGrad)" strokeWidth="14"
+              strokeDasharray={`${val(legendaryPct)} ${CIRC}`} strokeDashoffset={offset4}
+              transform="rotate(-90 50 50)" className="transition-all duration-1000 ease-out" />
+          )}
+          <g>
+            <text x="50" y="50" textAnchor="middle" fill="#fff" fontSize="22" fontWeight="900" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))" }}>{unlockedCount}</text>
+            <text x="50" y="62" textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="5.5" fontWeight="800" letterSpacing="0.2em">UNLOCKED</text>
           </g>
         </svg>
       </div>
 
-      <div className="space-y-2 pt-2 text-[10px] font-semibold text-white/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#64748b]" /><span>Common</span></div>
-          <span className="font-tech text-white">{common} ({pctLabel(common, totalCommon)})</span>
+      <div className="space-y-3 pt-4 px-1 text-[11px] font-semibold text-white/80 relative z-10">
+        <div className="flex items-center justify-between group cursor-default">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#64748b] border border-[#64748b]/50 shadow-[0_0_8px_rgba(100,116,139,0.3)] transition-transform group-hover:scale-125" />
+            <span className="group-hover:text-white transition drop-shadow-md">Common</span>
+          </div>
+          <span className="font-tech text-white group-hover:text-white transition">{common} <span className="text-white/60">({pctLabel(common, totalCommon)})</span></span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#3b82f6]" /><span>Rare</span></div>
-          <span className="font-tech text-white">{rare} ({pctLabel(rare, totalRare)})</span>
+        <div className="flex items-center justify-between group cursor-default">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] border border-[#3b82f6]/50 shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform group-hover:scale-125" />
+            <span className="group-hover:text-blue-200 transition drop-shadow-md">Rare</span>
+          </div>
+          <span className="font-tech text-white group-hover:text-blue-200 transition">{rare} <span className="text-white/60">({pctLabel(rare, totalRare)})</span></span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#9a35ff]" /><span>Epic</span></div>
-          <span className="font-tech text-white">{epic} ({pctLabel(epic, totalEpic)})</span>
+        <div className="flex items-center justify-between group cursor-default">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#9a35ff] to-[#d18eff] border border-[#9a35ff]/50 shadow-[0_0_10px_rgba(154,53,255,0.5)] transition-transform group-hover:scale-125" />
+            <span className="group-hover:text-purple-200 transition drop-shadow-md">Epic</span>
+          </div>
+          <span className="font-tech text-white group-hover:text-purple-200 transition">{epic} <span className="text-white/60">({pctLabel(epic, totalEpic)})</span></span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#f59e0b]" /><span>Legendary</span></div>
-          <span className="font-tech text-white">{legendary} ({pctLabel(legendary, totalLegendary)})</span>
+        <div className="flex items-center justify-between group cursor-default">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#f59e0b] to-[#fde68a] border border-[#f59e0b]/50 shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-transform group-hover:scale-125" />
+            <span className="group-hover:text-amber-200 transition drop-shadow-md">Legendary</span>
+          </div>
+          <span className="font-tech text-white group-hover:text-amber-200 transition">{legendary} <span className="text-white/60">({pctLabel(legendary, totalLegendary)})</span></span>
         </div>
       </div>
     </>
