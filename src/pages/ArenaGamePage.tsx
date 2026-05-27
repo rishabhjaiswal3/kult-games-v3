@@ -905,17 +905,19 @@ export default function ArenaGamePage() {
     if (unityLoadingRef.current || !canvasRef.current || !UNITY_BASE_URL) return;
     unityLoadingRef.current = true;
 
+    const buildUrl = `${UNITY_BASE_URL}/Build`;
+
     const script = document.createElement("script");
-    script.src = `${UNITY_BASE_URL}/WarzoneV4.loader.js`;
+    script.src = `${buildUrl}/WarzoneV4.loader.js`;
 
     script.onload = async () => {
       try {
         const instance = await (window as any).createUnityInstance(
           canvasRef.current!,
           {
-            dataUrl: `${UNITY_BASE_URL}/WarzoneV4.data`,
-            frameworkUrl: `${UNITY_BASE_URL}/WarzoneV4.framework.js`,
-            codeUrl: `${UNITY_BASE_URL}/WarzoneV4.wasm`,
+            dataUrl: `${buildUrl}/WarzoneV4.data`,
+            frameworkUrl: `${buildUrl}/WarzoneV4.framework.js`,
+            codeUrl: `${buildUrl}/WarzoneV4.wasm`,
             streamingAssetsUrl: "StreamingAssets",
             companyName: "Kult Games",
             productName: "WarzoneV4",
