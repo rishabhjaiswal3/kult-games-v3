@@ -62,6 +62,34 @@ const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
 
 type GamePhase = "live" | "ended";
 
+/** Shape of the CustomEvent fired by Unity when the match ends. */
+type UnityBattleResult = {
+  battleId: string;
+  myAgentWon: boolean;
+  winnerId: string;
+  winnerName: string;
+  winnerArchetype: string;
+  winnerClan: string;
+  winnerElo: number;
+  winnerHpPercent: number; // 0-100
+  loserId: string;
+  loserName: string;
+  loserArchetype: string;
+  loserClan: string;
+  loserElo: number;
+  loserHpPercent: number; // 0-100
+  durationSeconds: number;
+  endReason: string; // "death" | "timeout"
+  /** Per-agent action stats keyed by agentId. Forwarded to POST /v1/battles/:id/end. */
+  playerStats?: Record<string, {
+    jumps: number;
+    shotsAttempted: number;
+    shotsConnected: number;
+    timesHit: number;
+    distanceCovered: number;
+  }>;
+};
+
 type ChatMsg =
   | { id: string; kind: "system"; text: string; ts: Date }
   | {
@@ -765,6 +793,240 @@ function GameChatPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Battle Result Overlay — shown when Unity fires arenaBattleEnd
+// ─────────────────────────────────────────────────────────────────────────────
+
+function BattleResultOverlay({
+  result,
+  commentary,
+  storageHashes,
+  onHome,
+}: {
+  result: UnityBattleResult;
+  commentary?: string | null;
+  storageHashes?: string[];
+  onHome: () => void;
+}) {
+  const winnerColor = clanColor(result.winnerClan);
+  const loserColor  = clanColor(result.loserClan);
+
+  const durationMin = Math.floor(result.durationSeconds / 60);
+  const durationSec = result.durationSeconds % 60;
+  const durationStr = `${String(durationMin).padStart(2, "0")}:${String(durationSec).padStart(2, "0")}`;
+
+  return (
+    <div
+      className="absolute inset-0 z-40 flex items-center justify-center p-4"
+      style={{ background: "rgba(3,7,16,0.90)", backdropFilter: "blur(10px)" }}
+    >
+      <div
+        className="w-full max-w-lg rounded-3xl border border-white/10 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.85)]"
+        style={{ background: "rgba(8,12,24,0.97)" }}
+      >
+        {/* ── Header ── */}
+        <div
+          className="relative px-8 pt-8 pb-5 text-center overflow-hidden"
+          style={{
+            background: result.myAgentWon
+              ? `linear-gradient(135deg, ${winnerColor}20 0%, transparent 60%)`
+              : "linear-gradient(135deg, rgba(239,68,68,0.10) 0%, transparent 60%)",
+          }}
+        >
+          {/* top accent line */}
+          <div
+            className="absolute inset-x-0 top-0 h-px"
+            style={{
+              background: result.myAgentWon
+                ? `linear-gradient(90deg, transparent, ${winnerColor}, transparent)`
+                : "linear-gradient(90deg, transparent, #ef4444, transparent)",
+            }}
+          />
+
+          <div
+            className="font-display text-5xl font-black tracking-[0.08em]"
+            style={{
+              color: result.myAgentWon ? winnerColor : "#ef4444",
+              textShadow: `0 0 40px ${result.myAgentWon ? winnerColor : "#ef4444"}88`,
+            }}
+          >
+            {result.myAgentWon ? "VICTORY" : "DEFEAT"}
+          </div>
+
+          <div className="flex items-center justify-center gap-3 mt-3">
+            <span
+              className="rounded-full border px-3 py-0.5 font-tech text-[9px] uppercase tracking-widest"
+              style={{
+                borderColor: result.myAgentWon ? `${winnerColor}50` : "rgba(239,68,68,0.4)",
+                color: result.myAgentWon ? winnerColor : "#f87171",
+                background: result.myAgentWon ? `${winnerColor}12` : "rgba(239,68,68,0.08)",
+              }}
+            >
+              {result.endReason === "timeout" ? "⏱ Timeout" : "💀 KO"}
+            </span>
+            <span className="font-mono text-[10px] text-white/25">{durationStr}</span>
+          </div>
+        </div>
+
+        {/* ── Fighter Cards ── */}
+        <div className="grid grid-cols-2 gap-3 px-6 py-4">
+          {/* Winner */}
+          <div
+            className="rounded-2xl border p-4"
+            style={{ borderColor: `${winnerColor}35`, background: `${winnerColor}09` }}
+          >
+            <div className="flex items-center gap-1.5 mb-3">
+              <Crown className="h-3 w-3 text-yellow-400 shrink-0" />
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
+                Winner
+              </span>
+            </div>
+            <div
+              className="font-display text-sm font-bold leading-tight truncate"
+              style={{ color: winnerColor }}
+            >
+              {result.winnerName}
+            </div>
+            <div className="font-tech text-[9px] text-white/35 uppercase tracking-wider mt-0.5">
+              {result.winnerArchetype}
+            </div>
+            {result.winnerClan && (
+              <div
+                className="font-tech text-[8px] uppercase tracking-widest mt-1"
+                style={{ color: winnerColor }}
+              >
+                {result.winnerClan}
+              </div>
+            )}
+            <div className="mt-3 space-y-1.5">
+              <div className="flex justify-between font-mono text-[9px]">
+                <span className="text-white/30">HP</span>
+                <span style={{ color: winnerColor }}>{result.winnerHpPercent}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${result.winnerHpPercent}%`, background: winnerColor }}
+                />
+              </div>
+              <div className="font-mono text-[9px] text-white/25 text-right">
+                {result.winnerElo.toLocaleString()} ELO
+              </div>
+            </div>
+          </div>
+
+          {/* Loser */}
+          <div
+            className="rounded-2xl border p-4"
+            style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+          >
+            <div className="flex items-center gap-1.5 mb-3">
+              <Shield className="h-3 w-3 text-white/20 shrink-0" />
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
+                Loser
+              </span>
+            </div>
+            <div className="font-display text-sm font-bold leading-tight truncate text-white/45">
+              {result.loserName}
+            </div>
+            <div className="font-tech text-[9px] text-white/25 uppercase tracking-wider mt-0.5">
+              {result.loserArchetype}
+            </div>
+            {result.loserClan && (
+              <div
+                className="font-tech text-[8px] uppercase tracking-widest mt-1"
+                style={{ color: `${loserColor}60` }}
+              >
+                {result.loserClan}
+              </div>
+            )}
+            <div className="mt-3 space-y-1.5">
+              <div className="flex justify-between font-mono text-[9px]">
+                <span className="text-white/30">HP</span>
+                <span className="text-white/30">{result.loserHpPercent}%</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
+                <div
+                  className="h-full rounded-full bg-white/20"
+                  style={{ width: `${result.loserHpPercent}%` }}
+                />
+              </div>
+              <div className="font-mono text-[9px] text-white/25 text-right">
+                {result.loserElo.toLocaleString()} ELO
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 0G Compute Commentary ── */}
+        {commentary && (
+          <div className="mx-6 mb-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <MessageSquare className="h-3 w-3 text-primary/60 shrink-0" />
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/35">
+                0G Compute · AI Commentator
+              </span>
+            </div>
+            <p className="font-mono text-[10px] leading-relaxed text-white/60 italic">
+              "{commentary}"
+            </p>
+            {storageHashes && storageHashes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {storageHashes.map((h) => (
+                  <a
+                    key={h}
+                    href={`https://storagescan.0g.ai/tx/${h}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 rounded-lg border border-white/6 bg-white/[0.03] px-2 py-0.5 font-mono text-[8px] text-white/25 hover:text-primary/60 transition"
+                  >
+                    <ExternalLink className="h-2 w-2 shrink-0" />
+                    {h.slice(0, 8)}…{h.slice(-4)}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Loading commentary indicator (while waiting for 0G Compute) ── */}
+        {!commentary && (
+          <div className="mx-6 mb-3 flex items-center gap-2">
+            <Loader2 className="h-3 w-3 animate-spin text-white/15 shrink-0" />
+            <span className="font-tech text-[9px] text-white/20 uppercase tracking-widest">
+              AI commentator generating…
+            </span>
+          </div>
+        )}
+
+        {/* ── Action Buttons ── */}
+        <div className="flex flex-col gap-2.5 px-6 pb-7">
+          {/* Share with Kult Moments — placeholder, wired up later */}
+          <button
+            type="button"
+            disabled
+            title="Coming soon"
+            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/8 bg-white/[0.04] py-3.5 font-tech text-[11px] uppercase tracking-widest text-white/25 cursor-not-allowed"
+          >
+            <Share2 className="h-4 w-4" />
+            Share with Kult Moments
+          </button>
+
+          {/* Home Page */}
+          <button
+            type="button"
+            onClick={onHome}
+            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/15 bg-white/[0.06] py-3.5 font-tech text-[11px] uppercase tracking-widest text-white/65 hover:bg-white/10 hover:text-white hover:border-white/25 transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Home Page
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -793,6 +1055,14 @@ export default function ArenaGamePage() {
   // Unity loading state
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [unityLoaded, setUnityLoaded] = useState(false);
+  const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
+
+  // Battle result — populated when Unity fires arenaBattleEnd CustomEvent
+  const [battleResult, setBattleResult] = useState<UnityBattleResult | null>(null);
+  // 0G Compute commentary — generated after battle ends
+  const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
+  // 0G Storage root hashes from memory-service
+  const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -844,6 +1114,46 @@ export default function ArenaGamePage() {
 
   // ── Unity loading ─────────────────────────────────────────────────────────
 
+  /**
+   * Diagnose R2 CORS setup before handing off to Unity.
+   *
+   * Returns:
+   *   'ok'          – CORS headers present, files accessible
+   *   'cors'        – file exists but no CORS headers (R2 bucket not configured)
+   *   'not-found'   – file not reachable at all (wrong URL / private bucket)
+   */
+  const diagnoseBuildFiles = async (buildUrl: string): Promise<'ok' | 'cors' | 'not-found'> => {
+    const testUrl = `${buildUrl}/WarzoneV4.data`;
+    try {
+      // First try with strict CORS — what Unity will actually do
+      const res = await fetch(testUrl, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
+      if (res.ok || res.status === 206) return 'ok';
+      return 'not-found';
+    } catch (_corsErr) {
+      // CORS blocked — confirm the file actually exists with no-cors (opaque response)
+      try {
+        await fetch(testUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+        // Got here = file exists but R2 didn't send Access-Control-Allow-Origin
+        return 'cors';
+      } catch (_netErr) {
+        return 'not-found';
+      }
+    }
+  };
+
+  /**
+   * Banner function passed to Unity — surfaces Unity-internal warnings/errors
+   * as console logs and toast notifications.
+   */
+  const unityShowBanner = (msg: string, type: 'error' | 'warning' | string) => {
+    console.log(`[Unity ${type}]`, msg);
+    if (type === 'error') {
+      toast.error(`Unity: ${msg}`, { duration: 8000 });
+    } else if (type === 'warning') {
+      console.warn('[Unity warning]', msg);
+    }
+  };
+
   // Load Unity once both agents are resolved (so we can write full data to localStorage)
   useEffect(() => {
     if (!battleId || !UNITY_BASE_URL) return;
@@ -886,6 +1196,36 @@ export default function ArenaGamePage() {
         return;
       }
 
+      // ── CORS preflight — diagnose R2 bucket BEFORE handing off to Unity ──
+      const diagnosis = await diagnoseBuildFiles(buildUrl);
+      if (diagnosis === 'cors') {
+        const msg =
+          "R2 CORS not configured. Fix: Cloudflare R2 dashboard → your bucket → " +
+          "Settings → CORS Policy → add rule: AllowedOrigins=[\"*\"], " +
+          "AllowedMethods=[\"GET\",\"HEAD\"], MaxAgeSeconds=86400";
+        console.error("[Arena]", msg);
+        setUnityLoadError('cors');
+        unityLoadingRef.current = false;
+        return;
+      }
+      if (diagnosis === 'not-found') {
+        console.error("[Arena] Build files not reachable at:", buildUrl);
+        setUnityLoadError('not-found');
+        unityLoadingRef.current = false;
+        return;
+      }
+
+      // ── Stuck-at-0% watchdog — fires if CORS slips past the preflight ──
+      const stuckTimer = setTimeout(() => {
+        if (!unityInstanceRef.current) {
+          console.error(
+            "[Arena] Unity stuck at 0% — CORS issue on R2.\n" +
+            "Open DevTools → Network tab and look for blocked requests to r2.dev"
+          );
+          setUnityLoadError('cors');
+        }
+      }, 18_000);
+
       try {
         const instance = await (window as any).createUnityInstance(
           canvasRef.current,
@@ -902,12 +1242,14 @@ export default function ArenaGamePage() {
             //    (omitting this causes the 0% stuck bug)
             matchWebGLToCanvasSize: false,
             devicePixelRatio: 1,
+            showBanner: unityShowBanner,
           },
           (progress: number) => {
             setLoadingProgress(Math.round(progress * 100));
           }
         );
 
+        clearTimeout(stuckTimer);
         unityInstanceRef.current = instance;
         setUnityLoaded(true);
 
@@ -923,6 +1265,7 @@ export default function ArenaGamePage() {
         }, 1500);
 
       } catch (err) {
+        clearTimeout(stuckTimer);
         console.error("[Arena] createUnityInstance failed:", err);
         toast.error("Failed to load game. Please refresh.");
         unityLoadingRef.current = false;
@@ -951,6 +1294,178 @@ export default function ArenaGamePage() {
       }
       localStorage.removeItem('arenaBattlePayload');
     };
+  }, []);
+
+  // Listen for Unity's battle-end CustomEvent ("arenaBattleEnd")
+  // When received:
+  //   1. Show result popup immediately
+  //   2. POST /v1/battles/:id/end  (official result with playerStats)
+  //   3. POST /v1/inference/battle-commentary  (0G Compute AI commentator)
+  //   4. POST /v1/memory/:agentId/memory/episode  (store to 0G Storage for winner + loser)
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const detail = (e as CustomEvent<UnityBattleResult>).detail;
+      if (!detail || typeof detail !== "object") return;
+
+      // 1. Show popup immediately — don't gate on API calls.
+      setBattleResult(detail);
+      setGamePhase("ended");
+
+      const bid = detail.battleId;
+      if (!bid) {
+        console.warn("[Arena] arenaBattleEnd — no battleId in payload, skipping API calls.");
+        return;
+      }
+
+      // 2. Official result submission (ELO computed server-side, archived to 0G DA)
+      try {
+        await aiArenaGatewayApi.endBattle(bid, {
+          winnerId:    detail.winnerId,
+          loserId:     detail.loserId,
+          playerStats: detail.playerStats,
+        });
+        console.log("[Arena] ✅ endBattle submitted for:", bid);
+      } catch (err) {
+        console.warn("[Arena] endBattle API failed (may already be ended):", err);
+      }
+
+      // ── Trait evolution + training (fire-and-forget, parallel) ──────────────
+      // These run async after the popup is visible. No await needed.
+      // Unity reads the updated traits on the NEXT match load via GET /v1/agents/:id.
+      const winnerStats = detail.playerStats?.[detail.winnerId];
+      const loserStats  = detail.playerStats?.[detail.loserId];
+
+      void (async () => {
+        try {
+          // Evolve winner traits
+          if (detail.winnerId && winnerStats) {
+            await aiArenaGatewayApi.evolveAgentTraits(detail.winnerId, {
+              outcome:         "WIN",
+              jumps:           winnerStats.jumps,
+              shotsAttempted:  winnerStats.shotsAttempted,
+              shotsConnected:  winnerStats.shotsConnected,
+              timesHit:        winnerStats.timesHit,
+              distanceCovered: winnerStats.distanceCovered,
+              durationSeconds: detail.durationSeconds,
+            });
+            console.log("[Arena] ✅ Winner traits evolved:", detail.winnerId);
+          }
+          // Evolve loser traits
+          if (detail.loserId && loserStats) {
+            await aiArenaGatewayApi.evolveAgentTraits(detail.loserId, {
+              outcome:         "LOSS",
+              jumps:           loserStats.jumps,
+              shotsAttempted:  loserStats.shotsAttempted,
+              shotsConnected:  loserStats.shotsConnected,
+              timesHit:        loserStats.timesHit,
+              distanceCovered: loserStats.distanceCovered,
+              durationSeconds: detail.durationSeconds,
+            });
+            console.log("[Arena] ✅ Loser traits evolved:", detail.loserId);
+          }
+        } catch (err) {
+          console.warn("[Arena] Trait evolution failed (non-fatal):", err);
+        }
+      })();
+
+      // Trigger LoRA training for both agents from this battle's data
+      void (async () => {
+        try {
+          if (detail.winnerId && winnerStats) {
+            await aiArenaGatewayApi.triggerTrainingFromBattle(detail.winnerId, {
+              ...winnerStats,
+              outcome:         "WIN",
+              durationSeconds: detail.durationSeconds,
+            });
+            console.log("[Arena] ✅ Training job queued for winner:", detail.winnerId);
+          }
+          if (detail.loserId && loserStats) {
+            await aiArenaGatewayApi.triggerTrainingFromBattle(detail.loserId, {
+              ...loserStats,
+              outcome:         "LOSS",
+              durationSeconds: detail.durationSeconds,
+            });
+            console.log("[Arena] ✅ Training job queued for loser:", detail.loserId);
+          }
+        } catch (err) {
+          console.warn("[Arena] Training trigger failed (non-fatal):", err);
+        }
+      })();
+
+      // 3. 0G Compute commentary — ask the AI commentator for a paragraph
+      let commentary = "";
+      try {
+        const commentaryRes = await aiArenaGatewayApi.generateBattleCommentary({
+          battleId:        bid,
+          winnerName:      detail.winnerName,
+          winnerArchetype: detail.winnerArchetype,
+          winnerClan:      detail.winnerClan,
+          winnerElo:       detail.winnerElo,
+          winnerHpPercent: detail.winnerHpPercent,
+          loserName:       detail.loserName,
+          loserArchetype:  detail.loserArchetype,
+          loserClan:       detail.loserClan,
+          loserElo:        detail.loserElo,
+          loserHpPercent:  detail.loserHpPercent,
+          durationSeconds: detail.durationSeconds,
+          endReason:       detail.endReason,
+          playerStats:     detail.playerStats,
+        });
+        commentary = commentaryRes.commentary ?? "";
+        if (commentary) {
+          setBattleCommentary(commentary);
+          console.log("[Arena] ✅ 0G Compute commentary generated:", commentary.slice(0, 60), "…");
+        }
+      } catch (err) {
+        console.warn("[Arena] Commentary generation failed:", err);
+      }
+
+      // 4. Store battle memory for winner + loser on 0G Storage via memory-service
+      const memContent = commentary ||
+        `${detail.winnerName} defeated ${detail.loserName} in a ${detail.durationSeconds}s clash (${detail.endReason}).`;
+
+      const hashes: string[] = [];
+
+      // Winner memory
+      if (detail.winnerId) {
+        try {
+          const winRes = await aiArenaGatewayApi.storeBattleMemory(detail.winnerId, {
+            battleId: bid,
+            outcome:  "WIN",
+            content:  memContent,
+          });
+          if (winRes.snapshotRootHash) {
+            hashes.push(winRes.snapshotRootHash);
+            console.log("[Arena] ✅ Winner memory stored, 0G hash:", winRes.snapshotRootHash);
+          }
+        } catch (err) {
+          console.warn("[Arena] Winner memory storage failed:", err);
+        }
+      }
+
+      // Loser memory
+      if (detail.loserId) {
+        try {
+          const loseRes = await aiArenaGatewayApi.storeBattleMemory(detail.loserId, {
+            battleId: bid,
+            outcome:  "LOSS",
+            content:  memContent,
+          });
+          if (loseRes.snapshotRootHash) {
+            hashes.push(loseRes.snapshotRootHash);
+            console.log("[Arena] ✅ Loser memory stored, 0G hash:", loseRes.snapshotRootHash);
+          }
+        } catch (err) {
+          console.warn("[Arena] Loser memory storage failed:", err);
+        }
+      }
+
+      if (hashes.length) setMemoryRootHashes(hashes);
+    };
+
+    window.addEventListener("arenaBattleEnd", handler);
+    return () => window.removeEventListener("arenaBattleEnd", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -1148,7 +1663,7 @@ export default function ArenaGamePage() {
               />
 
               {/* React loading screen (shown until Unity finishes loading) */}
-              {!unityLoaded && (
+              {!unityLoaded && !unityLoadError && (
                 <UnityLoadingScreen
                   progress={loadingProgress}
                   myAgent={myAgent}
@@ -1157,17 +1672,80 @@ export default function ArenaGamePage() {
                 />
               )}
 
-              {/* GAME OVER overlay */}
-              {gamePhase === "ended" && unityLoaded && (
-                <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
-                  <span className="font-display text-3xl font-black text-white/20 uppercase tracking-widest">
-                    GAME OVER
-                  </span>
+              {/* Load-error overlay — CORS or missing files */}
+              {unityLoadError && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#030710]/95 p-6">
+                  <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(239,68,68,0.15)]">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">⚠️</span>
+                      <span className="font-display text-base font-bold text-red-400 uppercase tracking-wider">
+                        {unityLoadError === 'cors' ? 'CORS Blocked' : 'Files Not Found'}
+                      </span>
+                    </div>
+
+                    {unityLoadError === 'cors' ? (
+                      <>
+                        <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
+                          The game build files exist on R2 but the browser is blocking cross-origin
+                          requests. You need to add a CORS rule to your Cloudflare R2 bucket.
+                        </p>
+                        <div className="rounded-xl border border-white/8 bg-black/40 p-4 mb-4">
+                          <p className="font-mono text-[9px] text-primary/70 mb-2 uppercase tracking-wider">
+                            Cloudflare R2 Dashboard → your bucket → Settings → CORS Policy
+                          </p>
+                          <pre className="font-mono text-[10px] text-white/70 leading-relaxed whitespace-pre-wrap">{`[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 86400
+  }
+]`}</pre>
+                        </div>
+                        <p className="font-mono text-[9px] text-white/30">
+                          After saving the CORS rule, refresh this page.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-3">
+                          Build files not reachable. Check that{" "}
+                          <code className="font-mono text-[10px] text-primary/80">VITE_UNITY_BUILD_URL</code>{" "}
+                          points to the correct R2 folder and the bucket is public.
+                        </p>
+                        <p className="font-mono text-[10px] text-white/30 break-all">
+                          Looking for: {UNITY_BASE_URL}/Build/WarzoneV4.data
+                        </p>
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUnityLoadError(null);
+                        unityLoadingRef.current = false;
+                        window.location.reload();
+                      }}
+                      className="mt-4 w-full rounded-xl border border-primary/40 bg-primary/15 py-2 font-tech text-[11px] uppercase tracking-wider text-primary hover:bg-primary/25 transition"
+                    >
+                      Retry
+                    </button>
+                  </div>
                 </div>
               )}
 
+              {/* ── Battle Result Overlay — replaces "GAME OVER" ── */}
+              {battleResult && (
+                <BattleResultOverlay
+                  result={battleResult}
+                  commentary={battleCommentary}
+                  storageHashes={memoryRootHashes}
+                  onHome={() => navigate(-1)}
+                />
+              )}
+
               {/* Bottom battle-ID hint */}
-              {gamePhase === "live" && (
+              {gamePhase === "live" && !unityLoadError && (
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
                   <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
