@@ -15,13 +15,16 @@ import {
   Loader2,
   BookOpen,
   Swords,
+  Trophy,
+  Shield,
+  Brain,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
-import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import type { AiArenaAgent, AiArenaBattle } from "@/types/aiArenaGateway";
 
 // Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -121,7 +124,7 @@ function AgentRow({ agent, trainingJobs }: { agent: AiArenaAgent; trainingJobs: 
     queryKey: ["matchmakingStatus", agent.id, "autonomous"],
     queryFn: () => aiArenaGatewayApi.getMatchmakingStatus(agent.id),
     enabled: configQ.data?.autonomousMode === true,
-    refetchInterval: configQ.data?.autonomousMode ? 10_000 : false,
+    refetchInterval: configQ.data?.autonomousMode ? 8_000 : false,
     staleTime: 5_000,
     retry: 1,
   });
@@ -265,6 +268,36 @@ const AutonomousPage = () => {
   });
   const allJobs = allJobsQ.data?.jobs ?? [];
 
+  // Recent completed battles for all autonomous agents
+  const autonomousIds = myAgents
+    .filter((a: AiArenaAgent) => !!(((a as any).metadata as Record<string, unknown> | undefined)?.autonomousMode))
+    .map((a: AiArenaAgent) => a.id);
+
+  const battlesQ = useQuery({
+    queryKey: ["autonomousBattles", autonomousIds.join(",")],
+    queryFn: async () => {
+      if (autonomousIds.length === 0) return { battles: [] as AiArenaBattle[] };
+      const results = await Promise.all(
+        autonomousIds.slice(0, 5).map((id) =>
+          aiArenaGatewayApi.getAgentBattles(id, { limit: 5 }).catch(() => ({ battles: [] as AiArenaBattle[] }))
+        )
+      );
+      // Dedupe by id, sort newest first
+      const seen = new Set<string>();
+      const merged: AiArenaBattle[] = [];
+      for (const r of results) {
+        for (const b of r.battles) {
+          if (!seen.has(b.id)) { seen.add(b.id); merged.push(b); }
+        }
+      }
+      return { battles: merged.sort((a, b) => new Date(b.endedAt ?? b.createdAt ?? 0).getTime() - new Date(a.endedAt ?? a.createdAt ?? 0).getTime()).slice(0, 8) };
+    },
+    enabled: autonomousIds.length > 0,
+    refetchInterval: 20_000,
+    staleTime: 15_000,
+  });
+  const recentBattles = battlesQ.data?.battles ?? [];
+
   // Derive stats from real agent data
   const autonomousAgents = myAgents.filter((a: AiArenaAgent) => {
     const meta = (a as any).metadata as Record<string, unknown> | undefined;
@@ -291,10 +324,10 @@ const AutonomousPage = () => {
   ];
   const averageStats = [60, 65, 55, 62, 58, 60];
 
-  // Recent activity log from training jobs
+  // Recent training jobs for the activity log
   const recentJobs = [...allJobs]
     .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-    .slice(0, 5);
+    .slice(0, 4);
 
   // Active agents for table (max 5 shown)
   const tableAgents = myAgents.slice(0, 5);
@@ -627,27 +660,71 @@ const AutonomousPage = () => {
               </div>
             </div>
 
-            {/* Activity Log */}
+            {/* Activity Log — battles + training combined */}
             <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">ACTIVITY LOG</h3>
-                {allJobsQ.isLoading && <Loader2 className="h-3 w-3 animate-spin text-purple-400" />}
+                <div className="flex items-center gap-2">
+                  {(allJobsQ.isLoading || battlesQ.isLoading) && (
+                    <Loader2 className="h-3 w-3 animate-spin text-purple-400" />
+                  )}
+                  <span className="font-mono text-[8px] text-white/25 uppercase">auto-refresh</span>
+                </div>
               </div>
 
+              {/* Recent battles */}
+              {recentBattles.length > 0 && (
+                <div className="space-y-2">
+                  <span className="font-tech text-[8px] uppercase tracking-widest text-white/30">Battles</span>
+                  {recentBattles.slice(0, 4).map((battle) => {
+                    const isWin  = battle.result?.winnerId && autonomousIds.includes(battle.result.winnerId);
+                    const isLoss = battle.result?.loserId  && autonomousIds.includes(battle.result.loserId);
+                    const outcome = isWin ? "WIN" : isLoss ? "LOSS" : "—";
+                    return (
+                      <div key={battle.id} className="flex items-center gap-2.5">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${outcome === "WIN" ? "bg-emerald-500" : outcome === "LOSS" ? "bg-red-400" : "bg-white/25"}`} />
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          {outcome === "WIN"
+                            ? <Trophy className="h-3 w-3 text-yellow-400 shrink-0" />
+                            : <Shield className="h-3 w-3 text-white/25 shrink-0" />
+                          }
+                          <span className={`font-tech text-[9px] font-bold uppercase ${outcome === "WIN" ? "text-emerald-400" : "text-red-400/80"}`}>
+                            {outcome}
+                          </span>
+                          <span className="font-mono text-[8px] text-white/30 truncate">
+                            {battle.id.slice(0, 10)}…
+                          </span>
+                        </div>
+                        <span className="text-[8px] text-white/30 shrink-0">
+                          {battle.endedAt ? timeAgo(battle.endedAt) : battle.createdAt ? timeAgo(battle.createdAt) : "—"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Divider if both sections have content */}
+              {recentBattles.length > 0 && recentJobs.length > 0 && (
+                <div className="border-t border-white/6" />
+              )}
+
+              {/* Training jobs */}
               {recentJobs.length > 0 ? (
-                <div className="space-y-3 text-[10px] font-semibold text-white/70">
+                <div className="space-y-2">
+                  <span className="font-tech text-[8px] uppercase tracking-widest text-white/30">Training</span>
                   {recentJobs.map((job: any) => {
-                    const isDone = job.status === "COMPLETED";
+                    const isDone    = job.status === "COMPLETED";
                     const isRunning = job.status === "RUNNING";
-                    const isQueued = job.status === "QUEUED";
-                    const isFailed = job.status === "FAILED";
+                    const isQueued  = job.status === "QUEUED";
+                    const isFailed  = job.status === "FAILED";
                     return (
                       <div key={job.id} className="flex items-start justify-between gap-3">
                         <div className="flex gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${isDone ? "bg-emerald-500" : isRunning ? "bg-amber-400 animate-pulse" : isQueued ? "bg-purple-500" : isFailed ? "bg-red-500" : "bg-white/30"}`} />
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <BookOpen className="h-3 w-3 text-white/40 shrink-0" />
+                              <Brain className="h-3 w-3 text-white/40 shrink-0" />
                               <span className="text-white/60 text-[9px]">
                                 {job.type?.replace(/_/g, " ") ?? "Training"}
                               </span>
@@ -655,25 +732,25 @@ const AutonomousPage = () => {
                                 {job.status}
                               </span>
                             </div>
-                            <p className="text-[8px] text-white/35 font-mono truncate max-w-[140px]">
-                              {job.agentId?.slice(0, 8)}...
+                            <p className="text-[8px] text-white/35 font-mono">
+                              {job.agentId?.slice(0, 8)}…
                             </p>
                           </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-[8px] text-white/35 font-medium">
-                            {job.createdAt ? timeAgo(job.createdAt) : "—"}
-                          </p>
-                        </div>
+                        <p className="text-[8px] text-white/35 shrink-0">
+                          {job.createdAt ? timeAgo(job.createdAt) : "—"}
+                        </p>
                       </div>
                     );
                   })}
                 </div>
-              ) : (
+              ) : recentBattles.length === 0 ? (
                 <p className="text-[10px] text-white/40 font-semibold text-center py-4">
-                  {allJobsQ.isLoading ? "Loading activity..." : "No recent activity. Enable autonomous mode to begin."}
+                  {allJobsQ.isLoading || battlesQ.isLoading
+                    ? "Loading activity..."
+                    : "No recent activity. Enable autonomous mode to begin."}
                 </p>
-              )}
+              ) : null}
 
               <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>VIEW FULL LOG</span>

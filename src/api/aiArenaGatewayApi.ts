@@ -302,6 +302,25 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
+  /**
+   * GET /v1/battles?agentId=:agentId&status=COMPLETED&limit=N
+   * List recent completed battles for a given agent.
+   * Used by the Autonomous page activity log.
+   */
+  getAgentBattles: async (
+    agentId: string,
+    opts: { status?: string; limit?: number } = {}
+  ): Promise<{ battles: AiArenaBattle[] }> => {
+    const { data } = await http().get<{ battles: AiArenaBattle[] }>("/v1/battles", {
+      params: {
+        agentId,
+        status: opts.status ?? "COMPLETED",
+        limit:  opts.limit  ?? 10,
+      },
+    });
+    return { battles: data.battles ?? [] };
+  },
+
   /** POST /v1/battles */
   createBattle: async (body: AiArenaCreateBattleRequest): Promise<AiArenaCreateBattleResponse> => {
     const { data } = await http().post<AiArenaCreateBattleResponse>("/v1/battles", body);
@@ -863,6 +882,7 @@ export const aiArenaGatewayApi = {
         priority:     5,
         trainingData: trainingData as unknown as Array<Record<string, unknown>>,
         baseModel:    'Qwen2.5-0.5B-Instruct',
+        config:       { source: 'arena-battle' },
       }
     );
     return data;
