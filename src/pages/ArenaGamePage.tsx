@@ -366,14 +366,14 @@ function PreMatchOverlay({
                 {opponentName || "Agent B"}
               </div>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg -scale-x-100" draggable={false} />
+                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
                 <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
             </div>
             <img
               src="/Warzone/Character1-B.png"
               alt="Fighter B"
-              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
+              className="object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
