@@ -43,6 +43,7 @@ type ArenaMatchStatusModalProps = {
     opponent: AiArenaAgent;
     battleId: string;
     mode: string;
+    gameId: string;
   }) => void;
 };
 
@@ -153,7 +154,8 @@ export function ArenaMatchStatusModal({
       agent,
       opponent: opponentQ.data,
       battleId,
-      mode: status?.mode ?? battleQ.data?.battle?.mode ?? "RANKED",
+      mode:   status?.mode   ?? battleQ.data?.battle?.mode   ?? "RANKED",
+      gameId: status?.gameId ?? battleQ.data?.battle?.gameId ?? "default",
     });
   }, [open, agent, battleId, opponentQ.data, onMatchFound, status?.mode, battleQ.data?.battle?.mode]);
 
