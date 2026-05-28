@@ -252,174 +252,172 @@ function PreMatchOverlay({
   opponentName: string;
   countdown: number;
 }) {
-  const meta = MAP_META[mapId] ?? MAP_META["1"];
-  const pct  = countdown > 0 ? (countdown / (mapId === "1" ? 10 : mapId === "2" ? 15 : 17)) * 100 : 0;
+  const meta     = MAP_META[mapId] ?? MAP_META["1"];
+  const maxSecs  = mapId === "1" ? 10 : mapId === "2" ? 15 : 17;
+  const pct      = Math.max(0, (countdown / maxSecs) * 100);
 
   return (
-    <div className="absolute inset-0 z-40 overflow-hidden flex flex-col">
-      {/* ── Map background image ── */}
+    <div
+      className="absolute inset-0 z-40 flex flex-col overflow-hidden"
+      style={{ background: "#05080f" }}
+    >
+      {/* ── Full-bleed map image — bright, clearly visible ── */}
       <img
         src={meta.bg}
         alt={meta.name}
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity: 0.45 }}
+        style={{ opacity: 0.9 }}
         draggable={false}
       />
 
-      {/* ── Dark gradient scrim ── */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(3,7,16,0.7) 0%, rgba(3,7,16,0.4) 40%, rgba(3,7,16,0.55) 70%, rgba(3,7,16,0.9) 100%)",
-          backdropFilter: "blur(1px)",
-        }}
-      />
+      {/* ── Single solid dark overlay — just enough contrast for text ── */}
+      <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
 
-      {/* ── Content ── */}
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-between py-5 px-4">
+      {/* ══════════════════════════════════════════════════════════════════
+          Content — 3-row layout: header / fighters / footer
+      ══════════════════════════════════════════════════════════════════ */}
+      <div className="relative z-10 flex h-full flex-col">
 
-        {/* ── Top: map name + mode badge ── */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div
-            className="font-tech text-[9px] uppercase tracking-[0.4em] px-3 py-1 rounded-full border"
-            style={{ color: meta.accentColor, borderColor: `${meta.accentColor}50`, background: `${meta.accentColor}15` }}
-          >
-            ⚡ Arena Mode · Ranked
+        {/* ── ROW 1: header strip ─────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-6 py-3 shrink-0"
+          style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${meta.accentColor}` }}
+        >
+          <div className="flex items-center gap-3">
+            <span
+              className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold"
+              style={{ color: meta.accentColor }}
+            >
+              ⚡ Arena · Ranked
+            </span>
           </div>
-          <div className="font-display text-xl font-black tracking-wider text-white drop-shadow-lg" style={{ textShadow: `0 0 30px ${meta.accentColor}80` }}>
+          <div className="font-display text-base font-black text-white tracking-widest uppercase">
             {meta.name}
+          </div>
+          <div
+            className="font-tech text-[10px] uppercase tracking-widest font-bold"
+            style={{ color: meta.accentColor }}
+          >
+            Match Starting
           </div>
         </div>
 
-        {/* ── Middle: agents VS ── */}
-        <div className="flex items-end justify-center gap-4 sm:gap-10 w-full max-w-2xl">
+        {/* ── ROW 2: fighters — takes all remaining space ─────────────── */}
+        <div className="flex flex-1 min-h-0 items-stretch">
 
-          {/* Left agent */}
-          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
-            <div
-              className="relative rounded-2xl overflow-hidden border-2"
-              style={{ borderColor: `${meta.accentColor}60`, boxShadow: `0 0 40px ${meta.accentColor}40` }}
-            >
-              <img
-                src="/Warzone/Character1-A.png"
-                alt="Fighter A"
-                className="w-full object-cover"
-                style={{ height: 180 }}
-                draggable={false}
-              />
-              {/* Name bar */}
-              <div
-                className="absolute inset-x-0 bottom-0 px-3 py-2"
-                style={{ background: `linear-gradient(to top, ${meta.accentColor}cc 0%, transparent 100%)` }}
-              >
-                <div className="font-display text-sm font-black text-white truncate leading-tight">
-                  {myAgentName || "Agent A"}
-                </div>
+          {/* Left fighter panel */}
+          <div
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: `linear-gradient(to right, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
+          >
+            {/* Agent name above */}
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {myAgentName || "Agent A"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
+                <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
             </div>
-            {/* Loadout */}
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur">
-              <img src="/Warzone/Uzi.png" alt="Uzi" className="h-5 object-contain" draggable={false} />
-              <span className="font-tech text-[10px] text-white/60 uppercase tracking-wider">Uzi</span>
-            </div>
+            {/* Character */}
+            <img
+              src="/Warzone/Character1-A.png"
+              alt="Fighter A"
+              className="object-contain object-bottom drop-shadow-2xl"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
           </div>
 
-          {/* VS centre */}
-          <div className="flex flex-col items-center gap-1 shrink-0 pb-8">
+          {/* Centre VS column */}
+          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-full border-2 font-display text-2xl font-black text-white"
+              className="font-display text-5xl font-black"
               style={{
-                borderColor: meta.accentColor,
-                background: `radial-gradient(circle, ${meta.accentColor}30 0%, transparent 70%)`,
-                boxShadow: `0 0 32px ${meta.accentColor}60`,
-                textShadow: `0 0 16px ${meta.accentColor}`,
+                color: "#fff",
+                textShadow: `0 0 40px ${meta.accentColor}, 0 0 80px ${meta.accentColor}80`,
+                WebkitTextStroke: `2px ${meta.accentColor}`,
               }}
             >
               VS
             </div>
+            {/* Countdown ring */}
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
+              style={{
+                border: `3px solid ${meta.accentColor}`,
+                color: meta.accentColor,
+                background: "rgba(5,8,15,0.9)",
+                boxShadow: `0 0 30px ${meta.accentColor}80, inset 0 0 20px ${meta.accentColor}20`,
+              }}
+            >
+              {countdown}
+            </div>
           </div>
 
-          {/* Right agent */}
-          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
-            <div
-              className="relative rounded-2xl overflow-hidden border-2"
-              style={{ borderColor: "#8b6dff60", boxShadow: "0 0 40px #8b6dff40" }}
-            >
-              <img
-                src="/Warzone/Character1-B.png"
-                alt="Fighter B"
-                className="w-full object-cover -scale-x-100"
-                style={{ height: 180 }}
-                draggable={false}
-              />
-              {/* Name bar */}
-              <div
-                className="absolute inset-x-0 bottom-0 px-3 py-2"
-                style={{ background: "linear-gradient(to top, #8b6dffcc 0%, transparent 100%)" }}
-              >
-                <div className="font-display text-sm font-black text-white truncate leading-tight">
-                  {opponentName || "Agent B"}
-                </div>
+          {/* Right fighter panel */}
+          <div
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: `linear-gradient(to left, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
+          >
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {opponentName || "Agent B"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg -scale-x-100" draggable={false} />
+                <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
             </div>
-            {/* Loadout */}
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur">
-              <img src="/Warzone/Uzi.png" alt="Uzi" className="h-5 object-contain -scale-x-100" draggable={false} />
-              <span className="font-tech text-[10px] text-white/60 uppercase tracking-wider">Uzi</span>
-            </div>
+            <img
+              src="/Warzone/Character1-B.png"
+              alt="Fighter B"
+              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
           </div>
 
         </div>
 
-        {/* ── Bottom section ── */}
-        <div className="flex flex-col items-center gap-3 w-full max-w-md">
+        {/* ── ROW 3: footer — rules + sync bar ────────────────────────── */}
+        <div
+          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
+          style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {/* Rules */}
+          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
+            ⏱ <span className="text-white font-bold">90 second</span> match ·
+            Kill the opponent to win early ·
+            Your agent can <span className="font-bold" style={{ color: meta.accentColor }}>shoot</span>,{" "}
+            <span className="font-bold" style={{ color: meta.accentColor }}>jump</span> &amp;{" "}
+            <span className="font-bold" style={{ color: meta.accentColor }}>hide</span> based on trained behaviour ·
+            Winner earns <span className="text-white font-bold">ARENA rewards</span>
+          </p>
 
-          {/* Game rules */}
-          <div
-            className="w-full rounded-2xl border border-white/10 bg-black/50 px-5 py-3 backdrop-blur text-center"
-            style={{ boxShadow: "0 4px 40px rgba(0,0,0,0.6)" }}
-          >
-            <div className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/35 mb-2">
-              Battle Rules
-            </div>
-            <p className="font-mono text-[10px] leading-relaxed text-white/60">
-              ⏱ 90 second match · Kill the opponent to win early.{" "}
-              Your agent can <span className="text-white/80">shoot</span>,{" "}
-              <span className="text-white/80">jump</span> and{" "}
-              <span className="text-white/80">hide</span> based on its trained behaviour.{" "}
-              Fight until one agent falls — the winner earns ARENA rewards.
-            </p>
-          </div>
-
-          {/* 0G sync + countdown */}
-          <div className="flex flex-col items-center gap-2 w-full">
-            {/* Countdown ring */}
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-full border-2 font-display text-xl font-black"
-              style={{ borderColor: meta.accentColor, color: meta.accentColor, boxShadow: `0 0 20px ${meta.accentColor}50` }}
-            >
-              {countdown}
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-0.5 w-full max-w-xs rounded-full bg-white/10 overflow-hidden">
+          {/* Progress bar */}
+          <div className="w-full max-w-sm">
+            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
               <div
                 className="h-full rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${pct}%`, background: `linear-gradient(to right, ${meta.accentColor}, #8b6dff)` }}
               />
             </div>
-
-            {/* Syncing text */}
-            <div className="flex items-center gap-1.5">
-              <span className="inline-block h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: meta.accentColor }} />
-              <span className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/35">
-                Syncing with 0G Network…
-              </span>
-            </div>
           </div>
 
+          {/* Sync text */}
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-block h-2 w-2 rounded-full animate-pulse"
+              style={{ background: meta.accentColor }}
+            />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
+              Syncing with 0G Network...
+            </span>
+          </div>
         </div>
+
       </div>
     </div>
   );
