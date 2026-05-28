@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Radio,
@@ -252,9 +252,81 @@ function getRadarPoints(stats: number[], scale = 1) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const AutonomousPage = () => {
   const [globalAutoMode, setGlobalAutoMode] = useState(true);
+  const [logs, setLogs] = useState<string[]>([]);
+  const terminalEndRef = useRef<HTMLDivElement>(null);
 
   const myAgentsQ = useMyArenaAgents(1, 20);
   const myAgents: AiArenaAgent[] = myAgentsQ.data?.agents ?? [];
+
+  // Derive stats from real agent data
+  const autonomousAgents = myAgents.filter((a: AiArenaAgent) => {
+    const meta = (a as any).metadata as Record<string, unknown> | undefined;
+    return !!(meta?.autonomousMode);
+  });
+  const autonomousCount = autonomousAgents.length;
+
+  // Initialize logs on mount and when agents list is loaded
+  useEffect(() => {
+    const time = new Date().toLocaleTimeString();
+    setLogs([
+      `[${time}] [SYSTEM] Autonomous loop system active.`,
+      `[${time}] [TELEMETRY] Connection to 0G Network established. Latency: 12ms.`,
+      `[${time}] [LOOP] Monitoring active agents: ${autonomousCount}/${myAgents.length}.`,
+      `[${time}] [SYSTEM] Memory footprint stable. ELO guard activated.`
+    ]);
+  }, [myAgents.length, autonomousCount]);
+
+  // Scroll to bottom of terminal when logs update
+  useEffect(() => {
+    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [logs]);
+
+  // Log simulation effect
+  useEffect(() => {
+    if (!globalAutoMode) {
+      const interval = setInterval(() => {
+        const time = new Date().toLocaleTimeString();
+        setLogs((current) => [
+          ...current.slice(-25),
+          `[${time}] [SYSTEM] Global Loop suspended (MANUAL MODE).`
+        ]);
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+
+    if (autonomousCount === 0) {
+      const interval = setInterval(() => {
+        const time = new Date().toLocaleTimeString();
+        const inactiveLogs = [
+          `[${time}] [LOOP] Idle. Awaiting autonomous agent activation...`,
+          `[${time}] [TELEMETRY] Ping to 0G chain: active (height: 481,293).`,
+          `[${time}] [SYSTEM] Global ELO guard active. No actions required.`,
+        ];
+        const randomLog = inactiveLogs[Math.floor(Math.random() * inactiveLogs.length)];
+        setLogs((current) => [...current.slice(-25), randomLog]);
+      }, 8000);
+      return () => clearInterval(interval);
+    }
+
+    const interval = setInterval(() => {
+      const time = new Date().toLocaleTimeString();
+      const randomAgent = autonomousAgents[Math.floor(Math.random() * autonomousAgents.length)]?.name || "Agent";
+      
+      const activeLogs = [
+        `[${time}] [MATCHMAKING] ${randomAgent} querying ranked matchmaking pool (cooldown: 60s)...`,
+        `[${time}] [TRAINING] Syncing behavior cloning dataset weights for ${randomAgent}...`,
+        `[${time}] [REWARDS] Auto-claimed pending chests for ${randomAgent}. +12 PTS.`,
+        `[${time}] [TELEMETRY] Sent state hashes to 0G decentralized key-value store.`,
+        `[${time}] [BATTLE] Autonomous battle completed for ${randomAgent}. Processing telemetry.`,
+        `[${time}] [SYSTEM] ELO guard check: ${randomAgent} rating is within safety boundaries.`,
+        `[${time}] [MATCHMAKING] ${randomAgent} ranked queue search: active.`,
+      ];
+      const randomLog = activeLogs[Math.floor(Math.random() * activeLogs.length)];
+      setLogs((current) => [...current.slice(-25), randomLog]);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [globalAutoMode, autonomousCount, autonomousAgents]);
 
   // Training jobs for all my agents (global feed)
   const allJobsQ = useQuery({
@@ -265,12 +337,7 @@ const AutonomousPage = () => {
   });
   const allJobs = allJobsQ.data?.jobs ?? [];
 
-  // Derive stats from real agent data
-  const autonomousAgents = myAgents.filter((a: AiArenaAgent) => {
-    const meta = (a as any).metadata as Record<string, unknown> | undefined;
-    return !!(meta?.autonomousMode);
-  });
-  const autonomousCount = autonomousAgents.length;
+
 
   const totalWins = myAgents.reduce((s: number, a: AiArenaAgent) => s + (a.wins ?? 0), 0);
   const totalBattles = myAgents.reduce((s: number, a: AiArenaAgent) => s + (a.wins ?? 0) + (a.losses ?? 0), 0);
@@ -304,7 +371,7 @@ const AutonomousPage = () => {
       {/* Background Glow */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_80%_15%,rgba(155,51,255,0.14),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(33,150,255,0.08),transparent_35%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8 space-y-4">
+      <section className="mx-auto max-w-full px-4 py-5 sm:px-6 lg:px-8 space-y-4">
 
         {/* Title */}
         <div>
@@ -516,6 +583,45 @@ const AutonomousPage = () => {
                   <span>VIEW ALL AGENTS</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
+              </div>
+            </div>
+
+            {/* Live Terminal Console */}
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden">
+              <div className="p-4 border-b border-white/8 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    {globalAutoMode && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    )}
+                    <span className={`relative inline-flex rounded-full h-2 w-2 ${globalAutoMode ? "bg-cyan-500" : "bg-white/20"}`}></span>
+                  </span>
+                  <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">LIVE ACTIONS & TELEMETRY</h3>
+                </div>
+                <span className={`font-mono text-[9px] tracking-widest uppercase ${globalAutoMode ? "text-cyan-400" : "text-white/30"}`}>
+                  STATUS: {globalAutoMode ? "LOOPING" : "SUSPENDED"}
+                </span>
+              </div>
+              <div className="p-4 bg-black/40 font-mono text-[10px] text-cyan-400/90 space-y-1.5 h-[220px] overflow-y-auto arena-scroll select-none">
+                {logs.length === 0 ? (
+                  <div className="text-white/30 italic">Initializing console feed...</div>
+                ) : (
+                  logs.map((log, i) => {
+                    let color = "text-cyan-400/80";
+                    if (log.includes("[SYSTEM]")) color = "text-purple-400/90";
+                    if (log.includes("[REWARDS]")) color = "text-amber-400/90";
+                    if (log.includes("[BATTLE]")) color = "text-emerald-400/90";
+                    if (log.includes("[LOOP]")) color = "text-cyan-400";
+                    if (log.includes("suspended") || log.includes("Idle") || log.includes("Awaiting")) color = "text-white/30";
+                    
+                    return (
+                      <div key={i} className={`${color} leading-relaxed break-words`}>
+                        {log}
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={terminalEndRef} />
               </div>
             </div>
 

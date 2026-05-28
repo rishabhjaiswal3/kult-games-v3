@@ -577,7 +577,7 @@ const TrainingPage = () => {
           </div>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 self-start xl:sticky xl:top-24">
           <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Job inspector</h3>

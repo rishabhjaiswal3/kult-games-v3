@@ -31,7 +31,7 @@ function PodiumCard({
   const styles =
     slot === "first"
       ? {
-          height: "h-[230px]",
+          height: "h-[260px]",
           border: "border-[#ffc000]/30 shadow-[0_0_20px_rgba(255,192,0,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]",
           rankBg: "bg-[#1c190f] border-[#ffc000]/40 text-[#ffc000]",
           avatarBorder: "border-2 border-[#ffc000] shadow-[0_0_15px_rgba(255,192,0,0.25)]",
@@ -42,7 +42,7 @@ function PodiumCard({
         }
       : slot === "second"
         ? {
-            height: "h-[210px]",
+            height: "h-[240px]",
             border: "border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
             rankBg: "bg-[#0a1526] border-blue-500/30 text-blue-400",
             avatarBorder: "border-2 border-blue-500/40",
@@ -52,7 +52,7 @@ function PodiumCard({
             glowColor: "#3b82f6",
           }
         : {
-            height: "h-[210px]",
+            height: "h-[240px]",
             border: "border-orange-900/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
             rankBg: "bg-[#1d140e] border-amber-600/30 text-amber-500",
             avatarBorder: "border-2 border-amber-600/40",

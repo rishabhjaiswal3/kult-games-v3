@@ -163,7 +163,7 @@ export default AIArenaPage;
 
 function AIArenaPageContent() {
   return (
-    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-[1284px]">
+    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
       <FeaturesBlock />
@@ -524,7 +524,7 @@ function Hero() {
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative max-w-7xl mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
+      <div className="relative mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
         <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
           <span className="flex items-center gap-1.5">
             Presented by <KultLogo className="h-3.5 w-auto" />
@@ -560,7 +560,7 @@ function StatsBar() {
     { icon: Sparkles, label: "ACTIVE USERS", value: "12,450", c: "var(--lime)" },
   ];
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
+    <section className="mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
       <div className="card-glass rounded-xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div className="flex items-center justify-center md:justify-start gap-3 border-b md:border-b-0 md:border-r border-border/50 pb-4 md:pb-0 md:pr-4 sm:col-span-2 md:col-span-1">
           <div className="w-10 h-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center p-2">
@@ -624,7 +624,7 @@ function FeaturesBlock() {
     },
   ];
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20 text-center lg:text-left">
+    <section className="mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20 text-center lg:text-left">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] gap-5 sm:gap-6">
         <div>
           <span className="text-[10px] tracking-[0.24em] sm:tracking-[0.3em] font-tech text-accent">
@@ -734,7 +734,7 @@ function HowItWorks() {
     { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
   ];
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="flex items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
         <h3 className="font-display text-2xl sm:text-3xl text-center">HOW IT WORKS</h3>
@@ -783,7 +783,7 @@ function HowItWorks() {
 
 function RankProgressionTimeline() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-20">
       {/* Header */}
       <div className="text-center mb-10 sm:mb-14">
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
@@ -952,7 +952,7 @@ function TopAgents() {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 text-center sm:text-left">
         <h3 className="font-display text-2xl sm:text-3xl">TOP AI AGENTS</h3>
         <div className="flex items-center justify-between sm:justify-end gap-4">
@@ -1056,7 +1056,7 @@ function LiveBattles() {
   const previewItems = battleBoardQ.items.slice(0, 3);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 text-center sm:text-left">
         <h3 className="font-display text-2xl sm:text-3xl">LIVE BATTLES</h3>
         <Link to="/battles" className="text-sm text-accent hover:underline">
@@ -1088,7 +1088,7 @@ function LiveBattles() {
 function PartnersBlock() {
   const partners = ["0G", "Base", "Solana"];
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+    <section className="mx-auto px-4 sm:px-6 py-10 sm:py-12">
       <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30" />
         <div className="relative grid md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 sm:gap-6">
