@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Copy, Database, Loader2, Shield, Swords, TrendingUp,
-  Zap, Brain, Activity, ExternalLink, Trophy, Clock,
+  Zap, Brain, Activity, ExternalLink, Trophy, Clock, MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -135,6 +135,14 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
   const leaderboardQ = useQuery({
     queryKey: ["arena-leaderboard-rank", agent?.id],
     queryFn: () => aiArenaGatewayApi.getLeaderboardRankForAgent(agent!.id),
+    enabled: open && !!agent?.id,
+    staleTime: 60_000,
+  });
+
+  // Battle memories (0G Storage archives)
+  const memoriesQ = useQuery({
+    queryKey: ["arena-agent-memories", agent?.id],
+    queryFn: () => aiArenaGatewayApi.getAgentMemories(agent!.id, 1, 10),
     enabled: open && !!agent?.id,
     staleTime: 60_000,
   });
@@ -349,6 +357,79 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
               </div>
             </section>
           )}
+
+          {/* ── Battle Memories (0G Storage) ────────────────────────── */}
+          <section className="rounded-xl border border-[#00d4ff]/20 bg-[#00d4ff]/5 p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-3.5 w-3.5 text-[#00d4ff]" />
+                <h4 className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#00d4ff]">
+                  Battle Memories
+                </h4>
+                {memoriesQ.data?.total != null && (
+                  <span className="rounded-full border border-[#00d4ff]/25 bg-[#00d4ff]/10 px-1.5 py-0.5 font-mono text-[8px] text-[#00d4ff]/70">
+                    {memoriesQ.data.total}
+                  </span>
+                )}
+              </div>
+              {memoriesQ.isFetching && <Loader2 className="h-3 w-3 animate-spin text-white/25" />}
+            </div>
+
+            {memoriesQ.isLoading ? (
+              <div className="text-[11px] text-white/30">Loading memories…</div>
+            ) : (memoriesQ.data?.memories ?? []).length === 0 ? (
+              <div className="space-y-1">
+                <div className="text-[11px] text-white/30">No battle memories yet.</div>
+                <div className="text-[10px] text-white/20">
+                  Complete a match to generate AI commentary and store it permanently on 0G Storage.
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {(memoriesQ.data?.memories ?? []).map((mem) => {
+                  const isWin  = mem.metadata?.outcome === "WIN";
+                  const isLoss = mem.metadata?.outcome === "LOSS";
+                  const bid    = mem.metadata?.battleId as string | undefined;
+                  return (
+                    <div
+                      key={mem.id}
+                      className="rounded-lg border border-white/5 bg-[#04080f]/60 p-3 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`font-tech text-[8px] font-bold uppercase tracking-wider ${
+                            isWin ? "text-emerald-400" : isLoss ? "text-rose-400" : "text-white/40"
+                          }`}
+                        >
+                          {isWin ? "✓ WIN" : isLoss ? "✗ LOSS" : mem.metadata?.outcome ?? mem.type}
+                        </span>
+                        <span className="font-mono text-[8px] text-white/20">
+                          {new Date(mem.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="font-mono text-[10px] italic leading-relaxed text-white/55">
+                        "{mem.content.length > 180 ? `${mem.content.slice(0, 180)}…` : mem.content}"
+                      </p>
+                      {bid && (
+                        <div className="flex items-center gap-1 text-[8px] text-white/20">
+                          <span>Battle:</span>
+                          <span className="font-mono">{bid.slice(0, 8)}…{bid.slice(-4)}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {(memoriesQ.data?.total ?? 0) > 10 && (
+                  <p className="text-right font-mono text-[9px] text-white/25">
+                    Showing 10 of {memoriesQ.data?.total} memories · stored on 0G Storage
+                  </p>
+                )}
+              </div>
+            )}
+            <p className="mt-2 text-[9px] text-white/20">
+              AI-generated commentary archived permanently on 0G decentralised storage.
+            </p>
+          </section>
 
           {/* ── Wallet ───────────────────────────────────────────────── */}
           {walletQ.data?.wallet && (
