@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Radio, Search, Swords, UserMinus } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AI_ARENA_DEFAULT_GAME_ID } from "@/constants/aiArenaMatchmaking";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -104,6 +104,11 @@ export function ArenaMatchStatusModal({
 }: ArenaMatchStatusModalProps) {
   const agentId = agent?.id ?? null;
 
+  // Capture gameId the moment it appears in status or battle — survives queue-clear polling resets.
+  const resolvedGameIdRef = useRef<string>("default");
+  // Guard: fire onMatchFound only once per battleId to prevent double-navigation.
+  const matchFiredRef = useRef<string | null>(null);
+
   const statusQ = useQuery({
     queryKey: ["aiArenaGateway", "matchStatusModal", agentId],
     queryFn: () => aiArenaGatewayApi.getMatchmakingStatus(agentId!),
@@ -148,16 +153,27 @@ export function ArenaMatchStatusModal({
     retry: 1,
   });
 
+  // Latch gameId as soon as it arrives — don't lose it when polling resets status.
+  useEffect(() => {
+    if (status?.gameId) resolvedGameIdRef.current = status.gameId;
+  }, [status?.gameId]);
+  useEffect(() => {
+    if (battleQ.data?.battle?.gameId) resolvedGameIdRef.current = battleQ.data.battle.gameId;
+  }, [battleQ.data?.battle?.gameId]);
+
+  // Fire once per battleId — prevent double-navigation when status/battle re-poll after queue clears.
   useEffect(() => {
     if (!open || !agent || !battleId || !opponentQ.data) return;
+    if (matchFiredRef.current === battleId) return;
+    matchFiredRef.current = battleId;
     onMatchFound?.({
       agent,
       opponent: opponentQ.data,
       battleId,
-      mode:   status?.mode   ?? battleQ.data?.battle?.mode   ?? "RANKED",
-      gameId: status?.gameId ?? battleQ.data?.battle?.gameId ?? "default",
+      mode:   status?.mode ?? battleQ.data?.battle?.mode ?? "RANKED",
+      gameId: resolvedGameIdRef.current,
     });
-  }, [open, agent, battleId, opponentQ.data, onMatchFound, status?.mode, status?.gameId, battleQ.data?.battle?.mode, battleQ.data?.battle?.gameId]);
+  }, [open, agent, battleId, opponentQ.data, onMatchFound]);
 
   if (!agent) return null;
 
