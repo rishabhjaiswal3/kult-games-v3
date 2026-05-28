@@ -157,7 +157,7 @@ export function ArenaMatchStatusModal({
       mode:   status?.mode   ?? battleQ.data?.battle?.mode   ?? "RANKED",
       gameId: status?.gameId ?? battleQ.data?.battle?.gameId ?? "default",
     });
-  }, [open, agent, battleId, opponentQ.data, onMatchFound, status?.mode, battleQ.data?.battle?.mode]);
+  }, [open, agent, battleId, opponentQ.data, onMatchFound, status?.mode, status?.gameId, battleQ.data?.battle?.mode, battleQ.data?.battle?.gameId]);
 
   if (!agent) return null;
 
