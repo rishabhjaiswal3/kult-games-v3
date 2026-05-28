@@ -99,7 +99,7 @@ const Dashboard = () => {
           ) : null}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 self-start xl:sticky xl:top-24">
           {profile ? <DashboardAccountPanel profile={profile} /> : null}
           <BalancePanel agent={selectedAgent} />
           <AutonomousPanel />

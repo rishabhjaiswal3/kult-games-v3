@@ -16,7 +16,7 @@ export function ArenaPageLayout({ children, contentClassName }: ArenaPageLayoutP
       <section
         className={cn(
           "mx-auto w-full space-y-4 px-4 py-5 sm:px-6 lg:px-8",
-          contentClassName ?? "max-w-[1284px]"
+          contentClassName ?? "max-w-full"
         )}
       >
         {children}

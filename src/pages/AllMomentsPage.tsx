@@ -167,7 +167,7 @@ export function AllMomentsPage() {
     <div className="min-h-full bg-transparent text-foreground">
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-6 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
