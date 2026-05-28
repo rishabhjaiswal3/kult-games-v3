@@ -231,6 +231,200 @@ function AgentLoadingCard({
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Pre-match overlay
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MAP_META: Record<string, { bg: string; name: string; accentColor: string }> = {
+  "1": { bg: "/Warzone/Desert_Storm.png",      name: "Desert Storm",      accentColor: "#f59e0b" },
+  "2": { bg: "/Warzone/Research_Facility.png", name: "Research Facility", accentColor: "#06b6d4" },
+  "3": { bg: "/Warzone/Mystical_Forest.png",   name: "Mystical Forest",   accentColor: "#10b981" },
+};
+
+function PreMatchOverlay({
+  mapId,
+  myAgentName,
+  opponentName,
+  countdown,
+}: {
+  mapId: string;
+  myAgentName: string;
+  opponentName: string;
+  countdown: number;
+}) {
+  const meta = MAP_META[mapId] ?? MAP_META["1"];
+  const pct  = countdown > 0 ? (countdown / (mapId === "1" ? 10 : mapId === "2" ? 15 : 17)) * 100 : 0;
+
+  return (
+    <div className="absolute inset-0 z-40 overflow-hidden flex flex-col">
+      {/* ── Map background image ── */}
+      <img
+        src={meta.bg}
+        alt={meta.name}
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0.45 }}
+        draggable={false}
+      />
+
+      {/* ── Dark gradient scrim ── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(3,7,16,0.7) 0%, rgba(3,7,16,0.4) 40%, rgba(3,7,16,0.55) 70%, rgba(3,7,16,0.9) 100%)",
+          backdropFilter: "blur(1px)",
+        }}
+      />
+
+      {/* ── Content ── */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-between py-5 px-4">
+
+        {/* ── Top: map name + mode badge ── */}
+        <div className="flex flex-col items-center gap-1.5">
+          <div
+            className="font-tech text-[9px] uppercase tracking-[0.4em] px-3 py-1 rounded-full border"
+            style={{ color: meta.accentColor, borderColor: `${meta.accentColor}50`, background: `${meta.accentColor}15` }}
+          >
+            ⚡ Arena Mode · Ranked
+          </div>
+          <div className="font-display text-xl font-black tracking-wider text-white drop-shadow-lg" style={{ textShadow: `0 0 30px ${meta.accentColor}80` }}>
+            {meta.name}
+          </div>
+        </div>
+
+        {/* ── Middle: agents VS ── */}
+        <div className="flex items-end justify-center gap-4 sm:gap-10 w-full max-w-2xl">
+
+          {/* Left agent */}
+          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+            <div
+              className="relative rounded-2xl overflow-hidden border-2"
+              style={{ borderColor: `${meta.accentColor}60`, boxShadow: `0 0 40px ${meta.accentColor}40` }}
+            >
+              <img
+                src="/Warzone/Character1-A.png"
+                alt="Fighter A"
+                className="w-full object-cover"
+                style={{ height: 180 }}
+                draggable={false}
+              />
+              {/* Name bar */}
+              <div
+                className="absolute inset-x-0 bottom-0 px-3 py-2"
+                style={{ background: `linear-gradient(to top, ${meta.accentColor}cc 0%, transparent 100%)` }}
+              >
+                <div className="font-display text-sm font-black text-white truncate leading-tight">
+                  {myAgentName || "Agent A"}
+                </div>
+              </div>
+            </div>
+            {/* Loadout */}
+            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur">
+              <img src="/Warzone/Uzi.png" alt="Uzi" className="h-5 object-contain" draggable={false} />
+              <span className="font-tech text-[10px] text-white/60 uppercase tracking-wider">Uzi</span>
+            </div>
+          </div>
+
+          {/* VS centre */}
+          <div className="flex flex-col items-center gap-1 shrink-0 pb-8">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full border-2 font-display text-2xl font-black text-white"
+              style={{
+                borderColor: meta.accentColor,
+                background: `radial-gradient(circle, ${meta.accentColor}30 0%, transparent 70%)`,
+                boxShadow: `0 0 32px ${meta.accentColor}60`,
+                textShadow: `0 0 16px ${meta.accentColor}`,
+              }}
+            >
+              VS
+            </div>
+          </div>
+
+          {/* Right agent */}
+          <div className="flex flex-col items-center gap-2 flex-1 max-w-[180px]">
+            <div
+              className="relative rounded-2xl overflow-hidden border-2"
+              style={{ borderColor: "#8b6dff60", boxShadow: "0 0 40px #8b6dff40" }}
+            >
+              <img
+                src="/Warzone/Character1-B.png"
+                alt="Fighter B"
+                className="w-full object-cover -scale-x-100"
+                style={{ height: 180 }}
+                draggable={false}
+              />
+              {/* Name bar */}
+              <div
+                className="absolute inset-x-0 bottom-0 px-3 py-2"
+                style={{ background: "linear-gradient(to top, #8b6dffcc 0%, transparent 100%)" }}
+              >
+                <div className="font-display text-sm font-black text-white truncate leading-tight">
+                  {opponentName || "Agent B"}
+                </div>
+              </div>
+            </div>
+            {/* Loadout */}
+            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur">
+              <img src="/Warzone/Uzi.png" alt="Uzi" className="h-5 object-contain -scale-x-100" draggable={false} />
+              <span className="font-tech text-[10px] text-white/60 uppercase tracking-wider">Uzi</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Bottom section ── */}
+        <div className="flex flex-col items-center gap-3 w-full max-w-md">
+
+          {/* Game rules */}
+          <div
+            className="w-full rounded-2xl border border-white/10 bg-black/50 px-5 py-3 backdrop-blur text-center"
+            style={{ boxShadow: "0 4px 40px rgba(0,0,0,0.6)" }}
+          >
+            <div className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/35 mb-2">
+              Battle Rules
+            </div>
+            <p className="font-mono text-[10px] leading-relaxed text-white/60">
+              ⏱ 90 second match · Kill the opponent to win early.{" "}
+              Your agent can <span className="text-white/80">shoot</span>,{" "}
+              <span className="text-white/80">jump</span> and{" "}
+              <span className="text-white/80">hide</span> based on its trained behaviour.{" "}
+              Fight until one agent falls — the winner earns ARENA rewards.
+            </p>
+          </div>
+
+          {/* 0G sync + countdown */}
+          <div className="flex flex-col items-center gap-2 w-full">
+            {/* Countdown ring */}
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-full border-2 font-display text-xl font-black"
+              style={{ borderColor: meta.accentColor, color: meta.accentColor, boxShadow: `0 0 20px ${meta.accentColor}50` }}
+            >
+              {countdown}
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-0.5 w-full max-w-xs rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${meta.accentColor}, #8b6dff)` }}
+              />
+            </div>
+
+            {/* Syncing text */}
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: meta.accentColor }} />
+              <span className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/35">
+                Syncing with 0G Network…
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Full-screen Unity loading overlay — video background, agent cards, progress bar */
 function UnityLoadingScreen({
   progress,
@@ -1064,6 +1258,14 @@ export default function ArenaGamePage() {
   // 0G Storage root hashes from memory-service
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
+  // Pre-match overlay — shown when Unity fires arenaMultiplayerStart
+  const [preMatchData, setPreMatchData] = useState<{
+    mapId: string;
+    myAgentName: string;
+    opponentName: string;
+  } | null>(null);
+  const [preMatchCountdown, setPreMatchCountdown] = useState(0);
+
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const unityInstanceRef = useRef<any>(null);
@@ -1468,6 +1670,42 @@ export default function ArenaGamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Pre-match overlay: listen for Unity's arenaMultiplayerStart event ─────
+  useEffect(() => {
+    const MAP_DURATIONS: Record<string, number> = { "1": 10, "2": 15, "3": 17 };
+
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        mapId?: string;
+        myAgentName?: string;
+        opponentName?: string;
+      };
+      const mapId = (detail?.mapId ?? "1").charAt(0);
+      const duration = MAP_DURATIONS[mapId] ?? 10;
+      setPreMatchData({
+        mapId,
+        myAgentName: detail?.myAgentName ?? "",
+        opponentName: detail?.opponentName ?? "",
+      });
+      setPreMatchCountdown(duration);
+    };
+
+    window.addEventListener("arenaMultiplayerStart", handler);
+    return () => window.removeEventListener("arenaMultiplayerStart", handler);
+  }, []);
+
+  // Countdown tick — each second, decrement; at 0, hide the overlay
+  useEffect(() => {
+    if (preMatchCountdown <= 0 || !preMatchData) return;
+    const t = setTimeout(() => {
+      setPreMatchCountdown((c) => {
+        if (c <= 1) { setPreMatchData(null); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [preMatchCountdown, preMatchData]);
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   const addSystem = useCallback((text: string) => {
@@ -1669,6 +1907,17 @@ export default function ArenaGamePage() {
                   myAgent={myAgent}
                   opponent={opponent}
                   mode={mode}
+                />
+              )}
+
+              {/* Pre-match overlay — covers canvas while AI agents walk to centre.
+                  Game is NOT paused; this is purely a cosmetic React layer. */}
+              {preMatchData && unityLoaded && (
+                <PreMatchOverlay
+                  mapId={preMatchData.mapId}
+                  myAgentName={preMatchData.myAgentName}
+                  opponentName={preMatchData.opponentName}
+                  countdown={preMatchCountdown}
                 />
               )}
 
