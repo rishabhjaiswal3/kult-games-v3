@@ -86,6 +86,7 @@ export function ArenaStartMatchmakingModal({
         paymentTxHash: mode === "WAGER" && paymentTxHash.trim() ? paymentTxHash.trim() : undefined,
       });
       toast.success("Your agent is listed — waiting for a challenger.");
+      try { sessionStorage.setItem("arena_queued_game_id", gameId); } catch { /* ignore */ }
       await onQueued?.(agentId, gameId);
       onOpenChange(false);
     } catch (err) {
