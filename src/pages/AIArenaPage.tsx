@@ -386,8 +386,13 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
       const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
 
-      // Use the gameId the user explicitly selected when they started matchmaking.
-      const gameId = selectedGameIdRef.current || payload.gameId || "default";
+      // Priority: ref (current session) → sessionStorage (survives refresh) → payload → default
+      let gameId = selectedGameIdRef.current;
+      if (!gameId || gameId === "default") {
+        try { gameId = sessionStorage.getItem("arena_queued_game_id") || "default"; } catch { gameId = "default"; }
+      }
+      if (!gameId || gameId === "default") gameId = payload.gameId || "default";
+
       if (gameId === "robowar") {
         navigate(`/arena/robowar/${payload.battleId}?${base}`);
       } else {
