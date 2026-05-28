@@ -440,7 +440,77 @@ export interface AiArenaBattleSocketMessage {
   [key: string]: unknown;
 }
 
+// ── Battle Commentary (POST /v1/inference/battle-commentary) ─────────────────
+
+export interface AiArenaBattleCommentaryRequest {
+  battleId:        string;
+  winnerName:      string;
+  winnerArchetype: string;
+  winnerClan:      string;
+  winnerElo:       number;
+  winnerHpPercent: number;
+  loserName:       string;
+  loserArchetype:  string;
+  loserClan:       string;
+  loserElo:        number;
+  loserHpPercent:  number;
+  durationSeconds: number;
+  endReason:       string;
+  playerStats?:    Record<string, AgentMatchStats>;
+}
+
+export interface AiArenaBattleCommentaryResponse {
+  commentary:  string;
+  teeVerified?: boolean | null;
+}
+
+// ── Agent Memory (POST /v1/memory/:agentId/memory/episode) ───────────────────
+
+export interface AiArenaMemoryEpisodeRequest {
+  battleId: string;
+  outcome:  'WIN' | 'LOSS';
+  content:  string;         // The commentary text
+}
+
+export interface AiArenaMemoryEpisodeResponse {
+  stored:            boolean;
+  memoryId?:         string;
+  snapshotRootHash?: string;  // 0G Storage root hash
+}
+
+// ── List Memories (GET /v1/memory/:agentId/memory) ────────────────────────────
+
+export interface AiArenaAgentMemory {
+  id:         string;
+  type:       string;
+  content:    string;
+  importance: number;
+  metadata:   { battleId?: string; outcome?: string; [key: string]: unknown };
+  createdAt:  string;
+}
+
+export interface AiArenaMemoriesResponse {
+  memories: AiArenaAgentMemory[];
+  total:    number;
+  page:     number;
+  limit:    number;
+}
+
 // ── End Battle (called by game client after match concludes) ──────────────────
+
+/** Per-agent action stats recorded by Unity during the match. */
+export interface AgentMatchStats {
+  /** Number of jump inputs triggered by the AI brain. */
+  jumps: number;
+  /** Frames where the shoot input was active (proxy for shooting aggression). */
+  shotsAttempted: number;
+  /** Number of times the opponent's HP decreased (bullets that connected). */
+  shotsConnected: number;
+  /** Number of times this agent's HP decreased (was hit). */
+  timesHit: number;
+  /** Total horizontal distance covered in world units (rounded to int). */
+  distanceCovered: number;
+}
 
 export interface AiArenaEndBattleRequest {
   /** Agent ID of the winner. */
@@ -453,6 +523,57 @@ export interface AiArenaEndBattleRequest {
   log?: Array<string | Record<string, unknown>>;
   /** ELO deltas keyed by agentId, computed by the game or gateway. */
   eloChange?: Record<string, number>;
+  /**
+   * Per-agent action stats keyed by agentId.
+   * Recorded by Unity during the match and forwarded here by the React client.
+   * Shape: { [agentId]: AgentMatchStats }
+   */
+  playerStats?: Record<string, AgentMatchStats>;
+}
+
+// ── Trait Evolution ───────────────────────────────────────────────────────────
+
+/**
+ * POST /v1/agents/:agentId/evolve-traits
+ * Sent by React right after endBattle using the agentId-keyed playerStats Unity recorded.
+ */
+export interface AiArenaEvolveTraitsRequest {
+  outcome:         'WIN' | 'LOSS';
+  jumps:           number;
+  shotsAttempted:  number;
+  shotsConnected:  number;
+  timesHit:        number;
+  distanceCovered: number;
+  durationSeconds: number;
+}
+
+export interface AiArenaEvolveTraitsResponse {
+  agentId: string;
+  traits:  Record<string, number>;
+  deltas:  Record<string, number>;
+}
+
+// ── Training with battle data ─────────────────────────────────────────────────
+
+/**
+ * Training data entry — one state-action pair derived from a battle.
+ * This is the JSONL format consumed by the 0G LoRA fine-tuning worker.
+ */
+export interface AiArenaTrainingDataEntry {
+  state: {
+    hp:              number;  // 0-1
+    opponentHp:      number;  // 0-1
+    distanceCovered: number;
+    durationSeconds: number;
+    battlePhase:     'early' | 'mid' | 'late';
+  };
+  action: {
+    type:       'aggressive' | 'defensive' | 'mobile' | 'balanced';
+    jumps:      number;
+    shotRate:   number;  // shots per second
+  };
+  outcome: 'WIN' | 'LOSS';
+  reward:  number;  // 1.0 = WIN, -0.5 = LOSS
 }
 
 export interface AiArenaEndBattleResponse {

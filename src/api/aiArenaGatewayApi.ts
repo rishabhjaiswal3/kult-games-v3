@@ -41,6 +41,15 @@ import type {
   AiArenaAchievementsResponse,
   AiArenaEndBattleRequest,
   AiArenaEndBattleResponse,
+  AiArenaBattleCommentaryRequest,
+  AiArenaBattleCommentaryResponse,
+  AiArenaMemoryEpisodeRequest,
+  AiArenaMemoryEpisodeResponse,
+  AiArenaMemoriesResponse,
+  AiArenaEvolveTraitsRequest,
+  AiArenaEvolveTraitsResponse,
+  AiArenaTrainingDataEntry,
+  AgentMatchStats,
 } from "@/types/aiArenaGateway";
 
 const http = () => getApiClient("aiArenaGateway");
@@ -680,6 +689,181 @@ export const aiArenaGatewayApi = {
     const { data } = await http().post<AiArenaEndBattleResponse>(
       `/v1/battles/${encodeURIComponent(battleId)}/end`,
       body
+    );
+    return data;
+  },
+
+  // ── 0G Compute Commentary ────────────────────────────────────────────────────
+
+  /**
+   * POST /v1/inference/battle-commentary
+   *
+   * Ask 0G Compute to generate a vivid commentator paragraph for a completed match.
+   * The returned text is then stored as an episode memory for both agents.
+   */
+  generateBattleCommentary: async (
+    body: AiArenaBattleCommentaryRequest
+  ): Promise<AiArenaBattleCommentaryResponse> => {
+    const { data } = await http().post<AiArenaBattleCommentaryResponse>(
+      "/v1/inference/battle-commentary",
+      body
+    );
+    return data;
+  },
+
+  // ── 0G Storage Memory ────────────────────────────────────────────────────────
+
+  /**
+   * POST /v1/memory/:agentId/memory/episode
+   *
+   * Store a battle episode memory for an agent.
+   * The memory-service persists to Postgres + Qdrant + 0G Storage automatically.
+   * Returns a snapshotRootHash from 0G Storage when available.
+   */
+  storeBattleMemory: async (
+    agentId: string,
+    body: AiArenaMemoryEpisodeRequest
+  ): Promise<AiArenaMemoryEpisodeResponse> => {
+    const { data } = await http().post<AiArenaMemoryEpisodeResponse>(
+      `/v1/memory/${encodeURIComponent(agentId)}/memory/episode`,
+      body
+    );
+    return data;
+  },
+
+  /**
+   * GET /v1/memory/:agentId/memory
+   *
+   * Retrieve paginated battle memories for an agent.
+   * Used by the dashboard to display the agent's memory archive.
+   */
+  getAgentMemories: async (
+    agentId: string,
+    page = 1,
+    limit = 20
+  ): Promise<AiArenaMemoriesResponse> => {
+    const { data } = await http().get<AiArenaMemoriesResponse>(
+      `/v1/memory/${encodeURIComponent(agentId)}/memory`,
+      { params: { page, limit } }
+    );
+    return {
+      memories: data.memories ?? [],
+      total: data.total ?? 0,
+      page: data.page ?? page,
+      limit: data.limit ?? limit,
+    };
+  },
+
+  // ── Trait Evolution ──────────────────────────────────────────────────────────
+
+  /**
+   * POST /v1/agents/:agentId/evolve-traits
+   *
+   * Apply battle-performance-based trait deltas to an agent.
+   * Called right after endBattle using the playerStats Unity recorded.
+   * The server computes deltas (aggression, precision, resilience, etc.) and
+   * persists updated traits to Postgres.
+   * Unity reads the new traits on the NEXT match load via GET /v1/agents/:id.
+   */
+  evolveAgentTraits: async (
+    agentId: string,
+    body: AiArenaEvolveTraitsRequest
+  ): Promise<AiArenaEvolveTraitsResponse> => {
+    const { data } = await http().post<AiArenaEvolveTraitsResponse>(
+      `/v1/agents/${encodeURIComponent(agentId)}/evolve-traits`,
+      body
+    );
+    return data;
+  },
+
+  // ── Training trigger ─────────────────────────────────────────────────────────
+
+  /**
+   * POST /v1/agents/:agentId/train  (with battle data as training dataset)
+   *
+   * Triggers a BEHAVIOUR_CLONING fine-tune job for the agent using the
+   * state-action pairs derived from the just-completed battle.
+   * The training service uploads the JSONL dataset to 0G Storage, then
+   * enqueues a LoRA fine-tune job on 0G Compute via NATS.
+   *
+   * This runs completely asynchronously — the user doesn't wait for it.
+   * The returned job.id can be polled via GET /v1/agents/:id/training.
+   */
+  triggerTrainingFromBattle: async (
+    agentId: string,
+    battleStats: AgentMatchStats & { outcome: 'WIN' | 'LOSS'; durationSeconds: number }
+  ): Promise<AiArenaCreateTrainingJobResponse> => {
+    // Convert raw battle stats into structured state-action training pairs.
+    // Each entry represents a battle "phase" the agent experienced.
+    const accuracy  = battleStats.shotsAttempted > 0
+      ? battleStats.shotsConnected / battleStats.shotsAttempted
+      : 0;
+    const shotRate  = battleStats.durationSeconds > 0
+      ? battleStats.shotsAttempted / battleStats.durationSeconds
+      : 0;
+
+    const trainingData: AiArenaTrainingDataEntry[] = [
+      // Early-phase representation
+      {
+        state: {
+          hp:              1.0,
+          opponentHp:      1.0,
+          distanceCovered: battleStats.distanceCovered * 0.25,
+          durationSeconds: battleStats.durationSeconds * 0.25,
+          battlePhase:     'early',
+        },
+        action: {
+          type:     shotRate > 0.5 ? 'aggressive' : 'balanced',
+          jumps:    Math.round(battleStats.jumps * 0.3),
+          shotRate: shotRate,
+        },
+        outcome: battleStats.outcome,
+        reward:  battleStats.outcome === 'WIN' ? 0.4 : -0.2,
+      },
+      // Mid-phase representation
+      {
+        state: {
+          hp:              battleStats.outcome === 'WIN' ? 0.7 : 0.5,
+          opponentHp:      battleStats.outcome === 'WIN' ? 0.5 : 0.7,
+          distanceCovered: battleStats.distanceCovered * 0.6,
+          durationSeconds: battleStats.durationSeconds * 0.6,
+          battlePhase:     'mid',
+        },
+        action: {
+          type:     accuracy > 0.5 ? 'aggressive' : battleStats.jumps > 10 ? 'mobile' : 'defensive',
+          jumps:    Math.round(battleStats.jumps * 0.5),
+          shotRate: shotRate,
+        },
+        outcome: battleStats.outcome,
+        reward:  battleStats.outcome === 'WIN' ? 0.7 : -0.3,
+      },
+      // End-phase representation
+      {
+        state: {
+          hp:              battleStats.outcome === 'WIN' ? 0.4 : 0.1,
+          opponentHp:      battleStats.outcome === 'WIN' ? 0.0 : 0.8,
+          distanceCovered: battleStats.distanceCovered,
+          durationSeconds: battleStats.durationSeconds,
+          battlePhase:     'late',
+        },
+        action: {
+          type:     battleStats.outcome === 'WIN' ? 'aggressive' : 'defensive',
+          jumps:    battleStats.jumps,
+          shotRate: shotRate,
+        },
+        outcome: battleStats.outcome,
+        reward:  battleStats.outcome === 'WIN' ? 1.0 : -0.5,
+      },
+    ];
+
+    const { data } = await http().post<AiArenaCreateTrainingJobResponse>(
+      `/v1/agents/${encodeURIComponent(agentId)}/train`,
+      {
+        type:         'BEHAVIOUR_CLONING',
+        priority:     5,
+        trainingData: trainingData as unknown as Array<Record<string, unknown>>,
+        baseModel:    'Qwen2.5-0.5B-Instruct',
+      }
     );
     return data;
   },
