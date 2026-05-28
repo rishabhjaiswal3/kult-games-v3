@@ -294,6 +294,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
   // Always start null so the first match found in this session always triggers navigation,
   // even if the same battle is still active in Redis after a page refresh.
   const announcedBattleIdRef = useRef<string | null>(null);
+  // Captures the gameId the user explicitly selected when they started matchmaking.
+  // This is the source of truth for routing — more reliable than polling status.gameId.
+  const selectedGameIdRef = useRef<string>("default");
 
   const agents = myAgentsQ.data?.agents ?? [];
 
@@ -383,8 +386,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
       const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
 
-      // Robowar uses its own simulation page (no Unity build)
-      if (payload.gameId === "robowar") {
+      // Use the gameId the user explicitly selected when they started matchmaking.
+      const gameId = selectedGameIdRef.current || payload.gameId || "default";
+      if (gameId === "robowar") {
         navigate(`/arena/robowar/${payload.battleId}?${base}`);
       } else {
         navigate(`/arena/game/${payload.battleId}?${base}`);
@@ -464,7 +468,8 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onOpenChange={setStartModalOpen}
         agents={agents}
         defaultAgentId={queuedAgent?.id ?? agents[0]?.id ?? null}
-        onQueued={async (agentId) => {
+        onQueued={async (agentId, gameId) => {
+          selectedGameIdRef.current = gameId ?? "default";
           const queued = agents.find((agent) => agent.id === agentId) ?? null;
           if (queued) setStatusModalAgent(queued);
           await queueQ.refetch();
