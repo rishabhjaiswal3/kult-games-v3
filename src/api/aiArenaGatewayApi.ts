@@ -883,7 +883,10 @@ export const aiArenaGatewayApi = {
         trainingData: trainingData as unknown as Array<Record<string, unknown>>,
         baseModel:    'Qwen2.5-0.5B-Instruct',
         config:       { source: 'arena-battle' },
-      }
+      },
+      // Header-based bypass: always present in the gateway's preHandler hook,
+      // unlike req.body which may be null in @fastify/http-proxy mode.
+      { headers: { 'X-Training-Source': 'arena-battle' } }
     );
     return data;
   },
