@@ -347,7 +347,7 @@ const AchievementsPage = () => {
       {/* Background Glow */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_80%_15%,rgba(155,51,255,0.12),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(33,150,255,0.06),transparent_35%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8 space-y-4">
+      <section className="mx-auto max-w-full px-4 py-5 sm:px-6 lg:px-8 space-y-4">
 
         {/* Top Title Section */}
         <div className="flex items-start justify-between gap-3">

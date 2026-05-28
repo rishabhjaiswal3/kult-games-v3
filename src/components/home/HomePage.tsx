@@ -118,7 +118,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px]">
+      <section className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <video
           src={heroVideo}
           aria-hidden
@@ -131,7 +131,7 @@ export function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
-        <div className="relative z-10 flex min-h-[430px] flex-col justify-start gap-8 p-5 sm:min-h-[520px] sm:p-8 lg:min-h-[560px]">
+        <div className="relative z-10 flex min-h-[430px] flex-col justify-start gap-8 p-5 sm:min-h-[520px] sm:p-8 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
           <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50">
             <span className="flex items-center gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain" />
