@@ -371,6 +371,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     opponent: AiArenaAgent;
     battleId: string;
     mode: string;
+    gameId: string;
   }) => {
     saveTrackedAiArenaBattleId(payload.battleId);
     setActiveBattleId(payload.battleId);
@@ -378,12 +379,16 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     if (announcedBattleIdRef.current !== payload.battleId) {
       announcedBattleIdRef.current = payload.battleId;
       toast.success(`Match found! Entering arena…`);
-      // Close the status modal immediately so the navigate feels instant
       setStatusModalAgent(null);
-      // Navigate to the full-screen game page
-      navigate(
-        `/arena/game/${payload.battleId}?myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`
-      );
+
+      const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
+
+      // Robowar uses its own simulation page (no Unity build)
+      if (payload.gameId === "robowar") {
+        navigate(`/arena/robowar/${payload.battleId}?${base}`);
+      } else {
+        navigate(`/arena/game/${payload.battleId}?${base}`);
+      }
     }
   };
 

@@ -23,6 +23,7 @@ import Dashboard from "./pages/Dashboard";
 import AutonomousPage from "./pages/AutonomousPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ArenaGamePage from "./pages/ArenaGamePage";
+import RobowarGamePage from "./pages/RobowarGamePage";
 import LoadingScreen from "./components/LoadingScreen";
 import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
@@ -164,6 +165,8 @@ const App = () => {
               </Route>
               {/* Full-screen arena game page — no AppShell sidebar */}
               <Route path="/arena/game/:battleId" element={<ArenaGamePage />} />
+              {/* Robowar simulation page — red theme, no Unity, 120s sim */}
+              <Route path="/arena/robowar/:battleId" element={<RobowarGamePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
