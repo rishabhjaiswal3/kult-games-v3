@@ -12,7 +12,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Swords, Cpu, Trophy, Shield, Zap } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
-import { getArenaAgentPortrait } from "@/lib/arenaAgentPortrait";
+import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 
 // ── red palette ──────────────────────────────────────────────────────────────
 const R = {
