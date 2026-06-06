@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
@@ -46,7 +47,7 @@ import iconBattle from "@/assets/icon-battle.png";
 import iconEarn from "@/assets/icon-earn.png";
 import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
-import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import type { AiArenaAgent, AiArenaBattle } from "@/types/aiArenaGateway";
 import { RANKS } from "@/utils/rankSystem";
 const agents = [
   {
@@ -170,6 +171,7 @@ function AIArenaPageContent() {
       <HowItWorks />
       <RankProgressionTimeline />
       <TopAgents />
+      <MyBattleSection />
       <LiveBattles />
       <PartnersBlock />
       <ArenaLandingFooter />
@@ -427,6 +429,18 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         <span className="leading-tight text-center font-bold whitespace-nowrap">{buttonLabel}</span>
       </button>
 
+      <a
+        href="#my-battles"
+        className={`min-w-0 rounded-md font-tech border border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/70 text-white flex items-center justify-center transition whitespace-nowrap ${
+          compact
+            ? "w-[240px] px-4 py-2.5 text-[10px] tracking-[0.06em] gap-2"
+            : "w-[240px] lg:w-auto px-4 py-2.5 text-[10px] tracking-[0.16em] gap-2"
+        }`}
+      >
+        <Eye className="w-3 h-3 shrink-0 text-primary" />
+        <span className="font-bold">MY BATTLE</span>
+      </a>
+
       {queuedAgent ? (
         <div
           className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs"}`}
@@ -451,22 +465,6 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           {helperText}
         </p>
       )}
-
-      {trackedBattleId ? (
-        <Link
-          to={`/arena/game/${trackedBattleId}`}
-          className={`min-w-0 rounded-md font-tech border border-white/15 bg-white/5 hover:bg-white/10 text-white/85 flex items-center justify-center transition whitespace-nowrap ${
-            compact
-              ? "w-[240px] px-4 py-2.5 text-[10px] tracking-[0.06em] gap-2"
-              : "w-[240px] lg:w-auto px-4 py-2.5 text-[10px] tracking-[0.16em] gap-2"
-          }`}
-        >
-          <Eye className="w-3 h-3 shrink-0 text-accent" />
-          <span className="leading-tight text-center font-bold whitespace-nowrap">
-            OPEN LAST BATTLE {shortBattleId(trackedBattleId)}
-          </span>
-        </Link>
-      ) : null}
 
       <ArenaStartMatchmakingModal
         open={startModalOpen}
@@ -1062,6 +1060,110 @@ function TopAgents() {
           </div>
         ))}
       </div>
+    </section>
+  );
+}
+
+function MyBattleSection() {
+  const trackedBattleId = getTrackedAiArenaBattleId();
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const battleQ = useQuery({
+    queryKey: ["aiArenaGateway", "arenaLandingMyBattle", trackedBattleId],
+    queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
+    enabled: !!trackedBattleId,
+    staleTime: 2_000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.battle?.status;
+      return status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS" ? 2_000 : false;
+    },
+    retry: 1,
+  });
+  const battle: AiArenaBattle | null = battleQ.data?.battle ?? null;
+  const participantIds = battle?.agentIds ?? [];
+  const participantsQ = useQuery({
+    queryKey: ["aiArenaGateway", "arenaLandingMyBattleParticipants", participantIds.join(",")],
+    queryFn: async () =>
+      Promise.all(
+        participantIds.map(async (id) => {
+          const ownedAgent = myAgentsQ.data?.agents?.find((agent) => agent.id === id);
+          if (ownedAgent) return ownedAgent;
+          try {
+            return await aiArenaGatewayApi.getAgentById(id);
+          } catch {
+            return { id, name: shortBattleId(id), archetype: "HYBRID" } as AiArenaAgent;
+          }
+        })
+      ),
+    enabled: participantIds.length > 0,
+    staleTime: 30_000,
+  });
+  const participants = participantsQ.data ?? [];
+  const isLive = battle?.status === "PENDING" || battle?.status === "INITIALIZING" || battle?.status === "IN_PROGRESS";
+
+  return (
+    <section id="my-battles" className="mx-auto scroll-mt-24 px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+        <div>
+          <h3 className="font-display text-2xl sm:text-3xl">MY BATTLES</h3>
+          <p className="mt-2 text-sm text-muted-foreground">Jump back into your latest arena battle.</p>
+        </div>
+        <Link to="/battles" className="text-sm text-accent hover:underline">
+          View Battles Page
+        </Link>
+      </div>
+
+      {battleQ.isLoading ? (
+        <div className="card-glass flex items-center gap-2 rounded-xl px-5 py-8 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading your battle...
+        </div>
+      ) : !trackedBattleId || battleQ.isError || !battle ? (
+        <div className="card-glass rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
+          No battle is available yet. Start matchmaking to enter the arena.
+        </div>
+      ) : (
+        <div className="card-glass min-h-[210px] rounded-xl border border-primary/25 p-6 sm:min-h-[225px] sm:p-7">
+          <div className="flex min-h-[162px] flex-col justify-center gap-5 sm:min-h-[169px] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="flex shrink-0 items-center gap-2">
+                {participants.map((agent, index) => (
+                  <div key={agent.id} className="flex items-center gap-2">
+                    {index > 0 ? (
+                      <span className="font-display text-sm font-bold text-primary sm:text-lg">VS</span>
+                    ) : null}
+                    <ArenaAgentThumbnail
+                      agent={agent}
+                      size="md"
+                      className="h-24 w-24 rounded-xl border-2 border-primary/25 sm:h-28 sm:w-28"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase tracking-wider ${
+                  isLive ? "border-red-400/35 bg-red-500/10 text-red-300" : "border-white/15 bg-white/5 text-white/55"
+                }`}>
+                  {isLive ? "Live" : battle.status}
+                </span>
+                <span className="font-tech text-[10px] uppercase text-accent">{battle.mode ?? "Arena Battle"}</span>
+              </div>
+              <h4 className="mt-3 truncate font-tech text-lg text-white">
+                {participants.length > 0 ? participants.map((agent) => agent.name).join(" vs ") : `Battle ${shortBattleId(battle.id)}`}
+              </h4>
+              <p className="mt-2 font-mono text-xs text-white/40">{shortBattleId(battle.id)}</p>
+              </div>
+            </div>
+            <Link
+              to={`/arena/game/${battle.id}`}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-primary/55 bg-primary/15 px-5 py-3 font-tech text-[10px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-primary/25"
+            >
+              <Eye className="h-4 w-4" />
+              {isLive ? "Resume Battle" : "Open Battle"}
+            </Link>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

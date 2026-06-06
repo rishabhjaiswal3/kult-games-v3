@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { formatArenaWaitTime, useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { getTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import agentShadow from "@/assets/agent-shadow.jpg";
 import battleStep1 from "@/assets/step1.mp4";
 import battleStep2 from "@/assets/step2.mp4";
@@ -433,6 +434,88 @@ function Rewards() {
   );
 }
 
+function MyBattlesRail({
+  battles,
+  agents,
+  loading,
+}: {
+  battles: AiArenaBattle[];
+  agents: AiArenaAgent[];
+  loading: boolean;
+}) {
+  const battle = battles[0] ?? null;
+  const participantIds = battle?.agentIds ?? [];
+  const participantsQ = useQuery({
+    queryKey: ["aiArenaGateway", "battlesPageTrackedBattleParticipants", participantIds.join(",")],
+    queryFn: async () =>
+      Promise.all(
+        participantIds.map(async (id) => {
+          const ownedAgent = agents.find((agent) => agent.id === id);
+          if (ownedAgent) return ownedAgent;
+          try {
+            return await aiArenaGatewayApi.getAgentById(id);
+          } catch {
+            return fallbackArenaAgent(id);
+          }
+        })
+      ),
+    enabled: participantIds.length > 0,
+    staleTime: 30_000,
+  });
+  const participants = participantsQ.data ?? [];
+  const isLive = battle?.status === "PENDING" || battle?.status === "INITIALIZING" || battle?.status === "IN_PROGRESS";
+
+  return (
+    <div className="arena-panel h-fit p-4">
+      {loading ? (
+        <div className="flex items-center gap-2 py-4 text-xs text-white/55">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading your battles...
+        </div>
+      ) : !battle ? (
+        <div className="py-5 text-center">
+          <Swords className="mx-auto h-6 w-6 text-white/20" />
+          <p className="mt-3 text-xs leading-5 text-white/50">No battle is available yet. Start matchmaking to enter the arena.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            {participants.map((agent, index) => (
+              <div key={agent.id} className="flex items-center gap-2">
+                {index > 0 ? <span className="font-display text-sm font-bold text-primary">VS</span> : null}
+                <ArenaAgentThumbnail agent={agent} size="md" className="h-20 w-20 rounded-xl border-2 border-primary/25" />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className={`rounded-full border px-2.5 py-1 font-tech text-[8px] uppercase tracking-wider ${
+              isLive ? "border-red-400/35 bg-red-500/10 text-red-300" : "border-white/15 bg-white/5 text-white/55"
+            }`}>
+              {isLive ? "Live" : battle.status}
+            </span>
+            <span className="font-tech text-[9px] uppercase text-accent">{modeLabel(battle.mode)}</span>
+          </div>
+          <div className="text-center">
+            <h3 className="truncate font-tech text-xs text-white">
+              {participants.length > 0
+                ? participants.map((agent) => agent.name).join(" vs ")
+                : `Battle ${shortId(battle.id)}`}
+            </h3>
+            <p className="mt-1 font-mono text-[9px] text-white/35">{shortId(battle.id)}</p>
+          </div>
+          <Link
+            to={`/arena/game/${battle.id}`}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/55 bg-primary/15 px-3 py-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-primary/25"
+          >
+            <ArrowUpRight className="h-3.5 w-3.5" />
+            {isLive ? "Resume Battle" : "Open Battle"}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function performerWinRate(agent: AiArenaAgent) {
   const totalBattles = agent.wins + agent.losses + (agent.draws ?? 0);
   if (totalBattles <= 0) return "—";
@@ -686,6 +769,7 @@ const BattlesPage = () => {
   const myAgentsQ = useMyArenaAgents(1, 50);
   const myAgents = myAgentsQ.data?.agents ?? [];
   const myAgentIds = useMemo(() => new Set(myAgents.map((agent) => agent.id)), [myAgents]);
+  const trackedBattleId = getTrackedAiArenaBattleId();
 
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -723,6 +807,20 @@ const BattlesPage = () => {
     staleTime: 2_000,
     refetchInterval: 2_000,
     retry: 1,
+  });
+
+  const myBattlesQ = useQuery({
+    queryKey: ["aiArenaGateway", "battlesPageTrackedBattle", trackedBattleId],
+    queryFn: async () => {
+      const result = await aiArenaGatewayApi.getBattle(trackedBattleId!);
+      return [result.battle];
+    },
+    enabled: isAuthenticated && isAiArenaReady && !!trackedBattleId,
+    staleTime: 2_000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.[0]?.status;
+      return status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS" ? 2_000 : false;
+    },
   });
 
   const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 8 });
@@ -1366,6 +1464,16 @@ const BattlesPage = () => {
         </div>
 
         <aside className="flex flex-col gap-6 self-start xl:sticky xl:top-24">
+          <div>
+            <div className="mb-3">
+              <SectionTitle className="!mt-0">MY BATTLES</SectionTitle>
+            </div>
+            <MyBattlesRail
+              battles={myBattlesQ.data ?? []}
+              agents={myAgents}
+              loading={myAgentsQ.isLoading || myBattlesQ.isLoading}
+            />
+          </div>
           <div>
             <div className="mb-3">
               <SectionTitle className="!mt-0">BATTLE REWARDS</SectionTitle>
