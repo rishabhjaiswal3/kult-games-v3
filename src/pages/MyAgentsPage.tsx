@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MY_ARENA_AGENTS_QUERY_KEY } from "@/hooks/useMyArenaAgents";
 import {
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Eye,
   Globe,
@@ -32,8 +33,7 @@ import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { ClanIcon } from "@/components/arena/ClanIcon";
 import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
-import { getTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
-import type { AiArenaAgent, AiArenaBattle } from "@/types/aiArenaGateway";
+import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
 import tacticianPortrait from "@/assets/tactician.mp4";
 import assassinPortrait from "@/assets/assassin.gif";
 import berserkerPortrait from "@/assets/berserker.mp4";
@@ -144,70 +144,174 @@ function shortBattleId(value: string) {
   return value.length <= 14 ? value : `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
 
-function MyAgentBattleCard({ battle, ownedAgents }: { battle: AiArenaBattle; ownedAgents: AiArenaAgent[] }) {
-  const participantIds = battle.agentIds ?? [];
-  const participantsQ = useQuery({
-    queryKey: ["aiArenaGateway", "myAgentsBattleParticipants", participantIds.join(",")],
-    queryFn: async () =>
-      Promise.all(
-        participantIds.map(async (id) => {
-          const ownedAgent = ownedAgents.find((agent) => agent.id === id);
-          if (ownedAgent) return ownedAgent;
-          try {
-            return await aiArenaGatewayApi.getAgentById(id);
-          } catch {
-            return { id, name: shortBattleId(id), archetype: "HYBRID" } as AiArenaAgent;
-          }
-        })
-      ),
-    enabled: participantIds.length > 0,
-    staleTime: 30_000,
-  });
-  const participants = participantsQ.data ?? [];
-  const isLive = ["PENDING", "INITIALIZING", "IN_PROGRESS"].includes(battle.status);
+function MyAgentBattleMemoryCard({
+  memory,
+  participants,
+}: {
+  memory: AiArenaAgentMemory;
+  participants: AiArenaAgent[];
+}) {
+  const battleId = memory.metadata?.battleId;
+  const outcome = String(memory.metadata?.outcome ?? memory.type).toUpperCase();
+  const isWin = outcome === "WIN";
+  const isCancelled = outcome === "CANCELLED";
+  return (
+    <div className="card-glass rounded-xl border border-primary/20 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <span className={`rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase ${
+          isCancelled
+            ? "border-white/20 bg-white/5 text-white/55"
+            : isWin
+            ? "border-emerald-400/35 bg-emerald-500/10 text-emerald-300"
+            : "border-rose-400/35 bg-rose-500/10 text-rose-300"
+        }`}>
+          {isCancelled ? "Cancelled" : isWin ? "Win" : "Loss"}
+        </span>
+        <span className="font-tech text-[9px] uppercase text-accent">Battle Memory</span>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        {participants.map((agent, index) => (
+          <div key={agent.id} className="flex items-center gap-3">
+            {index > 0 ? <span className="font-display text-sm font-bold text-primary">VS</span> : null}
+            <div className="text-center">
+              <ArenaAgentThumbnail agent={agent} size="md" className="h-20 w-20 rounded-xl border-2 border-primary/25" />
+              <p className="mt-1 max-w-20 truncate font-tech text-[8px] text-white/55">{agent.name}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65">{memory.content}</p>
+      <p className="mt-2 font-mono text-[10px] text-white/40">{new Date(memory.createdAt).toLocaleString()}</p>
+      {battleId ? (
+        <Link
+          to={`/arena/game/${battleId}`}
+          className="mt-4 inline-flex items-center gap-2 font-tech text-[9px] font-bold uppercase text-primary hover:text-white"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Open Battle {shortBattleId(battleId)}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+function BattlesCarouselSection({
+  isLoading,
+  isError,
+  memories,
+  battlesById,
+  agentsById,
+}: {
+  isLoading: boolean;
+  isError: boolean;
+  memories: (AiArenaAgentMemory & { ownerAgentId: string })[];
+  battlesById: Map<string, AiArenaBattle>;
+  agentsById: Map<string, AiArenaAgent>;
+}) {
+  const CARDS_PER_PAGE = 3;
+  const [battlePage, setBattlePage] = useState(0);
+  const totalBattlePages = Math.max(1, Math.ceil(memories.length / CARDS_PER_PAGE));
+  const canPrevBattle = battlePage > 0;
+  const canNextBattle = battlePage < totalBattlePages - 1;
 
   return (
-    <div className="card-glass min-h-[210px] rounded-xl border border-primary/25 p-6 sm:min-h-[225px] sm:p-7">
-      <div className="flex min-h-[162px] flex-col justify-center gap-5 sm:min-h-[169px] sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className="flex shrink-0 items-center gap-2">
-            {participants.map((agent, index) => (
-              <div key={agent.id} className="flex items-center gap-2">
-                {index > 0 ? <span className="font-display text-sm font-bold text-primary sm:text-lg">VS</span> : null}
-                <ArenaAgentThumbnail
-                  agent={agent}
-                  size="md"
-                  className="h-24 w-24 rounded-xl border-2 border-primary/25 sm:h-28 sm:w-28"
-                />
+    <section className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-white/8 pb-4">
+        <div>
+          <h2 className="font-tech text-lg font-bold uppercase tracking-tight text-white">MY BATTLES</h2>
+          <p className="mt-1 text-[10px] text-white/45">Your completed arena battle history.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {memories.length > CARDS_PER_PAGE && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setBattlePage((p) => Math.max(0, p - 1))}
+                disabled={!canPrevBattle}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/30 bg-purple-500/10 text-white transition hover:border-purple-500/60 hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="min-w-[3ch] text-center font-tech text-[10px] text-white/45">
+                {battlePage + 1}/{totalBattlePages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setBattlePage((p) => Math.min(totalBattlePages - 1, p + 1))}
+                disabled={!canNextBattle}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-500/30 bg-purple-500/10 text-white transition hover:border-purple-500/60 hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <Swords className="h-5 w-5 text-purple-400" />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/50">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading your battles...
+        </div>
+      ) : isError ? (
+        <div className="py-10 text-center text-sm text-amber-100/80">
+          Could not load your battles right now.
+        </div>
+      ) : memories.length === 0 ? (
+        <div className="py-10 text-center">
+          <Swords className="mx-auto h-7 w-7 text-white/20" />
+          <p className="mt-3 text-sm text-white/55">No battle is available yet. Start matchmaking to enter the arena.</p>
+        </div>
+      ) : (
+        <div className="mt-4 overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${battlePage * 100}%)` }}
+          >
+            {Array.from({ length: totalBattlePages }, (_, pageIdx) => (
+              <div
+                key={pageIdx}
+                className="grid w-full flex-shrink-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+              >
+                {memories
+                  .slice(pageIdx * CARDS_PER_PAGE, pageIdx * CARDS_PER_PAGE + CARDS_PER_PAGE)
+                  .map((memory) => {
+                    const battleId = memory.metadata?.battleId;
+                    const battle = battleId ? battlesById.get(battleId) : undefined;
+                    const participants = (battle?.agentIds ?? [memory.ownerAgentId])
+                      .map((agentId) => agentsById.get(agentId))
+                      .filter((agent): agent is AiArenaAgent => Boolean(agent));
+                    return (
+                      <MyAgentBattleMemoryCard
+                        key={memory.id}
+                        memory={memory}
+                        participants={participants}
+                      />
+                    );
+                  })}
               </div>
             ))}
           </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase tracking-wider ${
-                isLive ? "border-red-400/35 bg-red-500/10 text-red-300" : "border-white/15 bg-white/5 text-white/55"
-              }`}>
-                {isLive ? "Live" : battle.status}
-              </span>
-              <span className="font-tech text-[10px] uppercase text-accent">{battle.mode ?? "Arena Battle"}</span>
+          {totalBattlePages > 1 && (
+            <div className="mt-5 flex items-center justify-center gap-2">
+              {Array.from({ length: totalBattlePages }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setBattlePage(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === battlePage
+                      ? "w-6 bg-purple-500"
+                      : "w-1.5 bg-white/20 hover:bg-white/40"
+                  }`}
+                />
+              ))}
             </div>
-            <h4 className="mt-3 truncate font-tech text-lg text-white">
-              {participants.length > 0
-                ? participants.map((agent) => agent.name).join(" vs ")
-                : `Battle ${shortBattleId(battle.id)}`}
-            </h4>
-            <p className="mt-2 font-mono text-xs text-white/40">{shortBattleId(battle.id)}</p>
-          </div>
+          )}
         </div>
-        <Link
-          to={`/arena/game/${battle.id}`}
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-primary/55 bg-primary/15 px-5 py-3 font-tech text-[10px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-primary/25"
-        >
-          <Eye className="h-4 w-4" />
-          {isLive ? "Resume Battle" : "Open Battle"}
-        </Link>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
 
@@ -238,20 +342,77 @@ const MyAgentsPage = () => {
   const myAgentsQ = useMyArenaAgents(1, 50);
   const totalAgentsQ = useArenaAgentsList(1, 1);
   const agents = myAgentsQ.data?.agents ?? [];
-  const trackedBattleId = getTrackedAiArenaBattleId();
+  type OwnedBattleMemory = AiArenaAgentMemory & { ownerAgentId: string };
   const battlesQ = useQuery({
-    queryKey: ["aiArenaGateway", "myAgentTrackedBattle", trackedBattleId],
+    queryKey: ["aiArenaGateway", "myAgentsBattleMemories", agents.map((agent) => agent.id).join(",")],
     queryFn: async () => {
-      const result = await aiArenaGatewayApi.getBattle(trackedBattleId!);
-      return [result.battle];
+      const results = await Promise.all(agents.map((agent) => aiArenaGatewayApi.getAgentMemories(agent.id, 1, 100)));
+      const uniqueMemories = new Map<string, OwnedBattleMemory>();
+      results.forEach((result, index) => {
+        const ownerAgentId = agents[index]?.id;
+        if (!ownerAgentId) return;
+        result.memories.forEach((memory) => {
+          const key = memory.metadata?.battleId ?? memory.id;
+          if (!uniqueMemories.has(key)) uniqueMemories.set(key, { ...memory, ownerAgentId });
+        });
+      });
+      return Array.from(uniqueMemories.values()).sort(
+        (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      );
     },
-    enabled: !!trackedBattleId,
-    staleTime: 2_000,
-    refetchInterval: (query) => {
-      const status = query.state.data?.[0]?.status;
-      return status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS" ? 2_000 : false;
-    },
+    enabled: agents.length > 0,
+    staleTime: 30_000,
   });
+  const battleIds = useMemo(
+    () => (battlesQ.data ?? []).map((memory) => memory.metadata?.battleId).filter((id): id is string => Boolean(id)),
+    [battlesQ.data]
+  );
+  const battleDetailsQ = useQuery({
+    queryKey: ["aiArenaGateway", "myAgentsMemoryBattles", battleIds.join(",")],
+    queryFn: async () => {
+      const results = await Promise.all(
+        battleIds.map(async (battleId) => {
+          try {
+            return (await aiArenaGatewayApi.getBattle(battleId)).battle;
+          } catch {
+            return null;
+          }
+        })
+      );
+      return results.filter((battle): battle is AiArenaBattle => Boolean(battle));
+    },
+    enabled: battleIds.length > 0,
+    staleTime: 60_000,
+  });
+  const battlesById = useMemo(
+    () => new Map((battleDetailsQ.data ?? []).map((battle) => [battle.id, battle])),
+    [battleDetailsQ.data]
+  );
+  const participantIds = useMemo(
+    () => Array.from(new Set((battleDetailsQ.data ?? []).flatMap((battle) => battle.agentIds ?? []))),
+    [battleDetailsQ.data]
+  );
+  const participantAgentsQ = useQuery({
+    queryKey: ["aiArenaGateway", "myAgentsMemoryParticipants", participantIds.join(",")],
+    queryFn: async () =>
+      Promise.all(
+        participantIds.map(async (agentId) => {
+          const ownedAgent = agents.find((agent) => agent.id === agentId);
+          if (ownedAgent) return ownedAgent;
+          try {
+            return await aiArenaGatewayApi.getAgentById(agentId);
+          } catch {
+            return { id: agentId, name: shortBattleId(agentId), archetype: "HYBRID" } as AiArenaAgent;
+          }
+        })
+      ),
+    enabled: participantIds.length > 0,
+    staleTime: 60_000,
+  });
+  const agentsById = useMemo(
+    () => new Map([...agents, ...(participantAgentsQ.data ?? [])].map((agent) => [agent.id, agent])),
+    [agents, participantAgentsQ.data]
+  );
 
   if (!isAuthenticated) {
     return (
@@ -574,37 +735,13 @@ const MyAgentsPage = () => {
         )}
       </div>
 
-      <section className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-3 border-b border-white/8 pb-4">
-          <div>
-            <h2 className="font-tech text-lg font-bold uppercase tracking-tight text-white">MY BATTLES</h2>
-            <p className="mt-1 text-[10px] text-white/45">Current battles involving your agents.</p>
-          </div>
-          <Swords className="h-5 w-5 text-purple-400" />
-        </div>
-
-        {myAgentsQ.isLoading || waitingForArenaSession || battlesQ.isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/50">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading your battles...
-          </div>
-        ) : battlesQ.isError ? (
-          <div className="py-10 text-center text-sm text-amber-100/80">
-            Could not load your battles right now.
-          </div>
-        ) : (battlesQ.data?.length ?? 0) === 0 ? (
-          <div className="py-10 text-center">
-            <Swords className="mx-auto h-7 w-7 text-white/20" />
-            <p className="mt-3 text-sm text-white/55">No battle is available yet. Start matchmaking to enter the arena.</p>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-4">
-            {battlesQ.data?.map((battle) => (
-              <MyAgentBattleCard key={battle.id} battle={battle} ownedAgents={agents} />
-            ))}
-          </div>
-        )}
-      </section>
+      <BattlesCarouselSection
+        isLoading={myAgentsQ.isLoading || waitingForArenaSession || battlesQ.isLoading}
+        isError={battlesQ.isError}
+        memories={battlesQ.data ?? []}
+        battlesById={battlesById}
+        agentsById={agentsById}
+      />
 
       <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-4">
         <div className="flex items-center gap-3">
