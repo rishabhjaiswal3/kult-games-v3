@@ -18,7 +18,8 @@ import GameDetail from "./pages/GameDetail";
 import GamePlay from "./pages/GamePlay";
 import NotFound from "./pages/NotFound";
 import AIArenaPage from "./pages/AIArenaPage";
-import MomentsPage from "./pages/MomentsPage";
+import AllMomentsPage from "./pages/AllMomentsPage";
+import MomentDetailPage from "./pages/MomentDetailPage";
 import Dashboard from "./pages/Dashboard";
 import AutonomousPage from "./pages/AutonomousPage";
 import AchievementsPage from "./pages/AchievementsPage";
@@ -157,7 +158,8 @@ const App = () => {
                 <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/ai-arena" element={<AIArenaPage />} />
-                <Route path="/moments" element={<MomentsPage />} />
+                <Route path="/moments" element={<AllMomentsPage />} />
+                <Route path="/moments/:id" element={<MomentDetailPage />} />
                 <Route path="/autonomous" element={<AutonomousPage />} />
                 <Route path="/achievements" element={<AchievementsPage />} />
                 <Route path="/game/:id" element={<GameDetail />} />
