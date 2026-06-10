@@ -38,6 +38,16 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const siweInFlightByAddress = new Map<string, Promise<void>>();
 const SIGNING_WALLET_WAIT_MS = 8_000;
 const SIGNING_WALLET_POLL_MS = 250;
+const PERSONAL_SIGN_TIMEOUT_MS = 45_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      window.setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
 
 function isMissingSigningWalletError(error: unknown) {
   return error instanceof Error && error.message === "No Privy wallet available to sign";
@@ -161,10 +171,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const provider = await privyWallet.getEthereumProvider();
-      const signature = (await provider.request({
-        method: "personal_sign",
-        params: [message, address],
-      })) as string;
+      const signature = (await withTimeout(
+        provider.request({ method: "personal_sign", params: [message, address] }) as Promise<string>,
+        PERSONAL_SIGN_TIMEOUT_MS,
+        "Wallet signature",
+      )) as string;
 
       const res = await playerApi.login(address, message, signature);
       setPlayer(res.player);
@@ -200,7 +211,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        toast.error("Could not finish sign-in. Please try wallet login or refresh the page.");
+        // For all other failures (timeout, rejection, backend error) reset the modal so the
+        // spinner doesn't stay stuck — authenticated stays true but isAuthenticated is false,
+        // so the modal has no other path to clear finishingSignIn.
+        const message =
+          err instanceof Error && err.message.includes("timed out")
+            ? "The wallet prompt timed out. Please try again and approve the signature request."
+            : "Could not finish sign-in. Please try again.";
+        requestOpenLoginModal({ mode: "recover", message });
+        toast.error(message);
       })
       .finally(() => {
         setIsLoading(false);
