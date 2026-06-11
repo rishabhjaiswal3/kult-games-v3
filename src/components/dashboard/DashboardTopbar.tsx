@@ -1,18 +1,15 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Bell, ChevronRight, Menu, Wallet, Copy, Check } from "lucide-react";
-import LoginModal from "@/components/LoginModal";
+import { Link } from "react-router-dom";
+import { Bell, ChevronRight, Clapperboard, Menu, Wallet, Copy, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { subscribeOpenLoginModal } from "@/lib/loginModalBus";
+import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
 export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"wallet" | "notifications" | null>(null);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const [copied, setCopied] = useState(false);
   const { isAuthenticated, walletAddress, logout } = useAuth();
-  const location = useLocation();
   const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -32,14 +29,6 @@ export function DashboardTopbar() {
       : walletAddress;
   }, [isAuthenticated, walletAddress]);
 
-  useEffect(() => {
-    if (location.search.includes("login=1") && !isAuthenticated) {
-      setLoginOpen(true);
-    }
-  }, [location.search, isAuthenticated]);
-
-  useEffect(() => subscribeOpenLoginModal(() => setLoginOpen(true)), []);
-
   const togglePanel = (panel: "wallet" | "notifications") => {
     setOpenPanel((current) => (current === panel ? null : panel));
   };
@@ -58,7 +47,7 @@ export function DashboardTopbar() {
       return;
     }
     setOpenPanel(null);
-    setLoginOpen(true);
+    requestOpenLoginModal();
   };
 
   return (
@@ -67,6 +56,15 @@ export function DashboardTopbar() {
         <div className="relative mx-auto flex min-h-[58px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:min-h-[68px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3" />
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
+            {isAuthenticated && (
+              <Link
+                to="/studio"
+                className="inline-flex h-[38px] shrink-0 items-center gap-2 rounded-md bg-[#9a35ff] px-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 sm:px-4 sm:text-[11px]"
+              >
+                <Clapperboard className="h-4 w-4" />
+                <span className="hidden min-[430px]:inline">Studio</span>
+              </Link>
+            )}
             <div className="relative shrink-0 rounded-md bg-gradient-to-l from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
               <button
                 type="button"
@@ -191,7 +189,6 @@ export function DashboardTopbar() {
           </div>
         )}
       </header>
-      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }
