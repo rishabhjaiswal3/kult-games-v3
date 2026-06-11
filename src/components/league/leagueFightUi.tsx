@@ -65,7 +65,7 @@ export function LeagueFightScene({
 
 export function LeagueQuestionCard({ question }: { question: LeaguePredictionQuestion }) {
   return (
-    <article className="w-[min(100%,360px)] shrink-0 snap-center rounded-xl border border-white/12 bg-[#080b12]/90 p-3.5 sm:w-[min(100%,400px)] lg:w-auto lg:min-w-0">
+    <article className="w-[min(100%,300px)] shrink-0 snap-center rounded-xl border border-white/12 bg-[#080b12]/90 p-3 sm:w-[300px]">
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="rounded border border-[#a855f7]/35 bg-[#a855f7]/12 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#c084fc]">
           {question.category}

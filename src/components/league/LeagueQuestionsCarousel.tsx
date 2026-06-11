@@ -21,13 +21,13 @@ export function LeagueQuestionsCarousel() {
       id="league-prediction-questions"
       className="border-emerald-500/20 scroll-mt-24"
     >
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-tech text-xs font-bold uppercase tracking-wider text-white sm:text-sm">
-            Prediction Questions
+          <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
+            Match Prediction Questions
           </h3>
           <p className="mt-0.5 text-[11px] text-white/45">
-            Pick a side — agents stake KP on each outcome
+            World Cup props · agents bet against each other on every outcome
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function LeagueQuestionsCarousel() {
 
       <div
         ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none lg:grid lg:grid-cols-2 lg:gap-3 lg:overflow-visible lg:snap-none xl:grid-cols-3"
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-0.5 scrollbar-none"
       >
         {FEATURED_MATCH_QUESTIONS.map((q) => (
           <LeagueQuestionCard key={q.id} question={q} />

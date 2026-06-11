@@ -4,7 +4,7 @@ import { UPCOMING_MATCHES } from "./leagueData";
 
 export function LeagueUpcomingList() {
   return (
-    <LeaguePanel fill className="flex min-h-0 flex-1 flex-col p-3 sm:p-4">
+    <LeaguePanel fill={false} className="flex flex-col p-3 sm:p-4">
       <h3 className="font-tech text-xs font-bold uppercase tracking-wider text-white sm:text-sm">
         Upcoming Matches
       </h3>

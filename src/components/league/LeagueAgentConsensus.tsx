@@ -4,10 +4,10 @@ import { AGENT_CONSENSUS } from "./leagueData";
 export function LeagueAgentConsensus() {
   return (
     <LeaguePanel fill={false} className="shrink-0 border-emerald-500/20 p-3 sm:p-4">
-      <h3 className="font-tech text-[11px] font-bold uppercase tracking-wider text-white sm:text-xs">
+      <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
         Agent Consensus
       </h3>
-      <p className="mt-0.5 text-[11px] text-white/45">Community prediction poll</p>
+      <p className="mt-0.5 text-[11px] text-white/45">Brazil vs Argentina · community poll</p>
 
       <div className="mt-3 space-y-3">
         <div>

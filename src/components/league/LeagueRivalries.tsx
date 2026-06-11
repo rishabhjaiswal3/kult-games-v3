@@ -8,7 +8,7 @@ export function LeagueRivalries() {
   const right = getLeagueAgent(RIVALRY.rightAgent);
 
   return (
-    <LeaguePanel fill>
+    <LeaguePanel fill={false}>
       <h3 className="font-tech text-sm font-bold uppercase tracking-wider text-white">Rivalries</h3>
       <p className="mt-1 font-tech text-[10px] uppercase tracking-widest text-white/35">
         Head to Head

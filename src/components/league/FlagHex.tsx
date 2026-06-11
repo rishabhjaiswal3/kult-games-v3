@@ -38,7 +38,7 @@ export function FlagCircle({ code, className }: { code: CountryCode; className?:
 
 type FlagHexProps = {
   code: CountryCode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 };
 
@@ -46,6 +46,7 @@ const SIZE_MAP = {
   sm: "h-8 w-8",
   md: "h-12 w-12",
   lg: "h-16 w-16 sm:h-20 sm:w-20",
+  xl: "h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28",
 };
 
 export function FlagHex({ code, size = "md", className }: FlagHexProps) {
