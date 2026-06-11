@@ -30,7 +30,7 @@ export function ArenaDialogContent({
   return (
     <DialogContent
       className={cn(
-        "z-[100] grid max-h-[min(92vh,820px)] w-[calc(100vw-1.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden border border-white/15 bg-card/95 p-0 shadow-[0_0_80px_hsl(270_80%_45%/0.18)] sm:rounded-2xl",
+        "z-[200] grid max-h-[min(92vh,820px)] w-[calc(100vw-1.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden border border-white/15 bg-card/95 p-0 shadow-[0_0_80px_hsl(270_80%_45%/0.18)] sm:rounded-2xl",
         "[&>button]:right-4 [&>button]:top-4 [&>button]:z-20 [&>button]:rounded-lg [&>button]:border [&>button]:border-white/10 [&>button]:bg-background/80 [&>button]:p-1.5 [&>button]:text-foreground/80 [&>button]:opacity-100 [&>button]:backdrop-blur-sm [&>button]:hover:bg-background [&>button]:hover:text-foreground",
         SIZE_CLASS[size],
         className

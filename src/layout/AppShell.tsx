@@ -27,6 +27,7 @@ export function AppShell() {
   const isLeaderboard = pathname === "/leaderboard";
   const isAutonomous = pathname === "/autonomous";
   const isAchievements = pathname === "/achievements";
+  const isLeague = pathname === "/league";
   const isGamePlay = /^\/game\/[^/]+\/play$/.test(pathname);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function AppShell() {
     }
   }, [isGamePlay]);
 
-  const showDashboardTopbar = isHome || isAIArenaLanding || isLeaderboard || isAutonomous || isAchievements || isMoments;
+  const showDashboardTopbar = isHome || isAIArenaLanding || isLeaderboard || isAutonomous || isAchievements || isMoments || isLeague;
   const hideAppTopbar = isArenaLayout || showDashboardTopbar;
   const isFullBleedRoute = isAIArenaLanding || isArenaLayout || showDashboardTopbar || isGamePlay;
   const showSidebar = !isGamePlay || isGameChromeVisible;

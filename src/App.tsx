@@ -25,6 +25,7 @@ const MomentDetailPage = lazy(() => import("./pages/MomentDetailPage"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AutonomousPage = lazy(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
+const LeaguePage = lazy(() => import("./pages/LeaguePage"));
 const ArenaGamePage = lazy(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazy(() => import("./pages/RobowarGamePage"));
 import LoadingScreen from "./components/LoadingScreen";
@@ -160,6 +161,7 @@ const App = () => {
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/league" element={<LeaguePage />} />
                   <Route path="/ai-arena" element={<AIArenaPage />} />
                   <Route path="/moments" element={<AllMomentsPage />} />
                   <Route path="/moments/:id" element={<MomentDetailPage />} />

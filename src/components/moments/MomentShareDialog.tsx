@@ -380,9 +380,9 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
             type="button"
             onClick={(e) => e.stopPropagation()}
             aria-label="Share moment"
-            className="cursor-pointer rounded-md p-1.5 text-white/50 transition hover:bg-[#9a35ff]/10 hover:text-[#9a35ff]"
+            className="inline-flex h-full w-full cursor-pointer items-center justify-center text-white/50 transition hover:text-purple-300"
           >
-            <Share2 className="h-3.5 w-3.5" />
+            <Share2 className="h-4 w-4" />
           </button>
         ) : (
           <button
