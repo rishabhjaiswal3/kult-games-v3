@@ -63,7 +63,6 @@ export const FEATURED_MATCH = {
   homeScore: 1,
   awayScore: 0,
   liveMinute: 67,
-  stadiumImage: "/league/stadium-pitch.jpg",
   userAgentPick: {
     agentName: "HYBRID",
     confidence: 78,
