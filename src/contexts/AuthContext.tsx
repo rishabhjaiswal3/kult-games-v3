@@ -6,8 +6,8 @@ import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
 import {
   clearAiArenaAuthTokens,
-  exchangePrivyTokenForAiArenaToken,
   getAiArenaAccessToken,
+  tryExchangePrivyTokenForAiArenaToken,
 } from "@/lib/aiArenaAuth";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
@@ -17,6 +17,7 @@ import {
   isEmbeddedPrivyConnectedWallet,
   pickSigningWallet,
   resolvePrivyWalletAddress,
+  signMessageWithPrivyWallet,
 } from "@/lib/privyWallet";
 import type { Player } from "@/types/api";
 
@@ -36,7 +37,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Dedupes SIWE across React Strict Mode remounts (refs reset; a second `personal_sign` was still fired). */
 const siweInFlightByAddress = new Map<string, Promise<void>>();
-const SIGNING_WALLET_WAIT_MS = 8_000;
+const SIGNING_WALLET_WAIT_MS = 20_000;
 const SIGNING_WALLET_POLL_MS = 250;
 const PERSONAL_SIGN_TIMEOUT_MS = 45_000;
 
@@ -76,6 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasKultSession, setHasKultSession] = useState(
+    () => typeof localStorage !== "undefined" && !!localStorage.getItem(TOKEN_KEY),
+  );
 
   const resolvedAddress = resolvePrivyWalletAddress(user, wallets);
   const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
@@ -103,9 +107,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready || !authenticated || resolvedAddress) return;
     setIsLoading(true);
-    const timer = window.setTimeout(() => setIsLoading(false), 12_000);
+    const timer = window.setTimeout(() => {
+      setIsLoading(false);
+      if (!resolvePrivyWalletAddress(user, walletsRef.current)) {
+        requestOpenLoginModal({
+          mode: "recover",
+          message:
+            "Your wallet is still being set up. Please wait a moment and try again, or use Wallet login.",
+        });
+      }
+    }, 20_000);
     return () => window.clearTimeout(timer);
-  }, [ready, authenticated, resolvedAddress]);
+  }, [ready, authenticated, resolvedAddress, user]);
 
   // When Privy authenticates, run the full SIWE flow and AI Arena token exchange.
   useEffect(() => {
@@ -119,16 +132,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const existingWallet = localStorage.getItem(WALLET_KEY);
 
     if (existingToken && existingWallet?.toLowerCase() === address.toLowerCase()) {
+      setHasKultSession(true);
       void fetchProfile();
       if (!getAiArenaAccessToken()) {
         void (async () => {
-          try {
-            const privyAccessToken = await getAccessTokenRef.current();
-            if (privyAccessToken) {
-              await exchangePrivyTokenForAiArenaToken(privyAccessToken);
-            }
-          } catch {
-            /* non-blocking */
+          const privyAccessToken = await getAccessTokenRef.current();
+          if (privyAccessToken) {
+            await tryExchangePrivyTokenForAiArenaToken(privyAccessToken);
           }
         })();
       }
@@ -172,34 +182,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      const provider = await privyWallet.getEthereumProvider();
-
-      // Re-authorize account before signing — Privy's provider can lose authorization
-      // between connection and SIWE, causing error 4100 ("not authorized by the user").
-      try {
-        await provider.request({ method: "eth_requestAccounts" });
-      } catch {
-        /* best-effort; personal_sign may still work without it */
-      }
-
-      const signature = (await withTimeout(
-        provider.request({ method: "personal_sign", params: [message, address] }) as Promise<string>,
+      const signature = await withTimeout(
+        signMessageWithPrivyWallet(privyWallet, message, address),
         PERSONAL_SIGN_TIMEOUT_MS,
         "Wallet signature",
-      )) as string;
+      );
 
       const res = await playerApi.login(address, message, signature);
+      setHasKultSession(true);
       setPlayer(res.player);
 
-      // AI Arena token exchange is non-blocking — its failure must not
-      // invalidate the successful Kult login above.
-      try {
-        const privyAccessToken = await getAccessTokenRef.current();
-        if (privyAccessToken) {
-          await exchangePrivyTokenForAiArenaToken(privyAccessToken);
-        }
-      } catch (aiErr) {
-        console.warn("[AI Arena] Token exchange failed (non-blocking):", aiErr);
+      const privyAccessToken = await getAccessTokenRef.current();
+      if (privyAccessToken) {
+        await tryExchangePrivyTokenForAiArenaToken(privyAccessToken);
       }
     })();
 
@@ -207,7 +202,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     void run
       .catch(async (err) => {
+        // Kult SIWE succeeded — keep session even if a later optional step failed.
+        if (localStorage.getItem(TOKEN_KEY)) {
+          setHasKultSession(true);
+          console.warn("[SIWE] Post-login step failed (session kept):", err);
+          return;
+        }
+
         console.error("[SIWE] Login failed:", err);
+        setHasKultSession(false);
         playerApi.logout();
 
         if (isMissingSigningWalletError(err)) {
@@ -244,13 +247,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           siweInFlightByAddress.delete(addrKey);
         }
       });
-  }, [ready, authenticated, resolvedAddress, wallets, fetchProfile]);
+  }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout]);
 
   const handleLogout = async () => {
     siweInFlightByAddress.clear();
     playerApi.logout();
     clearAiArenaAuthTokens();
     clearAiAgentInfo();
+    setHasKultSession(false);
     setPlayer(null);
     await privyLogout();
   };
@@ -260,7 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         player,
         walletAddress,
-        isAuthenticated: authenticated && !!localStorage.getItem(TOKEN_KEY),
+        isAuthenticated: authenticated && hasKultSession,
         isLoading: !ready || isLoading,
         login: requestOpenLoginModal,
         logout: handleLogout,
