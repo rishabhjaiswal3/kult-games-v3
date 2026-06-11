@@ -8,7 +8,7 @@ export function LeagueStatsSidebar() {
   const pct = Math.round((KP_WEEK_PROGRESS.current / KP_WEEK_PROGRESS.target) * 100);
 
   return (
-    <LeaguePanel fill={false} className="border-[#a855f7]/25 p-3 sm:p-4">
+    <LeaguePanel fill={false} className="min-w-0 max-w-full border-[#a855f7]/25 p-3 sm:p-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <div>
           <h3 className={fifaSectionTitle}>KP Progress</h3>
