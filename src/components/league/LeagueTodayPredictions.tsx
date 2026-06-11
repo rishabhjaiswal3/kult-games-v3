@@ -1,4 +1,3 @@
-import { Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
