@@ -11,16 +11,16 @@ export function LeagueMomentsTicker() {
 
   return (
     <LeaguePanel fill={false} className="overflow-hidden p-0">
-      <div className="flex items-center gap-3 border-b border-white/8 px-4 py-2.5">
+      <div className="mb-2 flex items-center gap-2 border-b border-white/8 px-3 py-2">
         <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#a855f7]">
           Recent League Moments
         </span>
       </div>
-      <div className="flex gap-3 overflow-x-auto px-4 py-3 snap-x snap-mandatory scrollbar-none">
+      <div className="grid grid-cols-1 gap-2 px-3 py-2 sm:grid-cols-2 lg:grid-cols-4">
         {moments.map((moment) => (
           <div
             key={moment.id}
-            className="flex shrink-0 snap-start items-center gap-3 rounded-lg border border-white/8 bg-black/30 px-3 py-2 max-w-[min(100%,320px)]"
+            className="flex items-center gap-2 rounded-lg border border-white/8 bg-black/30 px-2.5 py-2"
           >
             <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/10">
               {moment.agent ? (

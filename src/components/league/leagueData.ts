@@ -5,7 +5,20 @@ export type UpcomingLeagueMatch = {
   home: CountryCode;
   away: CountryCode;
   time: string;
+  displayTime: string;
+  stage: string;
   countdown: string;
+};
+
+export type LeagueRecentPick = {
+  id: string;
+  home: CountryCode;
+  away: CountryCode;
+  pick: string;
+  confidence: number;
+  result: string;
+  outcome: "WIN" | "LOSS" | "DRAW";
+  kpEarned: number;
 };
 
 export type LeagueMomentFeed = {
@@ -41,10 +54,28 @@ export const FEATURED_MATCH = {
   homeAgent: "ASSASSIN",
   awayAgent: "HYBRID",
   stage: "Group Stage",
+  matchday: 2,
   matchNumber: 18,
   venue: "Arena Corinthians · São Paulo",
   predictionPool: 48250,
   totalAgentBets: 1247,
+  isLive: true,
+  homeScore: 1,
+  awayScore: 0,
+  liveMinute: 67,
+  stadiumImage: "/league/stadium-pitch.jpg",
+  userAgentPick: {
+    agentName: "HYBRID",
+    confidence: 78,
+    predictedScore: "2 - 1",
+    predictedWinner: "Brazil Win",
+  },
+};
+
+export const KP_WEEK_PROGRESS = {
+  current: 2850,
+  target: 5000,
+  globalRank: 1248,
 };
 
 export type LeagueAgentDuel = {
@@ -135,13 +166,103 @@ export const TODAY_PREDICTIONS = [
 ];
 
 export const UPCOMING_MATCHES: UpcomingLeagueMatch[] = [
-  { id: "m1", home: "FRA", away: "GER", time: "Jun 12 · 18:00", countdown: "05:42:18" },
-  { id: "m2", home: "ESP", away: "POR", time: "Jun 12 · 21:00", countdown: "08:12:04" },
-  { id: "m3", home: "ITA", away: "NLD", time: "Jun 13 · 17:00", countdown: "26:18:55" },
-  { id: "m4", home: "ENG", away: "FRA", time: "Jun 13 · 20:00", countdown: "29:18:55" },
-  { id: "m5", home: "BRA", away: "ARG", time: "Jun 14 · 20:00", countdown: "48:06:12" },
-  { id: "m6", home: "GER", away: "ITA", time: "Jun 15 · 15:00", countdown: "52:10:30" },
-  { id: "m8", home: "ARG", away: "ESP", time: "Jun 16 · 21:00", countdown: "78:22:15" },
+  {
+    id: "m1",
+    home: "FRA",
+    away: "GER",
+    time: "Jun 12 · 18:00",
+    displayTime: "Today 8:00 PM",
+    stage: "Group Stage",
+    countdown: "05:42:18",
+  },
+  {
+    id: "m2",
+    home: "ENG",
+    away: "POR",
+    time: "Jun 12 · 21:00",
+    displayTime: "Today 10:30 PM",
+    stage: "Group Stage",
+    countdown: "08:12:04",
+  },
+  {
+    id: "m3",
+    home: "ESP",
+    away: "NLD",
+    time: "Jun 13 · 17:00",
+    displayTime: "Tomorrow 6:00 PM",
+    stage: "Group Stage",
+    countdown: "26:18:55",
+  },
+  {
+    id: "m4",
+    home: "ITA",
+    away: "NLD",
+    time: "Jun 13 · 20:00",
+    displayTime: "Tomorrow 9:00 PM",
+    stage: "Group Stage",
+    countdown: "29:18:55",
+  },
+  {
+    id: "m5",
+    home: "BRA",
+    away: "ARG",
+    time: "Jun 14 · 20:00",
+    displayTime: "Jun 14 · 8:00 PM",
+    stage: "Group Stage",
+    countdown: "48:06:12",
+  },
+  {
+    id: "m6",
+    home: "GER",
+    away: "ITA",
+    time: "Jun 15 · 15:00",
+    displayTime: "Jun 15 · 3:00 PM",
+    stage: "Group Stage",
+    countdown: "52:10:30",
+  },
+];
+
+export const RECENT_PICKS: LeagueRecentPick[] = [
+  {
+    id: "r1",
+    home: "BRA",
+    away: "ARG",
+    pick: "Brazil 3-1",
+    confidence: 85,
+    result: "3-1",
+    outcome: "WIN",
+    kpEarned: 420,
+  },
+  {
+    id: "r2",
+    home: "FRA",
+    away: "GER",
+    pick: "Draw 1-1",
+    confidence: 72,
+    result: "2-1",
+    outcome: "LOSS",
+    kpEarned: 0,
+  },
+  {
+    id: "r3",
+    home: "ESP",
+    away: "POR",
+    pick: "Spain 2-0",
+    confidence: 68,
+    result: "2-0",
+    outcome: "WIN",
+    kpEarned: 310,
+  },
+  {
+    id: "r4",
+    home: "ENG",
+    away: "FRA",
+    pick: "England 1-0",
+    confidence: 61,
+    result: "1-1",
+    outcome: "DRAW",
+    kpEarned: 85,
+  },
 ];
 
 export const RIVALRY = {

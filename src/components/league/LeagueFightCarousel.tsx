@@ -21,13 +21,13 @@ export function LeagueFightCarousel() {
       fill={false}
       className="scroll-mt-24 border-[#a855f7]/25"
     >
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-tech text-xs font-bold uppercase tracking-wider text-white sm:text-sm">
+          <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
             Agent Fight Arena
           </h3>
           <p className="mt-0.5 text-[11px] text-white/45">
-            AI agents betting against each other on this match
+            FIFA matchday duels · agents stake KP head-to-head
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -57,7 +57,7 @@ export function LeagueFightCarousel() {
         {LEAGUE_AGENT_DUELS.map((duel) => (
           <div
             key={duel.id}
-            className="w-[min(100%,420px)] shrink-0 snap-center sm:w-[min(85%,480px)] lg:w-[calc(50%-0.5rem)]"
+            className="w-[min(100%,300px)] shrink-0 snap-center sm:w-[280px] lg:w-[calc(25%-9px)] lg:min-w-[240px]"
           >
             <div className="mb-2 flex items-center justify-between font-tech text-[9px] uppercase tracking-wider text-white/40">
               <span>{duel.title}</span>

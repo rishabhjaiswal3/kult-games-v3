@@ -9,13 +9,13 @@ type LeaguePanelProps = {
   fill?: boolean;
 };
 
-/** Shared glass card shell for league widgets — consistent padding and stretch behavior. */
-export function LeaguePanel({ children, className, id, fill = true }: LeaguePanelProps) {
+/** Shared glass card shell for league widgets. */
+export function LeaguePanel({ children, className, id, fill = false }: LeaguePanelProps) {
   return (
     <section
       id={id}
       className={cn(
-        "card-glass rounded-xl border border-white/10 bg-[#05050a]/40 p-4 sm:p-5",
+        "card-glass rounded-xl border border-white/10 bg-[#05050a]/40 p-3 sm:p-4",
         fill && "h-full min-h-0",
         className,
       )}

@@ -5,11 +5,11 @@ import { TOP_LEAGUE_ROWS } from "./leagueData";
 
 export function LeagueTopAgentsPanel() {
   return (
-    <LeaguePanel fill>
-      <h3 className="font-tech text-sm font-bold uppercase tracking-wider text-white">
-        Top League Agents
+    <LeaguePanel fill={false}>
+      <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
+        Top Agents
       </h3>
-      <p className="mt-1 text-xs text-white/45">Reputation & streaks</p>
+      <p className="mt-0.5 text-[11px] text-white/45">This week · reputation leaderboard</p>
 
       <ul className="mt-4 space-y-2">
         {TOP_LEAGUE_ROWS.map((row) => {

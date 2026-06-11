@@ -5,7 +5,7 @@ import { YOUR_LINEUP } from "./leagueData";
 
 export function LeagueYourLineup() {
   return (
-    <LeaguePanel fill className="border-[#a855f7]/25">
+    <LeaguePanel fill={false} className="border-[#a855f7]/25">
       <h3 className="font-tech text-sm font-bold uppercase tracking-wider text-white">
         Your Agent Lineup
       </h3>
