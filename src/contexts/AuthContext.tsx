@@ -158,19 +158,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const embedded = isEmbeddedPrivyConnectedWallet(privyWallet);
 
       // Embedded wallets stay on Privy's default chain; forcing 0G breaks Google/email login.
+      // Chain switch is best-effort — personal_sign works on any chain.
       if (!embedded) {
-        if (typeof privyWallet.switchChain === "function") {
-          try {
+        try {
+          if (typeof privyWallet.switchChain === "function") {
             await privyWallet.switchChain(allowedChain.decimalChainId);
-          } catch {
-            /* fall through to provider switch */
+          } else {
+            const p = await privyWallet.getEthereumProvider();
+            await ensureWalletOnAllowedChain(p, allowedChain);
           }
+        } catch {
+          /* proceed to sign regardless — chain mismatch doesn't block SIWE */
         }
-        const provider = await privyWallet.getEthereumProvider();
-        await ensureWalletOnAllowedChain(provider, allowedChain);
       }
 
       const provider = await privyWallet.getEthereumProvider();
+
+      // Re-authorize account before signing — Privy's provider can lose authorization
+      // between connection and SIWE, causing error 4100 ("not authorized by the user").
+      try {
+        await provider.request({ method: "eth_requestAccounts" });
+      } catch {
+        /* best-effort; personal_sign may still work without it */
+      }
+
       const signature = (await withTimeout(
         provider.request({ method: "personal_sign", params: [message, address] }) as Promise<string>,
         PERSONAL_SIGN_TIMEOUT_MS,
@@ -180,9 +191,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await playerApi.login(address, message, signature);
       setPlayer(res.player);
 
-      const privyAccessToken = await getAccessTokenRef.current();
-      if (privyAccessToken) {
-        await exchangePrivyTokenForAiArenaToken(privyAccessToken);
+      // AI Arena token exchange is non-blocking — its failure must not
+      // invalidate the successful Kult login above.
+      try {
+        const privyAccessToken = await getAccessTokenRef.current();
+        if (privyAccessToken) {
+          await exchangePrivyTokenForAiArenaToken(privyAccessToken);
+        }
+      } catch (aiErr) {
+        console.warn("[AI Arena] Token exchange failed (non-blocking):", aiErr);
       }
     })();
 
