@@ -644,26 +644,29 @@ export function AllMomentsPage() {
               ))}
             </div>
 
-            {/* Filters */}
-            <div className="relative z-30 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {/* Filters — search grows to fill space between dropdowns and the filter icon */}
+            <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2">
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
                 <FilterDropdown label="Mode" options={["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
                 <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
                 <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>
-              <div className="flex w-full min-w-0 items-center gap-2 lg:w-auto lg:shrink-0">
-                <div className="relative min-w-0 flex-1 lg:w-[200px] lg:flex-none">
+              <div className="flex min-w-[10rem] flex-1 basis-[10rem] items-center gap-2">
+                <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
                   <input
                     type="text"
                     placeholder="Search moments..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-[34px] w-full rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none"
+                    className="h-[34px] w-full min-w-0 rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none"
                   />
                 </div>
-                <button className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/60 transition hover:border-white/15 hover:text-white">
+                <button
+                  type="button"
+                  className="flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/60 transition hover:border-white/15 hover:text-white"
+                >
                   <SlidersHorizontal className="h-3.5 w-3.5" />
                 </button>
               </div>

@@ -5,6 +5,7 @@ import { AppSidebar } from "@/layout/AppSidebar";
 import { AppTopbar } from "@/layout/AppTopbar";
 import { MobileBottomNav } from "@/layout/MobileBottomNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
+import { isMomentsPath } from "@/constants/moments";
 import { navLabelForPath } from "@/layout/navConfig";
 import { usesArenaLayout } from "@/layout/arenaRoutes";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export function AppShell() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isGameChromeVisible, setIsGameChromeVisible] = useState(true);
   const activeLabel = navLabelForPath(pathname);
-  const isMoments = pathname === "/moments";
+  const isMoments = isMomentsPath(pathname);
   const isAIArenaLanding = pathname === "/ai-arena";
   const isArenaLayout = usesArenaLayout(pathname);
   const isHome = pathname === "/";

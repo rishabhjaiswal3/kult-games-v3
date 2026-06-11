@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { Flag, Play, Siren, Timer, Trophy, X } from "lucide-react";
+import { HighwayHustleGarage } from "@/components/highway/HighwayHustleGarage";
 import {
   HIGHWAY_HUSTLE_MODES,
   type HighwayHustleModeConfig,
@@ -79,6 +80,8 @@ export function HighwayHustleModeModal({
         </div>
 
         <div className="overflow-y-auto p-5 sm:p-6">
+          <HighwayHustleGarage compact title="Equipped vehicle" className="mb-5 border-white/8" />
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {HIGHWAY_HUSTLE_MODES.map((m) => {
               const Icon = MODE_ICONS[m.mode] ?? Flag;
