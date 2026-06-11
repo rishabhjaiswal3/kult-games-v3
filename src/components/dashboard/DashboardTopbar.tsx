@@ -57,13 +57,13 @@ export function DashboardTopbar() {
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3" />
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
             {isAuthenticated && (
-              <Link
-                to="/studio"
+              <a
+                href="/studio"
                 className="inline-flex h-[38px] shrink-0 items-center gap-2 rounded-md bg-[#9a35ff] px-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 sm:px-4 sm:text-[11px]"
               >
                 <Clapperboard className="h-4 w-4" />
                 <span className="hidden min-[430px]:inline">Studio</span>
-              </Link>
+              </a>
             )}
             <div className="relative shrink-0 rounded-md bg-gradient-to-l from-[#8b29ff]/60 to-white/5 p-[1px] transition-all hover:from-[#8b29ff]">
               <button

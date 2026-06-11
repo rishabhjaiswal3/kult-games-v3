@@ -32,13 +32,13 @@ export function AppTopbar() {
 
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-wrap sm:gap-3">
             {isAuthenticated ? (
-              <Link
-                to="/studio"
+              <a
+                href="/studio"
                 className="inline-flex h-10 items-center gap-2 rounded-md bg-[#9a35ff] px-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 sm:px-4 sm:text-[11px]"
               >
                 <Clapperboard className="h-4 w-4" />
                 Studio
-              </Link>
+              </a>
             ) : null}
 
             {isAuthenticated ? (
