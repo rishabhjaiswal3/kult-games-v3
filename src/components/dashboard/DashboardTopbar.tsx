@@ -59,7 +59,7 @@ export function DashboardTopbar() {
             {isAuthenticated && (
               <a
                 href="/studio"
-                className="inline-flex h-[38px] shrink-0 items-center gap-2 rounded-md bg-[#9a35ff] px-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 sm:px-4 sm:text-[11px]"
+                className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-0 font-tech text-[11px] font-black uppercase tracking-wider text-white transition hover:brightness-110 min-[430px]:w-auto min-[430px]:px-4 sm:text-xs"
               >
                 <Clapperboard className="h-4 w-4" />
                 <span className="hidden min-[430px]:inline">Studio</span>
