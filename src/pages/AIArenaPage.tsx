@@ -47,8 +47,38 @@ import iconBattle from "@/assets/icon-battle.png";
 import iconEarn from "@/assets/icon-earn.png";
 import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
+import heroTrio from "@/assets/hero-trio.png";
+import warzoneVideo from "@/assets/IMG_9260.MOV";
+import battleStep3 from "@/assets/step3.mp4";
+import battleStep5 from "@/assets/step5.mp4";
 import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
 import { RANKS } from "@/utils/rankSystem";
+
+const arenaGames = [
+  {
+    title: "WARZONE WARRIORS",
+    tag: "2D SHOOTER",
+    body: "Fast-paced 2D arcade shooter. Team up, deploy, and dominate the battlefield.",
+    image: heroTrio,
+    video: warzoneVideo,
+    tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
+  },
+  {
+    title: "ROBOWARS",
+    tag: "VEHICLE ARENA",
+    body: "Build. Upgrade. Destroy. Fight in intense robotic vehicle battles.",
+    video: battleStep5,
+    tone: "from-[#25100d]/10 via-[#170b23]/45 to-[#070910]/95",
+  },
+  {
+    title: "HIGHWAY HUSTLE",
+    tag: "RACING",
+    body: "High-speed chases on neon-lit highways. Dodge, boost, and outrun your rivals.",
+    video: battleStep3,
+    tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
+  },
+];
+
 const agents = [
   {
     rank: "01",
@@ -167,6 +197,7 @@ function AIArenaPageContent() {
     <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
+      <ArenaGames />
       <FeaturesBlock />
       <HowItWorks />
       <RankProgressionTimeline />
@@ -176,6 +207,116 @@ function AIArenaPageContent() {
       <PartnersBlock />
       <ArenaLandingFooter />
     </div>
+  );
+}
+
+function ArenaGames() {
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [visibleCards, setVisibleCards] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches ? 2 : 1,
+  );
+  const maxIndex = Math.max(0, arenaGames.length - visibleCards);
+
+  const nextGame = () => {
+    setCarouselIndex((current) => (current >= maxIndex ? 0 : current + 1));
+  };
+
+  const previousGame = () => {
+    setCarouselIndex((current) => (current <= 0 ? maxIndex : current - 1));
+  };
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const updateVisibleCards = () => setVisibleCards(media.matches ? 2 : 1);
+
+    updateVisibleCards();
+    media.addEventListener("change", updateVisibleCards);
+    return () => media.removeEventListener("change", updateVisibleCards);
+  }, []);
+
+  useEffect(() => {
+    setCarouselIndex((current) => Math.min(current, maxIndex));
+  }, [maxIndex]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setCarouselIndex((current) => (current >= maxIndex ? 0 : current + 1));
+    }, 4000);
+    return () => window.clearInterval(interval);
+  }, [maxIndex]);
+
+  return (
+    <section className="mx-auto px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h2 className="font-display text-2xl sm:text-3xl">AI ARENA GAMES</h2>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={previousGame}
+            aria-label="Previous AI Arena game"
+            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={nextGame}
+            aria-label="Next AI Arena game"
+            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <Link
+            to="/battles"
+            className="hidden h-9 items-center gap-2 rounded border border-[#9b32ff]/50 bg-[#230b35]/55 px-3 font-tech text-[10px] uppercase tracking-[0.12em] text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white sm:flex"
+          >
+            VIEW ALL <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      <div className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-700 ease-in-out"
+          style={{ transform: `translateX(-${carouselIndex * (100 / visibleCards)}%)` }}
+        >
+          {arenaGames.map((game) => (
+            <div key={game.title} className="w-full shrink-0 px-2 first:pl-0 last:pr-0 lg:w-1/2">
+              <article className="arena-panel group relative h-[330px] overflow-hidden rounded-xl border border-white/10 sm:h-[320px]">
+            {game.video ? (
+              <video
+                src={game.video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105"
+              />
+            ) : (
+              <img
+                src={game.image}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105"
+              />
+            )}
+            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-75`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/90 via-transparent to-transparent" />
+
+            <div className="relative z-10 flex h-full flex-col justify-end p-5">
+              <h3 className="font-tech text-4xl font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg sm:text-5xl">
+                {game.title}
+              </h3>
+              <span className="mt-5 inline-flex w-fit rounded border border-[#9f2dff]/70 bg-[#5b1499]/35 px-3 py-2 font-tech text-[10px] text-[#d773ff]">
+                {game.tag}
+              </span>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{game.body}</p>
+            </div>
+              </article>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
