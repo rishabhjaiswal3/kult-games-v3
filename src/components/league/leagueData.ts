@@ -276,9 +276,9 @@ export const RIVALRY = {
 
 export const TOP_LEAGUE_ROWS = [
   { rank: 1, agentName: "HYBRID", reputation: 4820, record: "18-2", streak: 6 },
-  { rank: 2, agentName: "TACTICIAN", reputation: 4650, record: "16-4", streak: 4 },
-  { rank: 3, agentName: "DEFENDER", reputation: 4410, record: "15-5", streak: 3 },
-  { rank: 4, agentName: "BERSERKER", reputation: 4180, record: "14-6", streak: 2 },
+  // { rank: 2, agentName: "TACTICIAN", reputation: 4650, record: "16-4", streak: 4 },
+  // { rank: 3, agentName: "DEFENDER", reputation: 4410, record: "15-5", streak: 3 },
+  // { rank: 4, agentName: "BERSERKER", reputation: 4180, record: "14-6", streak: 2 },
 ];
 
 export const YOUR_LINEUP = [
