@@ -48,3 +48,10 @@ export const MOMENT_ACCEPTED_MIME_TYPES = [
 export const MOMENT_FILE_INPUT_ACCEPT = MOMENT_ACCEPTED_MIME_TYPES.join(",");
 
 export const MOMENTS_QUERY_KEY_ROOT = "moments" as const;
+
+/** Query param on `/moments` — `?create=true` opens the create-moment dialog. */
+export const MOMENTS_CREATE_QUERY_PARAM = "create" as const;
+
+export function isMomentsCreateQueryOpen(value: string | null): boolean {
+  return value === "true" || value === "1";
+}

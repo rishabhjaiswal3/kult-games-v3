@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowUpRight,
   ChevronDown,
@@ -27,7 +27,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { momentsApi } from "@/api/momentsApi";
-import { MOMENTS_QUERY_KEY_ROOT } from "@/constants/moments";
+import {
+  isMomentsCreateQueryOpen,
+  MOMENTS_CREATE_QUERY_PARAM,
+  MOMENTS_QUERY_KEY_ROOT,
+} from "@/constants/moments";
 import type { Moment, MomentsFeedResponse } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
@@ -409,10 +413,10 @@ function FilterDropdown({ label, options, value, onSelect, activeDropdown, name,
     <div className="relative">
       <button
         onClick={() => onToggle(name)}
-        className="flex h-[34px] cursor-pointer items-center justify-between gap-2.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-3 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white"
+        className="flex h-[34px] max-w-[9.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
       >
-        <span>{value}</span>
-        <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+        <span className="truncate">{value}</span>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
       </button>
       {activeDropdown === name && (
         <>
@@ -449,9 +453,50 @@ export function AllMomentsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const deferredSearch = useDeferredValue(searchQuery.trim());
+
+  const syncCreateQueryParam = useCallback(
+    (open: boolean) => {
+      const next = new URLSearchParams(searchParams);
+      if (open) next.set(MOMENTS_CREATE_QUERY_PARAM, "true");
+      else next.delete(MOMENTS_CREATE_QUERY_PARAM);
+      const nextSearch = next.toString();
+      const currentSearch = searchParams.toString();
+      if (nextSearch !== currentSearch) {
+        setSearchParams(next, { replace: true });
+      }
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const handleCreateOpenChange = useCallback(
+    (open: boolean) => {
+      if (open && !isAuthenticated) {
+        syncCreateQueryParam(true);
+        requestOpenLoginModal();
+        return;
+      }
+      setIsCreateOpen(open);
+      syncCreateQueryParam(open);
+    },
+    [isAuthenticated, syncCreateQueryParam],
+  );
+
+  useEffect(() => {
+    const shouldOpen = isMomentsCreateQueryOpen(searchParams.get(MOMENTS_CREATE_QUERY_PARAM));
+    if (!shouldOpen) {
+      setIsCreateOpen(false);
+      return;
+    }
+    if (!isAuthenticated) {
+      requestOpenLoginModal();
+      return;
+    }
+    setIsCreateOpen(true);
+  }, [searchParams, isAuthenticated]);
 
   const discoverQuery = useInfiniteQuery({
     queryKey: [MOMENTS_QUERY_KEY_ROOT, "discover", deferredSearch],
@@ -562,7 +607,7 @@ export function AllMomentsPage() {
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
       <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
 
           {/* ── Main column ── */}
           <div className="min-w-0 space-y-4">
@@ -577,7 +622,7 @@ export function AllMomentsPage() {
               </div>
               <button
                 type="button"
-                onClick={() => isAuthenticated ? setIsCreateOpen(true) : requestOpenLoginModal()}
+                onClick={() => handleCreateOpenChange(true)}
                 className="flex h-10 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -586,12 +631,12 @@ export function AllMomentsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-6 border-b border-white/8 text-xs font-bold tracking-wide select-none">
+            <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6">
               {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative cursor-pointer pb-2.5 uppercase transition-all hover:text-white ${activeTab === tab ? "text-white" : "text-white/45"}`}
+                  className={`relative shrink-0 cursor-pointer pb-2.5 uppercase transition-all hover:text-white ${activeTab === tab ? "text-white" : "text-white/45"}`}
                 >
                   {tab}
                   {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9a35ff]" />}
@@ -600,22 +645,22 @@ export function AllMomentsPage() {
             </div>
 
             {/* Filters */}
-            <div className="relative z-30 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="relative z-30 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
                 <FilterDropdown label="Mode" options={["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
                 <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
                 <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>
-              <div className="flex items-center gap-2 max-sm:w-full">
-                <div className="relative max-sm:flex-1">
+              <div className="flex w-full min-w-0 items-center gap-2 lg:w-auto lg:shrink-0">
+                <div className="relative min-w-0 flex-1 lg:w-[200px] lg:flex-none">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
                   <input
                     type="text"
                     placeholder="Search moments..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-[34px] w-[200px] rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none max-sm:w-full"
+                    className="h-[34px] w-full rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none"
                   />
                 </div>
                 <button className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/60 transition hover:border-white/15 hover:text-white">
@@ -625,7 +670,7 @@ export function AllMomentsPage() {
             </div>
 
             {/* Category pills */}
-            <div className="relative z-10 grid grid-cols-3 gap-2 pt-1 sm:flex sm:flex-wrap">
+            <div className="relative z-10 grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-3 2xl:grid-cols-6">
               {[
                 { label: "TRENDING",   Icon: Flame,   desc: "Most popular" },
                 { label: "EPIC PLAYS", Icon: Zap,     desc: "Insane plays" },
@@ -639,15 +684,15 @@ export function AllMomentsPage() {
                   <button
                     key={label}
                     onClick={() => setActiveCategory(label as SubCategory)}
-                    className={`arena-panel flex min-w-[100px] flex-1 cursor-pointer flex-col items-start border-white/8 bg-[#04080f]/90 p-3 text-left transition ${
+                    className={`arena-panel flex min-w-0 cursor-pointer flex-col items-start border-white/8 bg-[#04080f]/90 p-2 text-left transition sm:p-2.5 ${
                       isActive ? "border-purple-500/40 bg-gradient-to-br from-purple-950/40 to-purple-900/10 shadow-[0_0_12px_rgba(154,53,255,0.1)]" : "hover:border-white/15 hover:bg-white/5"
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#b95cff]" : "text-white/45"}`} />
-                      <span className="font-tech text-[10px] font-bold tracking-wider">{label}</span>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#b95cff]" : "text-white/45"}`} />
+                      <span className="truncate font-tech text-[9px] font-bold leading-tight tracking-wide sm:text-[10px]">{label}</span>
                     </div>
-                    <span className="mt-1 text-[8px] font-semibold uppercase leading-none text-white/45">{desc}</span>
+                    <span className="mt-1 line-clamp-2 text-[7px] font-semibold uppercase leading-snug text-white/45 sm:text-[8px]">{desc}</span>
                   </button>
                 );
               })}
@@ -882,7 +927,7 @@ export function AllMomentsPage() {
 
       <CreateMomentDialog
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        onOpenChange={handleCreateOpenChange}
         onCreated={() => void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] })}
       />
     </div>
