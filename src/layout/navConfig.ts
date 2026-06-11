@@ -6,6 +6,7 @@ import {
   Gamepad2,
   Home,
   LayoutDashboard,
+  Medal,
   Package,
   Sparkles,
   Swords,
@@ -24,6 +25,7 @@ export type NavItem = {
 
 export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Home", path: "/", icon: Home },
+  { label: "League", path: "/league", icon: Medal },
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles },
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, requiresAuth: true },
   { label: "Games", path: "/games", icon: Gamepad2 },

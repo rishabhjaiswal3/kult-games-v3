@@ -3,10 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Bookmark,
-  Eye,
-  Heart,
-  MessageCircle,
   Pause,
   Play,
   Tag,
@@ -21,6 +17,7 @@ import { momentsApi } from "@/api/momentsApi";
 import { MOMENTS_QUERY_KEY_ROOT } from "@/constants/moments";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
+import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import type { Moment } from "@/types/api";
@@ -80,11 +77,6 @@ function formatDate(value?: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-}
-
-function compactNum(n: number): string {
-  if (!n || n <= 0) return "—";
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }
 
 // ── Game badge ────────────────────────────────────────────────────────────────
@@ -338,43 +330,15 @@ export function MomentDetailPage() {
               )}
             </div>
 
-            {/* Action bar */}
-            <div className="flex flex-wrap items-center gap-3 border-t border-white/6 pt-4">
-              {/* Like */}
-              <button type="button" onClick={handleLike} disabled={likeMutation.isPending}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-tech text-xs font-bold uppercase tracking-wider text-white/60 transition hover:border-rose-500/40 hover:text-rose-400 disabled:opacity-50"
-              >
-                {likeMutation.isPending
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Heart className="h-4 w-4" />
-                }
-                <span>{compactNum(moment.numLikes)}</span>
-              </button>
-
-              {/* Comments */}
-              <button type="button" onClick={scrollToComments}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-tech text-xs font-bold uppercase tracking-wider text-white/60 transition hover:border-[#9a35ff]/40 hover:text-[#c084fc]"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span>{compactNum(moment.numComments)}</span>
-              </button>
-
-              {/* Views */}
-              <div className="flex items-center gap-2 px-2 font-tech text-xs text-white/30">
-                <Eye className="h-4 w-4" />
-                <span>—</span>
-              </div>
-
-              {/* Share — only visible to the creator */}
-              {isOwner && <MomentShareDialog moment={moment} />}
-
-              {/* Bookmark */}
-              <button type="button" onClick={() => setBookmarked((b) => !b)}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2 font-tech text-xs font-bold uppercase tracking-wider transition ${bookmarked ? "border-purple-500/40 bg-purple-500/10 text-purple-400" : "border-white/10 bg-white/5 text-white/60 hover:border-purple-500/30 hover:text-purple-400"}`}
-              >
-                <Bookmark className={`h-4 w-4 ${bookmarked ? "fill-purple-500" : ""}`} />
-              </button>
-            </div>
+            <MomentEngagementBar
+              moment={moment}
+              bookmarked={bookmarked}
+              onBookmarkToggle={() => setBookmarked((b) => !b)}
+              onLike={handleLike}
+              onComments={scrollToComments}
+              isLiking={likeMutation.isPending}
+              isOwner={isOwner}
+            />
 
             {/* 0G storage proof (when available) */}
             {moment.assetZgHash && (
