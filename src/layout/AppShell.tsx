@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { AppSidebar } from "@/layout/AppSidebar";
 import { AppTopbar } from "@/layout/AppTopbar";
 import { MobileBottomNav } from "@/layout/MobileBottomNav";
@@ -68,14 +69,18 @@ export function AppShell() {
             >
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {showTopbar ? <AppTopbar /> : null}
-              <Outlet context={shellOutletContext} />
+              <Suspense fallback={<PageRouteFallback />}>
+                <Outlet context={shellOutletContext} />
+              </Suspense>
             </div>
           ) : (
             <div className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-24 sm:pb-0">
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {showTopbar ? <AppTopbar /> : null}
               <div className="px-4 py-5 sm:px-6 lg:px-8">
-                <Outlet context={shellOutletContext} />
+                <Suspense fallback={<PageRouteFallback />}>
+                  <Outlet context={shellOutletContext} />
+                </Suspense>
               </div>
             </div>
           )}

@@ -225,6 +225,16 @@ function deriveCategories(moment: Moment): Set<SubCategory> {
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v|avi|mkv|ogv|m3u8)(?:\?.*)?$/i;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif|svg|bmp)(?:\?.*)?$/i;
 
+function isVideoMediaUrl(url: string | undefined) {
+  return Boolean(url && VIDEO_EXT.test(url));
+}
+
+function gamePlaceholderThumbnail(game: string) {
+  if (game === "ROBOWARS") return momentRobowars;
+  if (game === "HIGHWAY HUSTLE") return momentFeatured;
+  return momentWarzone;
+}
+
 function deriveContentType(moment: Moment): "image" | "video" {
   const ft = metadataString(moment, ["fileType", "mimeType", "contentType", "type"]);
   if (ft) {
@@ -232,7 +242,7 @@ function deriveContentType(moment: Moment): "image" | "video" {
     if (n.startsWith("video/")) return "video";
     if (n.startsWith("image/")) return "image";
   }
-  const url = moment.assetUrl ?? "";
+  const url = moment.assetZgUrl ?? moment.assetUrl ?? "";
   if (VIDEO_EXT.test(url)) return "video";
   if (IMAGE_EXT.test(url)) return "image";
   return "image";
@@ -240,12 +250,10 @@ function deriveContentType(moment: Moment): "image" | "video" {
 
 function deriveThumbnail(moment: Moment, game: string) {
   const explicit = metadataString(moment, ["thumbnailUrl", "thumbnail", "posterUrl", "poster", "coverImage", "imageUrl", "previewImage"]);
-  if (explicit) return explicit;
-  if (moment.assetZgUrl) return moment.assetZgUrl;
-  if (moment.assetUrl && /\.(png|jpe?g|gif|webp|avif)$/i.test(moment.assetUrl)) return moment.assetUrl;
-  if (game === "ROBOWARS") return momentRobowars;
-  if (game === "HIGHWAY HUSTLE") return momentFeatured;
-  return momentWarzone;
+  if (explicit && !isVideoMediaUrl(explicit)) return explicit;
+  if (moment.assetZgUrl && !isVideoMediaUrl(moment.assetZgUrl)) return moment.assetZgUrl;
+  if (moment.assetUrl && IMAGE_EXT.test(moment.assetUrl)) return moment.assetUrl;
+  return gamePlaceholderThumbnail(game);
 }
 
 function deriveViewCount(moment: Moment) {
@@ -683,11 +691,12 @@ export function AllMomentsPage() {
                       onClick={() => openMoment(item)}
                       className="group relative aspect-[16/9] cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
                     >
-                      {item.contentType === "video" && item.mediaUrl ? (
-                        <video src={item.mediaUrl} poster={item.thumbnail} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" preload="metadata" muted playsInline />
-                      ) : (
-                        <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                      )}
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
 
                       <div className="absolute left-3 top-3"><GameBadge game={item.game} /></div>
@@ -763,11 +772,12 @@ export function AllMomentsPage() {
                 onClick={() => openMoment(featuredMoment)}
                 className="group relative aspect-[16/10] w-full cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
               >
-                {featuredMoment?.contentType === "video" && featuredMoment.mediaUrl ? (
-                  <video src={featuredMoment.mediaUrl} poster={featuredMoment.thumbnail ?? momentFeatured} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" preload="metadata" muted playsInline />
-                ) : (
-                  <img src={featuredMoment?.thumbnail ?? momentFeatured} alt={featuredMoment?.title ?? "Featured Moment"} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-                )}
+                <img
+                  src={featuredMoment?.thumbnail ?? momentFeatured}
+                  alt={featuredMoment?.title ?? "Featured Moment"}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute left-3 top-3"><GameBadge game={featuredMoment?.game ?? "ARENA HIGHLIGHTS"} size="xs" /></div>
                 <div className="absolute right-3 top-3 flex items-center gap-1.5">
