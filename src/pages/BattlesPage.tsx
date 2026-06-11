@@ -77,6 +77,13 @@ const gameModes: GameMode[] = [
     video: battleStep5,
     tone: "from-[#201007]/30 via-[#100b0c]/55 to-[#070910]/95",
   },
+  {
+    title: "HIGHWAY HUSTLE",
+    tag: "RACING",
+    body: "High-speed chases on neon-lit highways. Dodge, boost, and outrun your rivals.",
+    video: battleStep3,
+    tone: "from-[#071820]/30 via-[#0b1016]/55 to-[#070910]/95",
+  },
 ];
 
 const activeBattles = [
@@ -333,7 +340,7 @@ function GameModeCard({ mode }: { mode: GameMode }) {
         <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78" />
       )}
       <div className={`absolute inset-0 bg-gradient-to-r ${mode.tone}`} />
-      <div className="relative z-10 flex h-full flex-col justify-between p-5">
+      <div className="relative z-10 h-full p-5">
         <div>
           <h3 className="font-tech text-4xl font-black italic tracking-[-0.04em] text-white drop-shadow">
             {mode.title}
@@ -343,14 +350,21 @@ function GameModeCard({ mode }: { mode: GameMode }) {
           </span>
           <p className="mt-2 max-w-[250px] text-xs leading-relaxed text-white/72">{mode.body}</p>
         </div>
-        <button
-          type="button"
-          className="flex h-10 w-[145px] items-center justify-center gap-3 rounded border border-[#9b32ff]/70 bg-[#170d26]/65 font-tech text-[10px]"
-        >
-          ENTER ARENA <ArrowUpRight className="h-4 w-4" />
-        </button>
       </div>
     </article>
+  );
+}
+
+function GameCarouselSection() {
+  return (
+    <section className="mt-7">
+      <h2 className="font-tech text-sm uppercase tracking-[0.08em]">CHOOSE YOUR GAME</h2>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {gameModes.map((mode) => (
+          <GameModeCard key={mode.title} mode={mode} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -1213,12 +1227,7 @@ const BattlesPage = () => {
         <RankCard firstAgent={myAgents[0] ?? null} />
       </div>
 
-      <SectionTitle>CHOOSE YOUR GAME</SectionTitle>
-      <div className="grid gap-3 xl:grid-cols-2">
-        {gameModes.map((mode) => (
-          <GameModeCard key={mode.title} mode={mode} />
-        ))}
-      </div>
+      <GameCarouselSection />
 
       <div className="mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-5">
