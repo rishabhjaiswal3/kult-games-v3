@@ -55,3 +55,8 @@ export const MOMENTS_CREATE_QUERY_PARAM = "create" as const;
 export function isMomentsCreateQueryOpen(value: string | null): boolean {
   return value === "true" || value === "1";
 }
+
+/** `/moments` feed and `/moments/:id` detail share the same dashboard shell + topbar. */
+export function isMomentsPath(pathname: string): boolean {
+  return pathname === "/moments" || /^\/moments\/[^/]+$/.test(pathname);
+}

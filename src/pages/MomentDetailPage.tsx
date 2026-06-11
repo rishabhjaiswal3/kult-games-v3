@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -101,6 +101,11 @@ function MomentMediaPlayer({ moment }: { moment: Moment }) {
   const thumb = deriveThumbnail(moment);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [imageSrc, setImageSrc] = useState(url ?? thumb);
+
+  useEffect(() => {
+    setImageSrc(url ?? thumb);
+  }, [url, thumb]);
 
   const togglePlay = () => {
     const el = videoRef.current;
@@ -109,29 +114,42 @@ function MomentMediaPlayer({ moment }: { moment: Moment }) {
     else { el.pause(); setPlaying(false); }
   };
 
+  const stageClass =
+    "relative aspect-video w-full overflow-hidden rounded-xl bg-[#0B0B0E]";
+  const mediaClass = "absolute inset-0 h-full w-full object-contain";
+
   if (!url) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#0B0B0E]">
-        <img src={thumb} alt={moment.title} className="h-full w-full object-cover" />
+      <div className={stageClass}>
+        <img src={thumb} alt={moment.title} className={mediaClass} />
       </div>
     );
   }
 
   if (!isVideo) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#0B0B0E]">
-        <img src={url} alt={moment.title} className="h-full w-full object-cover" loading="eager" />
+      <div className={stageClass}>
+        <img
+          src={imageSrc}
+          alt={moment.title}
+          className={mediaClass}
+          loading="eager"
+          decoding="async"
+          onError={() => {
+            if (imageSrc !== thumb) setImageSrc(thumb);
+          }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#0B0B0E]">
+    <div className={stageClass}>
       <video
         ref={videoRef}
         src={url}
         poster={thumb}
-        className="h-full w-full object-cover"
+        className={mediaClass}
         playsInline
         controls={playing}
         preload="metadata"
@@ -258,7 +276,6 @@ export function MomentDetailPage() {
           {/* ── Main column ── */}
           <div className="min-w-0 space-y-5">
 
-            {/* Media player */}
             <MomentMediaPlayer moment={moment} />
 
             {/* Title + meta */}
