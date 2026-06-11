@@ -3,7 +3,6 @@ import { ChevronRight, Timer } from "lucide-react";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagHex } from "./FlagHex";
-import { LeagueMatchDetailsDialog } from "./LeagueMatchDetailsDialog";
 import { LeaguePanel } from "./LeaguePanel";
 import { FEATURED_MATCH } from "./leagueData";
 
@@ -45,7 +44,6 @@ function AgentFlank({
 
 export function LeagueFeaturedBanner() {
   const [secondsLeft, setSecondsLeft] = useState(FEATURED_MATCH.countdownSeconds);
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -120,12 +118,6 @@ export function LeagueFeaturedBanner() {
           <AgentFlank agentName={FEATURED_MATCH.awayAgent} flip />
         </div>
       </LeaguePanel>
-
-      <LeagueMatchDetailsDialog
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        countdownLabel={countdownLabel}
-      />
     </>
   );
 }
