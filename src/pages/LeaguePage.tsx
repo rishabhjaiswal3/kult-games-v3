@@ -13,45 +13,45 @@ import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
 
 const LeaguePage = () => {
   return (
-    <div className="min-w-0 w-full max-w-full px-4 py-3 sm:px-6 lg:px-8">
+    <div className="min-w-0 w-full max-w-full overflow-x-hidden px-3 py-3 sm:px-6 lg:px-8">
       <LeaguePageHeader />
 
-      <div className="grid items-start gap-2.5 lg:grid-cols-12 lg:gap-3">
-        <div className="lg:col-span-8 xl:col-span-9">
+      <div className="grid w-full min-w-0 grid-cols-1 items-start gap-2.5 lg:grid-cols-12 lg:gap-3">
+        <div className="min-w-0 w-full lg:col-span-8 xl:col-span-9">
           <LeagueFeaturedBanner />
         </div>
-        <div className="flex flex-col gap-2.5 lg:col-span-4 xl:col-span-3">
+        <div className="flex min-w-0 w-full flex-col gap-2.5 lg:col-span-4 xl:col-span-3">
           <LeagueStatsSidebar />
           <LeagueTopAgentsPanel />
         </div>
 
-        <div className="lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12">
           <LeagueUpcomingCarousel />
         </div>
 
-        <div className="lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12">
           <LeagueTodayPredictions />
         </div>
 
-        <div className="lg:col-span-4">
+        <div className="min-w-0 w-full lg:col-span-4">
           <LeagueRecentPicks />
         </div>
-        <div className="lg:col-span-4">
+        <div className="min-w-0 w-full lg:col-span-4">
           <LeagueRivalries />
         </div>
-        <div className="lg:col-span-4">
+        <div className="min-w-0 w-full lg:col-span-4">
           <LeagueYourLineup />
         </div>
 
-        <div className="lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12">
           <LeagueFightCarousel />
         </div>
 
-        <div className="lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12">
           <LeagueQuestionsCarousel />
         </div>
 
-        <div className="lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12">
           <LeagueMomentsTicker />
         </div>
       </div>

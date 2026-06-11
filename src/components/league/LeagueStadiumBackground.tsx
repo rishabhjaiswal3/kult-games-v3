@@ -55,7 +55,7 @@ export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgrou
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden" aria-hidden>
+    <div className="absolute inset-0 size-full overflow-hidden" aria-hidden>
       <video
         ref={videoRef}
         src={leagueBackgroundVideo}
@@ -65,7 +65,7 @@ export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgrou
         preload="auto"
         onLoadedMetadata={handleLoadedMetadata}
         onTimeUpdate={handleTimeUpdate}
-        className="absolute inset-0 h-full w-full object-cover object-[center_42%]"
+        className="absolute inset-0 size-full max-w-none object-cover object-center sm:object-[center_35%]"
       />
       {!clean ? (
         <>
@@ -75,7 +75,7 @@ export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgrou
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_38%,rgba(255,255,255,0.1),transparent_65%)]" />
         </>
       ) : (
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#05050a] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#05050a] to-transparent sm:h-16" />
       )}
     </div>
   );

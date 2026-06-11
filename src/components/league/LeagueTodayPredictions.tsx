@@ -10,7 +10,7 @@ type LeagueTodayPredictionsProps = {
 
 export function LeagueTodayPredictions({ className }: LeagueTodayPredictionsProps) {
   return (
-    <LeaguePanel className={cn("p-2.5 sm:p-3", className)}>
+    <LeaguePanel className={cn("min-w-0 max-w-full overflow-hidden p-2.5 sm:p-3", className)}>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
           Today&apos;s Agent Predictions
