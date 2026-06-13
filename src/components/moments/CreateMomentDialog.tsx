@@ -16,10 +16,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { momentsApi } from "@/api/momentsApi";
+import { compressMomentMediaFile } from "@/lib/compressMomentMedia";
 import {
   KNOWN_MOMENT_GAMES,
   MOMENT_ACCEPTED_MIME_TYPES,
   MOMENT_FILE_INPUT_ACCEPT,
+  MOMENT_IMAGE_COMPRESS,
   MOMENT_MEDIA_LIMITS,
 } from "@/constants/moments";
 import type { CreateMomentResponse } from "@/types/api";
@@ -79,6 +81,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [selectedGameSlugs, setSelectedGameSlugs] = useState<Set<string>>(new Set());
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -107,8 +110,9 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   const createMomentMutation = useMutation({
     mutationFn: async () => {
       if (!asset) throw new Error("Pick an image or video first");
+      const { file } = await compressMomentMediaFile(asset.file);
       return momentsApi.createFromFile({
-        assetFile: asset.file,
+        assetFile: file,
         title: title.trim(),
         description: description.trim() || undefined,
         tags: tagPreview,
@@ -126,8 +130,9 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   });
 
   const isSubmitting = createMomentMutation.isPending;
+  const isMediaBusy = isSubmitting || isCompressing;
 
-  const handleFileChange = (file: File | null) => {
+  const handleFileChange = async (file: File | null) => {
     if (!file) return;
 
     if (!isAcceptedMimeType(file)) {
@@ -145,13 +150,33 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
       return;
     }
 
-    // The previous object URL (if any) is revoked by the effect cleanup below
-    // when React commits the new asset value — single source of truth.
-    setAsset({
-      file,
-      previewKind,
-      previewUrl: URL.createObjectURL(file),
-    });
+    setIsCompressing(true);
+    try {
+      const { file: optimizedFile, wasCompressed, originalSizeBytes } = await compressMomentMediaFile(file);
+
+      if (optimizedFile.size > MOMENT_IMAGE_COMPRESS.hardMaxBytes && previewKind === "image") {
+        toast.error(`Image is still too large after optimization (${formatBytes(optimizedFile.size)}). Max is 500 KB.`);
+        return;
+      }
+      if (optimizedFile.size > MOMENT_MEDIA_LIMITS.maxFileSizeBytes) {
+        toast.error(`File is still too large after optimization (${formatBytes(optimizedFile.size)}).`);
+        return;
+      }
+
+      if (wasCompressed && optimizedFile.size < originalSizeBytes) {
+        toast.success(`Optimized ${formatBytes(originalSizeBytes)} → ${formatBytes(optimizedFile.size)}`);
+      }
+
+      setAsset({
+        file: optimizedFile,
+        previewKind,
+        previewUrl: URL.createObjectURL(optimizedFile),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not optimize media");
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleClearFile = () => {
@@ -170,7 +195,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
 
   const trimmedTitle = title.trim();
   const canSubmit =
-    isAuthenticated && !isSubmitting && asset !== null && trimmedTitle.length >= TITLE_MIN_LENGTH;
+    isAuthenticated && !isMediaBusy && asset !== null && trimmedTitle.length >= TITLE_MIN_LENGTH;
 
   const handleSubmit = () => {
     if (!isAuthenticated) {
@@ -189,7 +214,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => (isSubmitting ? null : onOpenChange(next))}>
+    <Dialog open={open} onOpenChange={(next) => (isMediaBusy ? null : onOpenChange(next))}>
       <ArenaDialogContent
         size="lg"
         className="overflow-hidden border-[#9a35ff]/30 bg-[linear-gradient(160deg,hsl(265_48%_12%_/_0.98),hsl(220_45%_7%_/_0.98))] shadow-[0_30px_80px_rgba(0,0,0,0.55),0_0_60px_rgba(154,53,255,0.14)] [&>button]:border-[#9a35ff]/25 [&>button]:bg-[#0a0f1b]/90 [&>button]:text-white/70 [&>button]:hover:border-[#9a35ff]/45 [&>button]:hover:text-white"
@@ -226,8 +251,15 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
               type="file"
               accept={MOMENT_FILE_INPUT_ACCEPT}
               className="sr-only"
-              onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)}
+              onChange={(event) => void handleFileChange(event.target.files?.[0] ?? null)}
             />
+
+            {isCompressing ? (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-[#9a35ff]/25 bg-[#9a35ff]/10 px-3 py-2 text-[11px] text-[#d6acff]">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Optimizing media for upload…
+              </div>
+            ) : null}
 
             {asset ? (
               <div className="mt-2 overflow-hidden rounded-lg border border-[#9a35ff]/20 bg-[#0a0f1b]/90">
@@ -249,7 +281,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
                   <button
                     type="button"
                     onClick={handleClearFile}
-                    disabled={isSubmitting}
+                    disabled={isMediaBusy}
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-black/60 text-white/80 transition hover:border-red-400/50 hover:bg-red-500/20 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label="Remove file"
                   >
@@ -281,7 +313,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
                   Click to upload media
                 </span>
                 <span className="text-[10px] text-white/40">
-                  Any image · MP4 · WebM · MOV · video ≤ {MOMENT_MEDIA_LIMITS.maxVideoDurationSeconds}s
+                  Images auto-optimized to ≤500 KB · MP4 · WebM · MOV · video ≤ {MOMENT_MEDIA_LIMITS.maxVideoDurationSeconds}s
                 </span>
               </button>
             )}
