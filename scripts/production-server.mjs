@@ -1,13 +1,14 @@
 /**
  * Production static server with social-crawler OG support for /moments/:id.
  *
- * Humans get the SPA. Twitter/Facebook/WhatsApp bots get share HTML from the
- * backend (with og:image = the moment asset URL on DigitalOcean Spaces).
+ * Humans get the SPA. Twitter/Facebook/WhatsApp/Reddit bots get OG HTML built
+ * from the moment API (og:image = JPEG CDN URL when available).
  */
 import { createServer } from "http";
 import { createReadStream, existsSync, readFileSync, statSync } from "fs";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
+import { buildMomentOgHtml } from "./momentOgHtml.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "../dist");
@@ -51,47 +52,35 @@ function requestOrigin(req) {
   return host ? `${proto}://${host}` : "";
 }
 
+async function fetchMoment(momentId) {
+  const response = await fetch(`${API_ORIGIN}/api/moments/${momentId}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) return null;
+  const payload = await response.json();
+  return payload?.data ?? payload?.moment ?? null;
+}
+
 async function serveCrawlerMomentOg(req, res, momentId) {
   const origin = requestOrigin(req);
   const publicMomentUrl = origin ? `${origin}/moments/${momentId}` : `/moments/${momentId}`;
-  const upstream = `${API_ORIGIN}/api/share/moments/${momentId}`;
 
   try {
-    const upstreamRes = await fetch(upstream, {
-      headers: {
-        "User-Agent": req.headers["user-agent"] || "KultCrawlerProxy/1.0",
-        Accept: "text/html",
-      },
-    });
-
-    if (!upstreamRes.ok) {
-      res.writeHead(upstreamRes.status);
-      res.end(await upstreamRes.text());
+    const moment = await fetchMoment(momentId);
+    if (!moment) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Moment not found");
       return;
     }
 
-    let html = await upstreamRes.text();
-
-    // Canonical URL in posts is /moments/:id — align OG tags with that.
-    html = html.replace(
-      /<meta property="og:url" content="[^"]*"\s*\/?>/g,
-      `<meta property="og:url" content="${publicMomentUrl}" />`,
-    );
-    html = html.replace(
-      /<link rel="canonical" href="[^"]*"\s*\/?>/g,
-      `<link rel="canonical" href="${publicMomentUrl}" />`,
-    );
-    // Crawlers must not follow the human SPA redirect.
-    html = html.replace(/<script>window\.location\.replace\("[^"]*"\);<\/script>/, "");
-    html = html.replace(/<noscript>[\s\S]*?<\/noscript>/, "");
-
+    const html = buildMomentOgHtml(moment, publicMomentUrl);
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
     });
     res.end(html);
   } catch (error) {
-    console.error("[production-server] crawler OG proxy failed", error);
+    console.error("[production-server] crawler OG failed", error);
     res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Moment preview unavailable");
   }

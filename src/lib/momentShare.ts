@@ -52,9 +52,12 @@ function normalizeHashtag(value: string) {
     .slice(0, 24);
 }
 
-/** Public object-storage URL — reliably crawlable; prefer over 0G gateway for share cards. */
+/** Public object-storage URL — reliably crawlable; prefer JPEG ogImageUrl for share cards. */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
   const meta = moment.assetMetadata as Record<string, unknown> | undefined;
+  const ogImageUrl = typeof meta?.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
+  if (ogImageUrl) return ogImageUrl;
+
   const thumbnailUrl = typeof meta?.thumbnailUrl === "string" ? meta.thumbnailUrl.trim() : "";
   if (thumbnailUrl) return thumbnailUrl;
 
@@ -62,6 +65,17 @@ export function resolveShareMediaUrl(moment: Moment): string | undefined {
   if (assetUrl) return assetUrl;
 
   return moment.assetZgUrl?.trim() || undefined;
+}
+
+/**
+ * URL social platforms crawl for link previews.
+ * Static hosts serve SPA on /moments/:id — use previewUrl until production-server runs.
+ * Set VITE_SHARE_PLATFORM_URL=moment after deploying the Dockerfile web service.
+ */
+export function resolvePlatformShareUrl(payload: SharePayload): string {
+  const mode = (import.meta.env.VITE_SHARE_PLATFORM_URL as string | undefined)?.trim().toLowerCase();
+  if (mode === "moment" || mode === "public") return payload.url;
+  return payload.previewUrl;
 }
 
 export function buildMomentShareUrl(momentId: string): string {
