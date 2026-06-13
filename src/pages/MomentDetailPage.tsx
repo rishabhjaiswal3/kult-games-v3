@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Loader2,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { momentsApi } from "@/api/momentsApi";
@@ -21,6 +22,8 @@ import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
+import { EditMomentDialog } from "@/components/moments/EditMomentDialog";
+import { isMomentOwner } from "@/lib/momentOwnership";
 import type { Moment } from "@/types/api";
 
 import momentWarzone from "@/assets/moment-warzone.png";
@@ -173,6 +176,7 @@ export function MomentDetailPage() {
   const commentsRef = useRef<HTMLDivElement>(null);
   const [bookmarked, setBookmarked] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const momentQuery = useQuery({
     queryKey: [MOMENTS_QUERY_KEY_ROOT, "detail", id],
@@ -273,8 +277,7 @@ export function MomentDetailPage() {
   const gameLabel = deriveGameLabel(moment);
   const isVideo = isMomentVideo(moment);
   const contentType = isVideo ? "video" : "image";
-  const isOwner = Boolean(walletAddress)
-    && walletAddress!.toLowerCase() === moment.playerWalletAddress.toLowerCase();
+  const isOwner = isMomentOwner(walletAddress, moment);
 
   return (
     <div className="min-h-full bg-[#03070d] text-white">
@@ -489,52 +492,79 @@ export function MomentDetailPage() {
             </div>
 
             {isOwner && (
-              <div className="arena-panel border-red-500/15 bg-[#04080f]/95 p-5 space-y-3">
-                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-red-400/90">Danger Zone</h3>
+              <div className="arena-panel border-[#9a35ff]/20 bg-[#04080f]/95 p-5 space-y-3">
+                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Manage Moment</h3>
                 <p className="text-[11px] leading-relaxed text-white/45">
-                  Permanently remove this moment. This action cannot be undone.
+                  You created this moment. Edit details or permanently remove it.
                 </p>
-                {isConfirmingDelete ? (
-                  <div className="flex flex-wrap items-center gap-2 rounded border border-red-500/25 bg-red-500/5 p-3">
-                    <span className="font-tech text-[10px] font-bold text-red-400">Delete this moment?</span>
+                <button
+                  type="button"
+                  onClick={() => setEditOpen(true)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6acff] transition hover:border-[#9a35ff]/55 hover:bg-[#9a35ff]/20"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit moment
+                </button>
+
+                <div className="border-t border-white/8 pt-3 space-y-3">
+                  <h4 className="font-tech text-[10px] font-semibold uppercase tracking-wider text-red-400/90">Danger Zone</h4>
+                  <p className="text-[11px] leading-relaxed text-white/45">
+                    Permanently remove this moment. This action cannot be undone.
+                  </p>
+                  {isConfirmingDelete ? (
+                    <div className="flex flex-wrap items-center gap-2 rounded border border-red-500/25 bg-red-500/5 p-3">
+                      <span className="font-tech text-[10px] font-bold text-red-400">Delete this moment?</span>
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={deleteMutation.isPending}
+                        className="rounded border border-red-500/40 bg-red-500/20 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-red-300 transition hover:bg-red-500/30 disabled:opacity-50"
+                      >
+                        {deleteMutation.isPending ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Loader2 className="h-3 w-3 animate-spin" /> Deleting…
+                          </span>
+                        ) : (
+                          "Confirm delete"
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsConfirmingDelete(false)}
+                        disabled={deleteMutation.isPending}
+                        className="rounded border border-white/10 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40 transition hover:text-white disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={handleDelete}
-                      disabled={deleteMutation.isPending}
-                      className="rounded border border-red-500/40 bg-red-500/20 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-red-300 transition hover:bg-red-500/30 disabled:opacity-50"
+                      onClick={() => setIsConfirmingDelete(true)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-red-400 transition hover:border-red-500/45 hover:bg-red-500/15"
                     >
-                      {deleteMutation.isPending ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <Loader2 className="h-3 w-3 animate-spin" /> Deleting…
-                        </span>
-                      ) : (
-                        "Confirm delete"
-                      )}
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete moment
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsConfirmingDelete(false)}
-                      disabled={deleteMutation.isPending}
-                      className="rounded border border-white/10 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40 transition hover:text-white disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmingDelete(true)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-red-400 transition hover:border-red-500/45 hover:bg-red-500/15"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete moment
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </aside>
         </div>
       </section>
+
+      {isOwner ? (
+        <EditMomentDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          moment={moment}
+          onUpdated={async () => {
+            await queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "detail", id] });
+            await queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] });
+          }}
+        />
+      ) : null}
     </div>
   );
 }
