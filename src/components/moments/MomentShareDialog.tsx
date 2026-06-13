@@ -45,10 +45,14 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      const text = `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`;
+      const text = [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.previewUrl]
+        .filter(Boolean)
+        .join("\n");
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => `${p.title}\n\n${p.teaser}\n\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`,
+    buildPostText: (p) => [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.previewUrl]
+      .filter(Boolean)
+      .join("\n\n"),
   },
   {
     id: "facebook",
@@ -407,7 +411,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
           <div className="space-y-1.5">
             <CopyLinkBar url={payload.previewUrl} />
             <p className="font-tech text-[9px] uppercase tracking-wider text-white/30">
-              Share this link — platforms load your image from our preview server
+              Share this preview link — X/Facebook load title, description &amp; image from it
             </p>
           </div>
 

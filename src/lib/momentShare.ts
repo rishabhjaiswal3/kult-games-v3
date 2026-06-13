@@ -15,6 +15,17 @@ function resolveShareBaseUrl(): string {
 
 const SHARE_BASE = resolveShareBaseUrl();
 
+/**
+ * Path to the backend OG preview route.
+ * Default `/api/share` matches DigitalOcean setups where the frontend proxies `/api/*` to the backend.
+ * Use `/share` only when hitting the backend directly (no frontend proxy).
+ */
+const SHARE_PREVIEW_PATH = (() => {
+  const configured = (import.meta.env.VITE_SHARE_PREVIEW_PATH as string | undefined)?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return "/api/share";
+})();
+
 export type SharePayload = {
   /** SPA moment page — shown to humans in post copy. */
   url: string;
@@ -59,7 +70,9 @@ export function buildMomentShareUrl(momentId: string): string {
 
 export function buildMomentSharePreviewUrl(momentId: string): string {
   if (SHARE_BASE) {
-    return `${SHARE_BASE}/share/moments/${momentId}`;
+    const base = SHARE_BASE.replace(/\/+$/, "");
+    const path = SHARE_PREVIEW_PATH.startsWith("/") ? SHARE_PREVIEW_PATH : `/${SHARE_PREVIEW_PATH}`;
+    return `${base}${path}/moments/${momentId}`;
   }
   return buildMomentShareUrl(momentId);
 }
