@@ -21,6 +21,8 @@ export type NavItem = {
   icon: LucideIcon;
   tag?: string;
   requiresAuth?: boolean;
+  /** When set, clicking the item navigates to this external URL instead of the internal path. */
+  externalUrl?: string;
 };
 
 export const APP_NAV_ITEMS: NavItem[] = [
