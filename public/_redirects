@@ -1,2 +1,3 @@
 # Netlify, Cloudflare Pages — SPA fallback (copied to dist/ by Vite)
+/share/moments/*  /moments/:splat  301
 /*    /index.html   200
