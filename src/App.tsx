@@ -5,29 +5,31 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
-import { lazy, useState, useCallback, useEffect, useRef, Suspense } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import gsap from "gsap";
 import { PageRouteFallback } from "@/components/PageRouteFallback";
+import { RouteChunkErrorBoundary } from "@/components/RouteChunkErrorBoundary";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import AllMomentsPage from "./pages/AllMomentsPage";
+import MomentDetailPage from "./pages/MomentDetailPage";
 
-const Index = lazy(() => import("./pages/Index"));
-const Games = lazy(() => import("./pages/Games"));
-const Inventory = lazy(() => import("./pages/Inventory"));
-const MyAgentsPage = lazy(() => import("./pages/MyAgentsPage"));
-const TrainingPage = lazy(() => import("./pages/TrainingPage"));
-const BattlesPage = lazy(() => import("./pages/BattlesPage"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const GameDetail = lazy(() => import("./pages/GameDetail"));
-const GamePlay = lazy(() => import("./pages/GamePlay"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const AIArenaPage = lazy(() => import("./pages/AIArenaPage"));
-const AllMomentsPage = lazy(() => import("./pages/AllMomentsPage"));
-const MomentDetailPage = lazy(() => import("./pages/MomentDetailPage"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const AutonomousPage = lazy(() => import("./pages/AutonomousPage"));
-const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
-const LeaguePage = lazy(() => import("./pages/LeaguePage"));
-const ArenaGamePage = lazy(() => import("./pages/ArenaGamePage"));
-const RobowarGamePage = lazy(() => import("./pages/RobowarGamePage"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const Games = lazyWithRetry(() => import("./pages/Games"));
+const Inventory = lazyWithRetry(() => import("./pages/Inventory"));
+const MyAgentsPage = lazyWithRetry(() => import("./pages/MyAgentsPage"));
+const TrainingPage = lazyWithRetry(() => import("./pages/TrainingPage"));
+const BattlesPage = lazyWithRetry(() => import("./pages/BattlesPage"));
+const Leaderboard = lazyWithRetry(() => import("./pages/Leaderboard"));
+const GameDetail = lazyWithRetry(() => import("./pages/GameDetail"));
+const GamePlay = lazyWithRetry(() => import("./pages/GamePlay"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const AIArenaPage = lazyWithRetry(() => import("./pages/AIArenaPage"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
+const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
+const LeaguePage = lazyWithRetry(() => import("./pages/LeaguePage"));
+const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
+const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
 import LoadingScreen from "./components/LoadingScreen";
 import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
@@ -149,8 +151,9 @@ const App = () => {
             className={loaded ? "" : "pointer-events-none"}
             style={loaded ? { opacity: 1 } : { opacity: 0 }}
           >
-            <Suspense fallback={<PageRouteFallback />}>
-              <Routes>
+            <RouteChunkErrorBoundary>
+              <Suspense fallback={<PageRouteFallback />}>
+                <Routes>
                 <Route element={<AppShell />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
@@ -177,7 +180,8 @@ const App = () => {
                 <Route path="/arena/robowar/:battleId" element={<RobowarGamePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
+              </Suspense>
+            </RouteChunkErrorBoundary>
           </div>
           <LoginModalHost />
           {loaded && <KultAIFloating />}
