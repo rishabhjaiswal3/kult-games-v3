@@ -1,6 +1,6 @@
 import apiClient from "@/lib/apiClient";
 import { captureVideoThumbnail } from "@/lib/captureVideoThumbnail";
-import { compressMomentMediaFile } from "@/lib/compressMomentMedia";
+import { compressMomentMediaFile, compressMomentOgImageFile } from "@/lib/compressMomentMedia";
 import { isRecord, pickNumber, pickString, unwrapApiData } from "@/api/utils";
 import type {
   ApiEnvelope,
@@ -318,6 +318,15 @@ export const momentsApi = {
         enrichedMetadata = { ...metadata, thumbnailUrl };
       } catch {
         // Share preview falls back to default branding image if thumbnail upload fails.
+      }
+    } else if (metadata.mediaType === "image") {
+      try {
+        const { file: ogFile } = await compressMomentOgImageFile(assetFile);
+        const ogPresign = await presignMomentUpload(ogFile);
+        const ogImageUrl = await uploadMomentAsset(ogPresign, ogFile);
+        enrichedMetadata = { ...metadata, ogImageUrl };
+      } catch {
+        // og:image falls back to the main asset URL.
       }
     }
 

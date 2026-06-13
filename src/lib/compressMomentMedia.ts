@@ -7,32 +7,26 @@ export type CompressMomentMediaResult = {
 };
 
 const SKIP_IMAGE_TYPES = new Set(["image/gif", "image/svg+xml"]);
-/** JPEG first — X/Facebook link previews reject WebP inconsistently. */
-const OUTPUT_CANDIDATES = ["image/jpeg", "image/webp"] as const;
+/** JPEG only — X/Facebook/WhatsApp link previews reject WebP inconsistently. */
+const OUTPUT_MIME = "image/jpeg" as const;
 
-let preferredOutputMime: (typeof OUTPUT_CANDIDATES)[number] | null = null;
+/** Social OG cards — slightly larger, always JPEG. */
+const OG_IMAGE_COMPRESS = {
+  maxLongEdgePx: 1200,
+  minLongEdgePx: 640,
+  targetMaxBytes: 280 * 1024,
+  hardMaxBytes: 500 * 1024,
+  startQuality: 0.86,
+  minQuality: 0.5,
+  qualityStep: 0.06,
+  dimensionStepRatio: 0.88,
+} as const;
 
-function resolveOutputMimeType(): (typeof OUTPUT_CANDIDATES)[number] {
+let preferredOutputMime: typeof OUTPUT_MIME | null = null;
+
+function resolveOutputMimeType(): typeof OUTPUT_MIME {
   if (preferredOutputMime) return preferredOutputMime;
-
-  if (typeof document === "undefined") {
-    preferredOutputMime = "image/jpeg";
-    return preferredOutputMime;
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = 1;
-  canvas.height = 1;
-
-  for (const mime of OUTPUT_CANDIDATES) {
-    const blob = canvas.toDataURL(mime, 0.8);
-    if (blob.startsWith(`data:${mime}`)) {
-      preferredOutputMime = mime;
-      return mime;
-    }
-  }
-
-  preferredOutputMime = "image/jpeg";
+  preferredOutputMime = OUTPUT_MIME;
   return preferredOutputMime;
 }
 
@@ -120,38 +114,38 @@ function fileFromBlob(blob: Blob, file: File, outputMime: string) {
   );
 }
 
-async function compressRasterImage(file: File): Promise<File> {
+async function compressRasterImage(file: File, limits = MOMENT_IMAGE_COMPRESS): Promise<File> {
   const outputMime = resolveOutputMimeType();
-  let longEdge = MOMENT_IMAGE_COMPRESS.maxLongEdgePx;
+  let longEdge = limits.maxLongEdgePx;
   let bestBlob: Blob | null = null;
 
-  while (longEdge >= MOMENT_IMAGE_COMPRESS.minLongEdgePx) {
+  while (longEdge >= limits.minLongEdgePx) {
     const source = await loadImageBitmap(file);
     const sourceWidth = source instanceof HTMLImageElement ? source.naturalWidth : source.width;
     const sourceHeight = source instanceof HTMLImageElement ? source.naturalHeight : source.height;
     const { width, height } = scaleToMaxLongEdge(sourceWidth, sourceHeight, longEdge);
     const canvas = drawToCanvas(source, width, height);
 
-    let quality = MOMENT_IMAGE_COMPRESS.startQuality;
-    while (quality >= MOMENT_IMAGE_COMPRESS.minQuality) {
+    let quality = limits.startQuality;
+    while (quality >= limits.minQuality) {
       const blob = await canvasToBlob(canvas, outputMime, quality);
       bestBlob = blob;
 
-      if (blob.size <= MOMENT_IMAGE_COMPRESS.targetMaxBytes) {
+      if (blob.size <= limits.targetMaxBytes) {
         return fileFromBlob(blob, file, outputMime);
       }
 
-      quality -= MOMENT_IMAGE_COMPRESS.qualityStep;
+      quality -= limits.qualityStep;
     }
 
-    longEdge = Math.round(longEdge * MOMENT_IMAGE_COMPRESS.dimensionStepRatio);
+    longEdge = Math.round(longEdge * limits.dimensionStepRatio);
   }
 
   if (!bestBlob) {
     throw new Error("Could not compress image");
   }
 
-  if (bestBlob.size > MOMENT_IMAGE_COMPRESS.hardMaxBytes) {
+  if (bestBlob.size > limits.hardMaxBytes) {
     throw new Error(
       `Image is still ${Math.ceil(bestBlob.size / 1024)} KB after optimization. Use a simpler screenshot under 500 KB.`,
     );
@@ -164,6 +158,24 @@ function shouldCompressImage(file: File) {
   if (!file.type.startsWith("image/")) return false;
   if (SKIP_IMAGE_TYPES.has(file.type)) return false;
   return true;
+}
+
+/**
+ * Dedicated JPEG for social OG cards (WhatsApp, X, Facebook, Reddit).
+ * Stored as assetMetadata.ogImageUrl alongside the main upload.
+ */
+export async function compressMomentOgImageFile(file: File): Promise<CompressMomentMediaResult> {
+  const originalSizeBytes = file.size;
+  if (!shouldCompressImage(file)) {
+    return { file, wasCompressed: false, originalSizeBytes };
+  }
+
+  const compressed = await compressRasterImage(file, OG_IMAGE_COMPRESS);
+  return {
+    file: compressed,
+    wasCompressed: true,
+    originalSizeBytes,
+  };
 }
 
 /**

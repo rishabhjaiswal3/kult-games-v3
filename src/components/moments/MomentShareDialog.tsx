@@ -6,6 +6,7 @@ import {
   buildMomentSharePayload,
   buildRedditSubmitParams,
   buildRedditSubmitTitle,
+  resolvePlatformShareUrl,
   resolveShareMediaUrl,
   type SharePayload,
 } from "@/lib/momentShare";
@@ -174,37 +175,42 @@ async function copyText(text: string) {
   }
 }
 
+function withPlatformShareUrl(payload: SharePayload): SharePayload {
+  return { ...payload, url: resolvePlatformShareUrl(payload) };
+}
+
 function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: string, payload: SharePayload): string {
+  const platformPayload = withPlatformShareUrl(payload);
   switch (platform.id) {
     case "twitter":
       return `https://twitter.com/intent/tweet?${new URLSearchParams({
-        text: `${templateText}\n${payload.url}`,
+        text: `${templateText}\n${platformPayload.url}`,
       })}`;
     case "whatsapp": {
-      const parts = [templateText, payload.url].filter(Boolean);
+      const parts = [templateText, platformPayload.url].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     }
     case "reddit": {
-      const templateTitle = templateText.split("\n")[0]?.trim() || payload.title;
-      const titleWithTeaser = payload.teaser
-        ? `${templateTitle} — ${payload.teaser}`
+      const templateTitle = templateText.split("\n")[0]?.trim() || platformPayload.title;
+      const titleWithTeaser = platformPayload.teaser
+        ? `${templateTitle} — ${platformPayload.teaser}`
         : templateTitle;
       return `https://www.reddit.com/submit?${new URLSearchParams(
-        buildRedditSubmitParams(payload, titleWithTeaser),
+        buildRedditSubmitParams(platformPayload, titleWithTeaser),
       )}`;
     }
     case "facebook":
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
-        u: payload.url,
+        u: platformPayload.url,
         quote: templateText,
       })}`;
     case "pinterest": {
-      const params = new URLSearchParams({ url: payload.url, description: templateText });
-      if (payload.mediaUrl) params.set("media", payload.mediaUrl);
+      const params = new URLSearchParams({ url: platformPayload.url, description: templateText });
+      if (platformPayload.mediaUrl) params.set("media", platformPayload.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     }
     default:
-      return platform.buildUrl(payload);
+      return platform.buildUrl(platformPayload);
   }
 }
 
@@ -291,9 +297,10 @@ function PostPreviewText({ platform, payload, customText }: {
   payload: SharePayload;
   customText: string | null;
 }) {
+  const platformPayload = withPlatformShareUrl(payload);
   const postText = customText
-    ? [customText, payload.url].filter(Boolean).join("\n")
-    : platform.buildPostText(payload);
+    ? [customText, platformPayload.url].filter(Boolean).join("\n")
+    : platform.buildPostText(platformPayload);
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -354,7 +361,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
     }
     const url = selectedTemplate
       ? buildPlatformUrlWithTemplate(platform, selectedTemplate.text, payload)
-      : platform.buildUrl(payload);
+      : platform.buildUrl(withPlatformShareUrl(payload));
     window.open(url, "_blank", "noopener,noreferrer");
   }, [platform, payload, selectedTemplate]);
 
