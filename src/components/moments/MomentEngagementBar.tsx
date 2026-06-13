@@ -11,7 +11,6 @@ type MomentEngagementBarProps = {
   onLike: () => void;
   onComments: () => void;
   isLiking?: boolean;
-  isOwner?: boolean;
   viewCount?: string;
 };
 
@@ -103,7 +102,6 @@ export function MomentEngagementBar({
   onLike,
   onComments,
   isLiking = false,
-  isOwner = false,
   viewCount = "—",
 }: MomentEngagementBarProps) {
   const likeCount = moment.numLikes > 0 ? moment.numLikes.toLocaleString() : "—";
@@ -143,11 +141,9 @@ export function MomentEngagementBar({
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
-          {isOwner ? (
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
-              <MomentShareDialog moment={moment} triggerVariant="icon" />
-            </div>
-          ) : null}
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
+            <MomentShareDialog moment={moment} triggerVariant="icon" />
+          </div>
           <EngagementChip
             icon={Bookmark}
             label={bookmarked ? "Remove bookmark" : "Bookmark moment"}

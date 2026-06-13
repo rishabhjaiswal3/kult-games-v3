@@ -52,11 +52,14 @@ export const MOMENTS_QUERY_KEY_ROOT = "moments" as const;
 /** Query param on `/moments` — `?create=true` opens the create-moment dialog. */
 export const MOMENTS_CREATE_QUERY_PARAM = "create" as const;
 
+/** Moments hub shows 2 rows × 3 columns on large screens. */
+export const MOMENTS_HUB_PREVIEW_COUNT = 9;
+
 export function isMomentsCreateQueryOpen(value: string | null): boolean {
   return value === "true" || value === "1";
 }
 
-/** `/moments` feed and `/moments/:id` detail share the same dashboard shell + topbar. */
+/** `/moments`, `/moments/browse`, and `/moments/:id` share the same dashboard shell + topbar. */
 export function isMomentsPath(pathname: string): boolean {
-  return pathname === "/moments" || /^\/moments\/[^/]+$/.test(pathname);
+  return pathname === "/moments" || pathname === "/moments/browse" || /^\/moments\/[^/]+$/.test(pathname);
 }
