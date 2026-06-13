@@ -31,8 +31,10 @@ import { momentsApi } from "@/api/momentsApi";
 import {
   isMomentsCreateQueryOpen,
   KNOWN_MOMENT_GAME_LABELS,
+  MOMENTS_BATTLE_ID_QUERY_PARAM,
   MOMENTS_CREATE_QUERY_PARAM,
   MOMENTS_HUB_PREVIEW_COUNT,
+  MOMENTS_MY_AGENT_ID_QUERY_PARAM,
   MOMENTS_QUERY_KEY_ROOT,
 } from "@/constants/moments";
 import type { Moment, MomentsFeedResponse } from "@/types/api";
@@ -513,6 +515,8 @@ export function AllMomentsPage() {
 
   const navigate = useNavigate();
   const [createSearchParams, setSearchParams] = useSearchParams();
+  const battleIdParam = createSearchParams.get(MOMENTS_BATTLE_ID_QUERY_PARAM);
+  const myAgentIdParam = createSearchParams.get(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const deferredSearch = useDeferredValue(searchQuery.trim());
@@ -521,7 +525,11 @@ export function AllMomentsPage() {
     (open: boolean) => {
       const next = new URLSearchParams(createSearchParams);
       if (open) next.set(MOMENTS_CREATE_QUERY_PARAM, "true");
-      else next.delete(MOMENTS_CREATE_QUERY_PARAM);
+      else {
+        next.delete(MOMENTS_CREATE_QUERY_PARAM);
+        next.delete(MOMENTS_BATTLE_ID_QUERY_PARAM);
+        next.delete(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
+      }
       const nextSearch = next.toString();
       const currentSearch = createSearchParams.toString();
       if (nextSearch !== currentSearch) {
@@ -545,7 +553,9 @@ export function AllMomentsPage() {
   );
 
   useEffect(() => {
-    const shouldOpen = isMomentsCreateQueryOpen(createSearchParams.get(MOMENTS_CREATE_QUERY_PARAM));
+    const shouldOpen =
+      isMomentsCreateQueryOpen(createSearchParams.get(MOMENTS_CREATE_QUERY_PARAM)) ||
+      Boolean(createSearchParams.get(MOMENTS_BATTLE_ID_QUERY_PARAM)?.trim());
     if (!shouldOpen) {
       setIsCreateOpen(false);
       return;
@@ -569,6 +579,10 @@ export function AllMomentsPage() {
     if (activeTab !== "DISCOVER") params.set("tab", activeTab);
     const createFlag = createSearchParams.get(MOMENTS_CREATE_QUERY_PARAM);
     if (createFlag) params.set(MOMENTS_CREATE_QUERY_PARAM, createFlag);
+    const battleId = createSearchParams.get(MOMENTS_BATTLE_ID_QUERY_PARAM);
+    if (battleId) params.set(MOMENTS_BATTLE_ID_QUERY_PARAM, battleId);
+    const myAgentId = createSearchParams.get(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
+    if (myAgentId) params.set(MOMENTS_MY_AGENT_ID_QUERY_PARAM, myAgentId);
     const nextSearch = params.toString();
     if (nextSearch !== createSearchParams.toString()) {
       setSearchParams(params, { replace: true });
@@ -1062,6 +1076,8 @@ export function AllMomentsPage() {
       <CreateMomentDialog
         open={isCreateOpen}
         onOpenChange={handleCreateOpenChange}
+        battleId={battleIdParam}
+        myAgentId={myAgentIdParam}
         onCreated={() => void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] })}
       />
     </div>

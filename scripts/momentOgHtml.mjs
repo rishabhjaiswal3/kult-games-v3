@@ -25,7 +25,7 @@ function isVideoMoment(moment) {
   return fileType.startsWith("video/") || moment.assetMetadata?.mediaType === "video";
 }
 
-function resolveOgImageUrl(moment) {
+function resolveOgImageUrl(moment, pageOrigin, momentId) {
   const meta = moment.assetMetadata ?? {};
 
   const ogImageUrl = typeof meta.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
@@ -40,8 +40,11 @@ function resolveOgImageUrl(moment) {
   const assetUrl = typeof moment.assetUrl === "string" ? moment.assetUrl.trim() : "";
   if (!assetUrl) return undefined;
 
-  // Prefer JPEG/PNG over WebP — X/Facebook/WhatsApp cards are inconsistent with WebP.
-  if (!/\.webp($|\?)/i.test(assetUrl)) return assetUrl;
+  if (/\.(webp|avif)($|\?)/i.test(assetUrl)) {
+    const base = (pageOrigin || "").replace(/\/+$/, "");
+    return `${base}/api/share/moments/${momentId}/og-image.jpg`;
+  }
+
   return assetUrl;
 }
 
@@ -66,6 +69,7 @@ function pickDimensions(moment) {
 }
 
 export function buildMomentOgHtml(moment, publicMomentUrl) {
+  const momentId = moment.momentId || publicMomentUrl.split("/").pop();
   const title = escapeHtml(truncate(moment.title?.trim() || "Kult Moment", 70));
   const description = escapeHtml(
     truncate(
@@ -76,9 +80,10 @@ export function buildMomentOgHtml(moment, publicMomentUrl) {
     ),
   );
   const safeUrl = escapeHtml(publicMomentUrl);
-  const ogImageRaw = resolveOgImageUrl(moment);
+  const pageOrigin = publicMomentUrl.replace(/\/moments\/[^/]+\/?$/, "");
+  const ogImageRaw = resolveOgImageUrl(moment, pageOrigin, momentId);
   const ogImage = ogImageRaw ? escapeHtml(ogImageRaw) : "";
-  const ogImageMime = resolveOgImageMimeType(ogImageRaw);
+  const ogImageMime = ogImageRaw?.includes("/og-image.jpg") ? "image/jpeg" : resolveOgImageMimeType(ogImageRaw);
   const { width, height } = pickDimensions(moment);
   const isVideo = isVideoMoment(moment);
 

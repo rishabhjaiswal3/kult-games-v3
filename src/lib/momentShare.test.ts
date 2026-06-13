@@ -27,6 +27,30 @@ describe("buildMomentShareUrl", () => {
     expect(payload.url).toBe(
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/${momentId}`,
     );
+    expect(payload.previewUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}`,
+    );
+  });
+});
+
+describe("resolvePlatformShareUrl", () => {
+  it("uses preview URL for social crawlers by default", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://kult-browser-rust-l2lwg.ondigitalocean.app" } });
+
+    const { buildMomentSharePayload, resolvePlatformShareUrl } = await import("./momentShare");
+    const payload = buildMomentSharePayload({
+      momentId: "abc",
+      title: "Test",
+      description: "Desc",
+      tags: [],
+      relatedGames: [],
+      playerWalletAddress: "0x1",
+      numLikes: 0,
+      numComments: 0,
+      aiHighlights: [],
+    });
+
+    expect(resolvePlatformShareUrl(payload)).toBe(payload.previewUrl);
   });
 });
 

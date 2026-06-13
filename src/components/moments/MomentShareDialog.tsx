@@ -89,12 +89,14 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#25d366",
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url].filter(Boolean);
-      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
+      const parts = [`*${p.title}*`, p.teaser, p.url];
+      if (p.mediaUrl) parts.push(p.mediaUrl);
+      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     },
     buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url].filter(Boolean);
-      return parts.join("\n");
+      const parts = [`*${p.title}*`, p.teaser, p.url];
+      if (p.mediaUrl) parts.push(p.mediaUrl);
+      return parts.filter(Boolean).join("\n");
     },
   },
   {
@@ -187,8 +189,9 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
         text: `${templateText}\n${platformPayload.url}`,
       })}`;
     case "whatsapp": {
-      const parts = [templateText, platformPayload.url].filter(Boolean);
-      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
+      const parts = [templateText, platformPayload.url];
+      if (platformPayload.mediaUrl) parts.push(platformPayload.mediaUrl);
+      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     }
     case "reddit": {
       const templateTitle = templateText.split("\n")[0]?.trim() || platformPayload.title;
@@ -427,11 +430,11 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
         {/* ── Scrollable body ── */}
         <div className="min-h-0 flex-1 overflow-y-auto space-y-4 px-5 py-4 [scrollbar-width:thin]">
 
-          {/* Copy link — preview URL so platforms fetch OG image meta */}
+          {/* Copy link — preview URL so pasted links show title, description & image */}
           <div className="space-y-1.5">
-            <CopyLinkBar url={payload.url} />
+            <CopyLinkBar url={payload.previewUrl} />
             <p className="font-tech text-[9px] uppercase tracking-wider text-white/30">
-              Share this moment page — platforms load title, description &amp; image automatically
+              Opens the moment in-app · social platforms load title, description &amp; image from this link
             </p>
           </div>
 

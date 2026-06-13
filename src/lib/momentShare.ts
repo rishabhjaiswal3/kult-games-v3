@@ -10,15 +10,12 @@ function resolveShareBaseUrl(): string {
   const apiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim().replace(/\/+$/, "");
   if (apiUrl) return apiUrl.replace(/\/api$/i, "");
 
-  return "";
+  return APP_ORIGIN;
 }
-
-const SHARE_BASE = resolveShareBaseUrl();
 
 /**
  * Path to the backend OG preview route.
  * Default `/api/share` matches DigitalOcean setups where the frontend proxies `/api/*` to the backend.
- * Use `/share` only when hitting the backend directly (no frontend proxy).
  */
 const SHARE_PREVIEW_PATH = (() => {
   const configured = (import.meta.env.VITE_SHARE_PREVIEW_PATH as string | undefined)?.trim();
@@ -27,14 +24,14 @@ const SHARE_PREVIEW_PATH = (() => {
 })();
 
 export type SharePayload = {
-  /** SPA moment page — shown to humans in post copy. */
+  /** Human-friendly moment page (opens SPA when production-server is deployed). */
   url: string;
-  /** Backend preview page — crawled by social platforms for og:image. */
+  /** Crawlable preview page — always has OG tags + JPEG image on /api/share. */
   previewUrl: string;
   title: string;
   teaser: string;
   hashtags: string[];
-  /** Public CDN asset URL for Pinterest `media` param (not 0G gateway). */
+  /** Direct image URL for Pinterest `media` param. */
   mediaUrl?: string;
   relatedGames: string[];
 };
@@ -52,7 +49,20 @@ function normalizeHashtag(value: string) {
     .slice(0, 24);
 }
 
-/** Public object-storage URL — reliably crawlable; prefer JPEG ogImageUrl for share cards. */
+function resolveHostBase(): string {
+  return APP_ORIGIN || resolveShareBaseUrl();
+}
+
+export function buildMomentShareOgImageUrl(momentId: string): string {
+  const base = resolveHostBase().replace(/\/+$/, "");
+  return `${base}/api/share/moments/${momentId}/og-image.jpg`;
+}
+
+function isWebpOrAvif(url: string): boolean {
+  return /\.(webp|avif)($|\?)/i.test(url);
+}
+
+/** Public image URL for Pinterest and WhatsApp — JPEG proxy when asset is WebP. */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
   const meta = moment.assetMetadata as Record<string, unknown> | undefined;
   const ogImageUrl = typeof meta?.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
@@ -62,15 +72,17 @@ export function resolveShareMediaUrl(moment: Moment): string | undefined {
   if (thumbnailUrl) return thumbnailUrl;
 
   const assetUrl = moment.assetUrl?.trim();
-  if (assetUrl) return assetUrl;
+  if (assetUrl) {
+    if (isWebpOrAvif(assetUrl)) return buildMomentShareOgImageUrl(moment.momentId);
+    return assetUrl;
+  }
 
   return moment.assetZgUrl?.trim() || undefined;
 }
 
 /**
- * URL social platforms crawl for link previews.
- * Static hosts serve SPA on /moments/:id — use previewUrl until production-server runs.
- * Set VITE_SHARE_PLATFORM_URL=moment after deploying the Dockerfile web service.
+ * URL placed in social posts — must be crawlable on static-site deployments.
+ * Set VITE_SHARE_PLATFORM_URL=moment only after production-server serves OG on /moments/:id.
  */
 export function resolvePlatformShareUrl(payload: SharePayload): string {
   const mode = (import.meta.env.VITE_SHARE_PLATFORM_URL as string | undefined)?.trim().toLowerCase();
@@ -79,7 +91,7 @@ export function resolvePlatformShareUrl(payload: SharePayload): string {
 }
 
 export function buildMomentShareUrl(momentId: string): string {
-  return `${APP_ORIGIN}/moments/${momentId}`;
+  return `${resolveHostBase()}/moments/${momentId}`;
 }
 
 function buildPreviewUrlOnHost(hostBase: string, momentId: string): string {
@@ -89,15 +101,7 @@ function buildPreviewUrlOnHost(hostBase: string, momentId: string): string {
 }
 
 export function buildMomentSharePreviewUrl(momentId: string): string {
-  if (SHARE_BASE) {
-    return buildPreviewUrlOnHost(SHARE_BASE, momentId);
-  }
-  // Runtime fallback when VITE_API_URL was not baked in at build time — common on DO
-  // setups where the SPA and `/api/*` proxy share the same origin.
-  if (APP_ORIGIN) {
-    return buildPreviewUrlOnHost(APP_ORIGIN, momentId);
-  }
-  return buildMomentShareUrl(momentId);
+  return buildPreviewUrlOnHost(resolveHostBase(), momentId);
 }
 
 export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "teaser">): string {
@@ -116,7 +120,6 @@ export function buildRedditSubmitParams(
       ? truncateText(titleOverride, 300)
       : buildRedditSubmitTitle(payload),
   };
-  // New Reddit supports optional body text on link posts via `text`.
   if (payload.teaser.trim()) {
     params.text = payload.teaser;
   }
