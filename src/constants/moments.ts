@@ -40,6 +40,22 @@ export const MOMENT_MEDIA_LIMITS = {
   acceptedVideoTypes: ["video/mp4", "video/webm", "video/quicktime"] as const,
 } as const;
 
+/** Client-side image optimization before presigned upload. */
+export const MOMENT_IMAGE_COMPRESS = {
+  /** Moment cards + social previews — keep under 1000px long edge. */
+  maxLongEdgePx: 960,
+  /** Smallest long edge tried before giving up on the 500 KB cap. */
+  minLongEdgePx: 520,
+  /** Aim for this size; good for feeds and share cards. */
+  targetMaxBytes: 500 * 1024,
+  /** Never upload a compressed moment image above this size. */
+  hardMaxBytes: 500 * 1024,
+  startQuality: 0.84,
+  minQuality: 0.46,
+  qualityStep: 0.06,
+  dimensionStepRatio: 0.86,
+} as const;
+
 export const MOMENT_ACCEPTED_MIME_TYPES = [
   ...MOMENT_MEDIA_LIMITS.acceptedImageTypes,
   ...MOMENT_MEDIA_LIMITS.acceptedVideoTypes,
