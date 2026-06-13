@@ -167,7 +167,7 @@ function MomentMediaPlayer({ moment }: { moment: Moment }) {
 export function MomentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, walletAddress } = useAuth();
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const commentsRef = useRef<HTMLDivElement>(null);
   const [bookmarked, setBookmarked] = useState(false);
@@ -247,8 +247,6 @@ export function MomentDetailPage() {
   const moment = momentQuery.data;
   const gameLabel = deriveGameLabel(moment);
   const isVideo = isMomentVideo(moment);
-  const isOwner = Boolean(walletAddress && moment.playerWalletAddress &&
-    walletAddress.toLowerCase() === moment.playerWalletAddress.toLowerCase());
   const contentType = isVideo ? "video" : "image";
 
   return (
@@ -337,7 +335,6 @@ export function MomentDetailPage() {
               onLike={handleLike}
               onComments={scrollToComments}
               isLiking={likeMutation.isPending}
-              isOwner={isOwner}
             />
 
             {/* 0G storage proof (when available) */}
@@ -458,13 +455,11 @@ export function MomentDetailPage() {
               </div>
             )}
 
-            {/* Quick share — only visible to the creator */}
-            {isOwner && (
-              <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3">
-                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
-                <MomentShareDialog moment={moment} triggerVariant="button" />
-              </div>
-            )}
+            {/* Share */}
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3">
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
+              <MomentShareDialog moment={moment} triggerVariant="button" />
+            </div>
           </aside>
         </div>
       </section>

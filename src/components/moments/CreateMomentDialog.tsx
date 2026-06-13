@@ -192,18 +192,19 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
     <Dialog open={open} onOpenChange={(next) => (isSubmitting ? null : onOpenChange(next))}>
       <ArenaDialogContent
         size="lg"
-        className="relative overflow-hidden border-[#9a35ff]/30 bg-[linear-gradient(160deg,hsl(265_48%_12%_/_0.98),hsl(220_45%_7%_/_0.98))] shadow-[0_30px_80px_rgba(0,0,0,0.55),0_0_60px_rgba(154,53,255,0.14)] [&>button]:border-[#9a35ff]/25 [&>button]:bg-[#0a0f1b]/90 [&>button]:text-white/70 [&>button]:hover:border-[#9a35ff]/45 [&>button]:hover:text-white"
+        className="overflow-hidden border-[#9a35ff]/30 bg-[linear-gradient(160deg,hsl(265_48%_12%_/_0.98),hsl(220_45%_7%_/_0.98))] shadow-[0_30px_80px_rgba(0,0,0,0.55),0_0_60px_rgba(154,53,255,0.14)] [&>button]:border-[#9a35ff]/25 [&>button]:bg-[#0a0f1b]/90 [&>button]:text-white/70 [&>button]:hover:border-[#9a35ff]/45 [&>button]:hover:text-white"
       >
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
-          className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
+          className="pointer-events-none absolute top-0 left-[10%] right-[10%] z-0 h-px"
           style={{
             background:
               "linear-gradient(90deg, transparent, rgba(154, 53, 255, 0.65), rgba(0, 210, 255, 0.35), transparent)",
           }}
         />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(154,53,255,0.12),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(154,53,255,0.12),transparent_55%)]" />
 
-        <ArenaDialogHeader className="relative border-[#9a35ff]/15 bg-gradient-to-br from-[#9a35ff]/18 via-transparent to-cyan-500/5">
+        <ArenaDialogHeader className="relative z-10 shrink-0 border-[#9a35ff]/15 bg-gradient-to-br from-[#9a35ff]/18 via-transparent to-cyan-500/5">
           <ArenaDialogTitle className="font-display text-xl tracking-tight text-white sm:text-2xl">
             Publish a{" "}
             <span className="bg-gradient-to-r from-[#f0e6ff] via-[#d6acff] to-[#9a35ff] bg-clip-text text-transparent">
@@ -215,7 +216,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
-        <ArenaDialogBody className="relative space-y-5 bg-[#03070d]/35">
+        <ArenaDialogBody className="relative z-10 space-y-3 bg-[#03070d]/35">
           <div>
             <Label className="font-tech text-[11px] font-bold uppercase tracking-wider text-white/70">
               Media
@@ -230,7 +231,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
 
             {asset ? (
               <div className="mt-2 overflow-hidden rounded-lg border border-[#9a35ff]/20 bg-[#0a0f1b]/90">
-                <div className="relative flex aspect-[16/9] items-center justify-center bg-black/60">
+                <div className="relative flex h-40 max-h-40 items-center justify-center bg-black/60 sm:h-44">
                   {asset.previewKind === "image" ? (
                     <img
                       src={asset.previewUrl}
@@ -273,7 +274,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#9a35ff]/25 bg-[#0a0f1b]/70 text-center text-white/60 transition hover:border-[#9a35ff]/55 hover:bg-[#9a35ff]/10 hover:text-white"
+                className="mt-2 flex h-36 w-full max-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#9a35ff]/25 bg-[#0a0f1b]/70 text-center text-white/60 transition hover:border-[#9a35ff]/55 hover:bg-[#9a35ff]/10 hover:text-white sm:h-40"
               >
                 <ImagePlus className="h-7 w-7 text-[#9a35ff]/90" />
                 <span className="font-tech text-[11px] font-bold uppercase tracking-wider">
@@ -320,7 +321,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
               maxLength={DESCRIPTION_MAX_LENGTH}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="What went down? Add context, callouts, or a backstory."
-              className="min-h-[96px] resize-none rounded-md border border-white/10 bg-[#0a0f1b]/80 px-3 py-2 text-sm text-white/90 placeholder-white/30 transition focus:border-[#9a35ff]/55 focus:outline-none focus:ring-2 focus:ring-[#9a35ff]/20"
+              className="min-h-[72px] resize-none rounded-md border border-white/10 bg-[#0a0f1b]/80 px-3 py-2 text-sm text-white/90 placeholder-white/30 transition focus:border-[#9a35ff]/55 focus:outline-none focus:ring-2 focus:ring-[#9a35ff]/20"
             />
             <p className="text-right text-[10px] text-white/35">
               {description.length}/{DESCRIPTION_MAX_LENGTH}
@@ -391,7 +392,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
           ) : null}
         </ArenaDialogBody>
 
-        <ArenaDialogFooter className="relative border-[#9a35ff]/15 bg-[#0a0f1b]/85">
+        <ArenaDialogFooter className="relative z-10 shrink-0 border-[#9a35ff]/15 bg-[#0a0f1b]/85">
           <Button
             variant="ghost"
             type="button"
@@ -417,6 +418,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
             )}
           </Button>
         </ArenaDialogFooter>
+        </div>
       </ArenaDialogContent>
     </Dialog>
   );

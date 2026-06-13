@@ -164,6 +164,7 @@ const App = () => {
                   <Route path="/league" element={<LeaguePage />} />
                   <Route path="/ai-arena" element={<AIArenaPage />} />
                   <Route path="/moments" element={<AllMomentsPage />} />
+                  <Route path="/moments/browse" element={<AllMomentsPage />} />
                   <Route path="/moments/:id" element={<MomentDetailPage />} />
                   <Route path="/autonomous" element={<AutonomousPage />} />
                   <Route path="/achievements" element={<AchievementsPage />} />

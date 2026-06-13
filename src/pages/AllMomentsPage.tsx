@@ -1,7 +1,8 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
+  ArrowLeft,
   ArrowUpRight,
   ChevronDown,
   Search,
@@ -30,12 +31,14 @@ import { momentsApi } from "@/api/momentsApi";
 import {
   isMomentsCreateQueryOpen,
   MOMENTS_CREATE_QUERY_PARAM,
+  MOMENTS_HUB_PREVIEW_COUNT,
   MOMENTS_QUERY_KEY_ROOT,
 } from "@/constants/moments";
 import type { Moment, MomentsFeedResponse } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { CreateMomentDialog } from "@/components/moments/CreateMomentDialog";
+import MomentShareDialog from "@/components/moments/MomentShareDialog";
 
 import momentWarzone from "@/assets/moment-warzone.png";
 import momentRobowars from "@/assets/moment-robowars.png";
@@ -45,6 +48,40 @@ const KNOWN_MOMENT_GAME_LABELS = ["WARZONE WARRIORS", "ROBOWARS", "HIGHWAY HUSTL
 
 type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
 type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
+
+const SUB_CATEGORIES: SubCategory[] = [
+  "TRENDING",
+  "EPIC PLAYS",
+  "TOP PLAYS",
+  "CLUTCH",
+  "KILLS",
+  "VICTORIES",
+];
+
+function parseSubCategory(value: string | null): SubCategory | null {
+  return SUB_CATEGORIES.includes(value as SubCategory) ? (value as SubCategory) : null;
+}
+
+function buildMomentsBrowseHref(filters: {
+  category: SubCategory;
+  game: string;
+  mode: string;
+  bestOf: string;
+  time: string;
+  q: string;
+  tab: MainTab;
+}) {
+  const params = new URLSearchParams();
+  params.set("category", filters.category);
+  if (filters.game !== "ALL GAMES") params.set("game", filters.game);
+  if (filters.mode !== "ALL MODES") params.set("mode", filters.mode);
+  if (filters.bestOf !== "BEST OF") params.set("bestOf", filters.bestOf);
+  if (filters.time !== "ANY TIME") params.set("time", filters.time);
+  if (filters.q.trim()) params.set("q", filters.q.trim());
+  if (filters.tab !== "DISCOVER") params.set("tab", filters.tab);
+  const query = params.toString();
+  return query ? `/moments/browse?${query}` : "/moments/browse";
+}
 
 type MomentCard = {
   id: string;
@@ -440,36 +477,58 @@ function FilterDropdown({ label, options, value, onSelect, activeDropdown, name,
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export function AllMomentsPage() {
-  const [activeTab, setActiveTab] = useState<MainTab>("DISCOVER");
-  const [activeCategory, setActiveCategory] = useState<SubCategory>("TRENDING");
-  const [selectedGame, setSelectedGame] = useState("ALL GAMES");
-  const [selectedMode, setSelectedMode] = useState("ALL MODES");
-  const [selectedBestOf, setSelectedBestOf] = useState("BEST OF");
-  const [selectedTime, setSelectedTime] = useState("ANY TIME");
-  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const isBrowseAll = location.pathname === "/moments/browse";
+
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<MainTab>(() => {
+    if (location.pathname !== "/moments/browse") return "DISCOVER";
+    const tab = searchParams.get("tab");
+    if (tab === "MY MOMENTS" || tab === "BOOKMARKS" || tab === "RECENTLY WATCHED") return tab;
+    return "DISCOVER";
+  });
+  const [activeCategory, setActiveCategory] = useState<SubCategory>(() => {
+    if (location.pathname !== "/moments/browse") return "TRENDING";
+    return parseSubCategory(searchParams.get("category")) ?? "TRENDING";
+  });
+  const [selectedGame, setSelectedGame] = useState(() =>
+    location.pathname === "/moments/browse" ? searchParams.get("game") ?? "ALL GAMES" : "ALL GAMES",
+  );
+  const [selectedMode, setSelectedMode] = useState(() =>
+    location.pathname === "/moments/browse" ? searchParams.get("mode") ?? "ALL MODES" : "ALL MODES",
+  );
+  const [selectedBestOf, setSelectedBestOf] = useState(() =>
+    location.pathname === "/moments/browse" ? searchParams.get("bestOf") ?? "BEST OF" : "BEST OF",
+  );
+  const [selectedTime, setSelectedTime] = useState(() =>
+    location.pathname === "/moments/browse" ? searchParams.get("time") ?? "ANY TIME" : "ANY TIME",
+  );
+  const [searchQuery, setSearchQuery] = useState(() =>
+    location.pathname === "/moments/browse" ? searchParams.get("q") ?? "" : "",
+  );
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [recentlyWatchedIds, setRecentlyWatchedIds] = useState<Set<string>>(new Set());
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [createSearchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const deferredSearch = useDeferredValue(searchQuery.trim());
 
   const syncCreateQueryParam = useCallback(
     (open: boolean) => {
-      const next = new URLSearchParams(searchParams);
+      const next = new URLSearchParams(createSearchParams);
       if (open) next.set(MOMENTS_CREATE_QUERY_PARAM, "true");
       else next.delete(MOMENTS_CREATE_QUERY_PARAM);
       const nextSearch = next.toString();
-      const currentSearch = searchParams.toString();
+      const currentSearch = createSearchParams.toString();
       if (nextSearch !== currentSearch) {
         setSearchParams(next, { replace: true });
       }
     },
-    [searchParams, setSearchParams],
+    [createSearchParams, setSearchParams],
   );
 
   const handleCreateOpenChange = useCallback(
@@ -486,7 +545,7 @@ export function AllMomentsPage() {
   );
 
   useEffect(() => {
-    const shouldOpen = isMomentsCreateQueryOpen(searchParams.get(MOMENTS_CREATE_QUERY_PARAM));
+    const shouldOpen = isMomentsCreateQueryOpen(createSearchParams.get(MOMENTS_CREATE_QUERY_PARAM));
     if (!shouldOpen) {
       setIsCreateOpen(false);
       return;
@@ -496,7 +555,36 @@ export function AllMomentsPage() {
       return;
     }
     setIsCreateOpen(true);
-  }, [searchParams, isAuthenticated]);
+  }, [createSearchParams, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isBrowseAll) return;
+    const params = new URLSearchParams();
+    params.set("category", activeCategory);
+    if (selectedGame !== "ALL GAMES") params.set("game", selectedGame);
+    if (selectedMode !== "ALL MODES") params.set("mode", selectedMode);
+    if (selectedBestOf !== "BEST OF") params.set("bestOf", selectedBestOf);
+    if (selectedTime !== "ANY TIME") params.set("time", selectedTime);
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (activeTab !== "DISCOVER") params.set("tab", activeTab);
+    const createFlag = createSearchParams.get(MOMENTS_CREATE_QUERY_PARAM);
+    if (createFlag) params.set(MOMENTS_CREATE_QUERY_PARAM, createFlag);
+    const nextSearch = params.toString();
+    if (nextSearch !== createSearchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [
+    activeCategory,
+    activeTab,
+    createSearchParams,
+    isBrowseAll,
+    searchQuery,
+    selectedBestOf,
+    selectedGame,
+    selectedMode,
+    selectedTime,
+    setSearchParams,
+  ]);
 
   const discoverQuery = useInfiniteQuery({
     queryKey: [MOMENTS_QUERY_KEY_ROOT, "discover", deferredSearch],
@@ -544,6 +632,28 @@ export function AllMomentsPage() {
     return sortMomentCards(cards, selectedBestOf, creatorMomentCounts);
   }, [activeCategory, creatorMomentCounts, deferredSearch, selectedBestOf, selectedGame, selectedMode, selectedTime, sourceCards]);
 
+  const displayMoments = useMemo(
+    () => (isBrowseAll ? filteredMoments : filteredMoments.slice(0, MOMENTS_HUB_PREVIEW_COUNT)),
+    [filteredMoments, isBrowseAll],
+  );
+
+  const browseHref = useMemo(
+    () =>
+      buildMomentsBrowseHref({
+        category: activeCategory,
+        game: selectedGame,
+        mode: selectedMode,
+        bestOf: selectedBestOf,
+        time: selectedTime,
+        q: searchQuery,
+        tab: activeTab,
+      }),
+    [activeCategory, activeTab, searchQuery, selectedBestOf, selectedGame, selectedMode, selectedTime],
+  );
+
+  const showViewMore =
+    !isBrowseAll && activeTab === "DISCOVER" && !discoverQuery.isLoading && filteredMoments.length > 0;
+
   const stats = useMemo(() => {
     const totalMoments = discoverQuery.data?.pages[0]?.total ?? discoverCards.length;
     const totalLikes = discoverCards.reduce((t, c) => t + c.likeCount, 0);
@@ -560,8 +670,8 @@ export function AllMomentsPage() {
 
   const topCreators = useMemo(() => buildCreatorRows(discoverCards), [discoverCards]);
 
-  const canLoadMore = activeTab === "DISCOVER" && Boolean(discoverQuery.hasNextPage);
-  const isLoadingMore = activeTab === "DISCOVER" && discoverQuery.isFetchingNextPage;
+  const canLoadMore = isBrowseAll && activeTab === "DISCOVER" && Boolean(discoverQuery.hasNextPage);
+  const isLoadingMore = isBrowseAll && activeTab === "DISCOVER" && discoverQuery.isFetchingNextPage;
 
   const handleLoadMoreRef = useRef(() => {});
   handleLoadMoreRef.current = () => { if (canLoadMore) void discoverQuery.fetchNextPage(); };
@@ -607,17 +717,31 @@ export function AllMomentsPage() {
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
       <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+        <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
 
           {/* ── Main column ── */}
           <div className="min-w-0 space-y-4">
 
+            {isBrowseAll ? (
+              <Link
+                to="/moments"
+                className="inline-flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:text-white"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to Moments
+              </Link>
+            ) : null}
+
             {/* Page header */}
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="font-tech text-3xl font-bold tracking-tight text-white">MOMENTS</h1>
+                <h1 className="font-tech text-3xl font-bold tracking-tight text-white">
+                  {isBrowseAll ? "ALL MOMENTS" : "MOMENTS"}
+                </h1>
                 <p className="mt-1 text-[11px] font-medium text-white/55">
-                  Epic plays, insane clutches, and legendary victories. Replay and share your best battles.
+                  {isBrowseAll
+                    ? `Browsing ${activeCategory.toLowerCase()} clips with your current filters.`
+                    : "Epic plays, insane clutches, and legendary victories. Replay and share your best battles."}
                 </p>
               </div>
               <button
@@ -702,8 +826,17 @@ export function AllMomentsPage() {
             </div>
 
             {/* Section heading */}
-            <div className="flex items-center justify-between pt-3">
+            <div className="flex items-center justify-between gap-3 pt-3">
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">{activeCategory} MOMENTS</h2>
+              {showViewMore ? (
+                <Link
+                  to={browseHref}
+                  className="inline-flex shrink-0 items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6acff] transition hover:text-white"
+                >
+                  View More
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              ) : null}
             </div>
 
             {/* Feed */}
@@ -732,7 +865,7 @@ export function AllMomentsPage() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredMoments.map((item) => (
+                {displayMoments.map((item) => (
                   <div key={item.id} className="flex flex-col">
                     <button
                       type="button"
@@ -783,9 +916,17 @@ export function AllMomentsPage() {
                           <span className="flex items-center gap-1"><Eye className="h-4 w-4 text-white/30" />{item.views}</span>
                           <span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span>
                         </div>
-                        <button type="button" onClick={() => handleBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400">
-                          <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <MomentShareDialog moment={item.raw} triggerVariant="icon" />
+                          </div>
+                          <button type="button" onClick={() => handleBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400">
+                            <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -793,8 +934,8 @@ export function AllMomentsPage() {
               </div>
             )}
 
-            {/* Infinite scroll sentinel */}
-            {activeTab === "DISCOVER" && (
+            {/* Infinite scroll — browse page only */}
+            {isBrowseAll && activeTab === "DISCOVER" ? (
               <div className="relative z-10 flex flex-col items-center gap-3 pt-4">
                 <div ref={canLoadMore ? sentinelRefCallback : null} aria-hidden className="h-px w-full" />
                 {isLoadingMore ? (
@@ -805,10 +946,10 @@ export function AllMomentsPage() {
                   <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/40">NO MORE MOMENTS</span>
                 ) : null}
               </div>
-            )}
+            ) : null}
           </div>
 
-          {/* ── Sidebar ── */}
+          {!isBrowseAll ? (
           <aside className="space-y-4">
 
             {/* Featured moment */}
@@ -925,6 +1066,7 @@ export function AllMomentsPage() {
               </div>
             </div>
           </aside>
+          ) : null}
         </div>
       </section>
 
