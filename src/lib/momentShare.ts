@@ -86,6 +86,29 @@ export function buildMomentSharePreviewUrl(momentId: string): string {
   return buildMomentShareUrl(momentId);
 }
 
+export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "teaser">): string {
+  const REDDIT_TITLE_MAX = 300;
+  if (!payload.teaser.trim()) return truncateText(payload.title, REDDIT_TITLE_MAX);
+  return truncateText(`${payload.title} — ${payload.teaser}`, REDDIT_TITLE_MAX);
+}
+
+export function buildRedditSubmitParams(
+  payload: Pick<SharePayload, "title" | "teaser" | "url">,
+  titleOverride?: string,
+): Record<string, string> {
+  const params: Record<string, string> = {
+    url: payload.url,
+    title: titleOverride
+      ? truncateText(titleOverride, 300)
+      : buildRedditSubmitTitle(payload),
+  };
+  // New Reddit supports optional body text on link posts via `text`.
+  if (payload.teaser.trim()) {
+    params.text = payload.teaser;
+  }
+  return params;
+}
+
 export function buildMomentSharePayload(moment: Moment): SharePayload {
   const title = moment.title.trim() || "Check out this Kult moment";
   const description = moment.description?.trim() || moment.aiCaption?.trim() || "";
