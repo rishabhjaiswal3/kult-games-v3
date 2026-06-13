@@ -957,17 +957,6 @@ function GameChatPanel({
           LIVE CHAT
         </span>
         <div className="ml-auto flex items-center gap-1.5">
-          {onShareMoment ? (
-            <button
-              type="button"
-              onClick={onShareMoment}
-              className="flex items-center gap-1 rounded-md border border-[#9a35ff]/35 bg-[#9a35ff]/10 px-2 py-1 font-tech text-[8px] uppercase tracking-wider text-[#d6acff] hover:bg-[#9a35ff]/20 transition"
-              title="Share as Kult Moment"
-            >
-              <Share2 className="h-3 w-3" />
-              Share
-            </button>
-          ) : null}
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
           <span className="font-mono text-[9px] text-white/30">
             {observerCount} watching
@@ -1817,6 +1806,12 @@ export default function ArenaGamePage() {
   const isError = battleQ.isError;
   const isLoading = battleQ.isLoading && !battle;
 
+  const isBattleComplete = Boolean(
+    (battle?.status === "COMPLETED" && battle?.result) || battleResult,
+  );
+  const canShareMoment = Boolean(battleId && myAgentId && isBattleComplete);
+  const shareMomentHandler = canShareMoment ? navigateToTrashTalkMoment : undefined;
+
   // ─────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────
@@ -1860,7 +1855,7 @@ export default function ArenaGamePage() {
           <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">
             {mode}
           </span>
-          {battleId && myAgentId ? (
+          {canShareMoment ? (
             <button
               type="button"
               onClick={navigateToTrashTalkMoment}
@@ -2037,7 +2032,7 @@ export default function ArenaGamePage() {
                   commentary={battleCommentary}
                   storageHashes={memoryRootHashes}
                   onHome={() => navigate(-1)}
-                  onShareMoment={navigateToTrashTalkMoment}
+                  onShareMoment={shareMomentHandler}
                 />
               )}
 
@@ -2080,7 +2075,7 @@ export default function ArenaGamePage() {
           chatEndRef={chatEndRef}
           myAgent={myAgent}
           observerCount={observerCount}
-          onShareMoment={battleId && myAgentId ? navigateToTrashTalkMoment : undefined}
+          onShareMoment={shareMomentHandler}
         />
       </div>
     </div>
