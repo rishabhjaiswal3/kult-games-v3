@@ -26,6 +26,8 @@ const CRAWLER_UA =
   /twitterbot|facebookexternalhit|facebot|discordbot|slackbot|telegrambot|whatsapp|linkedinbot|googlebot|bingbot|applebot|pinterest|redditbot|vkshare|bot\/|spider\/|crawler\//i;
 
 const MOMENT_PAGE = /^\/moments\/([A-Za-z0-9_-]+)\/?$/;
+/** Legacy share URLs — always redirect to the public moment page. */
+const LEGACY_SHARE_MOMENT_PAGE = /^\/share\/moments\/([A-Za-z0-9_-]+)\/?$/;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -125,10 +127,22 @@ createServer((req, res) => {
 
   const pathname = req.url.split("?")[0];
   const momentMatch = pathname.match(MOMENT_PAGE);
+  const legacyShareMatch = pathname.match(LEGACY_SHARE_MOMENT_PAGE);
   const ua = req.headers["user-agent"] || "";
 
-  if (momentMatch && CRAWLER_UA.test(ua)) {
-    void serveCrawlerMomentOg(req, res, momentMatch[1]);
+  if (legacyShareMatch && !CRAWLER_UA.test(ua)) {
+    const origin = requestOrigin(req);
+    const target = origin
+      ? `${origin}/moments/${legacyShareMatch[1]}`
+      : `/moments/${legacyShareMatch[1]}`;
+    res.writeHead(301, { Location: target, "Cache-Control": "no-cache" });
+    res.end();
+    return;
+  }
+
+  const momentId = momentMatch?.[1] ?? legacyShareMatch?.[1];
+  if (momentId && CRAWLER_UA.test(ua)) {
+    void serveCrawlerMomentOg(req, res, momentId);
     return;
   }
 
