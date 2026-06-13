@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import type { Moment } from "@/types/api";
 import {
   buildMomentSharePayload,
+  buildRedditSubmitParams,
+  buildRedditSubmitTitle,
   resolveShareMediaUrl,
   type SharePayload,
 } from "@/lib/momentShare";
@@ -71,8 +73,13 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#ff4500",
     buildUrl: (p) =>
-      `https://www.reddit.com/submit?${new URLSearchParams({ url: p.url, title: p.title })}`,
-    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
+      `https://www.reddit.com/submit?${new URLSearchParams(buildRedditSubmitParams(p))}`,
+    buildPostText: (p) => {
+      const redditTitle = buildRedditSubmitTitle(p);
+      return [redditTitle, p.teaser && p.teaser !== redditTitle ? p.teaser : "", p.url]
+        .filter(Boolean)
+        .join("\n\n");
+    },
   },
   {
     id: "whatsapp",
@@ -177,11 +184,15 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
       const parts = [templateText, payload.url].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     }
-    case "reddit":
-      return `https://www.reddit.com/submit?${new URLSearchParams({
-        url: payload.url,
-        title: templateText.split("\n")[0] ?? payload.title,
-      })}`;
+    case "reddit": {
+      const templateTitle = templateText.split("\n")[0]?.trim() || payload.title;
+      const titleWithTeaser = payload.teaser
+        ? `${templateTitle} — ${payload.teaser}`
+        : templateTitle;
+      return `https://www.reddit.com/submit?${new URLSearchParams(
+        buildRedditSubmitParams(payload, titleWithTeaser),
+      )}`;
+    }
     case "facebook":
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
         u: payload.url,
