@@ -25,35 +25,29 @@ function isVideoMoment(moment) {
   return fileType.startsWith("video/") || moment.assetMetadata?.mediaType === "video";
 }
 
+/**
+ * Always returns the JPEG proxy URL when any image source is available.
+ * The backend converts every format (WebP, PNG, GIF, AVIF, HEIC, TIFF, JPEG…) to image/jpeg.
+ */
 function resolveOgImageUrl(moment, pageOrigin, momentId) {
   const meta = moment.assetMetadata ?? {};
-  const proxyUrl = `${(pageOrigin || "").replace(/\/+$/, "")}/api/share/moments/${momentId}/og-image.jpg`;
-
-  function proxyIfWebp(url) {
-    return /\.(webp|avif)($|\?)/i.test(url) ? proxyUrl : url;
-  }
+  const proxyUrl = `${(pageOrigin || "").replace(/\/+$/, "")}/api/moments/${momentId}/share-image.jpg`;
 
   const ogImageUrl = typeof meta.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
-  if (ogImageUrl) return proxyIfWebp(ogImageUrl);
+  if (ogImageUrl) return proxyUrl;
 
   if (isVideoMoment(moment)) {
     const thumbnailUrl = typeof meta.thumbnailUrl === "string" ? meta.thumbnailUrl.trim() : "";
-    if (thumbnailUrl) return proxyIfWebp(thumbnailUrl);
+    if (thumbnailUrl) return proxyUrl;
     return undefined;
   }
 
   const assetUrl = typeof moment.assetUrl === "string" ? moment.assetUrl.trim() : "";
-  if (!assetUrl) return undefined;
-  return proxyIfWebp(assetUrl);
-}
+  if (assetUrl) return proxyUrl;
 
-function resolveOgImageMimeType(imageUrl) {
-  if (!imageUrl) return undefined;
-  const path = imageUrl.split("?")[0]?.toLowerCase() ?? "";
-  if (path.endsWith(".webp")) return "image/webp";
-  if (path.endsWith(".png")) return "image/png";
-  if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
-  if (path.endsWith(".gif")) return "image/gif";
+  const zgUrl = typeof moment.assetZgUrl === "string" ? moment.assetZgUrl.trim() : "";
+  if (zgUrl) return proxyUrl;
+
   return undefined;
 }
 
@@ -82,7 +76,7 @@ export function buildMomentOgHtml(moment, publicMomentUrl) {
   const pageOrigin = publicMomentUrl.replace(/\/moments\/[^/]+\/?$/, "");
   const ogImageRaw = resolveOgImageUrl(moment, pageOrigin, momentId);
   const ogImage = ogImageRaw ? escapeHtml(ogImageRaw) : "";
-  const ogImageMime = ogImageRaw?.includes("/og-image.jpg") ? "image/jpeg" : resolveOgImageMimeType(ogImageRaw);
+  const ogImageMime = ogImageRaw?.includes("/share-image.jpg") ? "image/jpeg" : undefined;
   const { width, height } = pickDimensions(moment);
   const isVideo = isVideoMoment(moment);
 

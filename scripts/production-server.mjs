@@ -1,22 +1,30 @@
 /**
  * Production static server with social-crawler OG support for /moments/:id.
  *
- * Humans get the SPA. Twitter/Facebook/WhatsApp/Reddit bots get OG HTML built
- * from the moment API (og:image = JPEG CDN URL when available).
+ * Humans  → SPA index.html
+ * Crawlers (Twitter, Facebook, WhatsApp, Reddit, Pinterest, TikTok) →
+ *   proxied to the backend's /api/share/moments/:id which returns per-moment
+ *   OG HTML with a JPEG image proxy. The backend owns all image conversion
+ *   (via sharp), so we never duplicate that logic here.
  *
- * /api/share/* requests are proxied to the backend which handles JPEG conversion
- * via sharp (including the moment og-image.jpg endpoint and the default-og.jpg endpoint).
+ * /api/share/* (including /api/share/moments/:id/og-image.jpg) →
+ *   proxied to the backend. Social bots fetch the og:image URL immediately
+ *   after crawling the OG HTML; those requests must reach the backend's
+ *   JPEG proxy, which converts WebP/AVIF/other formats and returns image/jpeg.
  */
 import { createServer } from "http";
 import { createReadStream, existsSync, readFileSync, statSync } from "fs";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
-import { buildMomentOgHtml } from "./momentOgHtml.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "../dist");
 const PORT = Number(process.env.PORT || 8080);
 
+/**
+ * Backend origin — no trailing slash, /api suffix stripped.
+ * Used for proxying API calls and share-preview requests.
+ */
 const API_ORIGIN = (
   process.env.VITE_API_URL ||
   process.env.API_URL ||
@@ -30,7 +38,7 @@ const CRAWLER_UA =
   /twitterbot|facebookexternalhit|facebot|discordbot|slackbot|telegrambot|whatsapp|linkedinbot|googlebot|bingbot|applebot|pinterest|redditbot|vkshare|bot\/|spider\/|crawler\//i;
 
 const MOMENT_PAGE = /^\/moments\/([A-Za-z0-9_-]+)\/?$/;
-/** Legacy share URLs — always redirect to the public moment page. */
+/** Legacy share URLs — redirect humans to the public moment page. */
 const LEGACY_SHARE_MOMENT_PAGE = /^\/share\/moments\/([A-Za-z0-9_-]+)\/?$/;
 
 const MIME = {
@@ -55,63 +63,45 @@ function requestOrigin(req) {
   return host ? `${proto}://${host}` : "";
 }
 
-async function fetchMoment(momentId) {
-  const response = await fetch(`${API_ORIGIN}/api/moments/${momentId}`, {
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) return null;
-  const payload = await response.json();
-  return payload?.data ?? payload?.moment ?? null;
-}
-
-async function serveCrawlerMomentOg(req, res, momentId) {
-  const origin = requestOrigin(req);
-  const publicMomentUrl = origin ? `${origin}/moments/${momentId}` : `/moments/${momentId}`;
-
-  try {
-    const moment = await fetchMoment(momentId);
-    if (!moment) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Moment not found");
-      return;
-    }
-
-    const html = buildMomentOgHtml(moment, publicMomentUrl);
-    res.writeHead(200, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
-    });
-    res.end(html);
-  } catch (error) {
-    console.error("[production-server] crawler OG failed", error);
-    res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Moment preview unavailable");
-  }
-}
-
 /**
- * Proxy /api/share/* to the backend.
- * The backend owns all share-preview logic including the JPEG image conversion
- * (via sharp) for og-image.jpg and default-og.jpg endpoints.
+ * Proxy a request to the backend.
+ *
+ * @param {import("http").IncomingMessage} req   - original request (headers forwarded)
+ * @param {import("http").ServerResponse}  res   - response to write into
+ * @param {string}                         [path] - override path; defaults to req.url
  */
-async function proxyShareApi(req, res) {
-  const backendUrl = `${API_ORIGIN}${req.url}`;
+async function proxyToBackend(req, res, path) {
+  const url = path ?? req.url;
+  const backendUrl = `${API_ORIGIN}${url}`;
+
+  // Forward origin-related headers so the backend can build correct absolute URLs
+  // (e.g. og:image proxy URL uses the public app hostname, not an internal address).
+  const forwardHeaders = {};
+  const fwdHost = req.headers["x-forwarded-host"] || req.headers.host;
+  const fwdProto = req.headers["x-forwarded-proto"] || "https";
+  if (fwdHost) forwardHeaders["x-forwarded-host"] = String(fwdHost).split(",")[0].trim();
+  if (fwdProto) forwardHeaders["x-forwarded-proto"] = String(fwdProto).split(",")[0].trim();
+  if (req.headers["user-agent"]) forwardHeaders["user-agent"] = req.headers["user-agent"];
+
   try {
-    const upstream = await fetch(backendUrl, { signal: AbortSignal.timeout(15_000) });
+    const upstream = await fetch(backendUrl, {
+      signal: AbortSignal.timeout(15_000),
+      headers: forwardHeaders,
+    });
+
     const contentType = upstream.headers.get("content-type") || "application/octet-stream";
     const cacheControl = upstream.headers.get("cache-control") || "no-store";
-    if (!upstream.ok) {
-      res.writeHead(upstream.status, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Share resource unavailable");
-      return;
-    }
     const buf = await upstream.arrayBuffer();
-    res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheControl });
+
+    res.writeHead(upstream.ok ? 200 : upstream.status, {
+      "Content-Type": contentType,
+      "Cache-Control": cacheControl,
+    });
     res.end(Buffer.from(buf));
   } catch (err) {
-    console.error("[production-server] share proxy failed", err);
+    console.error("[production-server] backend proxy failed", { url: backendUrl, err: String(err) });
     res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Share resource unavailable");
+    res.end("Backend unavailable");
   }
 }
 
@@ -148,12 +138,19 @@ createServer((req, res) => {
   const legacyShareMatch = pathname.match(LEGACY_SHARE_MOMENT_PAGE);
   const ua = req.headers["user-agent"] || "";
 
-  // Proxy all /api/share/* to the backend (JPEG conversion via sharp lives there).
+  // ── /api/share/* ─────────────────────────────────────────────────────────────
+  // All share API calls go to the backend — this includes:
+  //   /api/share/moments/:id          → per-moment OG HTML
+  //   /api/share/moments/:id/og-image.jpg → JPEG proxy (social bots fetch this)
+  //   /api/share/default-og.jpg       → JPEG-converted app branding image
   if (pathname.startsWith("/api/share/")) {
-    void proxyShareApi(req, res);
+    void proxyToBackend(req, res);
     return;
   }
 
+  // ── Legacy /share/moments/:id ─────────────────────────────────────────────────
+  // Human visitors: 301 redirect to the SPA moment page.
+  // Crawlers: fall through to the moment page handler below (momentId is extracted).
   if (legacyShareMatch && !CRAWLER_UA.test(ua)) {
     const origin = requestOrigin(req);
     const target = origin
@@ -164,13 +161,24 @@ createServer((req, res) => {
     return;
   }
 
+  // ── /moments/:id for social crawlers ─────────────────────────────────────────
+  // Proxy to the backend's authoritative share preview endpoint.
+  // The backend:
+  //   • queries the moment from the DB
+  //   • builds per-moment OG HTML (title, description, og:image)
+  //   • og:image always uses the /api/share/moments/:id/og-image.jpg JPEG proxy
+  //     (guarantees image/jpeg Content-Type regardless of the original file format)
+  //   • includes a JS redirect so human browsers immediately go to the SPA
   const momentId = momentMatch?.[1] ?? legacyShareMatch?.[1];
   if (momentId && CRAWLER_UA.test(ua)) {
-    void serveCrawlerMomentOg(req, res, momentId);
+    void proxyToBackend(req, res, `/api/share/moments/${momentId}`);
     return;
   }
 
+  // ── Static assets ─────────────────────────────────────────────────────────────
   if (trySendStatic(req, res)) return;
+
+  // ── SPA fallback ──────────────────────────────────────────────────────────────
   sendSpaIndex(res);
 }).listen(PORT, () => {
   console.log(`[production-server] listening on :${PORT} (API ${API_ORIGIN})`);

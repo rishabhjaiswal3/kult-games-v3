@@ -1,4 +1,8 @@
 import type { Moment } from "@/types/api";
+import {
+  buildMomentShareImageProxyUrl,
+  resolveMomentShareImageUrl,
+} from "@/lib/momentShareImage";
 
 const APP_ORIGIN =
   typeof window !== "undefined" ? window.location.origin.replace(/\/+$/, "") : "";
@@ -54,30 +58,12 @@ function resolveHostBase(): string {
 }
 
 export function buildMomentShareOgImageUrl(momentId: string): string {
-  const base = resolveHostBase().replace(/\/+$/, "");
-  return `${base}/api/share/moments/${momentId}/og-image.jpg`;
+  return buildMomentShareImageProxyUrl(momentId, resolveHostBase());
 }
 
-function isWebpOrAvif(url: string): boolean {
-  return /\.(webp|avif)($|\?)/i.test(url);
-}
-
-/** Public image URL for Pinterest and WhatsApp — JPEG proxy when asset is WebP. */
+/** Public image URL for Pinterest/WhatsApp — always JPEG proxy (any source format). */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
-  const meta = moment.assetMetadata as Record<string, unknown> | undefined;
-  const ogImageUrl = typeof meta?.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
-  if (ogImageUrl) return ogImageUrl;
-
-  const thumbnailUrl = typeof meta?.thumbnailUrl === "string" ? meta.thumbnailUrl.trim() : "";
-  if (thumbnailUrl) return thumbnailUrl;
-
-  const assetUrl = moment.assetUrl?.trim();
-  if (assetUrl) {
-    if (isWebpOrAvif(assetUrl)) return buildMomentShareOgImageUrl(moment.momentId);
-    return assetUrl;
-  }
-
-  return moment.assetZgUrl?.trim() || undefined;
+  return resolveMomentShareImageUrl(moment, resolveHostBase());
 }
 
 /**
