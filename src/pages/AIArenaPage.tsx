@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -77,6 +78,13 @@ const arenaGames = [
     video: battleStep3,
     tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
   },
+];
+
+const arenaQuickLinks = [
+  { label: "My Agents", path: "/my-agents", icon: Box, color: "#00f080" },
+  { label: "Training", path: "/training", icon: BrainCircuit, color: "#0089ff" },
+  { label: "Battles", path: "/battles", icon: Swords, color: "#b338ff" },
+  { label: "Autonomous", path: "/autonomous", icon: Globe, color: "#ffc000" },
 ];
 
 const agents = [
@@ -197,16 +205,57 @@ function AIArenaPageContent() {
     <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
-      <ArenaGames />
       <FeaturesBlock />
       <HowItWorks />
+      <ArenaQuickLinks />
       <RankProgressionTimeline />
+      <ArenaGames />
       <TopAgents />
       <MyBattleSection />
       <LiveBattles />
       <PartnersBlock />
       <ArenaLandingFooter />
     </div>
+  );
+}
+
+function ArenaQuickLinks() {
+  return (
+    <section className="mx-auto px-4 pt-8 sm:px-6 sm:pt-10">
+      <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {arenaQuickLinks.map((link) => (
+          <Link
+            key={link.path}
+            to={link.path}
+            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] p-4 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+            style={
+              {
+                "--quick-link-color": link.color,
+                "--quick-link-glow": `${link.color}33`,
+                "--quick-link-border": `${link.color}66`,
+                "--quick-link-bg": `${link.color}18`,
+                "--quick-link-shadow": `${link.color}14`,
+              } as CSSProperties
+            }
+          >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="flex items-center gap-3">
+              <div
+                className="relative z-10 grid h-10 w-10 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
+                style={{ color: link.color }}
+              >
+                <link.icon className="h-5 w-5" />
+              </div>
+              <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-[var(--quick-link-color)] transition duration-300 group-hover:brightness-125">
+                {link.label}
+              </span>
+            </div>
+            <ArrowUpRight className="relative z-10 h-4 w-4 text-[var(--quick-link-color)] opacity-70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -281,8 +330,8 @@ function ArenaGames() {
           style={{ transform: `translateX(-${carouselIndex * (100 / visibleCards)}%)` }}
         >
           {arenaGames.map((game) => (
-            <div key={game.title} className="w-full shrink-0 px-2 first:pl-0 last:pr-0 lg:w-1/2">
-              <article className="arena-panel group relative h-[330px] overflow-hidden rounded-xl border border-white/10 sm:h-[320px]">
+            <div key={game.title} className="w-full shrink-0 px-2 py-3 first:pl-0 last:pr-0 lg:w-1/2">
+              <article className="arena-panel group relative h-[330px] overflow-hidden rounded-xl border border-white/10 shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] sm:h-[320px]">
             {game.video ? (
               <video
                 src={game.video}
@@ -290,26 +339,29 @@ function ArenaGames() {
                 loop
                 muted
                 playsInline
-                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
             ) : (
               <img
                 src={game.image}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
             )}
-            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-75`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/90 via-transparent to-transparent" />
+            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-75 transition-opacity duration-500 group-hover:opacity-55`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#070910]/15 to-transparent transition duration-500 group-hover:from-[#070910]/85" />
+            <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5 transition duration-500 group-hover:ring-[#c268ff]/45" />
+            <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
+            <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-[#b84cff] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative z-10 flex h-full flex-col justify-end p-5">
-              <h3 className="font-tech text-4xl font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg sm:text-5xl">
+              <h3 className="font-tech text-4xl font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:text-[#f0d7ff] group-hover:drop-shadow-[0_0_18px_rgba(184,76,255,0.65)] sm:text-5xl">
                 {game.title}
               </h3>
-              <span className="mt-5 inline-flex w-fit rounded border border-[#9f2dff]/70 bg-[#5b1499]/35 px-3 py-2 font-tech text-[10px] text-[#d773ff]">
+              <span className="mt-5 inline-flex w-fit rounded border border-[#9f2dff]/70 bg-[#5b1499]/35 px-3 py-2 font-tech text-[10px] text-[#d773ff] transition duration-500 group-hover:border-[#d187ff] group-hover:bg-[#721fc0]/55 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(154,53,255,0.35)]">
                 {game.tag}
               </span>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">{game.body}</p>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 transition-colors duration-500 group-hover:text-white sm:text-base">{game.body}</p>
             </div>
               </article>
             </div>
@@ -756,18 +808,21 @@ function FeaturesBlock() {
       title: "OWN YOUR AI",
       desc: "Each AI Agent is an NFT that you truly own.",
       c: "var(--neon)",
+      path: "/my-agents",
     },
     {
       icon: ArrowUp,
       title: "TRAIN & EVOLVE",
       desc: "Train, upgrade and evolve your agent to unlock their full potential.",
       c: "var(--neon-2)",
+      path: "/training",
     },
     {
       icon: Swords,
       title: "BATTLE & EARN",
       desc: "Compete in battles, climb the ranks and earn massive rewards.",
       c: "var(--amber)",
+      path: "/battles",
     },
     {
       icon: Globe,
@@ -798,11 +853,9 @@ function FeaturesBlock() {
           </Link>
         </div>
         <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="card-glass rounded-xl p-4 sm:p-5 transition text-center md:text-left"
-            >
+          {features.map((f) => {
+            const content = (
+              <>
               <div
                 className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0"
                 style={{
@@ -820,8 +873,26 @@ function FeaturesBlock() {
                 {"partner" in f && f.partner === "0G" && <ZeroGLogo className="h-4 w-auto" />}
               </h4>
               <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+              </>
+            );
+
+            return "path" in f && f.path ? (
+              <Link
+                key={f.title}
+                to={f.path}
+                className="card-glass group rounded-xl p-4 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] sm:p-5 md:text-left"
+              >
+                {content}
+              </Link>
+            ) : (
+              <div
+                key={f.title}
+                className="card-glass rounded-xl p-4 text-center transition sm:p-5 md:text-left"
+              >
+                {content}
+              </div>
+            );
+          })}
         </div>
         <div className="card-glass rounded-xl p-4 sm:p-5 text-center lg:text-left">
           <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
@@ -850,9 +921,12 @@ function FeaturesBlock() {
               />
             </svg>
           </div>
-          <button className="btn-primary w-full mt-4 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] flex items-center justify-center gap-2">
+          <Link
+            to="/dashboard"
+            className="btn-primary mt-4 flex w-full items-center justify-center gap-2 rounded-md px-5 py-2.5 font-tech text-xs tracking-[0.2em]"
+          >
             VIEW TOKEN <ArrowUpRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
@@ -1324,7 +1398,7 @@ function MyBattleSection() {
             </div>
           )}
           <Link to="/battles" className="text-sm text-accent hover:underline">
-            View Battles Page
+            View All Battles
           </Link>
         </div>
       </div>
@@ -1362,7 +1436,13 @@ function MyBattleSection() {
                     const isCancelled = outcome === "CANCELLED";
 
                     return (
-                      <div key={memory.id} className="card-glass rounded-xl border border-primary/20 p-5">
+                      <div
+                        key={memory.id}
+                        className="card-glass group relative overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)]"
+                      >
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
+                        <div className="relative z-10">
                         <div className="flex items-center justify-between gap-3">
                           <span className={`rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase ${
                             isCancelled
@@ -1383,7 +1463,7 @@ function MyBattleSection() {
                                 <ArenaAgentThumbnail
                                   agent={agent}
                                   size="md"
-                                  className="h-20 w-20 rounded-xl border-2 border-primary/25"
+                                  className="h-20 w-20 rounded-xl border-2 border-primary/25 transition duration-500 group-hover:scale-105 group-hover:border-primary/65 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.28)]"
                                 />
                                 <p className="mt-1 max-w-20 truncate font-tech text-[8px] text-white/55">{agent.name}</p>
                               </div>
@@ -1403,6 +1483,7 @@ function MyBattleSection() {
                             Open Battle {shortBattleId(battleId)}
                           </Link>
                         ) : null}
+                        </div>
                       </div>
                     );
                   })}
