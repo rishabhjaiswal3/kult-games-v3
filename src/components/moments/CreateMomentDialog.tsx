@@ -23,6 +23,7 @@ import {
   MOMENT_FILE_INPUT_ACCEPT,
   MOMENT_IMAGE_COMPRESS,
   MOMENT_MEDIA_LIMITS,
+  momentImageUploadHint,
 } from "@/constants/moments";
 import type { CreateMomentResponse } from "@/types/api";
 
@@ -237,7 +238,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
             </span>
           </ArenaDialogTitle>
           <ArenaDialogDescription className="text-xs text-white/55 sm:text-sm">
-            Drop an arena clip or screenshot — up to 2 min for video. Adds straight to the Moments feed.
+            Drop an arena clip or screenshot. {momentImageUploadHint()}
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
@@ -313,7 +314,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
                   Click to upload media
                 </span>
                 <span className="text-[10px] text-white/40">
-                  Images auto-optimized to ≤500 KB · MP4 · WebM · MOV · video ≤ {MOMENT_MEDIA_LIMITS.maxVideoDurationSeconds}s
+                  {momentImageUploadHint()}
                 </span>
               </button>
             )}

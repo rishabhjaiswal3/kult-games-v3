@@ -3,6 +3,11 @@ import { Check, Copy, ExternalLink, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Moment } from "@/types/api";
 import {
+  buildMomentSharePayload,
+  resolveShareMediaUrl,
+  type SharePayload,
+} from "@/lib/momentShare";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -13,17 +18,6 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type SharePlatformId = "twitter" | "facebook" | "reddit" | "whatsapp" | "pinterest" | "tiktok";
-
-type SharePayload = {
-  /** Moment page URL — what humans visit */
-  url: string;
-  /** Direct public asset URL (image/video) — passed to platforms for image preview */
-  mediaUrl?: string;
-  title: string;
-  teaser: string;
-  hashtags: string[];
-  relatedGames: string[];
-};
 
 type SharePlatform = {
   id: SharePlatformId;
@@ -39,29 +33,9 @@ type SharePlatform = {
 type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
-// ── Payload ───────────────────────────────────────────────────────────────────
-
-const APP_ORIGIN = typeof window !== "undefined" ? window.location.origin : "";
-
-function buildSharePayload(moment: Moment): SharePayload {
-  const url = `${APP_ORIGIN}/moments/${moment.momentId}`;
-  const game = moment.relatedGames?.[0] ?? "Kult";
-  const teaser = moment.aiCaption?.trim() || moment.description?.trim() || moment.title;
-  const hashtags = ["KultGames", "KultMoments", game.replace(/[\s-]+/g, "")].filter(Boolean);
-  return {
-    url,
-    mediaUrl: moment.assetZgUrl ?? moment.assetUrl ?? undefined,
-    title: moment.title || "Kult Moment",
-    teaser: teaser ?? "",
-    hashtags,
-    relatedGames: moment.relatedGames ?? [],
-  };
-}
-
 // ── Platforms ─────────────────────────────────────────────────────────────────
-// Where a platform can accept an image URL directly in its share params we use
-// `mediaUrl` so the post/pin shows the actual moment asset rather than relying
-// on the SPA page having OG meta tags (which it doesn't).
+// Share links use `previewUrl` (backend /share/moments/:id) so crawlers read OG
+// meta tags with a public image URL. Direct storage / 0G URLs are not reliable.
 
 const PLATFORMS: SharePlatform[] = [
   {
@@ -70,14 +44,11 @@ const PLATFORMS: SharePlatform[] = [
     icon: "𝕏",
     color: "#fff",
     bg: "#000",
-    // Twitter appends the `url` param automatically to the tweet — don't put it
-    // in `text` too, and never use mediaUrl as the url param (it shows the raw
-    // storage URL in the tweet). Use the moment page URL only.
     buildUrl: (p) => {
-      const text = `${p.title}\n${p.hashtags.map(h => `#${h}`).join(" ")}`;
-      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text, url: p.url })}`;
+      const text = `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`;
+      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => `${p.title}\n\n${p.teaser}\n\n${p.hashtags.map(h => `#${h}`).join(" ")}`,
+    buildPostText: (p) => `${p.title}\n\n${p.teaser}\n\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`,
   },
   {
     id: "facebook",
@@ -85,11 +56,8 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
-    buildUrl: (p) => {
-      // Share the media URL when available so Facebook crawls the image.
-      const sharedUrl = p.mediaUrl ?? p.url;
-      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: sharedUrl })}`;
-    },
+    buildUrl: (p) =>
+      `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: p.previewUrl })}`,
     buildPostText: (p) => `${p.title}\n\n${p.teaser}\n\n${p.url}`,
   },
   {
@@ -98,11 +66,8 @@ const PLATFORMS: SharePlatform[] = [
     icon: "r/",
     color: "#fff",
     bg: "#ff4500",
-    // Submit the image URL directly so Reddit renders it as an image post.
-    buildUrl: (p) => {
-      const submitUrl = p.mediaUrl ?? p.url;
-      return `https://www.reddit.com/submit?${new URLSearchParams({ url: submitUrl, title: p.title })}`;
-    },
+    buildUrl: (p) =>
+      `https://www.reddit.com/submit?${new URLSearchParams({ url: p.previewUrl, title: p.title })}`,
     buildPostText: (p) => p.title,
   },
   {
@@ -111,13 +76,12 @@ const PLATFORMS: SharePlatform[] = [
     icon: "W",
     color: "#fff",
     bg: "#25d366",
-    // Include the media URL in the message text — WhatsApp fetches and previews it.
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.mediaUrl, p.url].filter(Boolean);
+      const parts = [`*${p.title}*`, p.teaser, p.previewUrl].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     },
     buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.mediaUrl, p.url].filter(Boolean);
+      const parts = [`*${p.title}*`, p.teaser, p.previewUrl].filter(Boolean);
       return parts.join("\n");
     },
   },
@@ -127,9 +91,11 @@ const PLATFORMS: SharePlatform[] = [
     icon: "P",
     color: "#fff",
     bg: "#e60023",
-    // Pinterest natively supports `media` — no OG crawl needed.
     buildUrl: (p) => {
-      const params = new URLSearchParams({ url: p.url, description: `${p.title} – ${p.teaser}` });
+      const params = new URLSearchParams({
+        url: p.previewUrl,
+        description: `${p.title} – ${p.teaser}`,
+      });
       if (p.mediaUrl) params.set("media", p.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     },
@@ -143,7 +109,7 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#010101",
     copyOnly: true,
     buildUrl: () => "https://www.tiktok.com",
-    buildPostText: (p) => `${p.title}\n${p.hashtags.map(h => `#${h}`).join(" ")}\n${p.url}`,
+    buildPostText: (p) => `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`,
   },
 ];
 
@@ -198,25 +164,27 @@ async function copyText(text: string) {
 }
 
 function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: string, payload: SharePayload): string {
-  const withUrl = `${templateText}\n${payload.url}`;
   switch (platform.id) {
     case "twitter":
-      // Use moment URL only — never mediaUrl, Twitter appends `url` param to tweet text
-      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text: templateText, url: payload.url })}`;
+      return `https://twitter.com/intent/tweet?${new URLSearchParams({
+        text: `${templateText}\n${payload.previewUrl}`,
+      })}`;
     case "whatsapp": {
-      const parts = [templateText, payload.mediaUrl, payload.url].filter(Boolean);
+      const parts = [templateText, payload.previewUrl].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     }
-    case "reddit": {
-      const submitUrl = payload.mediaUrl ?? payload.url;
-      return `https://www.reddit.com/submit?${new URLSearchParams({ url: submitUrl, title: templateText.split("\n")[0] ?? payload.title })}`;
-    }
-    case "facebook": {
-      const sharedUrl = payload.mediaUrl ?? payload.url;
-      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: sharedUrl, quote: templateText })}`;
-    }
+    case "reddit":
+      return `https://www.reddit.com/submit?${new URLSearchParams({
+        url: payload.previewUrl,
+        title: templateText.split("\n")[0] ?? payload.title,
+      })}`;
+    case "facebook":
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
+        u: payload.previewUrl,
+        quote: templateText,
+      })}`;
     case "pinterest": {
-      const params = new URLSearchParams({ url: payload.url, description: templateText });
+      const params = new URLSearchParams({ url: payload.previewUrl, description: templateText });
       if (payload.mediaUrl) params.set("media", payload.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     }
@@ -346,19 +314,20 @@ type MomentShareDialogProps = {
 };
 
 const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: MomentShareDialogProps) => {
-  const payload = useMemo(() => buildSharePayload(moment), [moment]);
+  const payload = useMemo(() => buildMomentSharePayload(moment), [moment]);
   const [selectedPlatformId, setSelectedPlatformId] = useState<SharePlatformId>("twitter");
   const [selectedTemplate, setSelectedTemplate] = useState<ShareTemplate | null>(null);
   const matchedGroup = useMemo(() => findMatchedGroup(moment.relatedGames ?? []), [moment.relatedGames]);
   const platform = PLATFORMS.find((p) => p.id === selectedPlatformId) ?? PLATFORMS[0]!;
-  const mediaUrl = moment.assetZgUrl ?? moment.assetUrl;
-  const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(mediaUrl ?? "");
+  const mediaUrl = resolveShareMediaUrl(moment);
+  const fileType = String(moment.assetMetadata?.fileType ?? "").toLowerCase();
+  const isVideo = fileType.startsWith("video/") || /\.(mp4|webm|mov)(\?.*)?$/i.test(mediaUrl ?? "");
 
   const handleShare = useCallback(async () => {
     if (platform.copyOnly) {
       const text = selectedTemplate?.text ?? platform.buildPostText(payload);
       try {
-        await copyText(`${text}\n${payload.url}`);
+        await copyText(`${text}\n${payload.previewUrl}`);
         toast.success("Link copied — paste it in TikTok to share.");
       } catch {
         toast.error("Could not copy");
@@ -434,8 +403,13 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
         {/* ── Scrollable body ── */}
         <div className="min-h-0 flex-1 overflow-y-auto space-y-4 px-5 py-4 [scrollbar-width:thin]">
 
-          {/* Copy link */}
-          <CopyLinkBar url={payload.url} />
+          {/* Copy link — preview URL so platforms fetch OG image meta */}
+          <div className="space-y-1.5">
+            <CopyLinkBar url={payload.previewUrl} />
+            <p className="font-tech text-[9px] uppercase tracking-wider text-white/30">
+              Share this link — platforms load your image from our preview server
+            </p>
+          </div>
 
           {/* Platform grid — 6 platforms, 3 per row */}
           <div>
