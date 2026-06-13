@@ -27,25 +27,24 @@ function isVideoMoment(moment) {
 
 function resolveOgImageUrl(moment, pageOrigin, momentId) {
   const meta = moment.assetMetadata ?? {};
+  const proxyUrl = `${(pageOrigin || "").replace(/\/+$/, "")}/api/share/moments/${momentId}/og-image.jpg`;
+
+  function proxyIfWebp(url) {
+    return /\.(webp|avif)($|\?)/i.test(url) ? proxyUrl : url;
+  }
 
   const ogImageUrl = typeof meta.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
-  if (ogImageUrl) return ogImageUrl;
+  if (ogImageUrl) return proxyIfWebp(ogImageUrl);
 
   if (isVideoMoment(moment)) {
     const thumbnailUrl = typeof meta.thumbnailUrl === "string" ? meta.thumbnailUrl.trim() : "";
-    if (thumbnailUrl) return thumbnailUrl;
+    if (thumbnailUrl) return proxyIfWebp(thumbnailUrl);
     return undefined;
   }
 
   const assetUrl = typeof moment.assetUrl === "string" ? moment.assetUrl.trim() : "";
   if (!assetUrl) return undefined;
-
-  if (/\.(webp|avif)($|\?)/i.test(assetUrl)) {
-    const base = (pageOrigin || "").replace(/\/+$/, "");
-    return `${base}/api/share/moments/${momentId}/og-image.jpg`;
-  }
-
-  return assetUrl;
+  return proxyIfWebp(assetUrl);
 }
 
 function resolveOgImageMimeType(imageUrl) {
