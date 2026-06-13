@@ -148,16 +148,11 @@ createServer((req, res) => {
     return;
   }
 
-  // ── Legacy /share/moments/:id ─────────────────────────────────────────────────
-  // Human visitors: 301 redirect to the SPA moment page.
-  // Crawlers: fall through to the moment page handler below (momentId is extracted).
-  if (legacyShareMatch && !CRAWLER_UA.test(ua)) {
-    const origin = requestOrigin(req);
-    const target = origin
-      ? `${origin}/moments/${legacyShareMatch[1]}`
-      : `/moments/${legacyShareMatch[1]}`;
-    res.writeHead(301, { Location: target, "Cache-Control": "no-cache" });
-    res.end();
+  // ── Legacy /share/moments/:id (kult-moment share links) ─────────────────────
+  // Always proxy to backend OG HTML — humans get JS redirect to /moments/:id;
+  // crawlers receive og:image + twitter:card meta tags.
+  if (legacyShareMatch) {
+    void proxyToBackend(req, res, `/api/share/moments/${legacyShareMatch[1]}`);
     return;
   }
 
