@@ -74,6 +74,14 @@ export const MOMENTS_QUERY_KEY_ROOT = "moments" as const;
 /** Query param on `/moments` — `?create=true` opens the create-moment dialog. */
 export const MOMENTS_CREATE_QUERY_PARAM = "create" as const;
 
+/** Completed AI Arena battle — pre-fills trash-talk moment when paired with `?create=true`. */
+export const MOMENTS_BATTLE_ID_QUERY_PARAM = "battleId" as const;
+
+/** Optional — disambiguates which of the user's agents fought in the battle. */
+export const MOMENTS_MY_AGENT_ID_QUERY_PARAM = "myAgentId" as const;
+
+export const WARZONE_TRASH_TALK_MOMENT_TITLE = "WarzoneWarriors Trash Talk";
+
 /** Moments hub shows 2 rows × 3 columns on large screens. */
 export const MOMENTS_HUB_PREVIEW_COUNT = 9;
 

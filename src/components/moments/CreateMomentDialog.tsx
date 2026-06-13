@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ImagePlus, Loader2, Trash2, Video as VideoIcon, X } from "lucide-react";
@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { momentsApi } from "@/api/momentsApi";
 import { compressMomentMediaFile } from "@/lib/compressMomentMedia";
+import { BattleTrashTalkError, resolveBattleTrashTalkDraft } from "@/lib/battleTrashTalkMoment";
 import {
   KNOWN_MOMENT_GAMES,
   MOMENT_ACCEPTED_MIME_TYPES,
@@ -31,6 +32,9 @@ export type CreateMomentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: (response: CreateMomentResponse) => void | Promise<void>;
+  /** When set, pre-fills trash-talk title, winning commentary, and artwork. */
+  battleId?: string | null;
+  myAgentId?: string | null;
 };
 
 type PreviewKind = "image" | "video";
@@ -74,7 +78,13 @@ function parseTagsInput(value: string): string[] {
   );
 }
 
-export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMomentDialogProps) {
+export function CreateMomentDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  battleId,
+  myAgentId,
+}: CreateMomentDialogProps) {
   const { isAuthenticated } = useAuth();
 
   const [asset, setAsset] = useState<SelectedAsset | null>(null);
@@ -83,7 +93,10 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   const [tagsInput, setTagsInput] = useState("");
   const [selectedGameSlugs, setSelectedGameSlugs] = useState<Set<string>>(new Set());
   const [isCompressing, setIsCompressing] = useState(false);
+  const [isPrefilling, setIsPrefilling] = useState(false);
+  const [awaitingCommentary, setAwaitingCommentary] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prefillKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!asset) return;
@@ -93,18 +106,94 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
     };
   }, [asset]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setAsset(null);
     setTitle("");
     setDescription("");
     setTagsInput("");
     setSelectedGameSlugs(new Set());
+    prefillKeyRef.current = null;
+    setAwaitingCommentary(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  }, []);
 
   useEffect(() => {
     if (!open) resetForm();
-  }, [open]);
+  }, [open, resetForm]);
+
+  useEffect(() => {
+    if (!open || !battleId?.trim() || !isAuthenticated) return;
+
+    const prefillKey = `${battleId}:${myAgentId ?? ""}`;
+    if (prefillKeyRef.current === prefillKey) return;
+
+    let cancelled = false;
+    setIsPrefilling(true);
+    resetForm();
+
+    void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId })
+      .then((draft) => {
+        if (cancelled) {
+          URL.revokeObjectURL(draft.previewUrl);
+          return;
+        }
+        if (!draft.pendingCommentary || draft.description.trim()) {
+          prefillKeyRef.current = prefillKey;
+        }
+        setTitle(draft.title);
+        setDescription(draft.description);
+        setTagsInput(draft.tags.join(", "));
+        setSelectedGameSlugs(new Set(draft.relatedGameSlugs));
+        setAsset({
+          file: draft.imageFile,
+          previewKind: "image",
+          previewUrl: draft.previewUrl,
+        });
+        setAwaitingCommentary(Boolean(draft.pendingCommentary && !draft.description.trim()));
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const message =
+          error instanceof BattleTrashTalkError
+            ? error.message
+            : error instanceof Error
+              ? error.message
+              : "Could not load battle trash talk";
+        toast.error(message);
+      })
+      .finally(() => {
+        if (!cancelled) setIsPrefilling(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [battleId, isAuthenticated, myAgentId, open, resetForm]);
+
+  useEffect(() => {
+    if (!open || !battleId?.trim() || !isAuthenticated || !awaitingCommentary) return;
+
+    let cancelled = false;
+    const poll = () => {
+      void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId })
+        .then((draft) => {
+          if (cancelled || draft.pendingCommentary || !draft.description.trim()) return;
+          prefillKeyRef.current = `${battleId}:${myAgentId ?? ""}`;
+          setDescription(draft.description);
+          setTagsInput(draft.tags.join(", "));
+          setSelectedGameSlugs(new Set(draft.relatedGameSlugs));
+          setAwaitingCommentary(false);
+          toast.success("AI commentary loaded");
+        })
+        .catch(() => undefined);
+    };
+
+    const intervalId = window.setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [awaitingCommentary, battleId, isAuthenticated, myAgentId, open]);
 
   const tagPreview = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
 
@@ -131,7 +220,7 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
   });
 
   const isSubmitting = createMomentMutation.isPending;
-  const isMediaBusy = isSubmitting || isCompressing;
+  const isMediaBusy = isSubmitting || isCompressing || isPrefilling;
 
   const handleFileChange = async (file: File | null) => {
     if (!file) return;
@@ -232,13 +321,26 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
 
         <ArenaDialogHeader className="relative z-10 shrink-0 border-[#9a35ff]/15 bg-gradient-to-br from-[#9a35ff]/18 via-transparent to-cyan-500/5">
           <ArenaDialogTitle className="font-display text-xl tracking-tight text-white sm:text-2xl">
-            Publish a{" "}
-            <span className="bg-gradient-to-r from-[#f0e6ff] via-[#d6acff] to-[#9a35ff] bg-clip-text text-transparent">
-              Moment
-            </span>
+            {battleId ? (
+              <>
+                Publish{" "}
+                <span className="bg-gradient-to-r from-[#f0e6ff] via-[#d6acff] to-[#9a35ff] bg-clip-text text-transparent">
+                  Trash Talk
+                </span>
+              </>
+            ) : (
+              <>
+                Publish a{" "}
+                <span className="bg-gradient-to-r from-[#f0e6ff] via-[#d6acff] to-[#9a35ff] bg-clip-text text-transparent">
+                  Moment
+                </span>
+              </>
+            )}
           </ArenaDialogTitle>
           <ArenaDialogDescription className="text-xs text-white/55 sm:text-sm">
-            Drop an arena clip or screenshot. {momentImageUploadHint()}
+            {battleId
+              ? "Your AI battle commentary is loaded below. Review and publish."
+              : `Drop an arena clip or screenshot. ${momentImageUploadHint()}`}
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
@@ -259,6 +361,20 @@ export function CreateMomentDialog({ open, onOpenChange, onCreated }: CreateMome
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-[#9a35ff]/25 bg-[#9a35ff]/10 px-3 py-2 text-[11px] text-[#d6acff]">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 Optimizing media for upload…
+              </div>
+            ) : null}
+
+            {isPrefilling ? (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-cyan-400/25 bg-cyan-400/10 px-3 py-2 text-[11px] text-cyan-100">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Loading your battle commentary…
+              </div>
+            ) : null}
+
+            {awaitingCommentary ? (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-100">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Battle in progress — AI commentary will appear when the match ends.
               </div>
             ) : null}
 
