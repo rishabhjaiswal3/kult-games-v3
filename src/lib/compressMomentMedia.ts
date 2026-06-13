@@ -7,7 +7,8 @@ export type CompressMomentMediaResult = {
 };
 
 const SKIP_IMAGE_TYPES = new Set(["image/gif", "image/svg+xml"]);
-const OUTPUT_CANDIDATES = ["image/webp", "image/jpeg"] as const;
+/** JPEG first — X/Facebook link previews reject WebP inconsistently. */
+const OUTPUT_CANDIDATES = ["image/jpeg", "image/webp"] as const;
 
 let preferredOutputMime: (typeof OUTPUT_CANDIDATES)[number] | null = null;
 

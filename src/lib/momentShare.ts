@@ -68,11 +68,20 @@ export function buildMomentShareUrl(momentId: string): string {
   return `${APP_ORIGIN}/moments/${momentId}`;
 }
 
+function buildPreviewUrlOnHost(hostBase: string, momentId: string): string {
+  const base = hostBase.replace(/\/+$/, "");
+  const path = SHARE_PREVIEW_PATH.startsWith("/") ? SHARE_PREVIEW_PATH : `/${SHARE_PREVIEW_PATH}`;
+  return `${base}${path}/moments/${momentId}`;
+}
+
 export function buildMomentSharePreviewUrl(momentId: string): string {
   if (SHARE_BASE) {
-    const base = SHARE_BASE.replace(/\/+$/, "");
-    const path = SHARE_PREVIEW_PATH.startsWith("/") ? SHARE_PREVIEW_PATH : `/${SHARE_PREVIEW_PATH}`;
-    return `${base}${path}/moments/${momentId}`;
+    return buildPreviewUrlOnHost(SHARE_BASE, momentId);
+  }
+  // Runtime fallback when VITE_API_URL was not baked in at build time — common on DO
+  // setups where the SPA and `/api/*` proxy share the same origin.
+  if (APP_ORIGIN) {
+    return buildPreviewUrlOnHost(APP_ORIGIN, momentId);
   }
   return buildMomentShareUrl(momentId);
 }
