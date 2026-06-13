@@ -11,6 +11,7 @@ import {
   Hexagon,
   ExternalLink,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { momentsApi } from "@/api/momentsApi";
@@ -167,10 +168,11 @@ function MomentMediaPlayer({ moment }: { moment: Moment }) {
 export function MomentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, walletAddress } = useAuth();
   const queryClient = useQueryClient();
   const commentsRef = useRef<HTMLDivElement>(null);
   const [bookmarked, setBookmarked] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const momentQuery = useQuery({
     queryKey: [MOMENTS_QUERY_KEY_ROOT, "detail", id],
@@ -197,6 +199,29 @@ export function MomentDetailPage() {
   const handleLike = () => {
     if (!isAuthenticated) { requestOpenLoginModal(); return; }
     likeMutation.mutate();
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: () => momentsApi.remove(id!),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] });
+      toast.success("Moment deleted");
+      navigate("/moments");
+    },
+    onError: (e: unknown) => {
+      const status = (e as { response?: { status?: number } })?.response?.status;
+      if (status === 401) { requestOpenLoginModal(); return; }
+      if (status === 403 || status === 404) {
+        toast.error("You can only delete your own moments");
+        return;
+      }
+      toast.error("Could not delete moment");
+    },
+  });
+
+  const handleDelete = () => {
+    if (!isAuthenticated) { requestOpenLoginModal(); return; }
+    deleteMutation.mutate();
   };
 
   const scrollToComments = () => {
@@ -248,6 +273,8 @@ export function MomentDetailPage() {
   const gameLabel = deriveGameLabel(moment);
   const isVideo = isMomentVideo(moment);
   const contentType = isVideo ? "video" : "image";
+  const isOwner = Boolean(walletAddress)
+    && walletAddress!.toLowerCase() === moment.playerWalletAddress.toLowerCase();
 
   return (
     <div className="min-h-full bg-[#03070d] text-white">
@@ -460,6 +487,51 @@ export function MomentDetailPage() {
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
               <MomentShareDialog moment={moment} triggerVariant="button" />
             </div>
+
+            {isOwner && (
+              <div className="arena-panel border-red-500/15 bg-[#04080f]/95 p-5 space-y-3">
+                <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-red-400/90">Danger Zone</h3>
+                <p className="text-[11px] leading-relaxed text-white/45">
+                  Permanently remove this moment. This action cannot be undone.
+                </p>
+                {isConfirmingDelete ? (
+                  <div className="flex flex-wrap items-center gap-2 rounded border border-red-500/25 bg-red-500/5 p-3">
+                    <span className="font-tech text-[10px] font-bold text-red-400">Delete this moment?</span>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={deleteMutation.isPending}
+                      className="rounded border border-red-500/40 bg-red-500/20 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-red-300 transition hover:bg-red-500/30 disabled:opacity-50"
+                    >
+                      {deleteMutation.isPending ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Loader2 className="h-3 w-3 animate-spin" /> Deleting…
+                        </span>
+                      ) : (
+                        "Confirm delete"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsConfirmingDelete(false)}
+                      disabled={deleteMutation.isPending}
+                      className="rounded border border-white/10 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40 transition hover:text-white disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmingDelete(true)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded border border-red-500/30 bg-red-500/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-red-400 transition hover:border-red-500/45 hover:bg-red-500/15"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete moment
+                  </button>
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </section>
