@@ -56,6 +56,12 @@ export const MOMENT_IMAGE_COMPRESS = {
   dimensionStepRatio: 0.86,
 } as const;
 
+/** Human-readable upload hint for the create-moment dialog. */
+export function momentImageUploadHint(): string {
+  const maxKb = Math.round(MOMENT_IMAGE_COMPRESS.hardMaxBytes / 1024);
+  return `Images auto-compressed to ≤${maxKb} KB · max ${MOMENT_IMAGE_COMPRESS.maxLongEdgePx}px long edge · MP4 · WebM · MOV · video ≤ ${MOMENT_MEDIA_LIMITS.maxVideoDurationSeconds}s`;
+}
+
 export const MOMENT_ACCEPTED_MIME_TYPES = [
   ...MOMENT_MEDIA_LIMITS.acceptedImageTypes,
   ...MOMENT_MEDIA_LIMITS.acceptedVideoTypes,
