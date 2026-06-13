@@ -30,6 +30,7 @@ import {
 import { momentsApi } from "@/api/momentsApi";
 import {
   isMomentsCreateQueryOpen,
+  KNOWN_MOMENT_GAME_LABELS,
   MOMENTS_CREATE_QUERY_PARAM,
   MOMENTS_HUB_PREVIEW_COUNT,
   MOMENTS_QUERY_KEY_ROOT,
@@ -44,7 +45,6 @@ import momentWarzone from "@/assets/moment-warzone.png";
 import momentRobowars from "@/assets/moment-robowars.png";
 import momentFeatured from "@/assets/moment-featured.png";
 
-const KNOWN_MOMENT_GAME_LABELS = ["WARZONE WARRIORS", "ROBOWARS", "HIGHWAY HUSTLE"] as const;
 
 type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
 type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
@@ -719,9 +719,7 @@ export function AllMomentsPage() {
       <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
         <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
 
-          {/* ── Main column ── */}
           <div className="min-w-0 space-y-4">
-
             {isBrowseAll ? (
               <Link
                 to="/moments"
@@ -732,7 +730,6 @@ export function AllMomentsPage() {
               </Link>
             ) : null}
 
-            {/* Page header */}
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <h1 className="font-tech text-3xl font-bold tracking-tight text-white">
@@ -754,7 +751,6 @@ export function AllMomentsPage() {
               </button>
             </div>
 
-            {/* Tabs */}
             <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6">
               {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
                 <button
@@ -768,7 +764,6 @@ export function AllMomentsPage() {
               ))}
             </div>
 
-            {/* Filters — search grows to fill space between dropdowns and the filter icon */}
             <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
@@ -796,15 +791,14 @@ export function AllMomentsPage() {
               </div>
             </div>
 
-            {/* Category pills */}
             <div className="relative z-10 grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-3 2xl:grid-cols-6">
               {[
-                { label: "TRENDING",   Icon: Flame,   desc: "Most popular" },
-                { label: "EPIC PLAYS", Icon: Zap,     desc: "Insane plays" },
-                { label: "TOP PLAYS",  Icon: Trophy,  desc: "Community voted" },
-                { label: "CLUTCH",     Icon: Swords,  desc: "1vX & Comebacks" },
-                { label: "KILLS",      Icon: Target,  desc: "Multi kills" },
-                { label: "VICTORIES",  Icon: Shield,  desc: "Epic wins" },
+                { label: "TRENDING", Icon: Flame, desc: "Most popular" },
+                { label: "EPIC PLAYS", Icon: Zap, desc: "Insane plays" },
+                { label: "TOP PLAYS", Icon: Trophy, desc: "Community voted" },
+                { label: "CLUTCH", Icon: Swords, desc: "1vX & Comebacks" },
+                { label: "KILLS", Icon: Target, desc: "Multi kills" },
+                { label: "VICTORIES", Icon: Shield, desc: "Epic wins" },
               ].map(({ label, Icon, desc }) => {
                 const isActive = activeCategory === label;
                 return (
@@ -825,7 +819,6 @@ export function AllMomentsPage() {
               })}
             </div>
 
-            {/* Section heading */}
             <div className="flex items-center justify-between gap-3 pt-3">
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">{activeCategory} MOMENTS</h2>
               {showViewMore ? (
@@ -839,7 +832,6 @@ export function AllMomentsPage() {
               ) : null}
             </div>
 
-            {/* Feed */}
             {discoverQuery.isLoading ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -879,13 +871,11 @@ export function AllMomentsPage() {
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
-
                       <div className="absolute left-3 top-3"><GameBadge game={item.game} /></div>
                       <div className="absolute right-3 top-3 flex items-center gap-1.5">
                         <MediaTypeBadge contentType={item.contentType} />
                         <div className="rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">{item.duration}</div>
                       </div>
-
                       {item.contentType === "video" && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]">
@@ -934,7 +924,6 @@ export function AllMomentsPage() {
               </div>
             )}
 
-            {/* Infinite scroll — browse page only */}
             {isBrowseAll && activeTab === "DISCOVER" ? (
               <div className="relative z-10 flex flex-col items-center gap-3 pt-4">
                 <div ref={canLoadMore ? sentinelRefCallback : null} aria-hidden className="h-px w-full" />
