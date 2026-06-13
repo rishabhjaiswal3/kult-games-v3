@@ -34,8 +34,8 @@ type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
 // ── Platforms ─────────────────────────────────────────────────────────────────
-// Share links use `previewUrl` (backend /share/moments/:id) so crawlers read OG
-// meta tags with a public image URL. Direct storage / 0G URLs are not reliable.
+// Public share links use `/moments/:id`. Social crawlers receive OG HTML (with the
+// moment image URL from storage) via the production server or /api/share fallback.
 
 const PLATFORMS: SharePlatform[] = [
   {
@@ -45,12 +45,12 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      const text = [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.previewUrl]
+      const text = [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url]
         .filter(Boolean)
         .join("\n");
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.previewUrl]
+    buildPostText: (p) => [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url]
       .filter(Boolean)
       .join("\n\n"),
   },
@@ -61,8 +61,8 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#1877f2",
     buildUrl: (p) =>
-      `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: p.previewUrl })}`,
-    buildPostText: (p) => `${p.title}\n\n${p.teaser}\n\n${p.url}`,
+      `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: p.url })}`,
+    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
   },
   {
     id: "reddit",
@@ -71,8 +71,8 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#ff4500",
     buildUrl: (p) =>
-      `https://www.reddit.com/submit?${new URLSearchParams({ url: p.previewUrl, title: p.title })}`,
-    buildPostText: (p) => p.title,
+      `https://www.reddit.com/submit?${new URLSearchParams({ url: p.url, title: p.title })}`,
+    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
   },
   {
     id: "whatsapp",
@@ -81,11 +81,11 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#25d366",
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.previewUrl].filter(Boolean);
+      const parts = [`*${p.title}*`, p.teaser, p.url].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     },
     buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.previewUrl].filter(Boolean);
+      const parts = [`*${p.title}*`, p.teaser, p.url].filter(Boolean);
       return parts.join("\n");
     },
   },
@@ -97,13 +97,13 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#e60023",
     buildUrl: (p) => {
       const params = new URLSearchParams({
-        url: p.previewUrl,
+        url: p.url,
         description: `${p.title} – ${p.teaser}`,
       });
       if (p.mediaUrl) params.set("media", p.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     },
-    buildPostText: (p) => `${p.title}\n\n${p.teaser}`,
+    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
   },
   {
     id: "tiktok",
@@ -113,7 +113,7 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#010101",
     copyOnly: true,
     buildUrl: () => "https://www.tiktok.com",
-    buildPostText: (p) => `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.previewUrl}`,
+    buildPostText: (p) => `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.url}`,
   },
 ];
 
@@ -171,24 +171,24 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
   switch (platform.id) {
     case "twitter":
       return `https://twitter.com/intent/tweet?${new URLSearchParams({
-        text: `${templateText}\n${payload.previewUrl}`,
+        text: `${templateText}\n${payload.url}`,
       })}`;
     case "whatsapp": {
-      const parts = [templateText, payload.previewUrl].filter(Boolean);
+      const parts = [templateText, payload.url].filter(Boolean);
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.join("\n") })}`;
     }
     case "reddit":
       return `https://www.reddit.com/submit?${new URLSearchParams({
-        url: payload.previewUrl,
+        url: payload.url,
         title: templateText.split("\n")[0] ?? payload.title,
       })}`;
     case "facebook":
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
-        u: payload.previewUrl,
+        u: payload.url,
         quote: templateText,
       })}`;
     case "pinterest": {
-      const params = new URLSearchParams({ url: payload.previewUrl, description: templateText });
+      const params = new URLSearchParams({ url: payload.url, description: templateText });
       if (payload.mediaUrl) params.set("media", payload.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     }
@@ -280,7 +280,9 @@ function PostPreviewText({ platform, payload, customText }: {
   payload: SharePayload;
   customText: string | null;
 }) {
-  const postText = customText ?? platform.buildPostText(payload);
+  const postText = customText
+    ? [customText, payload.url].filter(Boolean).join("\n")
+    : platform.buildPostText(payload);
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -331,7 +333,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
     if (platform.copyOnly) {
       const text = selectedTemplate?.text ?? platform.buildPostText(payload);
       try {
-        await copyText(`${text}\n${payload.previewUrl}`);
+        await copyText(text);
         toast.success("Link copied — paste it in TikTok to share.");
       } catch {
         toast.error("Could not copy");
@@ -409,9 +411,9 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
 
           {/* Copy link — preview URL so platforms fetch OG image meta */}
           <div className="space-y-1.5">
-            <CopyLinkBar url={payload.previewUrl} />
+            <CopyLinkBar url={payload.url} />
             <p className="font-tech text-[9px] uppercase tracking-wider text-white/30">
-              Share this preview link — X/Facebook load title, description &amp; image from it
+              Share this moment page — platforms load title, description &amp; image automatically
             </p>
           </div>
 

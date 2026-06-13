@@ -1,15 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
 
-describe("buildMomentSharePreviewUrl", () => {
-  it("uses /api/share when built from VITE_API_URL", async () => {
+describe("buildMomentShareUrl", () => {
+  it("builds the public moment page URL on the current origin", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://kult-browser-rust-l2lwg.ondigitalocean.app" } });
     vi.stubEnv("VITE_API_URL", "https://kult-browser-rust-l2lwg.ondigitalocean.app");
-    vi.stubEnv("VITE_SHARE_BASE_URL", "");
-    vi.stubEnv("VITE_SHARE_PREVIEW_PATH", "");
 
-    const { buildMomentSharePreviewUrl } = await import("./momentShare");
+    const { buildMomentShareUrl, buildMomentSharePayload } = await import("./momentShare");
+    const momentId = "IZugAtUEl7LHQTbWzjpMG";
 
-    expect(buildMomentSharePreviewUrl("abc123")).toBe(
-      "https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/abc123",
+    expect(buildMomentShareUrl(momentId)).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/${momentId}`,
+    );
+
+    const payload = buildMomentSharePayload({
+      momentId,
+      title: "New Trash Talk",
+      description: "Test",
+      tags: [],
+      relatedGames: [],
+      playerWalletAddress: "0x1",
+      numLikes: 0,
+      numComments: 0,
+      aiHighlights: [],
+    });
+
+    expect(payload.url).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/${momentId}`,
     );
   });
 });
