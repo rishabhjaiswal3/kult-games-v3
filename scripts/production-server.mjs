@@ -3,6 +3,9 @@
  *
  * Humans get the SPA. Twitter/Facebook/WhatsApp/Reddit bots get OG HTML built
  * from the moment API (og:image = JPEG CDN URL when available).
+ *
+ * /api/share/* requests are proxied to the backend which handles JPEG conversion
+ * via sharp (including the moment og-image.jpg endpoint and the default-og.jpg endpoint).
  */
 import { createServer } from "http";
 import { createReadStream, existsSync, readFileSync, statSync } from "fs";
@@ -86,6 +89,32 @@ async function serveCrawlerMomentOg(req, res, momentId) {
   }
 }
 
+/**
+ * Proxy /api/share/* to the backend.
+ * The backend owns all share-preview logic including the JPEG image conversion
+ * (via sharp) for og-image.jpg and default-og.jpg endpoints.
+ */
+async function proxyShareApi(req, res) {
+  const backendUrl = `${API_ORIGIN}${req.url}`;
+  try {
+    const upstream = await fetch(backendUrl, { signal: AbortSignal.timeout(15_000) });
+    const contentType = upstream.headers.get("content-type") || "application/octet-stream";
+    const cacheControl = upstream.headers.get("cache-control") || "no-store";
+    if (!upstream.ok) {
+      res.writeHead(upstream.status, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Share resource unavailable");
+      return;
+    }
+    const buf = await upstream.arrayBuffer();
+    res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheControl });
+    res.end(Buffer.from(buf));
+  } catch (err) {
+    console.error("[production-server] share proxy failed", err);
+    res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Share resource unavailable");
+  }
+}
+
 function trySendStatic(req, res) {
   const urlPath = req.url?.split("?")[0] || "/";
   const rel = urlPath === "/" ? "/index.html" : urlPath;
@@ -118,6 +147,12 @@ createServer((req, res) => {
   const momentMatch = pathname.match(MOMENT_PAGE);
   const legacyShareMatch = pathname.match(LEGACY_SHARE_MOMENT_PAGE);
   const ua = req.headers["user-agent"] || "";
+
+  // Proxy all /api/share/* to the backend (JPEG conversion via sharp lives there).
+  if (pathname.startsWith("/api/share/")) {
+    void proxyShareApi(req, res);
+    return;
+  }
 
   if (legacyShareMatch && !CRAWLER_UA.test(ua)) {
     const origin = requestOrigin(req);

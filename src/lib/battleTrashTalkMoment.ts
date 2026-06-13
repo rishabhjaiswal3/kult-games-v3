@@ -1,4 +1,4 @@
-import trashTalkImageUrl from "@/assets/trash-talk.png";
+import trashTalkImageUrl from "@/assets/trash-talk.webp";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
   MOMENTS_BATTLE_ID_QUERY_PARAM,
@@ -54,7 +54,7 @@ async function loadTrashTalkImageFile(): Promise<{ file: File; previewUrl: strin
   if (!response.ok) throw new BattleTrashTalkError("Could not load trash talk artwork.", "fetch_failed");
 
   const blob = await response.blob();
-  const file = new File([blob], "trash-talk.png", { type: blob.type || "image/png" });
+  const file = new File([blob], "trash-talk.webp", { type: blob.type || "image/webp" });
   return { file, previewUrl: URL.createObjectURL(file) };
 }
 
