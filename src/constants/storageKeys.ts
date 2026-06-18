@@ -26,6 +26,8 @@ export const StorageKeys = {
     aiArenaCustodialSolanaAddress: "kult_aiarena_custodial_solana",
     /** Last AI Arena battle id seen or created in the live arena flow. */
     aiArenaLastBattleId: "kult_aiarena_last_battle_id",
+    /** Verified shared browser access-code session. */
+    browserAccessSession: "kult_browser_access_session",
   },
   session: {
     /** Wallet address after Warzone agent binding sign. */

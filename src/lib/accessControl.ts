@@ -1,0 +1,56 @@
+export type AccessFeature =
+  | "ai_arena"
+  | "league"
+  | "moments"
+  | "games"
+  | "creator_platform"
+  | "creator_studio"
+  | "full_browser";
+
+export type AccessTier = "tier_1" | "tier_2" | "tier_3" | "tier_4" | "tier_5";
+
+export type BrowserAccessSession = {
+  tier: AccessTier;
+  label: string;
+  features: AccessFeature[];
+  accessToken: string;
+  expiresAt: number;
+};
+
+export function hasFeature(session: BrowserAccessSession | null, feature: AccessFeature) {
+  if (!session) return false;
+  return session.features.includes("full_browser") || session.features.includes(feature);
+}
+
+export function isAccessSessionValid(session: BrowserAccessSession | null) {
+  return Boolean(session?.accessToken && session.expiresAt > Date.now());
+}
+
+export function featureForPath(pathname: string): AccessFeature | null {
+  if (pathname === "/") return null;
+  if (pathname === "/ai-arena" || pathname === "/dashboard" || pathname === "/my-agents" || pathname === "/training" || pathname === "/battles") return "ai_arena";
+  if (pathname.startsWith("/arena/")) return "ai_arena";
+  if (pathname === "/games" || pathname.startsWith("/game/")) return "games";
+  if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
+  if (pathname === "/league" || pathname === "/leaderboard" || pathname === "/achievements") return "league";
+  if (pathname === "/creator-platform") return "creator_platform";
+  if (pathname === "/creator-studio" || pathname === "/studio") return "creator_studio";
+  if (pathname === "/inventory" || pathname === "/autonomous") return "full_browser";
+  return null;
+}
+
+export function canAccessPath(session: BrowserAccessSession | null, pathname: string) {
+  const feature = featureForPath(pathname);
+  return !feature || hasFeature(session, feature);
+}
+
+export function firstAllowedPath(session: BrowserAccessSession | null) {
+  if (!session) return "/";
+  if (hasFeature(session, "ai_arena")) return "/ai-arena";
+  if (hasFeature(session, "league")) return "/league";
+  if (hasFeature(session, "games")) return "/games";
+  if (hasFeature(session, "moments")) return "/moments";
+  if (hasFeature(session, "creator_platform")) return "/creator-platform";
+  if (hasFeature(session, "creator_studio")) return "/creator-studio";
+  return "/";
+}

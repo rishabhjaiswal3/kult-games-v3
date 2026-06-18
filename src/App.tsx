@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
+import { AccessProvider, useAccess } from "@/contexts/AccessContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import gsap from "gsap";
@@ -28,6 +29,7 @@ const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
 const LeaguePage = lazyWithRetry(() => import("./pages/LeaguePage"));
+const CreatorStudioPage = lazyWithRetry(() => import("./pages/CreatorStudioPage"));
 const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
 import LoadingScreen from "./components/LoadingScreen";
@@ -35,6 +37,8 @@ import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
+import AccessLoginPage from "@/pages/AccessLoginPage";
+import { AccessRoute } from "@/components/AccessRoute";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
 
@@ -62,7 +66,8 @@ const FADED_CONTENT_DELAY = 350;
 /** Keep preview subtle — avoid `filter: blur` on the whole app (hurts scroll compositing & text clarity). */
 const PREVIEW_OPACITY = 0.35;
 
-const App = () => {
+function BrowserApp() {
+  const { hasAccess } = useAccess();
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
   const [showPreview, setShowPreview] = useState(readSplashAlreadySeen);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -130,16 +135,20 @@ const App = () => {
 
   /** Start loading game list + thumbnails as soon as the shell mounts (overlaps splash). */
   useEffect(() => {
+    if (!hasAccess) return;
     void queryClient.prefetchQuery({
       queryKey: ["games", "all"],
       queryFn: () => gamesApi.getAll(1, 50),
       staleTime: 5 * 60_000,
     });
-  }, [queryClient]);
+  }, [hasAccess, queryClient]);
+
+  if (!hasAccess) {
+    return <AccessLoginPage />;
+  }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
       <CreateAgentProvider>
       <TooltipProvider>
         <Toaster />
@@ -156,28 +165,31 @@ const App = () => {
                 <Routes>
                 <Route element={<AppShell />}>
                   <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/games" element={<Games />} />
-                  <Route path="/my-agents" element={<MyAgentsPage />} />
-                  <Route path="/training" element={<TrainingPage />} />
-                  <Route path="/battles" element={<BattlesPage />} />
-                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/dashboard" element={<AccessRoute><Dashboard /></AccessRoute>} />
+                  <Route path="/games" element={<AccessRoute><Games /></AccessRoute>} />
+                  <Route path="/my-agents" element={<AccessRoute><MyAgentsPage /></AccessRoute>} />
+                  <Route path="/training" element={<AccessRoute><TrainingPage /></AccessRoute>} />
+                  <Route path="/battles" element={<AccessRoute><BattlesPage /></AccessRoute>} />
+                  <Route path="/inventory" element={<AccessRoute><Inventory /></AccessRoute>} />
                   <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
-                  <Route path="/leaderboard" element={<Leaderboard />} />
-                  <Route path="/league" element={<LeaguePage />} />
-                  <Route path="/ai-arena" element={<AIArenaPage />} />
-                  <Route path="/moments" element={<AllMomentsPage />} />
-                  <Route path="/moments/browse" element={<AllMomentsPage />} />
-                  <Route path="/moments/:id" element={<MomentDetailPage />} />
-                  <Route path="/autonomous" element={<AutonomousPage />} />
-                  <Route path="/achievements" element={<AchievementsPage />} />
-                  <Route path="/game/:id" element={<GameDetail />} />
-                  <Route path="/game/:id/play" element={<GamePlay />} />
+                  <Route path="/leaderboard" element={<AccessRoute><Leaderboard /></AccessRoute>} />
+                  <Route path="/league" element={<AccessRoute><LeaguePage /></AccessRoute>} />
+                  <Route path="/ai-arena" element={<AccessRoute><AIArenaPage /></AccessRoute>} />
+                  <Route path="/moments" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
+                  <Route path="/moments/browse" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
+                  <Route path="/moments/:id" element={<AccessRoute><MomentDetailPage /></AccessRoute>} />
+                  <Route path="/creator-platform" element={<AccessRoute><CreatorStudioPage mode="platform" /></AccessRoute>} />
+                  <Route path="/creator-studio" element={<AccessRoute><CreatorStudioPage mode="studio" /></AccessRoute>} />
+                  <Route path="/studio" element={<Navigate to="/creator-studio" replace />} />
+                  <Route path="/autonomous" element={<AccessRoute><AutonomousPage /></AccessRoute>} />
+                  <Route path="/achievements" element={<AccessRoute><AchievementsPage /></AccessRoute>} />
+                  <Route path="/game/:id" element={<AccessRoute><GameDetail /></AccessRoute>} />
+                  <Route path="/game/:id/play" element={<AccessRoute><GamePlay /></AccessRoute>} />
                 </Route>
                 {/* Full-screen arena game page — no AppShell sidebar */}
-                <Route path="/arena/game/:battleId" element={<ArenaGamePage />} />
+                <Route path="/arena/game/:battleId" element={<AccessRoute><ArenaGamePage /></AccessRoute>} />
                 {/* Robowar simulation page — red theme, no Unity, 120s sim */}
-                <Route path="/arena/robowar/:battleId" element={<RobowarGamePage />} />
+                <Route path="/arena/robowar/:battleId" element={<AccessRoute><RobowarGamePage /></AccessRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense>
@@ -188,9 +200,16 @@ const App = () => {
         </BrowserRouter>
       </TooltipProvider>
       </CreateAgentProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    </AuthProvider>
   );
-};
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AccessProvider>
+      <BrowserApp />
+    </AccessProvider>
+  </QueryClientProvider>
+);
 
 export default App;
