@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Clapperboard, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccess } from "@/contexts/AccessContext";
+import { hasFeature } from "@/lib/accessControl";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
@@ -9,6 +11,8 @@ export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"notifications" | null>(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const { isAuthenticated, logout } = useAuth();
+  const { session } = useAccess();
+  const showStudio = hasFeature(session, "creator_studio");
   const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -49,14 +53,14 @@ export function DashboardTopbar() {
             </Link>
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
-            {isAuthenticated && (
-              <a
-                href="/studio"
+            {isAuthenticated && showStudio && (
+              <Link
+                to="/creator-studio"
                 className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-0 font-tech text-[11px] font-black uppercase tracking-wider text-white transition hover:brightness-110 min-[430px]:w-auto min-[430px]:px-4 sm:text-xs"
               >
                 <Clapperboard className="h-4 w-4" />
                 <span className="hidden min-[430px]:inline">Studio</span>
-              </a>
+              </Link>
             )}
             <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block">
               <img

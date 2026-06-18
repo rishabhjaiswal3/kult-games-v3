@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from "axios";
 import { AI_ARENA_GATEWAY_URL, MAIN_BACKEND } from "@/lib/serviceUrls";
-import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { StorageKeys, TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import {
   clearAiArenaAuthTokens,
   getAiArenaAccessToken,
@@ -29,6 +29,17 @@ function attachAuthHeader(client: AxiosInstance) {
         const token = localStorage.getItem(TOKEN_KEY);
         if (token && token !== "undefined" && token !== "null") {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+        const rawAccess = localStorage.getItem(StorageKeys.local.browserAccessSession);
+        if (rawAccess) {
+          try {
+            const accessToken = JSON.parse(rawAccess)?.accessToken;
+            if (typeof accessToken === "string" && accessToken) {
+              config.headers["X-Kult-Access-Token"] = accessToken;
+            }
+          } catch {
+            localStorage.removeItem(StorageKeys.local.browserAccessSession);
+          }
         }
       }
       return config;
