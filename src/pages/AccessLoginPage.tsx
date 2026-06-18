@@ -39,7 +39,7 @@ export default function AccessLoginPage() {
   return (
     <main className="relative flex min-h-dvh overflow-hidden bg-[#03070d] text-white">
       <video
-        className="absolute inset-0 h-full w-full object-cover opacity-55"
+        className="fixed inset-0 h-dvh w-screen object-cover opacity-55"
         src={heroVideo}
         autoPlay
         muted
@@ -47,10 +47,10 @@ export default function AccessLoginPage() {
         playsInline
         aria-hidden
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(134,44,255,0.18),transparent_34%),linear-gradient(180deg,rgba(3,7,13,0.26),rgba(3,7,13,0.84)_58%,rgba(3,7,13,0.98))]" />
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(24,9,80,0.54)_38%,rgba(3,7,13,0.98))]" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(134,44,255,0.18),transparent_34%),linear-gradient(180deg,rgba(3,7,13,0.26),rgba(3,7,13,0.84)_58%,rgba(3,7,13,0.98))]" />
+      <div className="fixed inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(180deg,transparent,rgba(24,9,80,0.54)_38%,rgba(3,7,13,0.98))]" />
 
-      <section className="relative z-10 mx-auto flex min-h-dvh w-full max-w-6xl flex-col items-center justify-center px-5 py-8 text-center">
+      <section className="relative z-10 flex min-h-dvh w-full flex-col items-center justify-center px-5 py-8 text-center">
         <div className="mb-8 flex items-center gap-3">
           <img src={zeroGLogo} alt="0G" className="h-7 w-auto object-contain drop-shadow-[0_0_16px_rgba(34,211,238,0.4)]" />
           <span className="h-6 w-px bg-white/20" aria-hidden />
@@ -84,7 +84,7 @@ export default function AccessLoginPage() {
               autoComplete="off"
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6 DIGIT CODE"
+              placeholder="Access code"
               className="h-14 min-w-0 flex-1 bg-transparent font-tech text-sm font-bold uppercase tracking-[0.18em] text-white outline-none placeholder:text-cyan-100/38"
             />
           </div>
