@@ -29,7 +29,7 @@ const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
 const LeaguePage = lazyWithRetry(() => import("./pages/LeaguePage"));
-const CreatorStudioPage = lazyWithRetry(() => import("./pages/CreatorStudioPage"));
+
 const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
 import LoadingScreen from "./components/LoadingScreen";
@@ -178,9 +178,7 @@ function BrowserApp() {
                   <Route path="/moments" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
                   <Route path="/moments/browse" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
                   <Route path="/moments/:id" element={<AccessRoute><MomentDetailPage /></AccessRoute>} />
-                  <Route path="/creator-platform" element={<AccessRoute><CreatorStudioPage mode="platform" /></AccessRoute>} />
-                  <Route path="/creator-studio" element={<AccessRoute><CreatorStudioPage mode="studio" /></AccessRoute>} />
-                  <Route path="/studio" element={<Navigate to="/creator-studio" replace />} />
+
                   <Route path="/autonomous" element={<AccessRoute><AutonomousPage /></AccessRoute>} />
                   <Route path="/achievements" element={<AccessRoute><AchievementsPage /></AccessRoute>} />
                   <Route path="/game/:id" element={<AccessRoute><GameDetail /></AccessRoute>} />

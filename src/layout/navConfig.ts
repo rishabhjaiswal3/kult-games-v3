@@ -1,13 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Crown,
-  Clapperboard,
   FileText,
   Gamepad2,
   Home,
   Medal,
   Package,
-  PenTool,
   Sparkles,
   Trophy,
 } from "lucide-react";
@@ -31,8 +29,6 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles, feature: "ai_arena" },
   { label: "Games", path: "/games", icon: Gamepad2, feature: "games" },
   { label: "Moments", path: "/moments", icon: FileText, feature: "moments" },
-  { label: "Creator Platform", path: "/creator-platform", icon: PenTool, feature: "creator_platform" },
-  { label: "Creator Studio", path: "/creator-studio", icon: Clapperboard, feature: "creator_studio" },
   { label: "Inventory", path: "/inventory", icon: Package, feature: "full_browser" },
   { label: "Achievements", path: "/achievements", icon: Trophy, feature: "league" },
   { label: "Leaderboard", path: "/leaderboard", icon: Crown, feature: "league" },
