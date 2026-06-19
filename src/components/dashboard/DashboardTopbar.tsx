@@ -54,13 +54,13 @@ export function DashboardTopbar() {
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
             {isAuthenticated && showStudio && (
-              <Link
-                to="/creator-studio"
+              <a
+                href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
                 className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-0 font-tech text-[11px] font-black uppercase tracking-wider text-white transition hover:brightness-110 min-[430px]:w-auto min-[430px]:px-4 sm:text-xs"
               >
                 <Clapperboard className="h-4 w-4" />
                 <span className="hidden min-[430px]:inline">Studio</span>
-              </Link>
+              </a>
             )}
             <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block">
               <img
