@@ -284,6 +284,7 @@ export const YOUR_LINEUP = [
   { agentName: "HYBRID", reputation: 4820, record: "18-2", arena: 1240 },
   { agentName: "DEFENDER", reputation: 4410, record: "15-5", arena: 980 },
   { agentName: "TACTICIAN", reputation: 3950, record: "12-8", arena: 860 },
+  { agentName: "SUPPORT", reputation: 3720, record: "11-9", arena: 740 },
 ];
 
 export const LEAGUE_MOMENTS: LeagueMomentFeed[] = [

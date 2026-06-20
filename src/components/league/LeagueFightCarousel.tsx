@@ -66,7 +66,6 @@ export function LeagueFightCarousel() {
             <LeagueFightScene
               leftAgent={duel.leftAgent}
               rightAgent={duel.rightAgent}
-              subtitle="Live bets"
               compact
             />
           </div>

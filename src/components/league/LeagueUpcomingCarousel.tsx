@@ -66,6 +66,10 @@ export function LeagueUpcomingCarousel() {
             <p className="mt-0.5 text-center font-tech text-[8px] uppercase tracking-widest text-white/35">
               {match.stage}
             </p>
+            <div className="mt-2 flex items-center justify-center gap-1.5 font-tech text-[8px] uppercase tracking-wider text-amber-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
+              Locks in {match.countdown}
+            </div>
             <button type="button" className={`mt-3 ${fifaMakePickBtn}`}>
               Make Pick
             </button>
