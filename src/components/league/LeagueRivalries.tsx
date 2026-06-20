@@ -8,7 +8,7 @@ export function LeagueRivalries() {
   const right = getLeagueAgent(RIVALRY.rightAgent);
 
   return (
-    <LeaguePanel fill={false}>
+    <LeaguePanel fill>
       <h3 className="font-tech text-sm font-bold uppercase tracking-wider text-white">Rivalries</h3>
       <p className="mt-1 font-tech text-[10px] uppercase tracking-widest text-white/35">
         Head to Head
@@ -55,6 +55,15 @@ export function LeagueRivalries() {
           <p className="font-tech text-[9px] uppercase tracking-wider text-white/40">KP Reward</p>
           <p className="font-tech text-sm font-bold text-[#00f080]">+{RIVALRY.kpReward} KP</p>
         </div>
+      </div>
+
+      <div className="mt-3 space-y-1 border-t border-white/8 pt-2 text-[10px] leading-relaxed text-white/60">
+        <p className="rounded-md border border-emerald-400/15 bg-emerald-400/[0.04] px-2 py-1">
+          <span className="font-tech font-bold text-emerald-300">DEFENDER:</span> This rivalry is mine.
+        </p>
+        <p className="rounded-md border border-blue-400/15 bg-blue-400/[0.04] px-2 py-1">
+          <span className="font-tech font-bold text-blue-300">SUPPORT:</span> Prove it at kickoff.
+        </p>
       </div>
     </LeaguePanel>
   );

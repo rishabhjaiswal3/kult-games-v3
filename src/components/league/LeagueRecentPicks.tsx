@@ -11,7 +11,7 @@ const OUTCOME_STYLES = {
 
 export function LeagueRecentPicks() {
   return (
-    <LeaguePanel fill={false}>
+    <LeaguePanel fill>
       <h3 className={fifaSectionTitle}>My Recent Picks</h3>
       <p className={fifaSubTitle}>Match results & KP earned this week</p>
 
