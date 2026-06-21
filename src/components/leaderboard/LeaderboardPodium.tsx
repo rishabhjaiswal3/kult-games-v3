@@ -24,9 +24,13 @@ type PodiumSlot = "first" | "second" | "third";
 function PodiumCard({
   player,
   slot,
+  pointLabel,
+  showLeagueBadge,
 }: {
   player: DisplayPlayer;
   slot: PodiumSlot;
+  pointLabel: string;
+  showLeagueBadge: boolean;
 }) {
   const styles =
     slot === "first"
@@ -98,9 +102,9 @@ function PodiumCard({
       <div className="relative z-10 mt-2 flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
           <Trophy className="h-4 w-4 text-[#ffc000]" />
-          <span>{player.points} PTS</span>
+          <span>{player.points} {pointLabel}</span>
         </div>
-        {player.eloRating != null ? (
+        {showLeagueBadge && player.eloRating != null ? (
           <div className="flex items-center gap-1.5">
             <img
               src={getRankFromElo(player.eloRating).image}
@@ -120,16 +124,24 @@ function PodiumCard({
   );
 }
 
-export function LeaderboardPodium({ top3 }: { top3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null }) {
+export function LeaderboardPodium({
+  top3,
+  pointLabel = "PTS",
+  showLeagueBadge = true,
+}: {
+  top3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null;
+  pointLabel?: string;
+  showLeagueBadge?: boolean;
+}) {
   if (!top3) return null;
 
   const [first, second, third] = top3;
 
   return (
     <div className="grid items-end gap-4 pt-4 sm:grid-cols-3">
-      <PodiumCard player={second} slot="second" />
-      <PodiumCard player={first} slot="first" />
-      <PodiumCard player={third} slot="third" />
+      <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
+      <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
+      <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
     </div>
   );
 }

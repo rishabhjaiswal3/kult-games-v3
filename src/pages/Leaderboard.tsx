@@ -2,12 +2,16 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Info } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { leaderboardApi } from "@/api/leaderboardApi";
+import { playerApi } from "@/api/playerApi";
 import { LeaderboardPodium } from "@/components/leaderboard/LeaderboardPodium";
 import { LeaderboardSidebar } from "@/components/leaderboard/LeaderboardSidebar";
 import { LeaderboardTablePanel } from "@/components/leaderboard/LeaderboardTablePanel";
 import {
   arenaEntriesToDisplayPlayers,
   arenaEntryToDisplayPlayer,
+  entriesToDisplayPlayers,
+  type DisplayPlayer,
   type LeaderboardTab,
 } from "@/components/leaderboard/leaderboardUtils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,15 +20,60 @@ import { useEnrichedArenaLeaderboard } from "@/hooks/useEnrichedArenaLeaderboard
 import { RANKS, getRankFromElo } from "@/utils/rankSystem";
 
 const PAGE_SIZE = 10;
+type LeaderboardMode = "KULT_POINTS" | "AI_ARENA";
 
 const Leaderboard = () => {
-  const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<LeaderboardTab>("GLOBAL");
-  const [page, setPage] = useState(1);
+  const { isAuthenticated, walletAddress } = useAuth();
+  const [activeMode, setActiveMode] = useState<LeaderboardMode>("KULT_POINTS");
+  const [activeKultTab, setActiveKultTab] = useState<LeaderboardTab>("GLOBAL");
+  const [activeArenaTab, setActiveArenaTab] = useState<LeaderboardTab>("GLOBAL");
+  const [kultPage, setKultPage] = useState(1);
+  const [arenaPage, setArenaPage] = useState(1);
   const [selectedLeagueTier, setSelectedLeagueTier] = useState<number | null>(null);
 
+  // ── KULT backend leaderboard data ───────────────────────────────────────────
+  const kultLeaderboardQ = useQuery({
+    queryKey: ["kult", "leaderboard", "global", kultPage],
+    queryFn: () => leaderboardApi.getGlobal(kultPage, PAGE_SIZE),
+    enabled: activeMode === "KULT_POINTS" && activeKultTab === "GLOBAL",
+    staleTime: 60_000,
+  });
+
+  const kultProfileQ = useQuery({
+    queryKey: ["kult", "player", "fullProfile"],
+    queryFn: () => playerApi.getFullProfile(),
+    enabled: activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" && isAuthenticated,
+    staleTime: 60_000,
+    retry: false,
+  });
+
+  const kultEntries = kultLeaderboardQ.data?.entries ?? [];
+  const kultRows = useMemo(
+    () => entriesToDisplayPlayers(kultEntries, walletAddress),
+    [kultEntries, walletAddress],
+  );
+  const kultTotalPages = Math.max(1, kultLeaderboardQ.data?.totalPages ?? 1);
+  const kultTop3Rows = useMemo(
+    () => entriesToDisplayPlayers(kultEntries.slice(0, 3), walletAddress),
+    [kultEntries, walletAddress],
+  );
+  const kultTop3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null =
+    kultPage === 1 && kultTop3Rows.length === 3
+      ? [kultTop3Rows[1]!, kultTop3Rows[0]!, kultTop3Rows[2]!]
+      : null;
+  const kultTableRows = kultPage === 1 ? kultRows.filter((p) => p.rank > 3) : kultRows;
+  const kultUserRow = useMemo(() => {
+    if (!walletAddress) return null;
+    const current = kultRows.find((row) => row.wallet.toLowerCase() === walletAddress.toLowerCase());
+    if (!current || kultTableRows.some((row) => row.wallet.toLowerCase() === walletAddress.toLowerCase())) return null;
+    return current;
+  }, [kultRows, kultTableRows, walletAddress]);
+  const kultProfile = kultProfileQ.data;
+  const kultSidebarRank = activeKultTab === "MY RANK" ? kultProfile?.rank ?? undefined : kultUserRow?.rank;
+  const kultSidebarPoints = activeKultTab === "MY RANK" ? kultProfile?.totalScore ?? 0 : Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
+
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
-  const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeTab === "GLOBAL" });
+  const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" });
   const allEntries = enrichedQ.data?.entries ?? [];
 
   // ── Current user's agents ───────────────────────────────────────────────────
@@ -37,7 +86,7 @@ const Leaderboard = () => {
   const rankQ = useQuery({
     queryKey: ["aiArenaGateway", "leaderboard", "myRank", firstAgent?.id],
     queryFn:  () => aiArenaGatewayApi.getLeaderboardRankForAgent(firstAgent!.id, "global"),
-    enabled:  isAuthenticated && !!firstAgent?.id,
+    enabled:  activeMode === "AI_ARENA" && isAuthenticated && !!firstAgent?.id,
     staleTime: 60_000,
     retry: false,
   });
@@ -60,8 +109,8 @@ const Leaderboard = () => {
   const totalPages   = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
 
   const pageEntries = useMemo(
-    () => leagueFilteredEntries.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [leagueFilteredEntries, page],
+    () => leagueFilteredEntries.slice((arenaPage - 1) * PAGE_SIZE, arenaPage * PAGE_SIZE),
+    [leagueFilteredEntries, arenaPage],
   );
 
   // ── Map to DisplayPlayer ────────────────────────────────────────────────────
@@ -73,7 +122,7 @@ const Leaderboard = () => {
   // Top 3 from the filtered dataset (only on page 1)
   const top3Entries = leagueFilteredEntries.slice(0, 3);
   const top3: [ReturnType<typeof arenaEntryToDisplayPlayer>, ReturnType<typeof arenaEntryToDisplayPlayer>, ReturnType<typeof arenaEntryToDisplayPlayer>] | null =
-    page === 1 && top3Entries.length === 3
+    arenaPage === 1 && top3Entries.length === 3
       ? [
           arenaEntryToDisplayPlayer(top3Entries[1], { isYou: myAgentIds.has(top3Entries[1].agentId) }),
           arenaEntryToDisplayPlayer(top3Entries[0], { isYou: myAgentIds.has(top3Entries[0].agentId) }),
@@ -82,7 +131,7 @@ const Leaderboard = () => {
       : null;
 
   // Table rows: page 1 skips top 3 (shown in podium), later pages show all
-  const tableRows = page === 1 ? displayPlayers.filter((p) => p.rank > 3) : displayPlayers;
+  const tableRows = arenaPage === 1 ? displayPlayers.filter((p) => p.rank > 3) : displayPlayers;
 
   // Pinned user row if the user's agent appears on a different page
   const userRow = useMemo(() => {
@@ -110,14 +159,25 @@ const Leaderboard = () => {
     ? Math.min(95, Math.max(5, 100 - Math.log10(sidebarRank + 1) * 30))
     : sidebarPoints > 0 ? 40 : 8;
 
-  const handleTabChange = (tab: LeaderboardTab) => {
-    setActiveTab(tab);
-    setPage(1);
+  const handleModeChange = (mode: LeaderboardMode) => {
+    setActiveMode(mode);
+    setKultPage(1);
+    setArenaPage(1);
+  };
+
+  const handleKultTabChange = (tab: LeaderboardTab) => {
+    setActiveKultTab(tab);
+    setKultPage(1);
+  };
+
+  const handleArenaTabChange = (tab: LeaderboardTab) => {
+    setActiveArenaTab(tab);
+    setArenaPage(1);
   };
 
   const handleLeagueChange = (tier: number | null) => {
     setSelectedLeagueTier(tier);
-    setPage(1);
+    setArenaPage(1);
   };
 
   const selectedLeagueInfo = selectedLeagueTier !== null
@@ -129,26 +189,47 @@ const Leaderboard = () => {
       <div className="mb-6">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight">LEADERBOARD</h1>
         <p className="mt-1.5 text-sm text-white/55">
-          Compete with the best and climb your way to the top.
+          Track KULT game points and AI Arena rankings without mixing the two systems.
         </p>
+      </div>
+
+      <div className="mb-5 flex flex-wrap gap-2 rounded-2xl border border-white/8 bg-black/20 p-1.5">
+        {([
+          ["KULT_POINTS", "KULT POINTS"],
+          ["AI_ARENA", "AI ARENA"],
+        ] as const).map(([mode, label]) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => handleModeChange(mode)}
+            className={`rounded-xl px-4 py-2 font-tech text-[11px] font-bold uppercase tracking-wider transition ${
+              activeMode === mode
+                ? "bg-[#9a35ff]/20 text-white shadow-[0_0_14px_rgba(154,53,255,0.16)]"
+                : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_332px]">
         <div className="min-w-0 space-y-5">
-          {/* Tab strip + league filter */}
           <div className="flex flex-col justify-between gap-4 border-b border-white/8 pb-3 sm:flex-row sm:items-center">
             <div className="flex gap-6 font-tech text-[12px] font-bold uppercase tracking-wider">
               {(["GLOBAL", "MY RANK"] as LeaderboardTab[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
-                  onClick={() => handleTabChange(tab)}
+                  onClick={() => activeMode === "KULT_POINTS" ? handleKultTabChange(tab) : handleArenaTabChange(tab)}
                   className={`relative py-1.5 transition ${
-                    activeTab === tab ? "text-white" : "text-white/45 hover:text-white/80"
+                    (activeMode === "KULT_POINTS" ? activeKultTab : activeArenaTab) === tab
+                      ? "text-white"
+                      : "text-white/45 hover:text-white/80"
                   }`}
                 >
                   {tab}
-                  {activeTab === tab ? (
+                  {(activeMode === "KULT_POINTS" ? activeKultTab : activeArenaTab) === tab ? (
                     <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-[#9a35ff] shadow-[0_0_10px_#9a35ff]" />
                   ) : null}
                 </button>
@@ -156,7 +237,7 @@ const Leaderboard = () => {
             </div>
 
             {/* League filter — only on GLOBAL tab */}
-            {activeTab === "GLOBAL" ? (
+            {activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" ? (
               <div className="flex items-center gap-2">
                 <span className="font-tech text-[10px] uppercase tracking-widest text-white/35">League</span>
                 <div className="relative">
@@ -198,21 +279,84 @@ const Leaderboard = () => {
             ) : null}
           </div>
 
-          {/* MY RANK tab */}
-          {activeTab === "MY RANK" && !isAuthenticated ? (
+          {activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" && !isAuthenticated ? (
             <div className="arena-panel border border-white/8 px-6 py-14 text-center">
               <p className="font-tech text-sm uppercase tracking-wider text-[#b95cff]">
                 Connect wallet to see your rank
               </p>
             </div>
-          ) : activeTab === "MY RANK" ? (
+          ) : activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    label: "GLOBAL RANK",
+                    value: kultProfileQ.isLoading
+                      ? "Loading..."
+                      : kultProfile?.rank != null ? `#${kultProfile.rank.toLocaleString()}` : "UNRANKED",
+                  },
+                  {
+                    label: "TOTAL KP",
+                    value: kultProfileQ.isLoading ? "Loading..." : (kultProfile?.totalScore ?? 0).toLocaleString(),
+                  },
+                  {
+                    label: "GAMES RANKED",
+                    value: kultProfileQ.isLoading ? "Loading..." : (kultProfile?.gameScoresList.length ?? 0).toLocaleString(),
+                  },
+                ].map((stat) => (
+                  <div key={stat.label} className="arena-panel border border-white/8 bg-[#04080f]/95 p-4">
+                    <div className="font-tech text-[9px] uppercase tracking-wider text-white/42">{stat.label}</div>
+                    <div className="mt-2 text-2xl font-bold text-white">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
+                <Info className="h-4 w-4 shrink-0 text-blue-400" />
+                <span>
+                  KULT Points currently read from the existing KULT backend leaderboard/profile data. Ledger-backed KP can replace this data source when the backend KP module is ready.
+                </span>
+              </div>
+            </>
+          ) : activeMode === "KULT_POINTS" ? (
+            <>
+              {kultPage === 1 && kultTop3 ? (
+                <LeaderboardPodium top3={kultTop3} pointLabel="KP" showLeagueBadge={false} />
+              ) : null}
+
+              <LeaderboardTablePanel
+                rows={kultTableRows}
+                userRow={kultUserRow}
+                page={kultPage}
+                totalPages={kultTotalPages}
+                isLoading={kultLeaderboardQ.isLoading}
+                onPageChange={setKultPage}
+                pointLabel="KP"
+                showPerformanceColumns={false}
+                showLeagueColumn={false}
+              />
+
+              <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
+                <Info className="h-4 w-4 shrink-0 text-blue-400" />
+                <span>
+                  This tab uses the existing KULT backend leaderboard as the temporary KULT Points source until the dedicated KP ledger is implemented.
+                </span>
+              </div>
+            </>
+          ) : activeArenaTab === "MY RANK" && !isAuthenticated ? (
+            <div className="arena-panel border border-white/8 px-6 py-14 text-center">
+              <p className="font-tech text-sm uppercase tracking-wider text-[#b95cff]">
+                Connect wallet to see your AI Arena rank
+              </p>
+            </div>
+          ) : activeArenaTab === "MY RANK" ? (
             <>
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   {
                     label: "GLOBAL RANK",
                     value: myAgentsQ.isLoading || rankQ.isLoading
-                      ? "Loading…"
+                        ? "Loading..."
                       : !firstAgent
                         ? "NO AGENT"
                         : myRank != null ? `#${myRank.toLocaleString()}` : "UNRANKED",
@@ -220,14 +364,14 @@ const Leaderboard = () => {
                   {
                     label: "ELO RATING",
                     value: myAgentsQ.isLoading
-                      ? "Loading…"
-                      : !firstAgent ? "—" : myElo.toLocaleString(),
+                      ? "Loading..."
+                      : !firstAgent ? "-" : myElo.toLocaleString(),
                   },
                   {
                     label: "TOTAL BATTLES",
                     value: myAgentsQ.isLoading
-                      ? "Loading…"
-                      : !firstAgent ? "—" : myBattles.toLocaleString(),
+                      ? "Loading..."
+                      : !firstAgent ? "-" : myBattles.toLocaleString(),
                   },
                 ].map((stat) => (
                   <div key={stat.label} className="arena-panel border border-white/8 bg-[#04080f]/95 p-4">
@@ -278,7 +422,7 @@ const Leaderboard = () => {
                       {myAgentsQ.isLoading ? (
                         <tr>
                           <td colSpan={7} className="px-5 py-16 text-center font-tech text-white/45">
-                            LOADING YOUR AGENTS…
+                            LOADING YOUR AGENTS...
                           </td>
                         </tr>
                       ) : myAgents.length === 0 ? (
@@ -341,17 +485,17 @@ const Leaderboard = () => {
           ) : (
             /* GLOBAL tab */
             <>
-              {page === 1 && top3 ? (
+              {arenaPage === 1 && top3 ? (
                 <LeaderboardPodium top3={top3} />
               ) : null}
 
               <LeaderboardTablePanel
                 rows={tableRows}
                 userRow={userRow}
-                page={page}
+                page={arenaPage}
                 totalPages={totalPages}
                 isLoading={enrichedQ.isLoading}
-                onPageChange={setPage}
+                onPageChange={setArenaPage}
               />
 
               <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
@@ -367,10 +511,26 @@ const Leaderboard = () => {
         </div>
 
         <LeaderboardSidebar
-          userRank={sidebarRank}
-          userPoints={sidebarPoints}
-          seasonProgress={sidebarProgress}
-          userElo={myElo > 0 ? myElo : undefined}
+          userRank={activeMode === "KULT_POINTS" ? kultSidebarRank : sidebarRank}
+          userPoints={activeMode === "KULT_POINTS" ? kultSidebarPoints : sidebarPoints}
+          seasonProgress={activeMode === "KULT_POINTS" ? 40 : sidebarProgress}
+          userElo={activeMode === "AI_ARENA" && myElo > 0 ? myElo : undefined}
+          pointLabel={activeMode === "KULT_POINTS" ? "KP" : "PTS"}
+          title={activeMode === "KULT_POINTS" ? "KULT POINTS" : "AI ARENA"}
+          rankLabel={activeMode === "KULT_POINTS" ? "YOUR KULT RANK" : "YOUR ARENA RANK"}
+          infoItems={
+            activeMode === "KULT_POINTS"
+              ? [
+                  "KULT Points reflect game contribution from the KULT backend leaderboard.",
+                  "Dedicated KP ledger, idempotency, and period filters still need backend support.",
+                  "No token conversion, cash value, or guaranteed reward is shown.",
+                ]
+              : [
+                  "AI Arena rankings use ELO-style battle data.",
+                  "League filters apply only to AI Arena rankings.",
+                  "This tab remains separate from KULT Points.",
+                ]
+          }
         />
       </div>
     </div>
