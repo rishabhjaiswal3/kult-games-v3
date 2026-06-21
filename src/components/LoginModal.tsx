@@ -331,12 +331,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       />
                     </motion.div>
 
-                    <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
+                    {/* <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
                       Welcome Back
-                    </h2>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    </h2> */}
+                    {/* <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                       Sign in to access games, AI features & rankings.
-                    </p>
+                    </p> */}
                   </div>
 
                   {authError ? (
