@@ -12,6 +12,7 @@ import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   consumePendingLoginModalRequest,
+  markUserLoginIntent,
   subscribeOpenLoginModal,
 } from "@/lib/loginModalBus";
 
@@ -436,6 +437,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           onClick={() => {
                             setRecoveryMode(false);
                             setAuthError("");
+                            markUserLoginIntent();
                             void initOAuth({ provider: "google" });
                           }}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"

@@ -6,19 +6,39 @@ export type LoginModalOpenRequest = {
 };
 
 let pendingLoginModalRequest: LoginModalOpenRequest | null = null;
-/** True after the user clicks Connect / opens login — cleared on logout or SIWE end. */
+/** Survives Google OAuth redirects — cleared on logout or SIWE end. */
+const LOGIN_INTENT_SESSION_KEY = "kult_login_intent";
+/** In-memory mirror for the current tab session. */
 let userLoginIntent = false;
+
+function readStoredLoginIntent() {
+  try {
+    return sessionStorage.getItem(LOGIN_INTENT_SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export function markUserLoginIntent() {
   userLoginIntent = true;
+  try {
+    sessionStorage.setItem(LOGIN_INTENT_SESSION_KEY, "1");
+  } catch {
+    /* private mode / quota */
+  }
 }
 
 export function clearUserLoginIntent() {
   userLoginIntent = false;
+  try {
+    sessionStorage.removeItem(LOGIN_INTENT_SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function hasUserLoginIntent() {
-  return userLoginIntent;
+  return userLoginIntent || readStoredLoginIntent();
 }
 
 export function requestOpenLoginModal(request?: LoginModalOpenRequest) {
