@@ -105,7 +105,11 @@ const KultAIFloating = () => {
                   </div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="relative z-10 text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted/50">
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close KULT AI chat"
+                className="relative z-10 text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted/50"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
