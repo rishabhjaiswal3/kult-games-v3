@@ -149,7 +149,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
 
   if (!agent) return null;
 
-  const profile     = profileQ.data?.agent ?? agent;
+  const profile     = profileQ.data ?? agent;
   const traits      = (profile.traits as Record<string, number>) ?? {};
   const traitKeys   = Object.keys(traits);
   const meta        = profile.metadata as Record<string, unknown> | null | undefined;

@@ -20,9 +20,24 @@ type LeaderboardTablePanelProps = {
   totalPages: number;
   isLoading: boolean;
   onPageChange: (page: number) => void;
+  pointLabel?: string;
+  showPerformanceColumns?: boolean;
+  showLeagueColumn?: boolean;
 };
 
-function TableRow({ player, highlighted }: { player: DisplayPlayer; highlighted?: boolean }) {
+function TableRow({
+  player,
+  highlighted,
+  pointLabel,
+  showPerformanceColumns,
+  showLeagueColumn,
+}: {
+  player: DisplayPlayer;
+  highlighted?: boolean;
+  pointLabel: string;
+  showPerformanceColumns: boolean;
+  showLeagueColumn: boolean;
+}) {
   return (
     <tr
       className={
@@ -57,24 +72,30 @@ function TableRow({ player, highlighted }: { player: DisplayPlayer; highlighted?
           <span className={highlighted ? "font-semibold text-white/90" : ""}>{player.clanName}</span>
         </div>
       </td>
-      <td className="px-5 py-4 text-center">{player.wins ?? "—"}</td>
-      <td className={`px-5 py-4 text-center ${highlighted ? "text-[#d6acff]" : ""}`}>
-        {player.winRate ?? "—"}
-      </td>
-      <td className="px-5 py-4 text-center">{player.battles ?? "—"}</td>
+      {showPerformanceColumns ? (
+        <>
+          <td className="px-5 py-4 text-center">{player.wins ?? "—"}</td>
+          <td className={`px-5 py-4 text-center ${highlighted ? "text-[#d6acff]" : ""}`}>
+            {player.winRate ?? "—"}
+          </td>
+          <td className="px-5 py-4 text-center">{player.battles ?? "—"}</td>
+        </>
+      ) : null}
       <td className={`px-5 py-4 text-right font-semibold ${highlighted ? "font-bold text-[#d6acff]" : ""}`}>
-        {player.points} PTS
+        {player.points} {pointLabel}
       </td>
-      <td className="px-3 py-4 text-center">
-        {player.eloRating != null ? (
-          <img
-            src={getRankFromElo(player.eloRating).image}
-            alt={getRankFromElo(player.eloRating).name}
-            title={getRankFromElo(player.eloRating).name}
-            className="mx-auto h-7 w-7 object-contain"
-          />
-        ) : null}
-      </td>
+      {showLeagueColumn ? (
+        <td className="px-3 py-4 text-center">
+          {player.eloRating != null ? (
+            <img
+              src={getRankFromElo(player.eloRating).image}
+              alt={getRankFromElo(player.eloRating).name}
+              title={getRankFromElo(player.eloRating).name}
+              className="mx-auto h-7 w-7 object-contain"
+            />
+          ) : null}
+        </td>
+      ) : null}
     </tr>
   );
 }
@@ -86,8 +107,12 @@ export function LeaderboardTablePanel({
   totalPages,
   isLoading,
   onPageChange,
+  pointLabel = "PTS",
+  showPerformanceColumns = true,
+  showLeagueColumn = true,
 }: LeaderboardTablePanelProps) {
   const showUserGap = userRow && !rows.some((r) => r.wallet === userRow.wallet);
+  const columnCount = 4 + (showPerformanceColumns ? 3 : 0) + (showLeagueColumn ? 1 : 0);
 
   return (
     <div className="arena-panel relative overflow-hidden border border-white/8">
@@ -105,38 +130,58 @@ export function LeaderboardTablePanel({
               <th className="px-5 py-4 font-semibold">Rank</th>
               <th className="px-5 py-4 font-semibold">Player</th>
               <th className="px-5 py-4 font-semibold">Clan</th>
-              <th className="px-5 py-4 text-center font-semibold">Wins</th>
-              <th className="px-5 py-4 text-center font-semibold">Win Rate</th>
-              <th className="px-5 py-4 text-center font-semibold">Battles</th>
-              <th className="px-5 py-4 text-right font-semibold">Points</th>
-              <th className="w-12 px-3 py-4 text-center font-semibold">League</th>
+              {showPerformanceColumns ? (
+                <>
+                  <th className="px-5 py-4 text-center font-semibold">Wins</th>
+                  <th className="px-5 py-4 text-center font-semibold">Win Rate</th>
+                  <th className="px-5 py-4 text-center font-semibold">Battles</th>
+                </>
+              ) : null}
+              <th className="px-5 py-4 text-right font-semibold">{pointLabel === "KP" ? "KP" : "Points"}</th>
+              {showLeagueColumn ? (
+                <th className="w-12 px-3 py-4 text-center font-semibold">League</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-white/6 font-medium text-white/86">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-5 py-16 text-center font-tech text-white/45">
+                <td colSpan={columnCount} className="px-5 py-16 text-center font-tech text-white/45">
                   LOADING RANKINGS…
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-5 py-16 text-center font-tech text-white/45">
+                <td colSpan={columnCount} className="px-5 py-16 text-center font-tech text-white/45">
                   NO RANKINGS YET
                 </td>
               </tr>
             ) : (
-              rows.map((player) => <TableRow key={`${player.rank}-${player.wallet}`} player={player} />)
+              rows.map((player) => (
+                <TableRow
+                  key={`${player.rank}-${player.wallet}`}
+                  player={player}
+                  pointLabel={pointLabel}
+                  showPerformanceColumns={showPerformanceColumns}
+                  showLeagueColumn={showLeagueColumn}
+                />
+              ))
             )}
 
             {showUserGap && userRow ? (
               <>
                 <tr className="bg-white/[0.005]">
-                  <td colSpan={8} className="py-2.5 text-center text-white/20 select-none">
+                  <td colSpan={columnCount} className="py-2.5 text-center text-white/20 select-none">
                     •••
                   </td>
                 </tr>
-                <TableRow player={userRow} highlighted />
+                <TableRow
+                  player={userRow}
+                  highlighted
+                  pointLabel={pointLabel}
+                  showPerformanceColumns={showPerformanceColumns}
+                  showLeagueColumn={showLeagueColumn}
+                />
               </>
             ) : null}
           </tbody>
