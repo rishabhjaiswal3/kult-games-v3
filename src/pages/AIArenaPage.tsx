@@ -211,8 +211,7 @@ function AIArenaPageContent() {
       <RankProgressionTimeline />
       <ArenaGames />
       <TopAgents />
-      <MyBattleSection />
-      <LiveBattles />
+      <BattlesRow />
       <PartnersBlock />
       <ArenaLandingFooter />
     </div>
@@ -1279,6 +1278,17 @@ function TopAgents() {
   );
 }
 
+function BattlesRow() {
+  return (
+    <section className="mx-auto px-4 py-12 sm:px-6 sm:py-16">
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
+        <LiveBattles />
+        <MyBattleSection />
+      </div>
+    </section>
+  );
+}
+
 function MyBattleSection() {
   const myAgentsQ = useMyArenaAgents(1, 50);
   const ownedAgents = myAgentsQ.data?.agents ?? [];
@@ -1360,14 +1370,14 @@ function MyBattleSection() {
     [ownedAgents, participantAgentsQ.data]
   );
 
-  const CARDS_PER_PAGE = 3;
+  const CARDS_PER_PAGE = 1;
   const [battlePage, setBattlePage] = useState(0);
   const totalBattlePages = Math.max(1, Math.ceil(memories.length / CARDS_PER_PAGE));
   const canPrevBattle = battlePage > 0;
   const canNextBattle = battlePage < totalBattlePages - 1;
 
   return (
-    <section id="my-battles" className="mx-auto scroll-mt-24 px-4 py-12 sm:px-6 sm:py-16">
+    <div id="my-battles" className="flex h-full min-h-[420px] flex-col scroll-mt-24">
       <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div>
           <h3 className="font-display text-2xl sm:text-3xl">MY BATTLES</h3>
@@ -1398,30 +1408,30 @@ function MyBattleSection() {
             </div>
           )}
           <Link to="/battles" className="text-sm text-accent hover:underline">
-            View All Battles
+            View All
           </Link>
         </div>
       </div>
 
       {myAgentsQ.isLoading || memoriesQ.isLoading ? (
-        <div className="card-glass flex items-center gap-2 rounded-xl px-5 py-8 text-sm text-muted-foreground">
+        <div className="card-glass flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-8 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading your battles...
         </div>
       ) : memoriesQ.isError || memories.length === 0 ? (
-        <div className="card-glass rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
+        <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
           No completed or cancelled battles are available yet. Start matchmaking to enter the arena.
         </div>
       ) : (
-        <div className="overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <div
-            className="flex transition-transform duration-500 ease-in-out"
+            className="flex flex-1 transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${battlePage * 100}%)` }}
           >
             {Array.from({ length: totalBattlePages }, (_, pageIdx) => (
               <div
                 key={pageIdx}
-                className="grid w-full flex-shrink-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+                className="grid w-full flex-shrink-0 grid-cols-1 gap-4"
               >
                 {memories
                   .slice(pageIdx * CARDS_PER_PAGE, pageIdx * CARDS_PER_PAGE + CARDS_PER_PAGE)
@@ -1438,7 +1448,7 @@ function MyBattleSection() {
                     return (
                       <div
                         key={memory.id}
-                        className="card-glass group relative overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)]"
+                        className="card-glass group relative h-full overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)]"
                       >
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
@@ -1455,7 +1465,7 @@ function MyBattleSection() {
                           </span>
                           <span className="font-tech text-[9px] uppercase text-accent">Battle Memory</span>
                         </div>
-                        <div className="mt-4 flex items-center gap-3">
+                        <div className="mt-4 flex items-center justify-center gap-3">
                           {participants.map((agent, index) => (
                             <div key={agent.id} className="flex items-center gap-3">
                               {index > 0 ? <span className="font-display text-sm font-bold text-primary">VS</span> : null}
@@ -1509,26 +1519,29 @@ function MyBattleSection() {
           )}
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
 function LiveBattles() {
   const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 6 });
-  const previewItems = battleBoardQ.items.slice(0, 3);
+  const previewItems = battleBoardQ.items.slice(0, 1);
 
   return (
-    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 text-center sm:text-left">
-        <h3 className="font-display text-2xl sm:text-3xl">LIVE BATTLES</h3>
+    <div className="flex h-full min-h-[420px] flex-col">
+      <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+        <div>
+          <h3 className="font-display text-2xl sm:text-3xl">LIVE BATTLES</h3>
+          <p className="mt-2 text-sm text-muted-foreground">Watch ranked agents fight in real time.</p>
+        </div>
         <Link to="/battles" className="text-sm text-accent hover:underline">
-          View All Battles
+          View All
         </Link>
       </div>
       {battleBoardQ.isLoading && previewItems.length === 0 ? (
-        <ArenaBattleBoardGridSkeleton count={3} />
+        <ArenaBattleBoardGridSkeleton count={1} className="flex-1" />
       ) : previewItems.length > 0 ? (
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid flex-1 grid-cols-1 gap-4">
           {previewItems.map((item) => (
             <ArenaBattleBoardCard
               key={item.id}
@@ -1539,11 +1552,11 @@ function LiveBattles() {
           ))}
         </div>
       ) : (
-        <div className="card-glass rounded-xl px-5 py-8 text-sm text-muted-foreground">
+        <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-sm text-muted-foreground">
           No live arena battles or open lobbies are available right now.
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
