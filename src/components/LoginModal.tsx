@@ -12,6 +12,7 @@ import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   consumePendingLoginModalRequest,
+  markUserLoginIntent,
   subscribeOpenLoginModal,
 } from "@/lib/loginModalBus";
 
@@ -93,8 +94,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     onComplete: () => {
       walletFlowInFlightRef.current = false;
       setWalletFlowBusy(false);
-      /* Chain switch + Kult SIWE run only in AuthContext — avoids duplicate wallet prompts after Privy SIWE. */
-      onClose();
+      setRecoveryMode(false);
+      setAuthError("");
+      /* Keep modal open — AuthContext runs Kult SIWE and will close when isAuthenticated. */
+      setFinishingSignIn(true);
     },
     onError: (error) => {
       walletFlowInFlightRef.current = false;
@@ -108,6 +111,14 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     return subscribeOpenLoginModal((request) => {
       if (request?.mode === "recover") {
         applyRecoverRequest(request.message);
+        return;
+      }
+      if (request?.mode === "finishing") {
+        walletFlowInFlightRef.current = false;
+        setWalletFlowBusy(false);
+        setRecoveryMode(false);
+        setAuthError("");
+        setFinishingSignIn(true);
       }
     });
   }, []);
@@ -117,15 +128,26 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     wasOpenRef.current = isOpen;
 
     if (!isOpen) {
-      setAuthError("");
-      setRecoveryMode(false);
-      setFinishingSignIn(false);
+      const siweStillRunning = authenticated && !isAuthenticated && authLoading;
+      if (!siweStillRunning) {
+        setAuthError("");
+        setRecoveryMode(false);
+        setFinishingSignIn(false);
+      }
       return;
     }
 
     const pendingRequest = consumePendingLoginModalRequest();
     if (pendingRequest?.mode === "recover") {
       applyRecoverRequest(pendingRequest.message);
+      return;
+    }
+    if (pendingRequest?.mode === "finishing") {
+      walletFlowInFlightRef.current = false;
+      setWalletFlowBusy(false);
+      setRecoveryMode(false);
+      setAuthError("");
+      setFinishingSignIn(true);
       return;
     }
 
@@ -310,12 +332,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       />
                     </motion.div>
 
-                    <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
+                    {/* <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
                       Welcome Back
-                    </h2>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    </h2> */}
+                    {/* <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                       Sign in to access games, AI features & rankings.
-                    </p>
+                    </p> */}
                   </div>
 
                   {authError ? (
@@ -415,6 +437,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           onClick={() => {
                             setRecoveryMode(false);
                             setAuthError("");
+                            markUserLoginIntent();
                             void initOAuth({ provider: "google" });
                           }}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"

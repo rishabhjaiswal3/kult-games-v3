@@ -10,7 +10,12 @@ import {
   tryExchangePrivyTokenForAiArenaToken,
 } from "@/lib/aiArenaAuth";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
-import { requestOpenLoginModal } from "@/lib/loginModalBus";
+import {
+  clearUserLoginIntent,
+  hasUserLoginIntent,
+  markUserLoginIntent,
+  requestOpenLoginModal,
+} from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import {
@@ -40,6 +45,8 @@ const siweInFlightByAddress = new Map<string, Promise<void>>();
 const SIGNING_WALLET_WAIT_MS = 20_000;
 const SIGNING_WALLET_POLL_MS = 250;
 const PERSONAL_SIGN_TIMEOUT_MS = 45_000;
+/** Hard cap for the full SIWE pipeline (nonce, sign, backend login). */
+const SIWE_RUN_TIMEOUT_MS = 90_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -52,6 +59,12 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 
 function isMissingSigningWalletError(error: unknown) {
   return error instanceof Error && error.message === "No Privy wallet available to sign";
+}
+
+function isKultSessionValidForAddress(address: string) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const wallet = localStorage.getItem(WALLET_KEY);
+  return Boolean(token && wallet?.toLowerCase() === address.toLowerCase());
 }
 
 async function waitForSigningWallet(
@@ -85,6 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
 
   const walletsRef = useRef(wallets);
+  const staleLogoutInFlightRef = useRef(false);
+
   useEffect(() => {
     walletsRef.current = wallets;
   }, [wallets]);
@@ -93,6 +108,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     getAccessTokenRef.current = getAccessToken;
   }, [getAccessToken]);
+
+  const clearLocalAuthState = useCallback(() => {
+    siweInFlightByAddress.clear();
+    clearUserLoginIntent();
+    playerApi.logout();
+    clearAiArenaAuthTokens();
+    clearAiAgentInfo();
+    setHasKultSession(false);
+    setPlayer(null);
+  }, []);
+
+  const resetStalePrivySession = useCallback(async () => {
+    if (staleLogoutInFlightRef.current) return;
+    staleLogoutInFlightRef.current = true;
+    try {
+      clearLocalAuthState();
+      await privyLogout();
+    } catch {
+      /* best-effort Privy disconnect */
+    } finally {
+      staleLogoutInFlightRef.current = false;
+    }
+  }, [clearLocalAuthState, privyLogout]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -103,9 +141,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Privy may provision embedded wallets a moment after email/Google auth — wait without calling createWallet again.
+  // Orphaned Kult token without a live Privy session.
   useEffect(() => {
-    if (!ready || !authenticated || resolvedAddress) return;
+    if (!ready || authenticated) return;
+    if (!localStorage.getItem(TOKEN_KEY)) return;
+    clearLocalAuthState();
+  }, [ready, authenticated, clearLocalAuthState]);
+
+  // Restore an existing Kult session when Privy and stored wallet match.
+  useEffect(() => {
+    if (!ready || !authenticated || !resolvedAddress) return;
+    if (!isKultSessionValidForAddress(resolvedAddress)) return;
+
+    setHasKultSession(true);
+    void fetchProfile();
+    if (!getAiArenaAccessToken()) {
+      void (async () => {
+        const privyAccessToken = await getAccessTokenRef.current();
+        if (privyAccessToken) {
+          await tryExchangePrivyTokenForAiArenaToken(privyAccessToken);
+        }
+      })();
+    }
+  }, [ready, authenticated, resolvedAddress, fetchProfile]);
+
+  // Privy session restored without a valid Kult token — disconnect fully (no auto SIWE).
+  useEffect(() => {
+    if (!ready || !authenticated || hasUserLoginIntent()) return;
+
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      void resetStalePrivySession();
+      return;
+    }
+
+    if (resolvedAddress && !isKultSessionValidForAddress(resolvedAddress)) {
+      void resetStalePrivySession();
+    }
+  }, [ready, authenticated, resolvedAddress, resetStalePrivySession]);
+
+  // Privy may provision embedded wallets after email/Google — only while user initiated login.
+  useEffect(() => {
+    if (!ready || !authenticated || resolvedAddress || !hasUserLoginIntent()) return;
     setIsLoading(true);
     const timer = window.setTimeout(() => {
       setIsLoading(false);
@@ -116,22 +193,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "Your wallet is still being set up. Please wait a moment and try again, or use Wallet login.",
         });
       }
-    }, 20_000);
+    }, SIGNING_WALLET_WAIT_MS);
     return () => window.clearTimeout(timer);
   }, [ready, authenticated, resolvedAddress, user]);
 
-  // When Privy authenticates, run the full SIWE flow and AI Arena token exchange.
+  // SIWE only when the user explicitly started login (Connect / wallet / email / Google).
   useEffect(() => {
     if (!ready) return;
     if (!authenticated) return;
+    if (!hasUserLoginIntent()) return;
 
     const address = resolvedAddress;
     if (!address) return;
 
-    const existingToken = localStorage.getItem(TOKEN_KEY);
-    const existingWallet = localStorage.getItem(WALLET_KEY);
-
-    if (existingToken && existingWallet?.toLowerCase() === address.toLowerCase()) {
+    if (isKultSessionValidForAddress(address)) {
       setHasKultSession(true);
       void fetchProfile();
       if (!getAiArenaAccessToken()) {
@@ -142,6 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         })();
       }
+      clearUserLoginIntent();
       return;
     }
 
@@ -154,55 +230,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(true);
+    requestOpenLoginModal({ mode: "finishing" });
+    toast.info("Approve the wallet signature to finish signing in.", { duration: 12_000 });
 
-    const run = (async () => {
-      const nonce = await fetchSiweNonce(address);
-      const message = buildSiweMessage(address, nonce);
+    const run = withTimeout(
+      (async () => {
+        const nonce = await fetchSiweNonce(address);
+        const message = buildSiweMessage(address, nonce);
 
-      const privyWallet = await waitForSigningWallet(() =>
-        pickSigningWallet(walletsRef.current, address)
-      );
-      if (!privyWallet) throw new Error("No Privy wallet available to sign");
+        const privyWallet = await waitForSigningWallet(() =>
+          pickSigningWallet(walletsRef.current, address)
+        );
+        if (!privyWallet) throw new Error("No Privy wallet available to sign");
 
-      const allowedChain = getAllowedChainFromEnv();
-      const embedded = isEmbeddedPrivyConnectedWallet(privyWallet);
+        const allowedChain = getAllowedChainFromEnv();
+        const embedded = isEmbeddedPrivyConnectedWallet(privyWallet);
 
-      // Embedded wallets stay on Privy's default chain; forcing 0G breaks Google/email login.
-      // Chain switch is best-effort — personal_sign works on any chain.
-      if (!embedded) {
-        try {
-          if (typeof privyWallet.switchChain === "function") {
-            await privyWallet.switchChain(allowedChain.decimalChainId);
-          } else {
-            const p = await privyWallet.getEthereumProvider();
-            await ensureWalletOnAllowedChain(p, allowedChain);
+        if (!embedded) {
+          try {
+            if (typeof privyWallet.switchChain === "function") {
+              await privyWallet.switchChain(allowedChain.decimalChainId);
+            } else {
+              const p = await privyWallet.getEthereumProvider();
+              await ensureWalletOnAllowedChain(p, allowedChain);
+            }
+          } catch {
+            /* proceed to sign regardless */
           }
-        } catch {
-          /* proceed to sign regardless — chain mismatch doesn't block SIWE */
         }
-      }
 
-      const signature = await withTimeout(
-        signMessageWithPrivyWallet(privyWallet, message, address),
-        PERSONAL_SIGN_TIMEOUT_MS,
-        "Wallet signature",
-      );
+        const signature = await withTimeout(
+          signMessageWithPrivyWallet(privyWallet, message, address),
+          PERSONAL_SIGN_TIMEOUT_MS,
+          "Wallet signature",
+        );
 
-      const res = await playerApi.login(address, message, signature);
-      setHasKultSession(true);
-      setPlayer(res.player);
+        const res = await playerApi.login(address, message, signature);
+        setHasKultSession(true);
+        setPlayer(res.player);
 
-      const privyAccessToken = await getAccessTokenRef.current();
-      if (privyAccessToken) {
-        await tryExchangePrivyTokenForAiArenaToken(privyAccessToken);
-      }
-    })();
+        const privyAccessToken = await getAccessTokenRef.current();
+        if (privyAccessToken) {
+          await tryExchangePrivyTokenForAiArenaToken(privyAccessToken);
+        }
+      })(),
+      SIWE_RUN_TIMEOUT_MS,
+      "Sign-in",
+    );
 
     siweInFlightByAddress.set(addrKey, run);
 
     void run
       .catch(async (err) => {
-        // Kult SIWE succeeded — keep session even if a later optional step failed.
         if (localStorage.getItem(TOKEN_KEY)) {
           setHasKultSession(true);
           console.warn("[SIWE] Post-login step failed (session kept):", err);
@@ -210,52 +289,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         console.error("[SIWE] Login failed:", err);
-        setHasKultSession(false);
-        playerApi.logout();
+        clearLocalAuthState();
 
-        if (isMissingSigningWalletError(err)) {
-          try {
-            await privyLogout();
-          } catch {
-            /* best-effort session reset */
-          }
-
-          requestOpenLoginModal({
-            mode: "recover",
-            message:
-              "No wallet was available to finish sign-in. Please choose wallet, email, or Google to continue.",
-          });
-          toast.error(
-            "No wallet was available to finish sign-in. Please choose wallet, email, or Google to continue."
-          );
-          return;
+        try {
+          await privyLogout();
+        } catch {
+          /* best-effort session reset */
         }
 
-        // For all other failures (timeout, rejection, backend error) reset the modal so the
-        // spinner doesn't stay stuck — authenticated stays true but isAuthenticated is false,
-        // so the modal has no other path to clear finishingSignIn.
-        const message =
-          err instanceof Error && err.message.includes("timed out")
+        const message = isMissingSigningWalletError(err)
+          ? "No wallet was available to finish sign-in. Please choose wallet, email, or Google to continue."
+          : err instanceof Error && err.message.includes("timed out")
             ? "The wallet prompt timed out. Please try again and approve the signature request."
             : "Could not finish sign-in. Please try again.";
+
         requestOpenLoginModal({ mode: "recover", message });
         toast.error(message);
       })
       .finally(() => {
+        clearUserLoginIntent();
         setIsLoading(false);
         if (siweInFlightByAddress.get(addrKey) === run) {
           siweInFlightByAddress.delete(addrKey);
         }
       });
-  }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout]);
+  }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout, clearLocalAuthState]);
+
+  const beginLogin = useCallback(() => {
+    markUserLoginIntent();
+    requestOpenLoginModal();
+  }, []);
 
   const handleLogout = async () => {
-    siweInFlightByAddress.clear();
-    playerApi.logout();
-    clearAiArenaAuthTokens();
-    clearAiAgentInfo();
-    setHasKultSession(false);
-    setPlayer(null);
+    clearLocalAuthState();
     await privyLogout();
   };
 
@@ -266,7 +332,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         walletAddress,
         isAuthenticated: authenticated && hasKultSession,
         isLoading: !ready || isLoading,
-        login: requestOpenLoginModal,
+        login: beginLogin,
         logout: handleLogout,
         refetchProfile: fetchProfile,
       }}
