@@ -265,14 +265,15 @@ export function LeaguePolymarketBoard() {
           <div>
             <div className="flex items-center gap-2.5">
               <PolymarketLogo className="h-5 w-auto text-[#2E5CFF] sm:h-6" />
-              <span className="rounded-sm border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-[0.18em] text-[#7d97ff]">football</span>
+              <span className="rounded-sm border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-[0.18em] text-[#7d97ff]">integration preview</span>
             </div>
             <div className="mt-2 flex items-center gap-2">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
               <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-300">$ polymarket --live · fifa world cup 2026</span>
             </div>
             <h2 className="mt-2 font-mono text-xl font-black uppercase tracking-tight text-white sm:text-2xl">Football prediction markets</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">Trade the World Cup, Champions League and transfer window. The same agents that earn trust in League read every match and recommend a side — you approve every trade; no wallet or settlement is active.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">A Polymarket-style market interface for the World Cup, Champions League and transfers. The same agents that earn trust in League read every match and recommend a side — you approve every trade; no wallet or settlement is active.</p>
+            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.16em] text-[#8fa7ff]">Polymarket infrastructure integration preview · simulated market data</p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:min-w-[220px]">
             {(["USDC", "USDT"] as const).map((value) => (
@@ -292,25 +293,21 @@ export function LeaguePolymarketBoard() {
           <MarketMetric label="Agent consensus" value={`${leadingSignal.confidence}% ${side === "YES" ? "YES" : "lean"}`} detail={`${leadingSignal.name} leads the call`} tone="cyan" />
           <MarketMetric label="Traders" value="8,412" detail={`+${trades.length} positions streaming`} tone="cyan" />
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-1.5">
-          {MARKET_CATEGORIES.map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setCategory(value)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider transition ${category === value ? "border-[#2E5CFF]/60 bg-[#2E5CFF] text-white shadow-[0_0_18px_rgba(46,92,255,0.4)]" : "border-white/10 bg-black/20 text-white/50 hover:border-[#2E5CFF]/40 hover:text-white"}`}
-            >
-              {value}
-              <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${category === value ? "bg-black/25 text-white" : "bg-white/[0.06] text-cyan-300"}`}>{categoryCount(value)}</span>
-            </button>
-          ))}
-          <span className="ml-1 font-tech text-[9px] uppercase tracking-wider text-white/35">
-            {visibleMatches.length}/{MATCHES.length} matches
-          </span>
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-[#2E5CFF]/30 bg-[linear-gradient(105deg,rgba(46,92,255,0.12),rgba(4,8,15,0.5))] p-3 sm:flex-row sm:items-center sm:p-4">
+          <div className="flex items-start gap-3 sm:max-w-md">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#2E5CFF]/45 bg-[#2E5CFF]/15 font-tech text-lg text-[#9ab1ff]">→</div>
+            <p className="text-xs leading-relaxed text-white/55"><span className="font-tech font-bold text-white">Same agent, two layers.</span> League performance informs every market recommendation.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-wider">
+            <span className="rounded-md border border-cyan-400/35 bg-cyan-400/10 px-2.5 py-1.5 text-cyan-300">Predict</span><span className="text-[#7d97ff]">→</span>
+            <span className="rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2.5 py-1.5 text-[#aebfff]">Reputation</span><span className="text-[#7d97ff]">→</span>
+            <span className="rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2.5 py-1.5 text-[#aebfff]">Recommend</span><span className="text-[#7d97ff]">→</span>
+            <span className="rounded-md border border-white/20 bg-white/[0.06] px-2.5 py-1.5 text-white/85">You approve</span>
+          </div>
         </div>
       </section>
 
-      <TopAgentsBoard />
+      <TrendingMovers markets={liveMarkets} onSelect={setSelectedMarketId} />
       <TodayAgentPredictions />
 
       <LeaguePanel fill={false} className="border-[#2E5CFF]/25 lg:col-span-12">
@@ -329,7 +326,7 @@ export function LeaguePolymarketBoard() {
       </div>
 
       <div className="flex h-fit flex-col gap-3 lg:col-span-4 lg:sticky lg:top-4">
-      <TrendingMovers markets={liveMarkets} onSelect={setSelectedMarketId} />
+      <TopAgentsBoard sidebar />
       <LeaguePanel fill={false} className="border-[#2E5CFF]/30 bg-[#0b0815] p-4 sm:p-5">
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#7d97ff]">$ position</p>
         <p className="mt-2 font-tech text-sm font-bold text-white">{selectedMarket.question}</p>
@@ -366,8 +363,6 @@ export function LeaguePolymarketBoard() {
       </div>
       </div>
 
-      <OpenPositions markets={liveMarkets} onSelect={setSelectedMarketId} />
-
       <p className="lg:col-span-12 text-center font-mono text-[9px] uppercase tracking-widest text-white/30">// polymarket-style demo · football markets · no stablecoin transactions are enabled</p>
     </div>
   );
@@ -385,7 +380,7 @@ function TradeReview({ agent, market, side, price, token }: { agent: string; mar
 
 function MatchCard({ match }: { match: Match }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-[#2E5CFF]/40 sm:p-5">
+    <article className="rounded-xl border border-white/10 bg-[#0b0d12] p-4 transition hover:border-[#2E5CFF]/45 sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white">{match.kickoff}</span>
@@ -395,37 +390,26 @@ function MatchCard({ match }: { match: Match }) {
         <span className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/40"><BookOpen className="h-3.5 w-3.5" /></span>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+      <div className="p-1">
         <div className="flex items-center gap-2.5">
           <FlagCircle code={match.home.code} className="h-10 w-10 rounded-lg" />
-          <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">{match.league}</p></div>
+          <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Will {match.home.name} win?</p></div>
         </div>
-        <div className="mt-4 space-y-2.5">
-          <BinaryOutcomeRow label={match.home.name} price={match.home.price} />
-          <BinaryOutcomeRow label={match.away.name} price={match.away.price} />
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2.5 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>Yes</span><span>{match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2.5 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>No</span><span>{100 - match.home.price}¢</span></button>
         </div>
         <p className="mt-4 font-mono text-[10px] text-white/35">{match.vol} volume</p>
       </div>
 
       {/* Agent predictions on the card */}
-      <div className="mt-4 rounded-lg border border-white/8 bg-black/20 p-2.5">
+      <div className="mt-4 border-t border-white/10 pt-3">
         <p className="mb-2 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent predictions</p>
         <div className="grid grid-cols-2 gap-2">
           {match.agents.map((prediction) => <MarketCardAgentPrediction key={prediction.name} prediction={prediction} />)}
         </div>
       </div>
     </article>
-  );
-}
-
-function BinaryOutcomeRow({ label, price }: { label: string; price: number }) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2">
-      <span className="truncate text-sm font-medium text-white/85">{label}</span>
-      <span className="font-tech text-lg font-bold text-white/85">{price}%</span>
-      <button type="button" className="rounded-md bg-emerald-400/15 px-3 py-1.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-400/25">Yes</button>
-      <button type="button" className="rounded-md bg-rose-400/15 px-3 py-1.5 text-sm font-medium text-rose-300 transition hover:bg-rose-400/25">No</button>
-    </div>
   );
 }
 
@@ -497,9 +481,9 @@ function RecentTradesFeed({ trades }: { trades: MarketTrade[] }) {
   );
 }
 
-function TopAgentsBoard() {
+function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
   return (
-    <LeaguePanel fill={false} className="border-[#2E5CFF]/25 lg:col-span-6">
+    <LeaguePanel fill={false} className={`border-[#2E5CFF]/25 ${sidebar ? "p-4" : "lg:col-span-6"}`}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Top agents</h3>
@@ -508,7 +492,7 @@ function TopAgentsBoard() {
         <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live standings</span>
       </div>
       <div className="max-h-[238px] overflow-y-auto pr-1 [scrollbar-color:rgba(46,92,255,0.55)_transparent] [scrollbar-width:thin]">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className={`grid grid-cols-2 gap-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
         {TOP_AGENTS.map((row) => {
           const agent = getLeagueAgent(row.name);
           return (
@@ -575,7 +559,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
 
   return (
-    <LeaguePanel fill={false} className="border-cyan-400/20 p-4">
+    <LeaguePanel fill={false} className="border-cyan-400/20 p-4 lg:col-span-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Trending movers</h3>
@@ -583,7 +567,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
         </div>
         <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live</span>
       </div>
-      <div className="max-h-[174px] space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
+      <div className="grid max-h-[230px] grid-cols-1 items-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
         {movers.map((market) => {
           const sessionDir = market.session > 0 ? "up" : market.session < 0 ? "down" : "flat";
           return (

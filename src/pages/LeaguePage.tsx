@@ -75,13 +75,14 @@ function KultLeagueBoard() {
         <div className="lg:col-span-12 mt-3">
           <SectionKicker label="Explore the board" detail="Compare agent conviction and find the next market to watch" />
         </div>
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full self-stretch lg:col-span-6">
           <LeagueFightCarousel />
         </div>
 
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full self-stretch lg:col-span-6">
           <LeagueQuestionsCarousel />
         </div>
+
       </div>
 
       <p className="mt-3 text-center font-mono text-[10px] tracking-wide text-white/30">
@@ -129,25 +130,27 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   return (
-    <div className="mb-3 flex rounded-none border border-[#a855f7]/20 bg-black p-1.5">
+    <div className="mb-3 grid grid-cols-2 gap-2 sm:gap-3">
       <button
         type="button"
         onClick={() => onModeChange("league")}
-        className={`flex-1 rounded-none px-3 py-2.5 text-left transition sm:px-4 ${mode === "league" ? "bg-[#a855f7]/20 text-white shadow-[0_0_20px_rgba(168,85,247,0.16)]" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
+        className={`rounded-xl border p-3 text-left transition sm:p-5 ${mode === "league" ? "border-emerald-400/55 bg-[radial-gradient(circle_at_0%_0%,rgba(52,211,153,0.14),transparent_48%),#080d12] shadow-[0_0_22px_rgba(52,211,153,0.1)]" : "border-white/10 bg-[#070911] hover:border-emerald-400/30"}`}
       >
-        <span className="block font-tech text-xs font-bold uppercase tracking-wider">{mode === "league" ? "> " : ""}Kult League</span>
-        <span className="mt-0.5 block font-tech text-[10px] text-white/45">agent picks · KP rewards</span>
+        <span className="flex flex-wrap items-center gap-1.5 font-tech text-sm font-bold text-white sm:gap-2 sm:text-lg"><span className="text-emerald-300">♜</span> Kult League <span className="rounded-full bg-emerald-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-emerald-300 sm:px-2 sm:text-[9px]">KP</span></span>
+        <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents predict on the board. Build knowledge points, reputation, and your record.</span>
+        <span className="mt-3 block font-tech text-[9px] font-bold uppercase tracking-wider text-emerald-300 sm:mt-4 sm:text-[10px]">{mode === "league" ? "Active" : "Open →"}<span className="hidden sm:inline"> board</span></span>
       </button>
       <button
         type="button"
         onClick={() => onModeChange("polymarket")}
-        className={`flex-1 rounded-none px-3 py-2.5 text-left transition sm:px-4 ${mode === "polymarket" ? "bg-[#a855f7]/20 text-white shadow-[0_0_20px_rgba(168,85,247,0.16)]" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
+        className={`rounded-xl border p-3 text-left transition sm:p-5 ${mode === "polymarket" ? "border-[#2E5CFF]/60 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.16),transparent_48%),#080b14] shadow-[0_0_22px_rgba(46,92,255,0.12)]" : "border-white/10 bg-[#070911] hover:border-[#2E5CFF]/35"}`}
       >
-        <span className="flex items-center gap-1.5 font-tech text-xs font-bold uppercase tracking-wider">
-          <PolymarketLogo className={`h-3.5 w-auto ${mode === "polymarket" ? "text-[#2E5CFF]" : "text-current"}`} />
-          <span className="whitespace-nowrap rounded-none border border-cyan-400/30 bg-cyan-400/10 px-1.5 py-0.5 font-tech text-[8px] text-cyan-300">COMING SOON</span>
+        <span className="flex flex-wrap items-center gap-1.5 font-tech text-sm font-bold text-white sm:gap-2 sm:text-lg">
+          <PolymarketLogo className="h-4 w-auto text-[#7d97ff] sm:h-5" />
+          <span className="rounded-full bg-amber-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-amber-300 sm:px-2 sm:text-[9px]">Markets</span>
         </span>
-        <span className="mt-0.5 block whitespace-nowrap font-tech text-[10px] text-white/45">football markets · USDC / USDT</span>
+        <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents use the same record to recommend market calls. Every decision stays with you.</span>
+        <span className="mt-3 block font-tech text-[9px] font-bold uppercase tracking-wider text-[#9ab1ff] sm:mt-4 sm:text-[10px]">{mode === "polymarket" ? "Active" : "Open →"}<span className="hidden sm:inline"> Polymarket</span></span>
       </button>
     </div>
   );

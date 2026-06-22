@@ -54,10 +54,10 @@ export function LeagueFightScene({
           ) : null}
         </div>
       </div>
-      <div className="flex justify-between border-t border-white/10 bg-black/30 px-4 py-2 font-tech text-[10px] uppercase tracking-wider">
-        <span className="text-white/75">{leftAgent}</span>
-        <span className="text-[#c084fc]">Agent duel</span>
-        <span className="text-white/75">{rightAgent}</span>
+      <div className="grid min-h-11 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t border-white/10 bg-black/30 px-4 py-2 font-tech text-[10px] uppercase tracking-wider">
+        <span className="truncate whitespace-nowrap text-white/75">{leftAgent}</span>
+        <span className="whitespace-nowrap text-[#c084fc]">Agent duel</span>
+        <span className="truncate whitespace-nowrap text-right text-white/75">{rightAgent}</span>
       </div>
     </div>
   );
