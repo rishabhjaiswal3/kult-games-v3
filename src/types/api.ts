@@ -52,6 +52,8 @@ export interface PlayerProfileStats {
   username: string;
   rank: number | null;
   totalScore: number;
+  kultPoints: number;
+  kultPointsRank?: number | null;
   level: number;
   totalGamesPlayed: number;
   completedQuests: number;
@@ -69,6 +71,8 @@ export interface FullPlayerProfile {
   cached: boolean;
   rank: number | null;
   totalScore: number;
+  kultPoints: number;
+  kultPointsRank?: number | null;
   level: number;
   totalGamesPlayed: number;
   completedQuests: number;
