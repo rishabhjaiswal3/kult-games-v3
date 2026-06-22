@@ -21,6 +21,7 @@ function parseProfilePayload(raw: unknown): FullPlayerProfile {
       cached: false,
       rank: null,
       totalScore: 0,
+      kultPoints: 0,
       level: 1,
       totalGamesPlayed: 0,
       completedQuests: 0,
@@ -46,6 +47,11 @@ function parseProfilePayload(raw: unknown): FullPlayerProfile {
       username: String(nested.username ?? ""),
       rank: nested.rank == null ? null : Number(nested.rank),
       totalScore: Number(nested.totalScore ?? nested.total_score ?? 0),
+      kultPoints: Number(nested.kultPoints ?? nested.kult_points ?? 0),
+      kultPointsRank:
+        nested.kultPointsRank == null && nested.kult_points_rank == null
+          ? null
+          : Number(nested.kultPointsRank ?? nested.kult_points_rank),
       level: Number(nested.level ?? 1),
       totalGamesPlayed: Number(nested.totalGamesPlayed ?? nested.total_games_played ?? 0),
       completedQuests: Number(nested.completedQuests ?? nested.completed_quests ?? 0),
@@ -62,6 +68,8 @@ function parseProfilePayload(raw: unknown): FullPlayerProfile {
       cached: Boolean(raw.cached),
       rank: stats.rank,
       totalScore: stats.totalScore,
+      kultPoints: stats.kultPoints,
+      kultPointsRank: stats.kultPointsRank,
       level: stats.level,
       totalGamesPlayed: stats.totalGamesPlayed,
       completedQuests: stats.completedQuests,
@@ -85,6 +93,7 @@ function parseProfilePayload(raw: unknown): FullPlayerProfile {
     cached: false,
     rank: null,
     totalScore: 0,
+    kultPoints: 0,
     level: 1,
     totalGamesPlayed: 0,
     completedQuests: 0,
