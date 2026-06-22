@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { momentsApi } from "@/api/momentsApi";
+import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import heroVideo from "@/assets/homebkg.MOV";
@@ -60,8 +61,11 @@ const homeArenaAgents = [
 
 export function HomePage() {
   const navigate = useNavigate();
+  const { canUse } = useAccess();
   const { login, isAuthenticated } = useAuth();
   const featuredScrollerRef = useRef<HTMLDivElement | null>(null);
+  const canViewGames = canUse("games");
+  const canViewMoments = canUse("moments");
 
   const { data: gamesData, isLoading } = useQuery({
     queryKey: ["games", "all", "home"],
@@ -238,62 +242,64 @@ export function HomePage() {
       </section>
 
       <HomeAIArenaSection />
-      <HomeMomentsSection />
+      {canViewMoments ? <HomeMomentsSection /> : null}
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Featured games</h2>
-          <Link
-            to="/games"
-            className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
+      {canViewGames ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Featured games</h2>
+            <Link
+              to="/games"
+              className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
+            >
+              View all →
+            </Link>
+          </div>
+          <div
+            ref={featuredScrollerRef}
+            className="flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-visible pb-3 scrollbar-none"
+            style={{ WebkitOverflowScrolling: "touch" }}
           >
-            View all →
-          </Link>
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="arena-panel aspect-[16/10] min-w-[82vw] animate-pulse snap-start border-white/8 bg-white/5 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
+                  />
+                ))
+              : featuredGames.map((game) => {
+                  const id = game.identification ?? game.slug ?? game._id;
+                  const image = getGameImage(game);
+                  return (
+                    <Link
+                      key={game._id ?? id}
+                      to={`/game/${id}`}
+                      className="group flex min-w-[82vw] snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-[#0a0f18]">
+                        {image ? (
+                          <img
+                            src={image}
+                            alt={getGameName(game.name)}
+                            className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
+                          />
+                        ) : null}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] to-transparent" />
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">
+                          {getGameName(game.name)}
+                        </p>
+                        <p className="mt-1 line-clamp-1 text-[10px] text-white/40">
+                          {getGameDescription(game.description) || game.category}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+          </div>
         </div>
-        <div
-          ref={featuredScrollerRef}
-          className="flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-visible pb-3 scrollbar-none"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          {isLoading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="arena-panel aspect-[16/10] min-w-[82vw] animate-pulse snap-start border-white/8 bg-white/5 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
-                />
-              ))
-            : featuredGames.map((game) => {
-                const id = game.identification ?? game.slug ?? game._id;
-                const image = getGameImage(game);
-                return (
-                  <Link
-                    key={game._id ?? id}
-                    to={`/game/${id}`}
-                    className="group flex min-w-[82vw] snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden bg-[#0a0f18]">
-                      {image ? (
-                        <img
-                          src={image}
-                          alt={getGameName(game.name)}
-                          className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
-                        />
-                      ) : null}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] to-transparent" />
-                    </div>
-                    <div className="p-3">
-                      <p className="truncate text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">
-                        {getGameName(game.name)}
-                      </p>
-                      <p className="mt-1 line-clamp-1 text-[10px] text-white/40">
-                        {getGameDescription(game.description) || game.category}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-        </div>
-      </div>
+      ) : null}
 
       <div>
         <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
