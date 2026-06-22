@@ -109,11 +109,11 @@ export function ArenaBattleBoardCard({
 }: ArenaBattleBoardCardProps) {
   if (item.kind === "open-lobby") {
     return (
-      <article className="card-glass group relative overflow-hidden rounded-xl border border-white/10 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-accent/55 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)] sm:p-5">
+      <article className="card-glass group relative overflow-hidden rounded-xl border border-white/10 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-accent/55 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)] sm:p-5 lg:p-4 xl:p-5">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
         <div className="relative z-10">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-center sm:text-left">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-center sm:text-left lg:mb-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="font-tech text-xs tracking-wider text-accent">QUEUE</span>
@@ -139,7 +139,7 @@ export function ArenaBattleBoardCard({
           <FindingOpponent waitLabel={item.waitLabel} modeLabel={formatLobbyMode(item.status.mode)} />
         </div>
 
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50 lg:mt-3 lg:pt-2.5">
           <CardAction
             actionLabel={actionLabel}
             actionTo={actionTo}
