@@ -9,7 +9,9 @@ export type CountryCode =
   | "ESP"
   | "ITA"
   | "NLD"
-  | "ENG";
+  | "ENG"
+  | "AUT"
+  | "IRQ";
 
 const FLAG_STYLES: Record<CountryCode, string> = {
   BRA: "bg-[#009c3b] [background-image:linear-gradient(135deg,transparent_38%,#ffdf00_38%,#ffdf00_62%,transparent_62%),radial-gradient(circle_at_50%_50%,#002776_22%,transparent_23%)]",
@@ -21,6 +23,8 @@ const FLAG_STYLES: Record<CountryCode, string> = {
   ITA: "bg-[linear-gradient(90deg,#009246_33%,#fff_33%,#fff_66%,#ce2b37_66%)]",
   NLD: "bg-[linear-gradient(180deg,#ae1c28_33%,#fff_33%,#fff_66%,#21468b_66%)]",
   ENG: "bg-[linear-gradient(180deg,#fff_20%,#fff_20%,#ce1124_20%,#ce1124_40%,#fff_40%,#fff_60%,#ce1124_60%,#ce1124_80%,#fff_80%)]",
+  AUT: "bg-[linear-gradient(180deg,#ed2939_33%,#fff_33%,#fff_66%,#ed2939_66%)]",
+  IRQ: "bg-[linear-gradient(180deg,#ce1126_33%,#fff_33%,#fff_66%,#000_66%)]",
 };
 
 /** Circular flag badge for lists. */

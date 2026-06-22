@@ -66,7 +66,7 @@ export function AppShell() {
             <div
               className={cn(
                 "arena-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden",
-                isGamePlay ? "pb-0" : "pb-24 sm:pb-0"
+                isGamePlay || isHome ? "pb-0" : isAIArenaLanding ? "pb-32 sm:pb-0" : "pb-24 sm:pb-0"
               )}
             >
               {showDashboardTopbar ? <DashboardTopbar /> : null}
@@ -76,7 +76,7 @@ export function AppShell() {
               </Suspense>
             </div>
           ) : (
-            <div className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-24 sm:pb-0">
+            <div className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-32 sm:pb-0">
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {showTopbar ? <AppTopbar /> : null}
               <div className="px-4 py-5 sm:px-6 lg:px-8">

@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
+import Footer from "@/components/Footer";
 import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
@@ -207,27 +208,31 @@ function AIArenaPageContent() {
       <StatsBar />
       <FeaturesBlock />
       <HowItWorks />
-      <ArenaQuickLinks />
+      <section className="mx-auto px-4 py-6 sm:px-6 sm:py-8">
+        <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+          <ArenaQuickLinks />
+          <TopAgents />
+        </div>
+      </section>
       <RankProgressionTimeline />
       <ArenaGames />
-      <TopAgents />
       <BattlesRow />
       <PartnersBlock />
-      <ArenaLandingFooter />
+      <Footer variant="arena" />
     </div>
   );
 }
 
 function ArenaQuickLinks() {
   return (
-    <section className="mx-auto px-4 pt-8 sm:px-6 sm:pt-10">
+    <div className="flex h-full min-w-0 flex-col">
       <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid flex-1 grid-cols-1 gap-3 lg:gap-2 xl:gap-3">
         {arenaQuickLinks.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] p-4 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] p-4 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] lg:p-3 xl:p-4"
             style={
               {
                 "--quick-link-color": link.color,
@@ -241,12 +246,12 @@ function ArenaQuickLinks() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <div className="flex items-center gap-3">
               <div
-                className="relative z-10 grid h-10 w-10 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
+                className="relative z-10 grid h-10 w-10 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)] lg:h-9 lg:w-9 xl:h-10 xl:w-10"
                 style={{ color: link.color }}
               >
                 <link.icon className="h-5 w-5" />
               </div>
-              <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-[var(--quick-link-color)] transition duration-300 group-hover:brightness-125">
+              <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-[var(--quick-link-color)] transition duration-300 group-hover:brightness-125 lg:text-xs xl:text-sm">
                 {link.label}
               </span>
             </div>
@@ -254,7 +259,7 @@ function ArenaQuickLinks() {
           </Link>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -294,7 +299,7 @@ function ArenaGames() {
   }, [maxIndex]);
 
   return (
-    <section className="mx-auto px-4 py-12 sm:px-6 sm:py-16">
+    <section className="mx-auto px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h2 className="font-display text-2xl sm:text-3xl">AI ARENA GAMES</h2>
         <div className="flex shrink-0 items-center gap-2">
@@ -766,32 +771,27 @@ function StatsBar() {
   ];
   return (
     <section className="mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
-      <div className="card-glass rounded-xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="flex items-center justify-center md:justify-start gap-3 border-b md:border-b-0 md:border-r border-border/50 pb-4 md:pb-0 md:pr-4 sm:col-span-2 md:col-span-1">
-          <div className="w-10 h-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center p-2">
-            <ZeroGLogo className="h-6 w-auto" />
-          </div>
-          <div>
-            <div className="text-[10px] tracking-[0.2em] text-muted-foreground font-tech">
-              POWERED BY
-            </div>
-            <ZeroGLogo className="mt-1 h-4 w-auto" />
+      <div className="card-glass rounded-xl p-4 sm:p-5 lg:p-3 xl:p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 lg:gap-3 xl:gap-4">
+        <div className="flex items-center justify-center md:justify-start border-b md:border-b-0 md:border-r border-border/50 pb-4 md:pb-0 md:pr-4 lg:pr-3 xl:pr-4 sm:col-span-2 md:col-span-1">
+          <div className="flex items-center gap-2 lg:gap-1.5 xl:gap-2">
+            <span className="text-[10px] tracking-[0.2em] text-muted-foreground font-tech lg:text-[8px] lg:tracking-[0.16em] xl:text-[10px] xl:tracking-[0.2em]">POWERED BY</span>
+            <ZeroGLogo className="h-4 w-auto lg:h-3.5 xl:h-4" />
           </div>
         </div>
         {stats.map((s) => (
           <div
             key={s.label}
-            className="flex min-w-0 items-center justify-center md:justify-start gap-3"
+            className="flex min-w-0 items-center justify-center md:justify-start gap-3 lg:gap-2 xl:gap-3"
           >
             <s.icon
-              className="w-5 h-5 sm:w-6 sm:h-6 shrink-0"
+              className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 lg:h-5 lg:w-5 xl:h-6 xl:w-6"
               style={{ color: `oklch(from ${s.c} l c h)` }}
             />
             <div className="min-w-0">
-              <div className="text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.2em] text-muted-foreground font-tech">
+              <div className="text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.2em] text-muted-foreground font-tech lg:text-[8px] lg:tracking-[0.13em] xl:text-[10px] xl:tracking-[0.2em]">
                 {s.label}
               </div>
-              <div className="font-tech text-base sm:text-lg break-words">{s.value}</div>
+              <div className="font-tech text-base sm:text-lg break-words whitespace-nowrap lg:text-sm xl:text-lg">{s.value}</div>
             </div>
           </div>
         ))}
@@ -804,35 +804,31 @@ function FeaturesBlock() {
   const features = [
     {
       icon: Box,
-      title: "OWN YOUR AI",
-      desc: "Each AI Agent is an NFT that you truly own.",
+      step: "01",
+      title: "CREATE AGENT",
+      desc: "Choose your agent and set its path.",
       c: "var(--neon)",
       path: "/my-agents",
     },
     {
       icon: ArrowUp,
-      title: "TRAIN & EVOLVE",
-      desc: "Train, upgrade and evolve your agent to unlock their full potential.",
+      step: "02",
+      title: "TRAIN AGENT",
+      desc: "Build its skills and evolve its strategy.",
       c: "var(--neon-2)",
       path: "/training",
     },
     {
       icon: Swords,
-      title: "BATTLE & EARN",
-      desc: "Compete in battles, climb the ranks and earn massive rewards.",
+      step: "03",
+      title: "ENTER BATTLE",
+      desc: "Test your agent and earn rewards.",
       c: "var(--amber)",
       path: "/battles",
     },
-    {
-      icon: Globe,
-      title: "BUILT ON",
-      partner: "0G",
-      desc: "Ultra-fast, scalable infrastructure for the next era of AI gaming.",
-      c: "var(--lime)",
-    },
   ];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20 text-center lg:text-left">
+    <section className="mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center lg:text-left">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] gap-5 sm:gap-6">
         <div>
           <span className="text-[10px] tracking-[0.24em] sm:tracking-[0.3em] font-tech text-accent">
@@ -847,31 +843,35 @@ function FeaturesBlock() {
             AI Arena is the ultimate battleground for AI Agents across Web3. Powered by{" "}
             <ZeroGLogo className="mx-1 h-4 w-auto align-[-0.2em]" />, owned by you.
           </p>
-          <Link to="/" className="btn-primary mt-6 mx-auto lg:mx-0 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] inline-flex items-center gap-2 w-max">
-            LEARN MORE <ArrowUpRight className="w-4 h-4" />
+          <Link to="/" className="btn-primary mt-6 mx-auto lg:mx-0 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] inline-flex items-center gap-2 w-max lg:px-3 lg:py-2 lg:text-[10px] lg:tracking-[0.12em] lg:gap-1.5 xl:px-5 xl:py-2.5 xl:text-xs xl:tracking-[0.2em] xl:gap-2">
+            LEARN MORE <ArrowUpRight className="w-4 h-4 lg:h-3.5 lg:w-3.5 xl:h-4 xl:w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
+        <div>
+          <div className="mb-3 text-center lg:text-left">
+            <span className="font-tech text-[9px] uppercase tracking-[0.26em] text-primary">Start here</span>
+            <p className="mt-1 text-xs text-muted-foreground">Three steps to get your agent into the Arena.</p>
+          </div>
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
           {features.map((f) => {
             const content = (
               <>
               <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0"
+                className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto md:mx-0"
                 style={{
                   background: `oklch(from ${f.c} l c h / 0.15)`,
                   border: `1px solid oklch(from ${f.c} l c h / 0.4)`,
                 }}
               >
-                <f.icon className="w-6 h-6" style={{ color: `oklch(from ${f.c} l c h)` }} />
+                <f.icon className="w-5 h-5" style={{ color: `oklch(from ${f.c} l c h)` }} />
               </div>
               <h4
-                className="font-tech text-xs sm:text-sm tracking-wider mb-2 flex flex-wrap items-center justify-center md:justify-start gap-2"
+                className="font-tech text-sm font-bold tracking-wider mb-2 flex flex-wrap items-center justify-center md:justify-start gap-2"
                 style={{ color: `oklch(from ${f.c} l c h)` }}
               >
                 {f.title}
-                {"partner" in f && f.partner === "0G" && <ZeroGLogo className="h-4 w-auto" />}
               </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+              <p className="text-sm font-medium leading-relaxed text-white/75">{f.desc}</p>
               </>
             );
 
@@ -879,29 +879,34 @@ function FeaturesBlock() {
               <Link
                 key={f.title}
                 to={f.path}
-                className="card-glass group rounded-xl p-4 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] sm:p-5 md:text-left"
+                className="card-glass group rounded-xl p-3 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] md:text-left"
               >
                 {content}
               </Link>
             ) : (
               <div
                 key={f.title}
-                className="card-glass rounded-xl p-4 text-center transition sm:p-5 md:text-left"
+                className="card-glass rounded-xl p-3 text-center transition md:text-left"
               >
                 {content}
               </div>
             );
           })}
+          </div>
+          <div className="mt-3 rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_12%_0%,rgba(154,53,255,0.14),transparent_46%),rgba(4,8,15,0.88)] px-4 py-3 text-center lg:text-left">
+            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.26em] text-primary">Why AI agents?</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/65">Your agent acts from the traits and strategy you train, learns from battle results, and remains yours as it grows through the Arena.</p>
+          </div>
         </div>
-        <div className="card-glass rounded-xl p-4 sm:p-5 text-center lg:text-left">
+        <div className="card-glass self-start rounded-xl p-3 text-center sm:p-4 lg:text-left">
           <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
             $ARENA TOKEN
           </div>
           <div className="font-display text-2xl text-accent mt-1 glow-text">FUEL THE ARENA</div>
-          <p className="text-xs text-muted-foreground mt-3">
+          <p className="mt-2 text-xs text-muted-foreground">
             The native token of AI Arena. Use it to play, earn, govern and own the future.
           </p>
-          <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground mt-5">
+          <div className="mt-3 text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
             $ARENA PRICE
           </div>
           <div className="flex items-end gap-2 mt-1">
@@ -910,7 +915,7 @@ function FeaturesBlock() {
               +4.35%
             </span>
           </div>
-          <div className="mt-3 h-10 relative">
+          <div className="relative mt-2 h-8">
             <svg viewBox="0 0 100 30" className="w-full h-full" preserveAspectRatio="none">
               <polyline
                 points="0,25 15,22 30,24 45,18 60,20 75,12 90,8 100,4"
@@ -922,9 +927,9 @@ function FeaturesBlock() {
           </div>
           <Link
             to="/dashboard"
-            className="btn-primary mt-4 flex w-full items-center justify-center gap-2 rounded-md px-5 py-2.5 font-tech text-xs tracking-[0.2em]"
+            className="btn-primary mt-3 flex w-full items-center justify-center rounded-md px-3 py-2 font-tech text-[10px] tracking-[0.12em] whitespace-nowrap"
           >
-            VIEW TOKEN <ArrowUpRight className="w-4 h-4" />
+            VIEW TOKEN
           </Link>
         </div>
       </div>
@@ -961,17 +966,17 @@ function HowItWorks() {
     { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
   ];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
-      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+    <section className="mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5 sm:mb-12">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
-        <h3 className="font-display text-2xl sm:text-3xl text-center">HOW IT WORKS</h3>
+        <h3 className="font-display text-lg sm:text-3xl text-center">HOW IT WORKS</h3>
         <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
       </div>
-      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
             <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
-              <div className="aspect-square overflow-hidden bg-background/50">
+              <div className="aspect-square overflow-hidden bg-background/50 md:aspect-[6/5]">
                 {s.img.endsWith(".mp4") ? (
                   <video
                     src={s.img}
@@ -992,10 +997,9 @@ function HowItWorks() {
                   />
                 )}
               </div>
-              <div className="p-4 text-center md:text-left">
-                <div className="font-display text-xl text-primary glow-text">{s.n}</div>
-                <div className="font-tech text-sm mt-2 tracking-wider break-words">{s.title}</div>
-                <p className="text-xs text-muted-foreground mt-2">{s.desc}</p>
+              <div className="p-3 md:p-4 text-center md:text-left">
+                <div className="font-tech text-sm tracking-wider break-words">{s.title}</div>
+                <p className="mt-2 text-xs leading-snug text-muted-foreground md:text-xs">{s.desc}</p>
               </div>
             </div>
             {i < steps.length - 1 && (
@@ -1010,7 +1014,7 @@ function HowItWorks() {
 
 function RankProgressionTimeline() {
   return (
-    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-20">
+    <section className="mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Header */}
       <div className="text-center mb-10 sm:mb-14">
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
@@ -1028,12 +1032,12 @@ function RankProgressionTimeline() {
 
       {/* Connector line (desktop only) */}
       <div className="relative">
-        <div className="absolute top-[52px] left-[6%] right-[6%] h-px hidden md:block"
+        <div className="absolute top-[52px] left-[6%] right-[6%] h-px hidden md:block lg:top-[44px] xl:top-[52px]"
           style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.25) 15%, rgba(139,92,246,0.4) 50%, rgba(129,140,248,0.25) 85%, transparent)" }}
         />
 
         {/* Rank cards grid */}
-        <div className="grid grid-cols-2 min-[500px]:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 min-[500px]:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4 lg:gap-2 xl:gap-4">
           {RANKS.map((rank, i) => (
             <div
               key={rank.tier}
@@ -1042,7 +1046,7 @@ function RankProgressionTimeline() {
             >
               {/* Tier node */}
               <div
-                className="relative z-10 flex h-[100px] w-[100px] sm:h-[108px] sm:w-[108px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
+                className="relative z-10 flex h-[100px] w-[100px] sm:h-[108px] sm:w-[108px] lg:h-[88px] lg:w-[88px] xl:h-[108px] xl:w-[108px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
                 style={{
                   background: `radial-gradient(circle at 40% 35%, ${rank.color}22, ${rank.color}08 60%, transparent)`,
                   border: `1px solid ${rank.color}35`,
@@ -1057,7 +1061,7 @@ function RankProgressionTimeline() {
                 <img
                   src={rank.image}
                   alt={rank.name}
-                  className="h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] lg:h-[60px] lg:w-[60px] xl:h-[76px] xl:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
                   style={{ filter: `drop-shadow(0 0 8px ${rank.color}55)` }}
                 />
                 {/* Tier number badge */}
@@ -1072,7 +1076,7 @@ function RankProgressionTimeline() {
               {/* Arrow connector (desktop) */}
               {i < RANKS.length - 1 && (
                 <div
-                  className="absolute top-[50px] -right-2 z-20 hidden md:flex h-5 w-4 items-center justify-center text-white/20 group-hover:text-white/45 transition-colors duration-300"
+                  className="absolute top-[50px] -right-2 z-20 hidden md:flex h-5 w-4 items-center justify-center text-white/20 group-hover:text-white/45 transition-colors duration-300 lg:top-[42px] xl:top-[50px]"
                   style={{ fontSize: "10px" }}
                 >
                   ›
@@ -1080,9 +1084,9 @@ function RankProgressionTimeline() {
               )}
 
               {/* Name & ELO */}
-              <div className="mt-3 space-y-0.5">
+              <div className="mt-3 space-y-0.5 lg:mt-2 xl:mt-3">
                 <div
-                  className="font-tech text-[9px] sm:text-[10px] font-bold tracking-widest uppercase leading-tight"
+                  className="font-tech text-[9px] sm:text-[10px] font-bold tracking-widest uppercase leading-tight lg:text-[8px] lg:tracking-[0.12em] xl:text-[10px] xl:tracking-widest"
                   style={{ color: rank.color, textShadow: `0 0 8px ${rank.color}60` }}
                 >
                   {rank.shortName}
@@ -1103,7 +1107,7 @@ function RankProgressionTimeline() {
       </div>
 
       {/* Info cards row */}
-      <div className="mt-10 sm:mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="mt-7 sm:mt-9 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="card-glass rounded-xl p-4 sm:p-5 text-center sm:text-left">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto sm:mx-0"
             style={{ background: "oklch(from var(--neon) l c h / 0.15)", border: "1px solid oklch(from var(--neon) l c h / 0.4)" }}>
@@ -1179,9 +1183,9 @@ function TopAgents() {
   }, []);
 
   return (
-    <section className="mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <div className="flex h-full min-w-0 flex-col">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 text-center sm:text-left">
-        <h3 className="font-display text-2xl sm:text-3xl">TOP AI AGENTS</h3>
+        <h3 className="font-tech text-base sm:text-lg font-semibold uppercase tracking-wider text-white/86">TOP AI AGENTS</h3>
         <div className="flex items-center justify-between sm:justify-end gap-4">
           <Link to="/my-agents" className="text-sm text-accent hover:underline">
             View All
@@ -1210,9 +1214,9 @@ function TopAgents() {
         {agents.map((a) => (
           <div
             key={a.name}
-            className="card-glass group min-w-[86vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] md:min-w-[calc((100%-2rem)/3)] lg:min-w-[calc((100%-4rem)/5)]"
+            className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
           >
-            <div className="relative aspect-[4/5] overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden">
               {a.img.endsWith(".mp4") ? (
                 <video
                   src={a.img}
@@ -1220,7 +1224,7 @@ function TopAgents() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
               ) : (
                 <img
@@ -1229,7 +1233,7 @@ function TopAgents() {
                   loading="lazy"
                   width={640}
                   height={800}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
@@ -1274,13 +1278,13 @@ function TopAgents() {
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
 function BattlesRow() {
   return (
-    <section className="mx-auto px-4 py-12 sm:px-6 sm:py-16">
+    <section className="mx-auto px-4 py-8 sm:px-6 sm:py-10">
       <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <LiveBattles />
         <MyBattleSection />
@@ -1448,7 +1452,7 @@ function MyBattleSection() {
                     return (
                       <div
                         key={memory.id}
-                        className="card-glass group relative h-full overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)]"
+                        className="card-glass group relative h-full overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)] lg:p-4 xl:p-5"
                       >
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
@@ -1465,7 +1469,7 @@ function MyBattleSection() {
                           </span>
                           <span className="font-tech text-[9px] uppercase text-accent">Battle Memory</span>
                         </div>
-                        <div className="mt-4 flex items-center justify-center gap-3">
+                        <div className="mt-4 flex items-center justify-center gap-3 lg:mt-3">
                           {participants.map((agent, index) => (
                             <div key={agent.id} className="flex items-center gap-3">
                               {index > 0 ? <span className="font-display text-sm font-bold text-primary">VS</span> : null}
@@ -1473,21 +1477,21 @@ function MyBattleSection() {
                                 <ArenaAgentThumbnail
                                   agent={agent}
                                   size="md"
-                                  className="h-20 w-20 rounded-xl border-2 border-primary/25 transition duration-500 group-hover:scale-105 group-hover:border-primary/65 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.28)]"
+                                  className="h-20 w-20 rounded-xl border-2 border-primary/25 transition duration-500 group-hover:scale-105 group-hover:border-primary/65 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.28)] lg:h-16 lg:w-16 xl:h-20 xl:w-20"
                                 />
                                 <p className="mt-1 max-w-20 truncate font-tech text-[8px] text-white/55">{agent.name}</p>
                               </div>
                             </div>
                           ))}
                         </div>
-                        <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65">{memory.content}</p>
-                        <p className="mt-2 font-mono text-[10px] text-white/40">
+                        <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65 lg:mt-3 lg:text-[10px]">{memory.content}</p>
+                        <p className="mt-2 font-mono text-[10px] text-white/40 lg:mt-1.5">
                           {new Date(memory.createdAt).toLocaleString()}
                         </p>
                         {battleId ? (
                           <Link
                             to={`/arena/game/${battleId}`}
-                            className="mt-4 inline-flex items-center gap-2 font-tech text-[9px] font-bold uppercase text-primary hover:text-white"
+                            className="mt-4 inline-flex items-center gap-2 font-tech text-[9px] font-bold uppercase text-primary hover:text-white lg:mt-3"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             Open Battle {shortBattleId(battleId)}
@@ -1563,31 +1567,31 @@ function LiveBattles() {
 function PartnersBlock() {
   const partners = ["0G", "Base", "Solana"];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-10 sm:py-12">
-      <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <section className="mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-6 xl:py-8">
+      <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-5 xl:p-8 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="relative grid md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 sm:gap-6">
-          <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
+        <div className="relative grid md:grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(150px,0.7fr)_minmax(280px,1.2fr)_minmax(240px,0.9fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 sm:gap-6 lg:gap-4 xl:gap-6">
+          <div className="flex items-center justify-center md:justify-start gap-3 lg:gap-2 xl:gap-3">
+            <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground lg:text-[8px] lg:tracking-[0.22em] xl:text-[10px] xl:tracking-[0.3em]">
               POWERED BY
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center p-2">
-              <ZeroGLogo className="h-6 w-auto" />
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center p-2 lg:h-8 lg:w-8 xl:h-10 xl:w-10">
+              <ZeroGLogo className="h-6 w-auto lg:h-4 xl:h-6" />
             </div>
           </div>
-          <div className="font-display text-2xl md:text-3xl text-center leading-tight">
+          <div className="font-display text-2xl md:text-3xl lg:text-xl xl:text-3xl text-center leading-tight lg:leading-snug xl:leading-tight">
             BUILDING THE FUTURE
             <br />
             OF AI GAMING <span className="text-accent">TOGETHER</span>
           </div>
-          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center md:justify-end">
+          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center md:justify-end lg:gap-1.5 xl:gap-3">
             {partners.map((p) => (
               <div
                 key={p}
-                className="px-3 py-2 rounded-md border border-border bg-card/50 font-tech text-xs flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-border bg-card/50 font-tech text-xs flex items-center gap-2 lg:px-2 lg:py-1.5 lg:text-[10px] lg:gap-1.5 xl:px-3 xl:py-2 xl:text-xs xl:gap-2"
               >
-                <span className="w-2 h-2 rounded-full bg-accent" />
-                <ChainLogo name={p} className="h-3.5 w-auto" />
+                <span className="w-2 h-2 rounded-full bg-accent lg:h-1.5 lg:w-1.5 xl:h-2 xl:w-2" />
+                <ChainLogo name={p} className="h-3.5 w-auto lg:h-3 xl:h-3.5" />
               </div>
             ))}
           </div>
@@ -1648,12 +1652,12 @@ function ArenaLandingFooter() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(278_100%_70%/0.12),transparent_34%),linear-gradient(180deg,rgba(7,10,22,0.92),rgba(2,5,12,0.98))]" />
 
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
+        <div className="grid gap-8 py-10 xl:grid-cols-[1.15fr_0.85fr_0.7fr] xl:items-center xl:py-12">
           
           {/* Col 1 */}
-          <div className="group/brand relative w-full max-w-[390px] overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
+          <div className="group/brand relative w-full max-w-[390px] mx-auto xl:mx-0 overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_6%_0%,rgba(130,91,255,0.28),transparent_32%)] transition duration-300 group-hover/brand:opacity-80" />
-            <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <div className="relative flex min-w-0 flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:text-left sm:gap-5">
               <div className="flex h-[72px] shrink-0 items-center justify-center gap-5 rounded-lg border border-[hsl(278_100%_70%/0.24)] bg-black/48 px-5 shadow-[0_0_26px_rgba(112,73,255,0.16)] transition duration-300 group-hover/brand:bg-black/65 group-hover/brand:shadow-[0_0_34px_rgba(112,73,255,0.28)]">
                 <span className="font-display text-xl text-gradient glow-text whitespace-nowrap transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]">AI ARENA</span>
               </div>
@@ -1670,11 +1674,11 @@ function ArenaLandingFooter() {
 
           {/* Col 2 */}
           <nav
-            className="group/explore flex flex-col justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 lg:min-h-[168px] lg:border-x lg:px-6"
+            className="group/explore flex flex-col items-center text-center xl:items-start xl:text-left justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 xl:min-h-[168px] xl:border-x xl:px-6"
             aria-label="Footer navigation"
           >
             <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/explore:text-[#d8c7ff] group-hover/explore:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">EXPLORE</p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center xl:justify-start gap-3">
               {platformLinks.map((link) => {
                 const Icon = link.icon;
                 return link.href.startsWith("http") ? (
@@ -1703,12 +1707,12 @@ function ArenaLandingFooter() {
           </nav>
 
           {/* Col 3 */}
-          <div className="group/social flex flex-col justify-center gap-7 lg:min-h-[168px] lg:items-start">
+          <div className="group/social flex flex-col items-center text-center xl:items-start xl:text-left justify-center gap-7 xl:min-h-[168px]">
             <div>
               <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/social:text-[#d8c7ff] group-hover/social:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">
                 FOLLOW
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap justify-center xl:justify-start gap-3">
                 {socials.map((s) => (
                   <a
                     key={s.key}
@@ -1725,7 +1729,7 @@ function ArenaLandingFooter() {
               </div>
             </div>
             
-            <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px]">
+            <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px] mx-auto xl:mx-0">
               <video
                 src={sceneVideo}
                 autoPlay
