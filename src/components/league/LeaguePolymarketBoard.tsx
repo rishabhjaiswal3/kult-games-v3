@@ -363,7 +363,6 @@ export function LeaguePolymarketBoard() {
       </div>
       </div>
 
-      <p className="lg:col-span-12 text-center font-mono text-[9px] uppercase tracking-widest text-white/30">// polymarket-style demo · football markets · no stablecoin transactions are enabled</p>
     </div>
   );
 }
