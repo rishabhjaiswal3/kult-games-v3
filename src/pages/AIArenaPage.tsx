@@ -750,48 +750,37 @@ function Hero() {
 }
 
 function StatsBar() {
-  const totalAgentsQ = useQuery({
-    queryKey: ["aiArenaGateway", "landingTotalAgents"],
-    queryFn: () => aiArenaGatewayApi.listAgents(1, 1),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const totalAgentsDisplay = totalAgentsQ.isLoading
-    ? "…"
-    : totalAgentsQ.data?.total != null
-      ? totalAgentsQ.data.total.toLocaleString()
-      : "—";
-
   const stats = [
-    { icon: Box, label: "TOTAL AGENTS", value: totalAgentsDisplay, c: "var(--neon)" },
-    { icon: Swords, label: "BATTLES TODAY", value: "24,891", c: "var(--cyan)" },
-    { icon: TrendingUp, label: "TOTAL PRIZE POOL", value: "$2,451,891", c: "var(--amber)" },
-    { icon: Sparkles, label: "ACTIVE USERS", value: "12,450", c: "var(--lime)" },
+    { icon: BrainCircuit, label: "AI AGENTS", detail: "Mint & Train", c: "var(--neon)" },
+    { icon: Swords, label: "24/7 MATCHMAKING", detail: "Humans vs Agents", c: "var(--cyan)" },
+    { icon: Trophy, label: "FOUNDING SEASON", detail: "Early Access", c: "var(--amber)" },
   ];
   return (
     <section className="mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
-      <div className="card-glass rounded-xl p-4 sm:p-5 lg:p-3 xl:p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 lg:gap-3 xl:gap-4">
-        <div className="flex items-center justify-center md:justify-start border-b md:border-b-0 md:border-r border-border/50 pb-4 md:pb-0 md:pr-4 lg:pr-3 xl:pr-4 sm:col-span-2 md:col-span-1">
-          <div className="flex items-center gap-2 lg:gap-1.5 xl:gap-2">
-            <span className="text-[10px] tracking-[0.2em] text-muted-foreground font-tech lg:text-[8px] lg:tracking-[0.16em] xl:text-[10px] xl:tracking-[0.2em]">POWERED BY</span>
-            <ZeroGLogo className="h-4 w-auto lg:h-3.5 xl:h-4" />
+      <div className="card-glass grid grid-cols-1 divide-y divide-border/50 rounded-xl p-4 sm:grid-cols-2 sm:divide-x sm:divide-y-0 sm:p-5 lg:grid-cols-4 lg:p-3 xl:p-5">
+        <div className="flex min-w-0 items-center justify-center py-3 sm:justify-start sm:pr-5 lg:py-2 lg:pr-3 xl:py-3 xl:pr-5">
+          <div>
+            <div className="flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
+              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
+              BETA LIVE
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:justify-start sm:text-sm">
+              <span>Powered by</span>
+              <ZeroGLogo className="h-4 w-auto" />
+            </div>
           </div>
         </div>
         {stats.map((s) => (
           <div
             key={s.label}
-            className="flex min-w-0 items-center justify-center md:justify-start gap-3 lg:gap-2 xl:gap-3"
+            className="flex min-w-0 items-center justify-center py-3 sm:justify-start sm:px-5 lg:py-2 lg:px-3 xl:py-3 xl:px-5"
           >
-            <s.icon
-              className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 lg:h-5 lg:w-5 xl:h-6 xl:w-6"
-              style={{ color: `oklch(from ${s.c} l c h)` }}
-            />
             <div className="min-w-0">
-              <div className="text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.2em] text-muted-foreground font-tech lg:text-[8px] lg:tracking-[0.13em] xl:text-[10px] xl:tracking-[0.2em]">
+              <div className="flex items-center justify-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[0.12em] text-white sm:justify-start sm:text-[11px]">
+                <s.icon className="h-4 w-4 shrink-0" style={{ color: `oklch(from ${s.c} l c h)` }} />
                 {s.label}
               </div>
-              <div className="font-tech text-base sm:text-lg break-words whitespace-nowrap lg:text-sm xl:text-lg">{s.value}</div>
+              <div className="mt-2 text-xs text-muted-foreground sm:text-sm">{s.detail}</div>
             </div>
           </div>
         ))}
@@ -829,8 +818,8 @@ function FeaturesBlock() {
   ];
   return (
     <section className="mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center lg:text-left">
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] gap-5 sm:gap-6">
-        <div>
+      <div className="grid items-stretch gap-5 rounded-xl border border-white/8 bg-[#04080f]/70 p-4 shadow-[0_0_36px_rgba(154,53,255,0.06)] sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)]">
+        <div className="h-full">
           <span className="text-[10px] tracking-[0.24em] sm:tracking-[0.3em] font-tech text-accent">
             BUILT DIFFERENT
           </span>
@@ -847,7 +836,7 @@ function FeaturesBlock() {
             LEARN MORE <ArrowUpRight className="w-4 h-4 lg:h-3.5 lg:w-3.5 xl:h-4 xl:w-4" />
           </Link>
         </div>
-        <div>
+        <div className="h-full">
           <div className="mb-3 text-center lg:text-left">
             <span className="font-tech text-[9px] uppercase tracking-[0.26em] text-primary">Start here</span>
             <p className="mt-1 text-xs text-muted-foreground">Three steps to get your agent into the Arena.</p>
@@ -898,7 +887,7 @@ function FeaturesBlock() {
             <p className="mt-2 text-sm leading-relaxed text-white/65">Your agent acts from the traits and strategy you train, learns from battle results, and remains yours as it grows through the Arena.</p>
           </div>
         </div>
-        <div className="card-glass self-start rounded-xl p-3 text-center sm:p-4 lg:text-left">
+        <div className="card-glass h-full rounded-xl p-3 text-center sm:p-4 lg:text-left">
           <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
             $ARENA TOKEN
           </div>

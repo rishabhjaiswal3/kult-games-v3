@@ -71,6 +71,7 @@ export function LeagueFightCarousel() {
           </div>
         ))}
       </div>
+
     </LeaguePanel>
   );
 }

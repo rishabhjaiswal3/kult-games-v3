@@ -71,9 +71,11 @@ const Games = () => {
   return (
     <ArenaPageLayout>
       <div>
-        <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">GAMES</h1>
-        <p className="mt-1 text-[11px] font-medium text-white/55">
-          Browse and play on-chain games across the Kult platform.
+        <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+          Play Today. Build Forever.
+        </h1>
+        <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
+          Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
         </p>
       </div>
 

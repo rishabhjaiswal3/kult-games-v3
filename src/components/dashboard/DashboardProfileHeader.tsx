@@ -7,10 +7,12 @@ type DashboardProfileHeaderProps = {
   profile: FullPlayerProfile | undefined;
   isLoading: boolean;
   walletAddress: string | null;
+  agentCount: number;
 };
 
-export function DashboardProfileHeader({ profile, isLoading, walletAddress }: DashboardProfileHeaderProps) {
+export function DashboardProfileHeader({ profile, isLoading, walletAddress, agentCount }: DashboardProfileHeaderProps) {
   const displayName = profile?.player.name?.trim() || "Arena Pilot";
+  const inventoryCount = Array.isArray(profile?.purchasedAssets) ? profile.purchasedAssets.length : null;
 
   const copyWallet = () => {
     if (!walletAddress) return;
@@ -30,8 +32,8 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
             {initialsFromName(displayName)}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-tech text-[11px] italic text-[#a84cff]">
-              {isLoading ? "Loading profile…" : "Welcome back,"}
+            <div className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-[#a84cff]">
+              {isLoading ? "Loading KULT ID…" : "KULT ID // Shared profile"}
             </div>
             <h1 className="mt-0.5 max-w-full break-words font-tech text-2xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 [overflow-wrap:anywhere] sm:text-3xl drop-shadow-sm">
               {displayName}
@@ -65,6 +67,20 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
             </div>
           ))}
         </div>
+      </div>
+      <div className="relative z-10 mt-5 grid grid-cols-2 gap-2 border-t border-white/8 pt-4 sm:grid-cols-4">
+        {[
+          { label: "Games", value: profile?.totalGamesPlayed ?? "—", detail: "Progress saved" },
+          { label: "Agents", value: agentCount, detail: "Arena roster" },
+          { label: "Achievements", value: profile?.completedQuests ?? "—", detail: "KULT record" },
+          { label: "Inventory", value: inventoryCount ?? "—", detail: "Assets collected" },
+        ].map((item) => (
+          <div key={item.label} className="rounded-md border border-white/8 bg-black/20 px-3 py-2">
+            <div className="font-tech text-[8px] uppercase tracking-[0.16em] text-white/40">{item.label}</div>
+            <div className="mt-1 font-tech text-sm font-bold text-white">{item.value}</div>
+            <div className="mt-0.5 text-[10px] text-white/38">{item.detail}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
