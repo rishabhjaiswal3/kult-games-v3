@@ -55,9 +55,7 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
     if (!isArena && link.label === "League") return false;
     return !link.feature || canUse(link.feature as AccessFeature);
   });
-  const startLink = isArena
-    ? { label: "Enter AI Arena", href: "/ai-arena", feature: "ai_arena" as AccessFeature }
-    : { label: "Enter League", href: "/league", feature: "league" as AccessFeature };
+  const startLink = { label: "Enter League", href: "/league", feature: "league" as AccessFeature };
   const showStartLink = canUse(startLink.feature);
 
   return (
@@ -117,7 +115,7 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
                 <span>{startLink.label}</span>
                 <ArrowUpRight aria-hidden />
               </Link>
-              <p className="mt-3 text-xs leading-relaxed text-white/35">{isArena ? "Create, train, and deploy an agent when you&apos;re ready." : "Make your picks, follow the action, and climb the League."}</p>
+              <p className="mt-3 text-xs leading-relaxed text-white/35">Make your picks, follow the action, and climb the League.</p>
             </div>
           ) : null}
         </div>

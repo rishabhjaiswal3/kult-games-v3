@@ -1,5 +1,35 @@
-import { useEffect, useRef, useState } from "react";
-import { Activity, ArrowDown, ArrowUp, BookOpen, ChevronRight, ShieldCheck, TrendingUp, Wallet } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  BarChart3,
+  BookOpen,
+  Brain,
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Flame,
+  LineChart,
+  Newspaper,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
+  Wallet,
+} from "lucide-react";
+import {
+  fetchEventComments,
+  fetchFootballEvents,
+  fetchFootballMarkets,
+  fetchPriceHistory,
+  type PolyComment,
+  type PolyEvent,
+  type PolyMarket,
+} from "@/api/polymarketApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, type CountryCode } from "./FlagHex";
@@ -103,6 +133,28 @@ const RESOLVED_MARKETS = [
   { id: "r4", question: "Did Mbappé score in El Clásico?", category: "La Liga", outcome: "YES" as const, settled: "12d ago", agent: "HYBRID", agentPick: "YES", correct: true },
 ];
 
+
+type NewsImpact = "up" | "down" | "flat";
+
+const MATCH_NEWS: {
+  id: string;
+  tag: string;
+  time: string;
+  title: string;
+  body: string;
+  market: string;
+  move: string;
+  impact: NewsImpact;
+  agent: string;
+}[] = [
+  { id: "n1", tag: "TEAM NEWS", time: "8m ago", title: "Messi passed fit to start vs Austria", body: "Argentina confirm their captain trained fully and starts in Group C. Attack stays at full strength.", market: "Argentina win the 2026 World Cup", move: "+3¢", impact: "up", agent: "HYBRID" },
+  { id: "n2", tag: "INJURY", time: "21m ago", title: "Haaland limps off in City training", body: "Late knock raises doubt over the striker's sharpness ahead of the UCL run-in. Ballon d'Or odds drift.", market: "Haaland wins the 2026 Ballon d'Or", move: "-4¢", impact: "down", agent: "BERSERKER" },
+  { id: "n3", tag: "LINEUP", time: "37m ago", title: "France rotate heavily against Iraq", body: "Deschamps rests five starters but the class gap keeps France strong favourites to win the group.", market: "France win vs Iraq", move: "+1¢", impact: "up", agent: "TACTICIAN" },
+  { id: "n4", tag: "FORM", time: "1h ago", title: "Spain unbeaten in 9, press relentless", body: "Spain's midfield control makes the Brazil clash a coin-flip. Agents split on the outcome.", market: "Brazil reach the World Cup semi-final", move: "-2¢", impact: "down", agent: "ASSASSIN" },
+  { id: "n5", tag: "TRANSFER", time: "2h ago", title: "Saudi clubs renew Mbappé interest", body: "Reports of a record offer resurface, but sources say Madrid see him as central to the project.", market: "Mbappé stays at Real Madrid past 2026", move: "+2¢", impact: "up", agent: "HYBRID" },
+  { id: "n6", tag: "TACTICS", time: "3h ago", title: "Arsenal's run-in piles pressure on City", body: "Title race tightens as Arsenal win again. The market nudges toward a tighter Premier League finish.", market: "Man City win the Premier League", move: "-1¢", impact: "down", agent: "ASSASSIN" },
+];
+
 type MatchOutcome = "HOME" | "DRAW" | "AWAY";
 
 type MatchAgent = { name: string; outcome: MatchOutcome; pick: string; confidence: number; tone: "cyan" | "purple"; reason: string };
@@ -175,12 +227,24 @@ const MATCHES: Match[] = [
 
 const TRADER_ADDRESSES = ["0x7a2f…c41", "0x3b9d…e07", "0xf12a…9b4", "0x55c8…1de", "0x9e34…a6f", "0x0b71…d22", "0xc4a0…77e", "0x6df2…334", "0xab19…502", "0x2e8c…f90"];
 
-type LiveMarket = (typeof MARKETS)[number] & { dir: "up" | "down" | "flat"; delta: number; session: number };
+type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string };
+
+type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
+
+/** Static football set used until live Polymarket data arrives (or if it fails). */
+const FALLBACK_MARKETS: BaseMarket[] = MARKETS.map((market) => ({
+  id: market.id,
+  question: market.question,
+  category: market.category,
+  short: market.short,
+  yes: market.yes,
+  volume: market.volume,
+}));
 
 type MarketTrade = { id: number; addr: string; side: "YES" | "NO"; price: number; size: number; label: string };
 
-function makeTrade(id: number): MarketTrade {
-  const market = MARKETS[Math.floor(Math.random() * MARKETS.length)];
+function makeTrade(id: number, markets: BaseMarket[]): MarketTrade {
+  const market = markets[Math.floor(Math.random() * markets.length)] ?? FALLBACK_MARKETS[0];
   const side: "YES" | "NO" = Math.random() < market.yes / 100 ? "YES" : "NO";
   return {
     id,
@@ -192,19 +256,83 @@ function makeTrade(id: number): MarketTrade {
   };
 }
 
-/** Drives simulated live price movement + a streaming recent-trades feed. */
-function useLiveMarketData() {
-  const [prices, setPrices] = useState<Record<string, { yes: number; dir: "up" | "down" | "flat"; delta: number; session: number }>>(() =>
-    Object.fromEntries(MARKETS.map((market) => [market.id, { yes: market.yes, dir: "flat" as const, delta: 0, session: 0 }])),
+type PriceEntry = { yes: number; dir: "up" | "down" | "flat"; delta: number; session: number };
+
+function seedPrices(markets: BaseMarket[]): Record<string, PriceEntry> {
+  return Object.fromEntries(markets.map((market) => [market.id, { yes: market.yes, dir: "flat", delta: 0, session: 0 }]));
+}
+
+function seedHistory(markets: BaseMarket[]): Record<string, number[]> {
+  return Object.fromEntries(
+    markets.map((market) => [
+      market.id,
+      Array.from({ length: 36 }, (_, i) => Math.min(94, Math.max(6, market.yes + Math.round(Math.sin(i / 3) * 4)))),
+    ]),
   );
-  const [trades, setTrades] = useState<MarketTrade[]>(() => Array.from({ length: 7 }, (_, index) => makeTrade(index)));
+}
+
+/** Live Polymarket football data (real prices + real chart history, key-less &
+ *  CORS-direct) with a simulated micro-movement layer for liveness. Falls back
+ *  to the static football set if the public API is unavailable. */
+function useLiveMarketData() {
+  const [markets, setMarkets] = useState<BaseMarket[]>(FALLBACK_MARKETS);
+  const [source, setSource] = useState<"live" | "sim">("sim");
+  const [prices, setPrices] = useState<Record<string, PriceEntry>>(() => seedPrices(FALLBACK_MARKETS));
+  const [history, setHistory] = useState<Record<string, number[]>>(() => seedHistory(FALLBACK_MARKETS));
+  const [trades, setTrades] = useState<MarketTrade[]>(() => Array.from({ length: 7 }, (_, index) => makeTrade(index, FALLBACK_MARKETS)));
+  const marketsRef = useRef<BaseMarket[]>(FALLBACK_MARKETS);
+  const firstLoad = useRef(true);
   const seq = useRef(1000);
 
+  // Pull real football markets from Polymarket (public, key-less, CORS-enabled).
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const real: PolyMarket[] = await fetchFootballMarkets(12);
+      if (cancelled || real.length === 0) return;
+      marketsRef.current = real;
+      setMarkets(real);
+      setSource("live");
+      if (firstLoad.current) {
+        setPrices(seedPrices(real));
+        setHistory(seedHistory(real));
+        setTrades(Array.from({ length: 7 }, (_, index) => makeTrade(index, real)));
+        firstLoad.current = false;
+      } else {
+        // Re-anchor live prices to the freshest real values, keep session drift.
+        setPrices((prev) => {
+          const next = { ...prev };
+          for (const market of real) {
+            const entry = prev[market.id];
+            next[market.id] = entry ? { ...entry, yes: market.yes } : { yes: market.yes, dir: "flat", delta: 0, session: 0 };
+          }
+          return next;
+        });
+      }
+      // Real price history per market powers the live chart.
+      real.forEach((market) => {
+        if (!market.tokenId) return;
+        void fetchPriceHistory(market.tokenId).then((series) => {
+          if (cancelled || series.length < 2) return;
+          setHistory((prev) => ({ ...prev, [market.id]: series }));
+        });
+      });
+    };
+    void load();
+    const poll = setInterval(() => void load(), 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+    };
+  }, []);
+
+  // Simulated micro-movement + streaming trades for a live feel between fetches.
   useEffect(() => {
     const interval = setInterval(() => {
+      const list = marketsRef.current;
       setPrices((prev) => {
         const next = { ...prev };
-        for (const market of MARKETS) {
+        for (const market of list) {
           const prevEntry = prev[market.id];
           const current = prevEntry?.yes ?? market.yes;
           const session = prevEntry?.session ?? 0;
@@ -217,13 +345,21 @@ function useLiveMarketData() {
             next[market.id] = { yes: current, dir: "flat", delta: 0, session };
           }
         }
+        setHistory((prevHistory) => {
+          const nextHistory: Record<string, number[]> = { ...prevHistory };
+          for (const market of list) {
+            const series = prevHistory[market.id] ?? [market.yes];
+            nextHistory[market.id] = [...series, next[market.id]?.yes ?? market.yes].slice(-36);
+          }
+          return nextHistory;
+        });
         return next;
       });
       setTrades((prev) => {
         const count = Math.random() < 0.4 ? 2 : 1;
         const fresh = Array.from({ length: count }, () => {
           seq.current += 1;
-          return makeTrade(seq.current);
+          return makeTrade(seq.current, marketsRef.current);
         });
         return [...fresh, ...prev].slice(0, 14);
       });
@@ -231,141 +367,59 @@ function useLiveMarketData() {
     return () => clearInterval(interval);
   }, []);
 
-  return { prices, trades };
+  return { markets, prices, trades, history, source };
 }
 
 export function LeaguePolymarketBoard() {
-  const [token, setToken] = useState<"USDC" | "USDT">("USDC");
   const [selectedMarketId, setSelectedMarketId] = useState<string>(MARKETS[0].id);
-  const [side, setSide] = useState<"YES" | "NO">("YES");
   const [category, setCategory] = useState<(typeof MARKET_CATEGORIES)[number]>("All");
-  const [reviewing, setReviewing] = useState(false);
-  const { prices, trades } = useLiveMarketData();
+  const [view, setView] = useState<BoardView>("market");
+  const { markets, prices, trades, history } = useLiveMarketData();
 
-  const liveMarkets: LiveMarket[] = MARKETS.map((market) => {
+  const liveMarkets: LiveMarket[] = markets.map((market) => {
     const live = prices[market.id];
     return { ...market, yes: live?.yes ?? market.yes, dir: live?.dir ?? "flat", delta: live?.delta ?? 0, session: live?.session ?? 0 };
   });
 
   const selectedMarket = liveMarkets.find((market) => market.id === selectedMarketId) ?? liveMarkets[0];
   const visibleMatches = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
-  const selectedPrice = side === "YES" ? selectedMarket.yes : 100 - selectedMarket.yes;
-  const leadingSignal = selectedMarket.agents[0];
-  const contrarianSignal = selectedMarket.agents[1];
-  const leadingAgent = getLeagueAgent(leadingSignal.name);
-  const contrarianAgent = getLeagueAgent(contrarianSignal.name);
 
   const categoryCount = (value: (typeof MARKET_CATEGORIES)[number]) =>
     value === "All" ? MATCHES.length : MATCHES.filter((match) => match.category === value).length;
 
   return (
-    <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12">
-      <section className="overflow-hidden rounded-xl border border-[#2E5CFF]/35 bg-[radial-gradient(circle_at_10%_0%,rgba(46,92,255,0.2),transparent_36%),linear-gradient(120deg,#100922,#060812)] p-4 sm:p-5 lg:col-span-12">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <PolymarketLogo className="h-5 w-auto text-[#2E5CFF] sm:h-6" />
-              <span className="rounded-sm border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-[0.18em] text-[#7d97ff]">integration preview</span>
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-              <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-emerald-300">$ polymarket --live · fifa world cup 2026</span>
-            </div>
-            <h2 className="mt-2 font-mono text-xl font-black uppercase tracking-tight text-white sm:text-2xl">Football prediction markets</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">A Polymarket-style market interface for the World Cup, Champions League and transfers. The same agents that earn trust in League read every match and recommend a side — you approve every trade; no wallet or settlement is active.</p>
-            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.16em] text-[#8fa7ff]">Polymarket infrastructure integration preview · simulated market data</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:min-w-[220px]">
-            {(["USDC", "USDT"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setToken(value)}
-                className={`rounded-lg border px-3 py-2.5 font-tech text-xs font-bold transition ${token === value ? "border-[#2E5CFF]/50 bg-[#2E5CFF]/15 text-[#d6e0ff]" : "border-white/10 bg-black/20 text-white/45 hover:text-white"}`}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="mt-5 grid gap-2 sm:grid-cols-3">
-          <MarketMetric label="Volume" value="$1.34M" detail={`Across ${MATCHES.length} live matches`} />
-          <MarketMetric label="Agent consensus" value={`${leadingSignal.confidence}% ${side === "YES" ? "YES" : "lean"}`} detail={`${leadingSignal.name} leads the call`} tone="cyan" />
-          <MarketMetric label="Traders" value="8,412" detail={`+${trades.length} positions streaming`} tone="cyan" />
-        </div>
-        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-[#2E5CFF]/30 bg-[linear-gradient(105deg,rgba(46,92,255,0.12),rgba(4,8,15,0.5))] p-3 sm:flex-row sm:items-center sm:p-4">
-          <div className="flex items-start gap-3 sm:max-w-md">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#2E5CFF]/45 bg-[#2E5CFF]/15 font-tech text-lg text-[#9ab1ff]">→</div>
-            <p className="text-xs leading-relaxed text-white/55"><span className="font-tech font-bold text-white">Same agent, two layers.</span> League performance informs every market recommendation.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-wider">
-            <span className="rounded-md border border-cyan-400/35 bg-cyan-400/10 px-2.5 py-1.5 text-cyan-300">Predict</span><span className="text-[#7d97ff]">→</span>
-            <span className="rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2.5 py-1.5 text-[#aebfff]">Reputation</span><span className="text-[#7d97ff]">→</span>
-            <span className="rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2.5 py-1.5 text-[#aebfff]">Recommend</span><span className="text-[#7d97ff]">→</span>
-            <span className="rounded-md border border-white/20 bg-white/[0.06] px-2.5 py-1.5 text-white/85">You approve</span>
-          </div>
-        </div>
-      </section>
+    <div className="min-w-0 space-y-3">
+      <BoardViewTabs view={view} onChange={setView} marketCount={MATCHES.length} newsCount={MATCH_NEWS.length} />
 
-      <TrendingMovers markets={liveMarkets} onSelect={setSelectedMarketId} />
+      <CategoryFilterBar category={category} onCategory={setCategory} count={categoryCount} />
+
+      {view === "pulse" ? (
+        <MatchPulseView category={category} />
+      ) : view === "analysis" ? (
+        <AnalysisView markets={liveMarkets} category={category} selectedId={selectedMarketId} onSelect={setSelectedMarketId} history={history} trades={trades} />
+      ) : (
+      <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12">
+      <div className="lg:col-span-12">
+        <FeaturedEventCard category={category} />
+      </div>
+
+      <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={setSelectedMarketId} />
       <TodayAgentPredictions />
 
-      <LeaguePanel fill={false} className="border-[#2E5CFF]/25 lg:col-span-12">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Agent rivalry markets</h3><p className="mt-0.5 text-[11px] text-white/45">Opposing agents make their calls on every prediction question</p></div><span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Consensus moving</span></div>
-        <div className="grid gap-3 lg:grid-cols-3">
-          {AGENT_RIVALRIES.map((rivalry) => <AgentRivalryQuestion key={rivalry.id} rivalry={rivalry} />)}
-        </div>
-      </LeaguePanel>
-
-      <div className="grid grid-cols-1 items-start gap-3 lg:col-span-12 lg:grid-cols-12">
-      <div className="min-w-0 space-y-3 lg:col-span-8">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
         {visibleMatches.map((match) => <MatchCard key={match.id} match={match} />)}
         {visibleMatches.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40">No matches in this category yet</div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">No matches in this category yet</div>
         ) : null}
       </div>
-
-      <div className="flex h-fit flex-col gap-3 lg:col-span-4 lg:sticky lg:top-4">
-      <TopAgentsBoard sidebar />
-      <LeaguePanel fill={false} className="border-[#2E5CFF]/30 bg-[#0b0815] p-4 sm:p-5">
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#7d97ff]">$ position</p>
-        <p className="mt-2 font-tech text-sm font-bold text-white">{selectedMarket.question}</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          {(["YES", "NO"] as const).map((value) => (
-            <button key={value} type="button" onClick={() => setSide(value)} className={`rounded-lg border px-3 py-2.5 font-tech text-xs font-bold ${side === value ? value === "YES" ? "border-emerald-400/50 bg-emerald-400/15 text-emerald-300" : "border-rose-400/50 bg-rose-400/15 text-rose-300" : "border-white/10 bg-black/20 text-white/45"}`}>{value}</button>
-          ))}
-        </div>
-        <div className="mt-4 space-y-3 rounded-lg border border-white/10 bg-black/25 p-3 text-[11px] text-white/50">
-          <div className="flex items-center justify-between"><span>Payment token</span><span className="font-tech font-bold text-white">{token}</span></div>
-          <div className="flex items-center justify-between"><span>Price</span><span className={`inline-flex items-center gap-1 font-tech font-bold ${priceToneClass(selectedMarket.dir)}`}><PriceArrow dir={selectedMarket.dir} /> {side} {selectedPrice}¢</span></div>
-          <div className="flex items-center justify-between"><span>Available balance</span><span className="font-tech font-bold text-white">1,250.00 {token}</span></div>
-        </div>
-        <div className="mt-4 rounded-xl border border-[#2E5CFF]/25 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.16),transparent_55%),rgba(5,7,14,0.55)] p-3">
-          <div className="flex items-center justify-between gap-2"><span className="font-tech text-[9px] uppercase tracking-[0.18em] text-[#7d97ff]">Agent edge</span><span className="font-tech text-[9px] text-cyan-300">{leadingSignal.confidence}% consensus</span></div>
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <AgentEdgeSignal agent={leadingAgent} signal={leadingSignal} positive />
-            <span className="font-tech text-[9px] tracking-[0.15em] text-white/30">VS</span>
-            <AgentEdgeSignal agent={contrarianAgent} signal={contrarianSignal} />
-          </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-400 to-[#2E5CFF] transition-[width] duration-500" style={{ width: `${leadingSignal.confidence}%` }} /></div>
-          <p className="mt-2 text-[10px] leading-relaxed text-white/45">Leading call: <span className="font-tech font-bold text-cyan-300">{leadingSignal.pick}</span></p>
-        </div>
-        <button type="button" onClick={() => setReviewing((value) => !value)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-[#2E5CFF]/35 bg-[#2E5CFF]/10 px-3 py-3 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d6e0ff] transition hover:bg-[#2E5CFF]/20">{reviewing ? "Close recommendation" : "Review agent recommendation"} <ChevronRight className="h-3.5 w-3.5" /></button>
-        {reviewing ? <TradeReview agent={leadingSignal.name} market={selectedMarket.question} side={side} price={selectedPrice} token={token} /> : null}
-      </LeaguePanel>
-      <RecentTradesFeed trades={trades} />
-      <LeaguePanel fill={false} className="border-amber-400/20 bg-[radial-gradient(circle_at_0%_100%,rgba(251,191,36,0.11),transparent_52%),#0a0b12] p-4">
-        <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-[#7d97ff]" /><p className="font-tech text-[10px] font-bold uppercase tracking-wider text-white">Portfolio</p></div><span className="font-tech text-[10px] font-bold text-cyan-300">+$86.40</span></div>
-        <div className="mt-3 flex items-center justify-between text-[10px] text-white/50"><span>Open positions</span><span className="font-tech font-bold text-white">3 markets</span></div>
-        <div className="mt-2 flex items-center justify-between text-[10px] text-white/50"><span>Potential return</span><span className="font-tech font-bold text-amber-300">$214.00</span></div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full w-[62%] rounded-full bg-gradient-to-r from-[#2E5CFF] to-cyan-400" /></div>
-      </LeaguePanel>
       </div>
-      </div>
+      )}
 
     </div>
   );
 }
+
+type BoardView = "market" | "pulse" | "analysis";
 
 function TradeReview({ agent, market, side, price, token }: { agent: string; market: string; side: "YES" | "NO"; price: number; token: "USDC" | "USDT" }) {
   return (
@@ -379,8 +433,8 @@ function TradeReview({ agent, market, side, price, token }: { agent: string; mar
 
 function MatchCard({ match }: { match: Match }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-[#0b0d12] p-4 transition hover:border-[#2E5CFF]/45 sm:p-5">
-      <div className="mb-3 flex items-center justify-between gap-2">
+    <article className="rounded-xl border border-white/10 bg-[#0b0d12] p-3.5 transition hover:border-[#2E5CFF]/45">
+      <div className="mb-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white">{match.kickoff}</span>
           <span className="font-mono text-[10px] text-white/40">{match.vol} Vol</span>
@@ -389,21 +443,20 @@ function MatchCard({ match }: { match: Match }) {
         <span className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/40"><BookOpen className="h-3.5 w-3.5" /></span>
       </div>
 
-      <div className="p-1">
+      <div>
         <div className="flex items-center gap-2.5">
-          <FlagCircle code={match.home.code} className="h-10 w-10 rounded-lg" />
+          <FlagCircle code={match.home.code} className="h-9 w-9 rounded-lg" />
           <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Will {match.home.name} win?</p></div>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2.5 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>Yes</span><span>{match.home.price}¢</span></button>
-          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2.5 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>No</span><span>{100 - match.home.price}¢</span></button>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>Yes</span><span>{match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>No</span><span>{100 - match.home.price}¢</span></button>
         </div>
-        <p className="mt-4 font-mono text-[10px] text-white/35">{match.vol} volume</p>
       </div>
 
       {/* Agent predictions on the card */}
-      <div className="mt-4 border-t border-white/10 pt-3">
-        <p className="mb-2 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent predictions</p>
+      <div className="mt-3 border-t border-white/10 pt-2.5">
+        <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent predictions</p>
         <div className="grid grid-cols-2 gap-2">
           {match.agents.map((prediction) => <MarketCardAgentPrediction key={prediction.name} prediction={prediction} />)}
         </div>
@@ -458,7 +511,7 @@ function RecentTradesFeed({ trades }: { trades: MarketTrade[] }) {
         <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Market intel</p><p className="mt-1 font-tech text-sm font-bold text-white">Recent trades</p></div>
         <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
       </div>
-      <div className="mt-3 max-h-[228px] space-y-1.5 overflow-hidden">
+      <div className="mt-3 max-h-[238px] space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
         {trades.map((trade, index) => (
           <div
             key={trade.id}
@@ -748,5 +801,642 @@ function AgentMarketPrediction({
         {side === "right" ? <div className="h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div> : null}
       </div>
     </div>
+  );
+}
+
+// ── Football events fetch (powers the featured event card) ──────────────────
+function useFootballEvents() {
+  const [events, setEvents] = useState<PolyEvent[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchFootballEvents(10).then((list) => {
+      if (!cancelled) setEvents(list);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return events;
+}
+
+// ── Featured event card (Polymarket-style, one event at a time) ─────────────
+const OUTCOME_COLORS = ["#7d97ff", "#22d3ee", "#eab308", "#f97316", "#34d399", "#f472b6"];
+
+const NAME_TO_CODE: Record<string, CountryCode> = {
+  brazil: "BRA", argentina: "ARG", france: "FRA", germany: "GER", portugal: "POR",
+  spain: "ESP", italy: "ITA", netherlands: "NLD", england: "ENG", austria: "AUT", iraq: "IRQ",
+};
+
+/** Country name → flag emoji, covering most national football teams. */
+const NAME_TO_FLAG: Record<string, string> = {
+  argentina: "🇦🇷", brazil: "🇧🇷", france: "🇫🇷", spain: "🇪🇸", germany: "🇩🇪", portugal: "🇵🇹",
+  italy: "🇮🇹", netherlands: "🇳🇱", belgium: "🇧🇪", croatia: "🇭🇷", switzerland: "🇨🇭", austria: "🇦🇹",
+  denmark: "🇩🇰", sweden: "🇸🇪", norway: "🇳🇴", poland: "🇵🇱", serbia: "🇷🇸", ukraine: "🇺🇦",
+  turkey: "🇹🇷", türkiye: "🇹🇷", greece: "🇬🇷", czechia: "🇨🇿", "czech republic": "🇨🇿", mexico: "🇲🇽",
+  "united states": "🇺🇸", usa: "🇺🇸", "united states of america": "🇺🇸", canada: "🇨🇦", "costa rica": "🇨🇷",
+  panama: "🇵🇦", jamaica: "🇯🇲", haiti: "🇭🇹", honduras: "🇭🇳", uruguay: "🇺🇾", colombia: "🇨🇴",
+  ecuador: "🇪🇨", peru: "🇵🇪", chile: "🇨🇱", paraguay: "🇵🇾", venezuela: "🇻🇪", bolivia: "🇧🇴",
+  japan: "🇯🇵", "south korea": "🇰🇷", "korea republic": "🇰🇷", "saudi arabia": "🇸🇦", iran: "🇮🇷",
+  iraq: "🇮🇶", qatar: "🇶🇦", australia: "🇦🇺", "new zealand": "🇳🇿", china: "🇨🇳", india: "🇮🇳",
+  morocco: "🇲🇦", senegal: "🇸🇳", tunisia: "🇹🇳", algeria: "🇩🇿", egypt: "🇪🇬", ghana: "🇬🇭",
+  nigeria: "🇳🇬", cameroon: "🇨🇲", "ivory coast": "🇨🇮", "côte d'ivoire": "🇨🇮", mali: "🇲🇱",
+  "south africa": "🇿🇦", england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", wales: "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+};
+
+function flagFor(label: string): string | undefined {
+  return NAME_TO_FLAG[label.trim().toLowerCase()];
+}
+
+type FeaturedOutcome = { key: string; label: string; yes: number; color: string; icon?: string; code?: CountryCode; history: number[] };
+
+const STATIC_FEATURED = {
+  id: "static-wc-winner",
+  title: "World Cup Winner",
+  category: "World Cup",
+  volume: "$3B",
+  endsLabel: "Jul 20, 2026",
+  outcomes: [
+    { label: "France", yes: 19, code: "FRA" as CountryCode },
+    { label: "Argentina", yes: 15, code: "ARG" as CountryCode },
+    { label: "Spain", yes: 14, code: "ESP" as CountryCode },
+    { label: "England", yes: 11, code: "ENG" as CountryCode },
+  ],
+  comments: [
+    { id: "c1", author: "nikitakud77", body: "you think portugal will win this world cup? Spain is actually pretty strong with Lamine Yamal" },
+    { id: "c2", author: "casda858", body: "Cristiano Ronaldo's last World Cup as Portugal champions; hoping Portugal will win." },
+  ] as PolyComment[],
+};
+
+function synthSeries(base: number): number[] {
+  return Array.from({ length: 36 }, (_, i) => Math.max(2, Math.round(base + Math.sin(i / 3) * 3 + (i / 35) * 2)));
+}
+
+function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[number] }) {
+  const events = useFootballEvents();
+  const [index, setIndex] = useState(0);
+  const [histories, setHistories] = useState<Record<string, number[]>>({});
+  const [comments, setComments] = useState<PolyComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+
+  const pool = useMemo(() => {
+    const base = category === "All" ? events : events.filter((e) => e.category === category);
+    const list = base.length > 0 ? base : events;
+    // Feature the chattiest events first so the live chat is populated by default.
+    return [...list].sort((a, b) => b.commentCount - a.commentCount);
+  }, [events, category]);
+
+  useEffect(() => setIndex(0), [category, pool.length]);
+
+  const event = pool[index];
+
+  useEffect(() => {
+    if (!event) return;
+    let cancelled = false;
+    setHistories({});
+    setComments([]);
+    event.outcomesDetail.slice(0, 4).forEach((outcome) => {
+      if (!outcome.tokenId) return;
+      void fetchPriceHistory(outcome.tokenId).then((series) => {
+        if (cancelled || series.length < 2 || !outcome.tokenId) return;
+        setHistories((prev) => ({ ...prev, [outcome.tokenId as string]: series }));
+      });
+    });
+    setCommentsLoading(true);
+    const loadComments = () =>
+      void fetchEventComments(event.id, 8).then((list) => {
+        if (cancelled) return;
+        setCommentsLoading(false);
+        if (list.length > 0) setComments(list);
+      });
+    loadComments();
+    // Keep the chat live by re-polling for new comments.
+    const chatPoll = setInterval(loadComments, 15_000);
+    return () => {
+      cancelled = true;
+      clearInterval(chatPoll);
+    };
+  }, [event]);
+
+  // Resolve display data: real event when available, else the static fallback.
+  const usingStatic = !event;
+  const title = event?.title ?? STATIC_FEATURED.title;
+  const volume = event?.volume ?? STATIC_FEATURED.volume;
+  const endsLabel = event?.endsLabel ?? STATIC_FEATURED.endsLabel;
+  const headerIcon = event?.icon;
+
+  const outcomes: FeaturedOutcome[] = usingStatic
+    ? STATIC_FEATURED.outcomes.map((o, i) => ({
+        key: o.label,
+        label: o.label,
+        yes: o.yes,
+        color: OUTCOME_COLORS[i % OUTCOME_COLORS.length],
+        code: o.code,
+        history: synthSeries(o.yes),
+      }))
+    : event!.outcomesDetail.slice(0, 5).map((o, i) => ({
+        key: o.tokenId ?? o.label,
+        label: o.label,
+        yes: o.yes,
+        color: OUTCOME_COLORS[i % OUTCOME_COLORS.length],
+        icon: o.icon,
+        code: NAME_TO_CODE[o.label.toLowerCase()],
+        history: (o.tokenId && histories[o.tokenId]) || synthSeries(o.yes),
+      }));
+
+  const displayComments = comments.length > 0 ? comments : usingStatic ? STATIC_FEATURED.comments : [];
+  const chartLines = outcomes.slice(0, 4).map((o) => ({ color: o.color, series: o.history }));
+  const canCycle = pool.length > 1;
+
+  return (
+    <LeaguePanel fill={false} className="border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4 sm:p-5">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/15 bg-black/40 text-2xl">
+            {headerIcon ? <img src={headerIcon} alt="" className="h-full w-full object-cover" /> : "⚽"}
+          </div>
+          <div className="min-w-0">
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/40">Sports · Soccer</p>
+            <h3 className="truncate font-tech text-lg font-black text-white sm:text-xl">{title}</h3>
+          </div>
+        </div>
+        {canCycle ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button type="button" aria-label="Previous event" onClick={() => setIndex((i) => (i - 1 + pool.length) % pool.length)} className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/40 text-white/70 transition hover:bg-black/70"><ChevronLeft className="h-4 w-4" /></button>
+            <span className="font-mono text-[9px] text-white/40">{index + 1}/{pool.length}</span>
+            <button type="button" aria-label="Next event" onClick={() => setIndex((i) => (i + 1) % pool.length)} className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/40 text-white/70 transition hover:bg-black/70"><ChevronRight className="h-4 w-4" /></button>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+        {/* Left: outcomes + comments */}
+        <div className="min-w-0">
+          <div className="divide-y divide-white/8">
+            {outcomes.map((o) => (
+              <div key={o.key} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <OutcomeAvatar outcome={o} />
+                  <span className="truncate font-tech text-sm font-bold text-white">{o.label}</span>
+                </div>
+                <span className="shrink-0 font-tech text-lg font-black text-white">{o.yes}%</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 space-y-3 border-t border-white/8 pt-3">
+            <div className="flex items-center gap-1.5"><Radio className="h-3.5 w-3.5 text-cyan-300" /><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-300">Live chat</p></div>
+            {displayComments.length > 0 ? (
+              displayComments.slice(0, 3).map((c) => (
+                <div key={c.id} className="flex gap-2.5">
+                  <div className="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#2E5CFF]/25 font-tech text-[9px] font-bold uppercase text-[#aebfff]">{c.avatar ? <img src={c.avatar} alt="" className="h-full w-full object-cover" /> : c.author.charAt(0)}</div>
+                  <div className="min-w-0">
+                    <p className="font-tech text-[11px] font-bold text-white/80">{c.author}</p>
+                    <p className="text-[11px] leading-snug text-white/50">{c.body}</p>
+                  </div>
+                </div>
+              ))
+            ) : commentsLoading ? (
+              <div className="flex items-center gap-2 text-[11px] text-white/40"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /> Loading chat…</div>
+            ) : (
+              <p className="text-[11px] text-white/35">No comments on this market yet.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right: multi-line chart + legend */}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {outcomes.slice(0, 4).map((o) => (
+              <span key={o.key} className="inline-flex items-center gap-1.5 font-tech text-[11px] font-bold text-white/80">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: o.color }} />{o.label} <span className="text-white/50">{o.yes}%</span>
+              </span>
+            ))}
+          </div>
+          <div className="mt-3 overflow-hidden rounded-lg border border-white/8 bg-black/30">
+            <OutcomeLinesChart lines={chartLines} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-4 flex items-center justify-between border-t border-white/8 pt-3">
+        <span className="font-mono text-[11px] font-bold text-white/55">{volume} Vol</span>
+        <span className="flex items-center gap-2 font-mono text-[11px] text-white/40">
+          {endsLabel ? <>Ends {endsLabel} ·</> : null}
+          <PolymarketLogo className="h-3 w-auto text-[#7d97ff]" />
+        </span>
+      </div>
+    </LeaguePanel>
+  );
+}
+
+function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
+  const flag = flagFor(outcome.label);
+  if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
+  if (outcome.code) return <FlagCircle code={outcome.code} className="h-7 w-7 rounded-md" />;
+  if (outcome.icon) return <img src={outcome.icon} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-md border border-white/10 object-cover" />;
+  return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 font-tech text-[10px] font-bold uppercase text-white/70" style={{ backgroundColor: `${outcome.color}33` }}>{outcome.label.charAt(0)}</span>;
+}
+
+function OutcomeLinesChart({ lines }: { lines: { color: string; series: number[] }[] }) {
+  const valid = lines.filter((l) => l.series.length >= 2);
+  const W = 720;
+  const H = 220;
+  const top = 12;
+  const bottom = 208;
+
+  if (valid.length === 0) {
+    return <div className="grid h-48 w-full place-items-center sm:h-56"><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /></div>;
+  }
+
+  const all = valid.flatMap((l) => l.series);
+  const max = Math.max(...all) + 2;
+  const min = Math.max(0, Math.min(...all) - 2);
+  const span = Math.max(1, max - min);
+  const xAt = (i: number, n: number) => (n <= 1 ? W : (i / (n - 1)) * W);
+  const yAt = (v: number) => bottom - (bottom - top) * ((v - min) / span);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-48 w-full sm:h-56">
+      {[0.25, 0.5, 0.75].map((g) => (
+        <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 6" />
+      ))}
+      {valid.map((line, idx) => {
+        const n = line.series.length;
+        const d = line.series.map((v, i) => `${i === 0 ? "M" : "L"}${xAt(i, n).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+        const lastX = xAt(n - 1, n);
+        const lastY = yAt(line.series[n - 1]);
+        return (
+          <g key={idx}>
+            <path d={d} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+            <circle cx={lastX} cy={lastY} r="3.5" fill={line.color} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── View switcher (the three attractive buttons) ────────────────────────────
+function BoardViewTabs({ view, onChange, marketCount, newsCount }: { view: BoardView; onChange: (v: BoardView) => void; marketCount: number; newsCount: number }) {
+  const tabs: { id: BoardView; label: string; desc: string; Icon: typeof Activity; meta: string }[] = [
+    { id: "market", label: "Live Market", desc: "Markets, odds & live prices", Icon: BarChart3, meta: "Live" },
+    { id: "pulse", label: "Match Pulse", desc: "Upcoming matches & football news", Icon: Radio, meta: `${marketCount} fixtures` },
+    { id: "analysis", label: "Analysis", desc: "Agent reads, news & trending movers", Icon: Brain, meta: `${newsCount} signals` },
+  ];
+
+  return (
+    <div className="flex items-stretch gap-1 rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
+      {tabs.map(({ id, label, desc, Icon, meta }) => {
+        const active = view === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            title={desc}
+            onClick={() => onChange(id)}
+            className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-2.5 py-2.5 transition ${active ? "bg-[linear-gradient(120deg,rgba(46,92,255,0.22),rgba(46,92,255,0.06))] text-white shadow-[inset_0_0_0_1px_rgba(46,92,255,0.45)]" : "text-white/55 hover:bg-white/[0.04] hover:text-white"}`}
+          >
+            <Icon className={`h-4 w-4 shrink-0 transition ${active ? "text-[#9ab1ff]" : "text-white/45 group-hover:text-white/80"}`} />
+            <span className="truncate font-tech text-[12px] font-bold tracking-tight sm:text-[13px]">{label}</span>
+            <span className={`hidden shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider sm:inline-flex ${active ? "bg-emerald-400/15 text-emerald-300" : "bg-white/[0.06] text-white/40"}`}>
+              {active ? <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" /> : null}{meta}
+            </span>
+            {active ? <span className="pointer-events-none absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-gradient-to-r from-transparent via-[#2E5CFF] to-transparent" /> : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Live price chart (Polymarket-style) ─────────────────────────────────────
+function LiveMarketChart({ market, markets, onSelect, history }: { market: LiveMarket; markets: LiveMarket[]; onSelect: (id: string) => void; history: number[] }) {
+  const chart = useMemo(() => {
+    const series = history.length >= 2 ? history : [market.yes, market.yes];
+    const W = 720;
+    const H = 200;
+    const top = 12;
+    const bottom = 188;
+    const max = Math.max(...series) + 3;
+    const min = Math.min(...series) - 3;
+    const span = Math.max(1, max - min);
+    const stepX = W / (series.length - 1);
+    const px = (i: number) => i * stepX;
+    const py = (v: number) => bottom - (bottom - top) * ((v - min) / span);
+    const line = series.map((v, i) => `${i === 0 ? "M" : "L"}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+    const area = `${line} L${W.toFixed(1)},${H} L0,${H} Z`;
+    return { W, H, line, area, lastX: px(series.length - 1), lastY: py(series[series.length - 1]) };
+  }, [history, market.yes]);
+
+  const dir = market.dir;
+  const stroke = dir === "down" ? "#fb7185" : dir === "up" ? "#34d399" : "#22d3ee";
+  const sessionDir = market.session > 0 ? "up" : market.session < 0 ? "down" : "flat";
+
+  return (
+    <LeaguePanel fill={false} className="border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.12),transparent_45%),#070911] p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> Live price</span>
+            <span className="rounded-sm border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/45">{market.category}</span>
+          </div>
+          <p className="mt-2 max-w-md font-tech text-sm font-bold leading-snug text-white sm:text-base">{market.question}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-tech text-3xl font-black leading-none text-white sm:text-4xl">{market.yes}<span className="text-lg text-white/40">%</span></p>
+          <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[10px] font-bold ${priceToneClass(sessionDir)}`}>
+            <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢ session
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-lg border border-white/8 bg-black/30">
+        <svg viewBox={`0 0 ${chart.W} ${chart.H}`} preserveAspectRatio="none" className="h-44 w-full sm:h-52">
+          <defs>
+            <linearGradient id="lmc-area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={stroke} stopOpacity="0.32" />
+              <stop offset="100%" stopColor={stroke} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[0.25, 0.5, 0.75].map((g) => (
+            <line key={g} x1="0" x2={chart.W} y1={chart.H * g} y2={chart.H * g} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+          ))}
+          <path d={chart.area} fill="url(#lmc-area)" />
+          <path d={chart.line} fill="none" stroke={stroke} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          <circle cx={chart.lastX} cy={chart.lastY} r="9" fill={stroke} opacity="0.18">
+            <animate attributeName="r" values="6;12;6" dur="1.8s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.28;0;0.28" dur="1.8s" repeatCount="indefinite" />
+          </circle>
+          <circle cx={chart.lastX} cy={chart.lastY} r="3.5" fill={stroke} />
+        </svg>
+      </div>
+
+      <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {markets.map((m) => {
+          const active = m.id === market.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onSelect(m.id)}
+              className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-left font-tech text-[9px] font-bold transition ${active ? "border-[#2E5CFF]/55 bg-[#2E5CFF]/15 text-[#d6e0ff]" : "border-white/10 bg-black/20 text-white/45 hover:text-white"}`}
+            >
+              <span className="block max-w-[120px] truncate">{m.short}</span>
+              <span className={`mt-0.5 inline-flex items-center gap-1 ${priceToneClass(m.dir).split(" ").pop()}`}>{m.yes}¢ <PriceArrow dir={m.dir} /></span>
+            </button>
+          );
+        })}
+      </div>
+    </LeaguePanel>
+  );
+}
+
+// ── Shared category filter (shown on every tab) ─────────────────────────────
+function CategoryFilterBar({
+  category,
+  onCategory,
+  count,
+}: {
+  category: (typeof MARKET_CATEGORIES)[number];
+  onCategory: (v: (typeof MARKET_CATEGORIES)[number]) => void;
+  count: (v: (typeof MARKET_CATEGORIES)[number]) => number;
+}) {
+  return (
+    <LeaguePanel fill={false} className="border-[#2E5CFF]/25 p-2 sm:p-2.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {MARKET_CATEGORIES.map((value) => {
+          const active = category === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onCategory(value)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider transition ${active ? "border-[#2E5CFF]/55 bg-[#2E5CFF]/15 text-[#d6e0ff]" : "border-white/10 bg-black/20 text-white/45 hover:text-white"}`}
+            >
+              {value}
+              <span className={`rounded-full px-1.5 py-0.5 text-[8px] ${active ? "bg-white/15 text-white" : "bg-white/8 text-white/40"}`}>{count(value)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </LeaguePanel>
+  );
+}
+
+function marketsForCategory(markets: LiveMarket[], category: (typeof MARKET_CATEGORIES)[number]) {
+  if (category === "All") return markets;
+  const filtered = markets.filter((market) => market.category === category);
+  return filtered.length > 0 ? filtered : markets;
+}
+
+// ── Match Pulse view ────────────────────────────────────────────────────────
+function MatchPulseView({ category }: { category: (typeof MARKET_CATEGORIES)[number] }) {
+  const visibleMatches = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
+
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12">
+      <div className="min-w-0 space-y-3 lg:col-span-7">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-4 w-4 text-[#7d97ff]" />
+          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Upcoming matches</h3>
+          <span className="font-mono text-[10px] text-white/40">· kickoff times in local</span>
+        </div>
+        {visibleMatches.map((match) => <UpcomingPulseCard key={match.id} match={match} />)}
+        {visibleMatches.length === 0 ? (
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40">No fixtures in this category yet</div>
+        ) : null}
+      </div>
+
+      <div className="min-w-0 lg:col-span-5">
+        <NewsFeed title="Football news & match facts" subtitle="Factual updates feeding the markets" />
+      </div>
+    </div>
+  );
+}
+
+function UpcomingPulseCard({ match }: { match: Match }) {
+  const favourite = match.home.price >= match.away.price ? match.home.name : match.away.name;
+  return (
+    <article className="rounded-xl border border-white/10 bg-[#0b0d12] p-4 transition hover:border-[#2E5CFF]/45">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white"><Clock className="h-3 w-3 text-[#7d97ff]" /> {match.day} · {match.kickoff}</span>
+        <span className="font-mono text-[9px] uppercase tracking-wider text-white/35">{match.league}</span>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <FlagCircle code={match.home.code} className="h-10 w-10 rounded-lg" />
+          <div><p className="font-tech text-sm font-bold text-white">{match.home.name}</p><p className="font-mono text-[9px] text-white/35">{match.home.record}</p></div>
+        </div>
+        <span className="font-mono text-[10px] font-bold text-white/30">VS</span>
+        <div className="flex items-center gap-2.5 text-right">
+          <div><p className="font-tech text-sm font-bold text-white">{match.away.name}</p><p className="font-mono text-[9px] text-white/35">{match.away.record}</p></div>
+          <FlagCircle code={match.away.code} className="h-10 w-10 rounded-lg" />
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <OddsButton label={match.home.name} price={match.home.price} tone="home" highlight={favourite === match.home.name} />
+        <OddsButton label="Draw" price={match.draw.price} tone="draw" />
+        <OddsButton label={match.away.name} price={match.away.price} tone="away" highlight={favourite === match.away.name} />
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-white/8 pt-2.5 font-mono text-[10px] text-white/40">
+        <span>{match.vol} volume</span>
+        <span className="inline-flex items-center gap-1 text-[#9ab1ff]"><BarChart3 className="h-3 w-3" /> O/U {match.total.line}</span>
+      </div>
+    </article>
+  );
+}
+
+function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <LeaguePanel fill={false} className="border-cyan-400/20 bg-[radial-gradient(circle_at_100%_0%,rgba(34,211,238,0.1),transparent_45%),#080c14] p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Newspaper className="h-4 w-4 text-cyan-300" />
+          <div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">{title}</h3><p className="mt-0.5 text-[10px] text-white/45">{subtitle}</p></div>
+        </div>
+        <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
+      </div>
+      <div className="space-y-2">
+        {MATCH_NEWS.map((item) => (
+          <article key={item.id} className="rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30">
+            <div className="flex items-center justify-between gap-2">
+              <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#9ab1ff]">{item.tag}</span>
+              <span className="font-mono text-[9px] text-white/35">{item.time}</span>
+            </div>
+            <p className="mt-2 font-tech text-[12px] font-bold leading-snug text-white">{item.title}</p>
+            <p className="mt-1 text-[10px] leading-relaxed text-white/45">{item.body}</p>
+            <div className="mt-2 flex items-center justify-between border-t border-white/8 pt-2">
+              <span className="truncate font-mono text-[9px] text-white/40">{item.market}</span>
+              <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold ${item.impact === "up" ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" : item.impact === "down" ? "border-rose-400/40 bg-rose-400/10 text-rose-300" : "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"}`}>
+                {item.impact === "up" ? <TrendingUp className="h-3 w-3" /> : item.impact === "down" ? <TrendingDown className="h-3 w-3" /> : null} {item.move}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </LeaguePanel>
+  );
+}
+
+// ── Analysis view ───────────────────────────────────────────────────────────
+function AnalysisView({
+  markets,
+  category,
+  selectedId,
+  onSelect,
+  history,
+  trades,
+}: {
+  markets: LiveMarket[];
+  category: (typeof MARKET_CATEGORIES)[number];
+  selectedId: string;
+  onSelect: (id: string) => void;
+  history: Record<string, number[]>;
+  trades: MarketTrade[];
+}) {
+  const viewMarkets = marketsForCategory(markets, category);
+  const selectedMarket = markets.find((m) => m.id === selectedId) ?? markets[0];
+
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12">
+      <div className="lg:col-span-8">
+        <LiveMarketChart market={selectedMarket} markets={viewMarkets} onSelect={onSelect} history={history[selectedMarket.id] ?? []} />
+      </div>
+      <div className="space-y-3 lg:col-span-4">
+        <TrendingMovers markets={viewMarkets} onSelect={onSelect} />
+        <AgentWinRateCard />
+      </div>
+
+      <div className="space-y-3 lg:col-span-7">
+        <AgentNewsReactions />
+        <TopAgentsBoard sidebar={false} />
+        <RecentTradesFeed trades={trades} />
+      </div>
+      <div className="lg:col-span-5">
+        <NewsFeed title="News driving the board" subtitle="What's moving prices right now" />
+      </div>
+
+      <OpenPositions markets={markets} onSelect={onSelect} />
+      <ResolvedMarkets />
+    </div>
+  );
+}
+
+function AgentWinRateCard() {
+  const total = RESOLVED_MARKETS.length;
+  const wins = RESOLVED_MARKETS.filter((m) => m.correct).length;
+  const losses = total - wins;
+  const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+  const RADIUS = 30;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const dashOffset = CIRCUMFERENCE * (1 - rate / 100);
+
+  return (
+    <LeaguePanel fill={false} className="overflow-hidden border-cyan-400/20 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.14),transparent_45%),#070911] p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Agent accuracy</p><p className="mt-1 font-tech text-sm font-bold text-white">Win rate</p></div>
+        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-emerald-300"><TrendingUp className="h-3.5 w-3.5" /> +5% wk</span>
+      </div>
+      <div className="flex items-center gap-3.5">
+        <div className="relative grid h-[72px] w-[72px] shrink-0 place-items-center">
+          <svg className="h-[72px] w-[72px] -rotate-90" viewBox="0 0 72 72" aria-label={`${rate}% win rate`}>
+            <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="7" />
+            <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="url(#pm-win-rate)" strokeWidth="7" strokeLinecap="round" strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
+            <defs>
+              <linearGradient id="pm-win-rate" x1="0" y1="0" x2="1" y2="1">
+                <stop stopColor="#22d3ee" />
+                <stop offset="1" stopColor="#2E5CFF" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span className="absolute font-tech text-base font-black text-white">{rate}%</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] text-white/50">{wins} hits · {losses} {losses === 1 ? "miss" : "misses"} settled</p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {RESOLVED_MARKETS.map((m) => (
+              <span key={m.id} className={`flex h-5 w-5 items-center justify-center rounded font-tech text-[9px] font-black ${m.correct ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{m.correct ? "W" : "L"}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </LeaguePanel>
+  );
+}
+
+function AgentNewsReactions() {
+  return (
+    <LeaguePanel fill={false} className="border-[#2E5CFF]/25 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[#9ab1ff]" />
+          <div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Agent reactions to news</h3><p className="mt-0.5 text-[10px] text-white/45">How each agent re-reads the market as facts land</p></div>
+        </div>
+        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><Flame className="h-3.5 w-3.5" /> {MATCH_NEWS.length} live reads</span>
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {MATCH_NEWS.map((item) => {
+          const agent = getLeagueAgent(item.agent);
+          const up = item.impact === "up";
+          return (
+            <article key={item.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/30 p-3">
+              <div className="h-11 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate font-tech text-[10px] font-black uppercase text-white">{item.agent}</p>
+                  <span className={`inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 font-tech text-[8px] font-bold ${up ? "bg-emerald-400/15 text-emerald-300" : item.impact === "down" ? "bg-rose-400/15 text-rose-300" : "bg-cyan-400/15 text-cyan-300"}`}>
+                    {up ? <ArrowUp className="h-2.5 w-2.5" /> : item.impact === "down" ? <ArrowDown className="h-2.5 w-2.5" /> : null} {item.move}
+                  </span>
+                </div>
+                <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-white/55">{item.title}</p>
+                <p className="mt-1 truncate font-mono text-[9px] text-white/35">re: {item.market}</p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </LeaguePanel>
   );
 }
