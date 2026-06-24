@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 import {
   useLogin,
@@ -42,10 +42,35 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const OTP_RESEND_COOLDOWN_SECONDS = 30;
+const OTP_DELAY_NOTICE_SECONDS = 20;
+
+function otpVerifyErrorMessage(error: unknown) {
+  const fallback = privyAuthErrorMessage(error);
+  const lower = fallback.toLowerCase();
+
+  if (/invalid|incorrect|wrong/.test(lower)) {
+    return "That code does not look right. Check the latest email and enter the 6-digit code again.";
+  }
+
+  if (/expired|expire/.test(lower)) {
+    return "That code has expired. Please request a new code and use the latest email.";
+  }
+
+  if (/too many|rate|limit/.test(lower)) {
+    return "Too many attempts. Please wait a moment before trying again.";
+  }
+
+  return fallback || "Could not verify the code. Please try again or request a new one.";
+}
+
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [otpNotice, setOtpNotice] = useState("");
+  const [otpWaitSeconds, setOtpWaitSeconds] = useState(0);
+  const [otpResendCooldown, setOtpResendCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [walletFlowBusy, setWalletFlowBusy] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -54,10 +79,28 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const walletFlowInFlightRef = useRef(false);
   const wasOpenRef = useRef(false);
 
+  const resetModalState = useCallback(() => {
+    walletFlowInFlightRef.current = false;
+    setEmail("");
+    setOtpCode("");
+    setOtpSent(false);
+    setOtpNotice("");
+    setOtpWaitSeconds(0);
+    setOtpResendCooldown(0);
+    setLoading(false);
+    setWalletFlowBusy(false);
+    setAuthError("");
+    setFinishingSignIn(false);
+    setRecoveryMode(false);
+  }, []);
+
   const applyRecoverRequest = (message?: string) => {
     walletFlowInFlightRef.current = false;
     setOtpSent(false);
     setOtpCode("");
+    setOtpNotice("");
+    setOtpWaitSeconds(0);
+    setOtpResendCooldown(0);
     setLoading(false);
     setWalletFlowBusy(false);
     setRecoveryMode(true);
@@ -124,15 +167,24 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   }, []);
 
   useEffect(() => {
+    if (!isOpen || !otpSent || finishingSignIn) return;
+
+    const timer = window.setInterval(() => {
+      setOtpWaitSeconds((seconds) => seconds + 1);
+      setOtpResendCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isOpen, otpSent, finishingSignIn]);
+
+  useEffect(() => {
     const justOpened = isOpen && !wasOpenRef.current;
     wasOpenRef.current = isOpen;
 
     if (!isOpen) {
       const siweStillRunning = authenticated && !isAuthenticated && authLoading;
       if (!siweStillRunning) {
-        setAuthError("");
-        setRecoveryMode(false);
-        setFinishingSignIn(false);
+        resetModalState();
       }
       return;
     }
@@ -164,7 +216,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     }
 
     if (finishingSignIn && isAuthenticated && !authLoading) {
-      setFinishingSignIn(false);
+      resetModalState();
       onClose();
       return;
     }
@@ -181,6 +233,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     recoveryMode,
     authError,
     onClose,
+    resetModalState,
   ]);
 
   useEffect(() => {
@@ -208,26 +261,38 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     }
     if (authenticated) {
       setAuthError("");
+      markUserLoginIntent("wallet");
       setFinishingSignIn(true);
       return;
     }
     setWalletFlowBusy(true);
     setAuthError("");
+    markUserLoginIntent("wallet");
     walletFlowInFlightRef.current = true;
     login({ loginMethods: ["wallet"], walletChainType: "ethereum-only" });
   };
 
-  const handleSendCode = async () => {
+  const handleSendCode = async (resend = false) => {
     if (!email) return;
     setLoading(true);
     setRecoveryMode(false);
     setAuthError("");
+    setOtpNotice("");
+    markUserLoginIntent("email");
     try {
       await sendCode({ email });
+      setOtpCode("");
       setOtpSent(true);
+      setOtpWaitSeconds(0);
+      setOtpResendCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      setOtpNotice(
+        resend
+          ? "We sent a new code. Use the newest email, because older codes may stop working."
+          : "Code sent. It can take a few seconds to arrive — check spam or promotions too.",
+      );
     } catch (err) {
       const msg = privyAuthErrorMessage(err);
-      if (msg) setAuthError(msg);
+      setAuthError(msg || "Could not send the code. Please check the email address and try again.");
     } finally {
       setLoading(false);
     }
@@ -238,15 +303,26 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     setLoading(true);
     setRecoveryMode(false);
     setAuthError("");
+    setOtpNotice("");
     try {
       await loginWithCode({ code: otpCode });
     } catch (err) {
-      const msg = privyAuthErrorMessage(err);
-      if (msg) setAuthError(msg);
+      setAuthError(otpVerifyErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
+
+  const handleBackToEmail = () => {
+    setOtpSent(false);
+    setOtpCode("");
+    setOtpNotice("");
+    setOtpWaitSeconds(0);
+    setOtpResendCooldown(0);
+    setAuthError("");
+  };
+
+  const showDelayedOtpNotice = otpSent && otpWaitSeconds >= OTP_DELAY_NOTICE_SECONDS;
 
   return (
     <AnimatePresence>
@@ -366,7 +442,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleSendCode()}
+                          onKeyDown={(e) => e.key === "Enter" && void handleSendCode()}
                           className="w-full h-12 px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all"
                           style={{
                             borderRadius: "14px",
@@ -389,7 +465,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       <motion.button
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
-                        onClick={handleSendCode}
+                        onClick={() => void handleSendCode()}
                         disabled={loading || !email}
                         className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -437,7 +513,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           onClick={() => {
                             setRecoveryMode(false);
                             setAuthError("");
-                            markUserLoginIntent();
+                            markUserLoginIntent("google");
                             void initOAuth({ provider: "google" });
                           }}
                           className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"
@@ -466,6 +542,16 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       <p className="text-sm text-muted-foreground text-center">
                         Enter the code sent to <span className="text-foreground font-medium">{email}</span>
                       </p>
+                      {otpNotice ? (
+                        <p className="rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs leading-relaxed text-cyan-100/90">
+                          {otpNotice}
+                        </p>
+                      ) : null}
+                      {showDelayedOtpNotice ? (
+                        <p className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/90">
+                          Still waiting? Email delivery can be delayed. Check spam/promotions, confirm the email address, or send a new code below.
+                        </p>
+                      ) : null}
                       <input
                         type="text"
                         placeholder="000000"
@@ -490,7 +576,18 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         {loading ? "Verifying..." : "Verify Code"}
                       </motion.button>
                       <button
-                        onClick={() => setOtpSent(false)}
+                        type="button"
+                        onClick={() => void handleSendCode(true)}
+                        disabled={loading || otpResendCooldown > 0}
+                        className="w-full rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-cyan-300/35 hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/10 disabled:hover:text-muted-foreground"
+                      >
+                        {otpResendCooldown > 0
+                          ? `Resend code in ${otpResendCooldown}s`
+                          : "Resend code"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBackToEmail}
                         className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         ← Back

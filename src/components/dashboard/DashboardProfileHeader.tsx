@@ -9,6 +9,13 @@ type DashboardProfileHeaderProps = {
   walletAddress: string | null;
 };
 
+function formatKultPoints(value: number): string {
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 1,
+    maximumFractionDigits: 1,
+  });
+}
+
 export function DashboardProfileHeader({ profile, isLoading, walletAddress }: DashboardProfileHeaderProps) {
   const displayName = profile?.player.name?.trim() || "Arena Pilot";
 
@@ -53,7 +60,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:max-w-3xl">
           {[
-            { label: "Kult Points", value: profile ? profile.kultPoints.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—" },
+            { label: "Kult Points", value: profile ? formatKultPoints(profile.kultPoints) : "—" },
             { label: "KP Rank", value: profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—" },
             { label: "Level", value: profile?.level ?? "—" },
             { label: "Rank", value: profile?.rank != null ? `#${profile.rank}` : "—" },

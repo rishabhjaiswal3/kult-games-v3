@@ -5,11 +5,15 @@ export type LoginModalOpenRequest = {
   message?: string;
 };
 
+export type LoginMethod = "wallet" | "email" | "google";
+
 let pendingLoginModalRequest: LoginModalOpenRequest | null = null;
 /** Survives Google OAuth redirects — cleared on logout or SIWE end. */
 const LOGIN_INTENT_SESSION_KEY = "kult_login_intent";
+const LOGIN_METHOD_SESSION_KEY = "kult_login_method";
 /** In-memory mirror for the current tab session. */
 let userLoginIntent = false;
+let userLoginMethod: LoginMethod | null = null;
 
 function readStoredLoginIntent() {
   try {
@@ -19,10 +23,12 @@ function readStoredLoginIntent() {
   }
 }
 
-export function markUserLoginIntent() {
+export function markUserLoginIntent(method?: LoginMethod) {
   userLoginIntent = true;
+  if (method) userLoginMethod = method;
   try {
     sessionStorage.setItem(LOGIN_INTENT_SESSION_KEY, "1");
+    if (method) sessionStorage.setItem(LOGIN_METHOD_SESSION_KEY, method);
   } catch {
     /* private mode / quota */
   }
@@ -30,8 +36,10 @@ export function markUserLoginIntent() {
 
 export function clearUserLoginIntent() {
   userLoginIntent = false;
+  userLoginMethod = null;
   try {
     sessionStorage.removeItem(LOGIN_INTENT_SESSION_KEY);
+    sessionStorage.removeItem(LOGIN_METHOD_SESSION_KEY);
   } catch {
     /* ignore */
   }
@@ -41,11 +49,18 @@ export function hasUserLoginIntent() {
   return userLoginIntent || readStoredLoginIntent();
 }
 
+export function getUserLoginMethod(): LoginMethod | null {
+  if (userLoginMethod) return userLoginMethod;
+  try {
+    const stored = sessionStorage.getItem(LOGIN_METHOD_SESSION_KEY);
+    return stored === "wallet" || stored === "email" || stored === "google" ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
 export function requestOpenLoginModal(request?: LoginModalOpenRequest) {
   if (typeof window === "undefined") return;
-  if (!request?.mode || request.mode === "default") {
-    markUserLoginIntent();
-  }
   pendingLoginModalRequest = request ?? null;
   window.dispatchEvent(
     new CustomEvent<LoginModalOpenRequest | undefined>(LOGIN_OPEN_EVENT, {

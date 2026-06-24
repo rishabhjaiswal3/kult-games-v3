@@ -37,7 +37,6 @@ import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
-import AccessLoginPage from "@/pages/AccessLoginPage";
 import { AccessRoute } from "@/components/AccessRoute";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
@@ -142,10 +141,6 @@ function BrowserApp() {
       staleTime: 5 * 60_000,
     });
   }, [hasAccess, queryClient]);
-
-  if (!hasAccess) {
-    return <AccessLoginPage />;
-  }
 
   return (
     <AuthProvider>

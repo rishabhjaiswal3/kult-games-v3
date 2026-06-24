@@ -131,9 +131,9 @@ function SidebarBrand({
             <span className="h-4 w-px bg-gradient-to-b from-transparent via-[#9a35ff]/40 to-transparent" aria-hidden />
             <img src={kultLogo} alt="Kult Games" className="h-5 w-auto object-contain transition-all group-hover:drop-shadow-[0_0_8px_rgba(154,53,255,0.5)]" />
           </div>
-          <p className="mt-2.5 font-mono text-[8px] uppercase tracking-[0.32em] text-white/35 transition-colors group-hover:text-white/50">
+          {/* <p className="mt-2.5 font-mono text-[8px] uppercase tracking-[0.32em] text-white/35 transition-colors group-hover:text-white/50">
             Powered by 0G · AI Arena
-          </p>
+          </p> */}
           <div className="mt-3 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/35 to-transparent" />
         </Link>
       )}
