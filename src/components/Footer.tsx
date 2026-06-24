@@ -2,12 +2,16 @@ import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
 import { BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAccess } from "@/contexts/AccessContext";
+import type { AccessFeature } from "@/lib/accessControl";
 
 const platformLinks = [
-  { label: "Games", href: "/", icon: Gamepad2 },
-  { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit },
-  { label: "Moments", href: "/moments", icon: Video },
-  { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
+  { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
+  { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit, feature: "ai_arena" },
+  { label: "Moments", href: "/moments", icon: Video, feature: "moments" },
+  { label: "Leaderboard", href: "/leaderboard", icon: Trophy, feature: "league" },
+  { label: "League", href: "/league", icon: Trophy, feature: "league" },
+  { label: "Home", href: "/", icon: Gamepad2, feature: null },
 ];
 
 const socials = [
@@ -45,9 +49,17 @@ const socials = [
 
 const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
   const isArena = variant === "arena";
-  const footerLinks = isArena
-    ? platformLinks.map((link) => link.label === "AI Arena" ? { label: "League", href: "/league", icon: Trophy } : link)
-    : platformLinks;
+  const { canUse } = useAccess();
+  const footerLinks = platformLinks.filter((link) => {
+    if (isArena && link.label === "AI Arena") return false;
+    if (!isArena && link.label === "League") return false;
+    return !link.feature || canUse(link.feature as AccessFeature);
+  });
+  const startLink = isArena
+    ? { label: "Enter AI Arena", href: "/ai-arena", feature: "ai_arena" as AccessFeature }
+    : { label: "Enter League", href: "/league", feature: "league" as AccessFeature };
+  const showStartLink = canUse(startLink.feature);
+
   return (
     <footer className={`relative -mx-4 mb-0 w-[calc(100%+2rem)] overflow-hidden border-y border-white/8 bg-[#04080f] pb-24 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:pb-0 lg:-mx-8 lg:w-[calc(100%+4rem)] ${isArena ? "pb-28" : ""}`}>
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.09]" />
@@ -94,11 +106,13 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
             </div>
           </div>
 
-          <div className="mx-auto w-full max-w-[320px] sm:mx-0">
-            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
-            <Link to={isArena ? "/ai-arena" : "/league"} className="mt-4 flex w-full items-center justify-center rounded-md border border-[#a855f7]/60 bg-[#7e22ce]/35 px-5 py-3 font-tech text-sm font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(168,85,247,0.25)] transition hover:bg-[#9333ea]/45 hover:shadow-[0_0_32px_rgba(168,85,247,0.4)]">▶ {isArena ? "Enter AI Arena" : "Enter League"}</Link>
-            <p className="mt-3 text-xs leading-relaxed text-white/35">{isArena ? "Create, train, and deploy an agent when you&apos;re ready." : "Make your picks, follow the action, and climb the League."}</p>
-          </div>
+          {showStartLink ? (
+            <div className="mx-auto w-full max-w-[320px] sm:mx-0">
+              <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
+              <Link to={startLink.href} className="mt-4 flex w-full items-center justify-center rounded-md border border-[#a855f7]/60 bg-[#7e22ce]/35 px-5 py-3 font-tech text-sm font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(168,85,247,0.25)] transition hover:bg-[#9333ea]/45 hover:shadow-[0_0_32px_rgba(168,85,247,0.4)]">▶ {startLink.label}</Link>
+              <p className="mt-3 text-xs leading-relaxed text-white/35">{isArena ? "Create, train, and deploy an agent when you&apos;re ready." : "Make your picks, follow the action, and climb the League."}</p>
+            </div>
+          ) : null}
         </div>
 
         <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">

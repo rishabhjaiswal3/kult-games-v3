@@ -21,6 +21,7 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { gamesApi } from "@/api/gamesApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccess } from "@/contexts/AccessContext";
 import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { HighwayHustleGarage } from "@/components/highway/HighwayHustleGarage";
@@ -83,6 +84,9 @@ const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { canUse } = useAccess();
+  const canViewInventory = canUse("full_browser");
+  const canViewLeague = canUse("league");
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   const { data: game, isLoading, isError } = useQuery({
@@ -265,14 +269,16 @@ const GameDetail = () => {
                 Play now
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => navigate("/inventory")}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#0a0f1b]/70 px-4 py-3 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-300 transition hover:border-purple-500/40 hover:text-white"
-            >
-              <ShoppingBag className="h-4 w-4" />
-              Inventory
-            </button>
+            {canViewInventory ? (
+              <button
+                type="button"
+                onClick={() => navigate("/inventory")}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#0a0f1b]/70 px-4 py-3 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-300 transition hover:border-purple-500/40 hover:text-white"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Inventory
+              </button>
+            ) : null}
           </div>
         </div>
       </article>
@@ -289,36 +295,40 @@ const GameDetail = () => {
             </div>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={() => navigate("/leaderboard")}
-          className="arena-panel group relative flex items-center gap-3 overflow-hidden border-[#ffc000]/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-[#ffc000]/70 hover:shadow-[0_0_32px_rgba(255,192,0,0.18)]"
-        >
-          <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_20%_50%,rgba(255,192,0,0.18),transparent_42%)]" />
-          <div className="relative grid h-11 w-11 place-items-center rounded-md border border-[#ffc000]/25 bg-[#ffc000]/10 text-[#ffc000] transition duration-300 group-hover:scale-105 group-hover:bg-[#ffc000]/16">
-            <Crown className="h-5 w-5" />
-          </div>
-          <div className="relative min-w-0">
-            <div className="font-tech text-[9px] text-white/48 transition group-hover:text-[#ffd768]">Leaderboard</div>
-            <div className="truncate text-lg font-semibold text-white">Ranks</div>
-          </div>
-          <ArrowUpRight className="relative ml-auto h-4 w-4 text-[#ffc000]/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#ffc000]" />
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate("/inventory")}
-          className="arena-panel group relative flex items-center gap-3 overflow-hidden border-purple-500/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0_0_34px_rgba(154,53,255,0.24)]"
-        >
-          <div className="pointer-events-none absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-transparent via-purple-300/16 to-transparent transition duration-700 group-hover:translate-x-[110%]" />
-          <div className="relative grid h-11 w-11 place-items-center rounded-md border border-purple-400/25 bg-purple-500/10 text-purple-300 transition duration-300 group-hover:rotate-3 group-hover:scale-105 group-hover:bg-purple-500/16">
-            <ShoppingBag className="h-5 w-5" />
-          </div>
-          <div className="relative min-w-0">
-            <div className="font-tech text-[9px] text-white/48 transition group-hover:text-purple-200">Marketplace</div>
-            <div className="truncate text-lg font-semibold text-white">Inventory</div>
-          </div>
-          <ArrowUpRight className="relative ml-auto h-4 w-4 text-purple-300/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-purple-200" />
-        </button>
+        {canViewLeague ? (
+          <button
+            type="button"
+            onClick={() => navigate("/leaderboard")}
+            className="arena-panel group relative flex items-center gap-3 overflow-hidden border-[#ffc000]/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-[#ffc000]/70 hover:shadow-[0_0_32px_rgba(255,192,0,0.18)]"
+          >
+            <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_20%_50%,rgba(255,192,0,0.18),transparent_42%)]" />
+            <div className="relative grid h-11 w-11 place-items-center rounded-md border border-[#ffc000]/25 bg-[#ffc000]/10 text-[#ffc000] transition duration-300 group-hover:scale-105 group-hover:bg-[#ffc000]/16">
+              <Crown className="h-5 w-5" />
+            </div>
+            <div className="relative min-w-0">
+              <div className="font-tech text-[9px] text-white/48 transition group-hover:text-[#ffd768]">Leaderboard</div>
+              <div className="truncate text-lg font-semibold text-white">Ranks</div>
+            </div>
+            <ArrowUpRight className="relative ml-auto h-4 w-4 text-[#ffc000]/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#ffc000]" />
+          </button>
+        ) : null}
+        {canViewInventory ? (
+          <button
+            type="button"
+            onClick={() => navigate("/inventory")}
+            className="arena-panel group relative flex items-center gap-3 overflow-hidden border-purple-500/20 bg-[#04080f]/95 p-4 text-left transition duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0_0_34px_rgba(154,53,255,0.24)]"
+          >
+            <div className="pointer-events-none absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-transparent via-purple-300/16 to-transparent transition duration-700 group-hover:translate-x-[110%]" />
+            <div className="relative grid h-11 w-11 place-items-center rounded-md border border-purple-400/25 bg-purple-500/10 text-purple-300 transition duration-300 group-hover:rotate-3 group-hover:scale-105 group-hover:bg-purple-500/16">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div className="relative min-w-0">
+              <div className="font-tech text-[9px] text-white/48 transition group-hover:text-purple-200">Marketplace</div>
+              <div className="truncate text-lg font-semibold text-white">Inventory</div>
+            </div>
+            <ArrowUpRight className="relative ml-auto h-4 w-4 text-purple-300/70 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-purple-200" />
+          </button>
+        ) : null}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">

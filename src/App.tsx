@@ -67,7 +67,7 @@ const FADED_CONTENT_DELAY = 350;
 const PREVIEW_OPACITY = 0.35;
 
 function BrowserApp() {
-  const { hasAccess } = useAccess();
+  const { canUse, hasAccess } = useAccess();
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
   const [showPreview, setShowPreview] = useState(readSplashAlreadySeen);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -135,13 +135,13 @@ function BrowserApp() {
 
   /** Start loading game list + thumbnails as soon as the shell mounts (overlaps splash). */
   useEffect(() => {
-    if (!hasAccess) return;
+    if (!hasAccess || !canUse("games")) return;
     void queryClient.prefetchQuery({
       queryKey: ["games", "all"],
       queryFn: () => gamesApi.getAll(1, 50),
       staleTime: 5 * 60_000,
     });
-  }, [hasAccess, queryClient]);
+  }, [canUse, hasAccess]);
 
   if (!hasAccess) {
     return <AccessLoginPage />;
