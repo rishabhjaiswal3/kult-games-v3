@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ChevronRight, Radio } from "lucide-react";
+import { useAccess } from "@/contexts/AccessContext";
 
 export function AutonomousPanel() {
+  const { canUse } = useAccess();
+  const canManageAutonomous = canUse("full_browser");
+
   return (
     <section className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#00f080]/30 hover:shadow-[0_8px_40px_rgba(0,240,128,0.1)]">
       <div className="flex items-center justify-between relative z-10">
@@ -29,12 +33,14 @@ export function AutonomousPanel() {
           </div>
         </div>
       </div>
-      <Link
-        to="/autonomous"
-        className="mt-4 relative flex h-10 w-full items-center justify-center gap-3 rounded-md border border-[#8b29ff]/60 bg-[#46136f]/70 font-tech text-xs uppercase tracking-wider text-white transition-all duration-300 hover:border-[#c78aff]/80 hover:bg-[#5b1499]/80 hover:shadow-[0_4px_15px_rgba(154,53,255,0.3)] z-10"
-      >
-        MANAGE AUTONOMOUS <ArrowUpRight className="h-4 w-4" />
-      </Link>
+      {canManageAutonomous ? (
+        <Link
+          to="/autonomous"
+          className="mt-4 relative flex h-10 w-full items-center justify-center gap-3 rounded-md border border-[#8b29ff]/60 bg-[#46136f]/70 font-tech text-xs uppercase tracking-wider text-white transition-all duration-300 hover:border-[#c78aff]/80 hover:bg-[#5b1499]/80 hover:shadow-[0_4px_15px_rgba(154,53,255,0.3)] z-10"
+        >
+          MANAGE AUTONOMOUS <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      ) : null}
     </section>
   );
 }

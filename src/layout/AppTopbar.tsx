@@ -3,7 +3,6 @@ import { Bell, Clapperboard, Menu, User } from "lucide-react";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
-import { hasFeature } from "@/lib/accessControl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +13,9 @@ import {
 
 export function AppTopbar() {
   const { isAuthenticated, walletAddress, player, logout } = useAuth();
-  const { session } = useAccess();
-  const showStudio = hasFeature(session, "creator_studio");
+  const { canUse } = useAccess();
+  const showStudio = canUse("creator_studio");
+  const showArenaLinks = canUse("ai_arena");
 
   const displayName =
     player?.name?.trim() ||
@@ -55,13 +55,17 @@ export function AppTopbar() {
                   <span className="max-w-[120px] truncate">{displayName}</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 border-white/10 bg-[#060b15]">
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard">Dashboard & agents</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/ai-arena">AI Arena</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {showArenaLinks ? (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard">Dashboard & agents</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/ai-arena">AI Arena</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  ) : null}
                   <DropdownMenuItem onClick={() => logout()}>Log out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

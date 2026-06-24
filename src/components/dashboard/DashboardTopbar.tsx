@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Bell, Clapperboard, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
-import { hasFeature } from "@/lib/accessControl";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
@@ -11,8 +10,11 @@ export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"notifications" | null>(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const { isAuthenticated, logout } = useAuth();
-  const { session } = useAccess();
-  const showStudio = hasFeature(session, "creator_studio");
+  const { canUse } = useAccess();
+  const showStudio = canUse("creator_studio");
+  const showArenaLinks = canUse("ai_arena");
+  const showLeagueLinks = canUse("league");
+  const showNotifications = showArenaLinks || showLeagueLinks;
   const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export function DashboardTopbar() {
       <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[54px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-1.5 sm:min-h-[60px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
+            {showArenaLinks ? (
             <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden">
               <img
                 src={dashboardAvatar}
@@ -51,6 +54,7 @@ export function DashboardTopbar() {
                 className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff]"
               />
             </Link>
+            ) : null}
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
             {isAuthenticated && showStudio && (
@@ -62,6 +66,7 @@ export function DashboardTopbar() {
                 <span className="hidden min-[430px]:inline">Studio</span>
               </a>
             )}
+            {showArenaLinks ? (
             <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block">
               <img
                 src={dashboardAvatar}
@@ -69,20 +74,23 @@ export function DashboardTopbar() {
                 className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff] sm:h-10 sm:w-10"
               />
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                togglePanel("notifications");
-                setHasUnreadNotifications(false);
-              }}
-              className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
-              aria-label="Open notifications"
-            >
-              <Bell className="h-5 w-5" />
-              {hasUnreadNotifications && (
-                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
-              )}
-            </button>
+            ) : null}
+            {showNotifications ? (
+              <button
+                type="button"
+                onClick={() => {
+                  togglePanel("notifications");
+                  setHasUnreadNotifications(false);
+                }}
+                className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
+                aria-label="Open notifications"
+              >
+                <Bell className="h-5 w-5" />
+                {hasUnreadNotifications && (
+                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
+                )}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={handleConnectWallet}
@@ -119,15 +127,21 @@ export function DashboardTopbar() {
                   </button>
                 </div>
                 <div className="mt-3 space-y-3 text-sm">
-                  <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    HYBRID battle result is ready
-                  </Link>
-                  <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    Training slot completed
-                  </Link>
-                  <Link to="/leaderboard" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
-                    New achievement progress unlocked
-                  </Link>
+                  {showArenaLinks ? (
+                    <>
+                      <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
+                        HYBRID battle result is ready
+                      </Link>
+                      <Link to="/ai-arena" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
+                        Training slot completed
+                      </Link>
+                    </>
+                  ) : null}
+                  {showLeagueLinks ? (
+                    <Link to="/leaderboard" className="block rounded border border-white/8 bg-white/[0.02] p-3 hover:bg-white/5">
+                      New achievement progress unlocked
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             )}
