@@ -22,6 +22,7 @@ import { gamesApi } from "@/api/gamesApi";
 import { momentsApi } from "@/api/momentsApi";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
+import type { AccessFeature } from "@/lib/accessControl";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import heroVideo from "@/assets/homebkg.MOV";
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -35,13 +36,19 @@ import agentLumen from "@/assets/assassin.gif";
 const trailerVideo = new URL("../../assets/Trailer.MOV", import.meta.url).href;
 
 const quickLinks = [
-  { label: "Games", path: "/games", icon: Gamepad2, color: "#0089ff" },
-  { label: "AI Arena", path: "/ai-arena", icon: Sparkles, color: "#9a35ff" },
-  { label: "Inventory", path: "/inventory", icon: Package, color: "#ffc000" },
-  { label: "Dashboard", path: "/dashboard", icon: Box, color: "#00f080" },
-  { label: "Battles", path: "/battles", icon: Swords, color: "#b338ff" },
-  { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#f59e0b" },
-];
+  { label: "Games", path: "/games", icon: Gamepad2, color: "#0089ff", feature: "games" },
+  { label: "AI Arena", path: "/ai-arena", icon: Sparkles, color: "#9a35ff", feature: "ai_arena" },
+  { label: "Inventory", path: "/inventory", icon: Package, color: "#ffc000", feature: "full_browser" },
+  { label: "Dashboard", path: "/dashboard", icon: Box, color: "#00f080", feature: "ai_arena" },
+  { label: "Battles", path: "/battles", icon: Swords, color: "#b338ff", feature: "ai_arena" },
+  { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#f59e0b", feature: "league" },
+] satisfies Array<{
+  label: string;
+  path: string;
+  icon: typeof Gamepad2;
+  color: string;
+  feature: AccessFeature;
+}>;
 
 const homeArenaSignals = [
   "HYBRID defeated SUPPORT",
@@ -65,16 +72,26 @@ export function HomePage() {
   const { canUse } = useAccess();
   const { login, isAuthenticated } = useAuth();
   const featuredScrollerRef = useRef<HTMLDivElement | null>(null);
+  const canViewAiArena = canUse("ai_arena");
   const canViewGames = canUse("games");
+  const canViewLeague = canUse("league");
   const canViewMoments = canUse("moments");
 
   const { data: gamesData, isLoading } = useQuery({
     queryKey: ["games", "all", "home"],
     queryFn: () => gamesApi.getAll(1, 8),
+    enabled: canViewGames,
     staleTime: 5 * 60_000,
   });
 
   const featuredGames = gamesData?.games?.slice(0, 6) ?? [];
+  const visibleStatTiles = [
+    { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Joystick, color: "#11a7ff", path: "/games", feature: "games" },
+    { label: "AI Arena", value: "Live", icon: BrainCircuit, color: "#a855ff", path: "/ai-arena", feature: "ai_arena" },
+    { label: "Marketplace", value: "Open", icon: Store, color: "#ffc42e", path: "/inventory", feature: "full_browser" },
+    { label: "Battles", value: "24/7", icon: Swords, color: "#00f080", path: "/battles", feature: "ai_arena" },
+  ].filter((stat) => canUse(stat.feature as AccessFeature));
+  const visibleQuickLinks = quickLinks.filter((link) => canUse(link.feature));
 
   useEffect(() => {
     const scroller = featuredScrollerRef.current;
@@ -94,6 +111,7 @@ export function HomePage() {
   }, [featuredGames.length]);
 
   const handleExploreGames = () => {
+    if (!canViewGames) return;
     if (isAuthenticated) {
       navigate("/games");
       return;
@@ -144,20 +162,22 @@ export function HomePage() {
               and live battles that never stop.
             </p>
             <div className="flex flex-wrap gap-3">
+              {canViewGames ? (
+                <button
+                  type="button"
+                  onClick={handleExploreGames}
+                  className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                >
+                  Explore games
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={handleExploreGames}
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
-              >
-                Explore games
-                <ArrowUpRight className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={isAuthenticated ? () => navigate("/dashboard") : login}
+                onClick={isAuthenticated && canViewAiArena ? () => navigate("/dashboard") : login}
                 className="inline-flex items-center gap-2 rounded-md border border-purple-300/45 bg-purple-500/[0.12] px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-100 shadow-[0_0_14px_rgba(154,53,255,0.12)] transition hover:border-purple-200/75 hover:bg-purple-500/[0.18] hover:text-white hover:shadow-[0_0_20px_rgba(154,53,255,0.22)]"
               >
-                {isAuthenticated ? "Open dashboard" : "Connect wallet"}
+                {isAuthenticated && canViewAiArena ? "Open dashboard" : "Connect wallet"}
               </button>
             </div>
           </div>
@@ -176,14 +196,16 @@ export function HomePage() {
               Infinite Games, Intelligent Agents, Capture moment, predict the future.
             </p>
           </div>
-          <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 p-3 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
-            <div className="min-w-0">
-              <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
-              <div className="mt-1 text-sm font-semibold text-white group-hover:text-[#66d5ff]">One profile across Kult</div>
-              <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
-            </div>
-          </Link>
+          {canViewAiArena ? (
+            <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 p-3 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
+              <div className="min-w-0">
+                <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
+                <div className="mt-1 text-sm font-semibold text-white group-hover:text-[#66d5ff]">One profile across Kult</div>
+                <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
+              </div>
+            </Link>
+          ) : null}
         </div>
       </section>
 
@@ -204,31 +226,28 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
-        {[
-          { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Joystick, color: "#11a7ff", path: "/games" },
-          { label: "AI Arena", value: "Live", icon: BrainCircuit, color: "#a855ff", path: "/ai-arena" },
-          { label: "Marketplace", value: "Open", icon: Store, color: "#ffc42e", path: "/inventory" },
-          { label: "Battles", value: "24/7", icon: Swords, color: "#00f080", path: "/battles" },
-        ].map((stat) => (
-          <Link
-            key={stat.label}
-            to={stat.path}
-            className="home-stat-tile relative z-10 flex items-center gap-5 p-5 sm:p-6"
-            style={{ "--stat-color": stat.color } as CSSProperties}
-          >
-            <div
-              className="home-stat-icon grid h-14 w-14 place-items-center rounded-lg"
+      {visibleStatTiles.length > 0 ? (
+        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+          {visibleStatTiles.map((stat) => (
+            <Link
+              key={stat.label}
+              to={stat.path}
+              className="home-stat-tile relative z-10 flex items-center gap-5 p-5 sm:p-6"
+              style={{ "--stat-color": stat.color } as CSSProperties}
             >
-              <stat.icon className="h-7 w-7" />
-            </div>
-            <div>
-              <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
-              <div className="mt-2 text-2xl font-semibold text-white sm:text-3xl">{stat.value}</div>
-            </div>
-          </Link>
-        ))}
-      </div>
+              <div
+                className="home-stat-icon grid h-14 w-14 place-items-center rounded-lg"
+              >
+                <stat.icon className="h-7 w-7" />
+              </div>
+              <div>
+                <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+                <div className="mt-2 text-2xl font-semibold text-white sm:text-3xl">{stat.value}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       <section className="arena-panel group relative overflow-hidden border-white/8 bg-[#03070d]/95">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(154,53,255,0.24),transparent_36%),radial-gradient(circle_at_82%_12%,rgba(0,137,255,0.16),transparent_34%)]" />
@@ -270,20 +289,22 @@ export function HomePage() {
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => navigate("/games")}
-              className="inline-flex w-fit items-center gap-2 rounded-md border border-[#9b32ff]/60 bg-[#230b35]/75 px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-[#c084fc] hover:bg-[#35104f]"
-            >
-              Browse games
-              <ArrowUpRight className="h-4 w-4" />
-            </button>
+            {canViewGames ? (
+              <button
+                type="button"
+                onClick={() => navigate("/games")}
+                className="inline-flex w-fit items-center gap-2 rounded-md border border-[#9b32ff]/60 bg-[#230b35]/75 px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-[#c084fc] hover:bg-[#35104f]"
+              >
+                Browse games
+                <ArrowUpRight className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
         </div>
       </section>
 
-      <HomeAIArenaSection />
-      <HomeLiveLeaguesSection />
+      {canViewAiArena ? <HomeAIArenaSection /> : null}
+      {canViewLeague ? <HomeLiveLeaguesSection /> : null}
       {canViewMoments ? <HomeMomentsSection /> : null}
 
       {canViewGames ? (
@@ -345,61 +366,65 @@ export function HomePage() {
         </div>
       ) : null}
 
-      <div>
-        <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
-              style={
-                {
-                  "--quick-link-color": link.color,
-                  "--quick-link-glow": `${link.color}33`,
-                } as CSSProperties
-              }
-            >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="flex items-center gap-3">
-                <div
-                  className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
-                  style={{ color: link.color }}
-                >
-                  <link.icon className="h-5 w-5" />
+      {visibleQuickLinks.length > 0 ? (
+        <div>
+          <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleQuickLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+                style={
+                  {
+                    "--quick-link-color": link.color,
+                    "--quick-link-glow": `${link.color}33`,
+                  } as CSSProperties
+                }
+              >
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="flex items-center gap-3">
+                  <div
+                    className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
+                    style={{ color: link.color }}
+                  >
+                    <link.icon className="h-5 w-5" />
+                  </div>
+                  <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
+                    {link.label}
+                  </span>
                 </div>
-                <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
-                  {link.label}
-                </span>
-              </div>
-              <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
-            </Link>
-          ))}
+                <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
-            <TrendingUp className="h-5 w-5" />
+      {canViewAiArena ? (
+        <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-tech text-sm font-bold uppercase text-white">Ready for the arena?</h3>
+              <p className="text-xs text-white/45">Train agents, earn rewards, and compete globally.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-tech text-sm font-bold uppercase text-white">Ready for the arena?</h3>
-            <p className="text-xs text-white/45">Train agents, earn rewards, and compete globally.</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/ai-arena")}
+            className="footer-arena-cta footer-arena-cta--compact group"
+            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+          >
+            <span className="footer-arena-cta__shine" aria-hidden />
+            <span className="footer-arena-cta__scan" aria-hidden />
+            <span className="footer-arena-cta__label">ENTER AI ARENA</span>
+            <ArrowUpRight className="footer-arena-cta__icon" aria-hidden />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate("/ai-arena")}
-          className="footer-arena-cta footer-arena-cta--compact group"
-          style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
-        >
-          <span className="footer-arena-cta__shine" aria-hidden />
-          <span className="footer-arena-cta__scan" aria-hidden />
-          <span className="footer-arena-cta__label">ENTER AI ARENA</span>
-          <ArrowUpRight className="footer-arena-cta__icon" aria-hidden />
-        </button>
-      </div>
+      ) : null}
     </div>
   );
 }

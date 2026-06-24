@@ -21,6 +21,7 @@ import {
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { GameListingCard, GameListingCardSkeleton } from "@/components/games/GameListingCard";
 import { gamesApi } from "@/api/gamesApi";
+import { useAccess } from "@/contexts/AccessContext";
 import { isGameDownloadable } from "@/lib/gameDownload";
 import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
 import type { Game } from "@/types/api";
@@ -174,6 +175,8 @@ const Games = () => {
   const [selectedCategory, setSelectedCategory] = useState<(typeof GAME_TYPE_FILTERS)[number]>("All");
   const [recentGameIds, setRecentGameIds] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { canUse } = useAccess();
+  const canViewLeague = canUse("league");
 
   const { data: gamesData, isLoading: gamesLoading } = useQuery({
     queryKey: ["games", "all"],
@@ -181,7 +184,7 @@ const Games = () => {
     staleTime: 5 * 60_000,
   });
 
-  const allGames = gamesData?.games ?? [];
+  const allGames = useMemo(() => gamesData?.games ?? [], [gamesData?.games]);
 
   useEffect(() => {
     try {
@@ -447,14 +450,16 @@ const Games = () => {
             <Smartphone className="h-3.5 w-3.5" />
             Cross-platform
           </span>
-          <button
-            type="button"
-            onClick={() => navigate("/leaderboard")}
-            className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
-          >
-            <span>View Leaderboard</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          {canViewLeague ? (
+            <button
+              type="button"
+              onClick={() => navigate("/leaderboard")}
+              className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+            >
+              <span>View Leaderboard</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
         </div>
       </div>
     </ArenaPageLayout>

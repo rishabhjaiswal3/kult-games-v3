@@ -2,10 +2,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Home, Compass } from "lucide-react";
+import { useAccess } from "@/contexts/AccessContext";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { canUse } = useAccess();
+  const canViewGames = canUse("games");
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -77,13 +80,15 @@ const NotFound = () => {
             <Home className="w-4 h-4" />
             RETURN HOME
           </button>
-          <button
-            onClick={() => navigate("/games")}
-            className="px-8 py-3.5 rounded-xl font-display text-sm font-semibold tracking-wider btn-eye-outline flex items-center gap-2"
-          >
-            <Compass className="w-4 h-4" />
-            BROWSE GAMES
-          </button>
+          {canViewGames ? (
+            <button
+              onClick={() => navigate("/games")}
+              className="px-8 py-3.5 rounded-xl font-display text-sm font-semibold tracking-wider btn-eye-outline flex items-center gap-2"
+            >
+              <Compass className="w-4 h-4" />
+              BROWSE GAMES
+            </button>
+          ) : null}
         </motion.div>
       </div>
 

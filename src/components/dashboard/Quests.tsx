@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { useAccess } from "@/contexts/AccessContext";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 type QuestsProps = {
@@ -45,6 +46,8 @@ function QuestRow({ quest }: { quest: QuestDef }) {
 }
 
 export function Quests({ agent, agentId }: QuestsProps) {
+  const { canUse } = useAccess();
+  const canViewLeague = canUse("league");
   const walletQ = useQuery({
     queryKey: ["aiArenaGateway", "dashboard", "walletBalance", agentId],
     queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(agentId!),
@@ -114,12 +117,14 @@ export function Quests({ agent, agentId }: QuestsProps) {
         )}
       </div>
 
-      <Link
-        to="/leaderboard"
-        className="mt-3 flex h-10 w-full items-center justify-center gap-3 rounded-md bg-gradient-to-r from-[#45156e] to-[#7121c8] font-tech text-xs"
-      >
-        VIEW ALL QUESTS <ArrowUpRight className="h-4 w-4" />
-      </Link>
+      {canViewLeague ? (
+        <Link
+          to="/leaderboard"
+          className="mt-3 flex h-10 w-full items-center justify-center gap-3 rounded-md bg-gradient-to-r from-[#45156e] to-[#7121c8] font-tech text-xs"
+        >
+          VIEW ALL QUESTS <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      ) : null}
     </section>
   );
 }
