@@ -572,14 +572,14 @@ const AchievementsPage = () => {
                       <div
                         key={item.id}
                         className={`rounded-2xl p-5 border bg-gradient-to-br from-[#0a0f1b]/95 to-[#04080f]/95 flex flex-col sm:flex-row items-start gap-4 transition-all duration-300 relative overflow-visible group hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 ${style.border} ${
-                          !item.unlocked ? "opacity-60" : ""
+                          !item.unlocked ? "opacity-85" : ""
                         }`}
                       >
                         {item.unlocked && (
                           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl pointer-events-none transition group-hover:opacity-100 opacity-50" />
                         )}
                         {!item.unlocked && (
-                          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white/50 text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
+                          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white/65 text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
                             <Lock className="h-3 w-3" />
                             <span>LOCKED</span>
                           </div>
@@ -603,14 +603,14 @@ const AchievementsPage = () => {
                               {item.rarity}
                             </span>
                           </div>
-                          <p className="text-xs text-white/60 leading-relaxed font-medium mb-2">
+                          <p className="text-xs text-white/75 leading-relaxed font-medium mb-2">
                             {item.desc}
                           </p>
 
                           {/* Progress bar (for locked with progress) */}
                           {!item.unlocked && progress && (
                             <div className="mb-2 space-y-1">
-                              <div className="flex justify-between text-[9px] font-tech text-white/40">
+                              <div className="flex justify-between text-[9px] font-tech text-white/60">
                                 <span>{progress.current} / {progress.target}</span>
                                 <span>{progressPct}%</span>
                               </div>

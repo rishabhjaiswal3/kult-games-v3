@@ -1,6 +1,6 @@
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
-import { BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
+import { ArrowUpRight, BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const platformLinks = [
@@ -96,8 +96,15 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
 
           <div className="mx-auto w-full max-w-[320px] sm:mx-0">
             <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
-            <Link to={isArena ? "/ai-arena" : "/league"} className="mt-4 flex w-full items-center justify-center rounded-md border border-[#a855f7]/60 bg-[#7e22ce]/35 px-5 py-3 font-tech text-sm font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(168,85,247,0.25)] transition hover:bg-[#9333ea]/45 hover:shadow-[0_0_32px_rgba(168,85,247,0.4)]">▶ {isArena ? "Enter AI Arena" : "Enter League"}</Link>
-            <p className="mt-3 text-xs leading-relaxed text-white/35">{isArena ? "Create, train, and deploy an agent when you&apos;re ready." : "Make your picks, follow the action, and climb the League."}</p>
+            <Link
+              to="/league"
+              className="footer-enter-cta mt-4"
+              style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+            >
+              <span>Enter League</span>
+              <ArrowUpRight aria-hidden />
+            </Link>
+            <p className="mt-3 text-xs leading-relaxed text-white/35">Make your picks, follow the action, and climb the League.</p>
           </div>
         </div>
 

@@ -72,8 +72,8 @@ function DiscoveryGameCard({
       className={`group relative shrink-0 snap-start overflow-hidden rounded-xl border border-white/10 bg-[#070b15] text-left transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/65 hover:shadow-[0_16px_34px_rgba(0,0,0,0.32),0_0_28px_rgba(154,53,255,0.18)] sm:w-[250px] lg:w-[calc((100%-1.5rem)/3)] ${fillMobileWidth ? "w-full" : "w-[230px]"}`}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[#050914]">
-        {image ? <img src={image} alt="" className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105" loading="lazy" /> : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070b15] via-[#070b15]/22 to-transparent" />
+        {image ? <img src={image} alt="" className="h-full w-full object-cover object-center brightness-125 saturate-130 contrast-105 transition duration-500 group-hover:scale-105 group-hover:brightness-135 group-hover:saturate-150" loading="lazy" /> : null}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.18),transparent_52%)] opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
         <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-lg border border-white/15 bg-black/55 font-tech text-[10px] font-black text-white backdrop-blur-sm">
           0{index + 1}
         </span>

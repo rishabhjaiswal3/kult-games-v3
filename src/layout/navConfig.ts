@@ -25,8 +25,8 @@ export type NavItem = {
 
 export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Home", path: "/", icon: Home },
-  { label: "League", path: "/league", icon: Medal, feature: "league" },
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles, feature: "ai_arena" },
+  { label: "League", path: "/league", icon: Medal, feature: "league" },
   { label: "Games", path: "/games", icon: Gamepad2, feature: "games" },
   { label: "Moments", path: "/moments", icon: FileText, feature: "moments" },
   { label: "Inventory", path: "/inventory", icon: Package, feature: "full_browser" },
