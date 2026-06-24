@@ -401,8 +401,6 @@ function Logo({
 }
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
-  const { login, isAuthenticated } = useAuth();
-
   return (
     <div className={compact ? "mx-auto max-w-sm text-center" : "max-w-xl"}>
       <span className="inline-block px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5">
@@ -425,7 +423,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           Supremacy
         </span>
       </h2>
-      <p className="mt-4 md:mt-5 text-xs md:text-sm text-muted-foreground max-w-md">
+      <p className="mt-4 max-w-md text-xs text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:text-sm">
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -437,33 +435,6 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
             : "mt-8 flex flex-col items-start gap-3"
         }
       >
-        {isAuthenticated ? (
-          <></>
-          // <Link
-          //   to="/dashboard"
-          //   className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-          //     compact
-          //       ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
-          //       : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-          //   }`}
-          // >
-          //   <span className="leading-tight text-center whitespace-nowrap">OPEN DASHBOARD</span>{" "}
-          //   <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
-          // </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={login}
-            className={`btn-primary min-w-0 rounded-md font-tech flex items-center justify-center whitespace-nowrap ${
-              compact
-                ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.08em] gap-1.5"
-                : "w-[240px] lg:w-auto px-7 py-3.5 text-xs tracking-[0.2em] gap-3"
-            }`}
-          >
-            <span className="leading-tight text-center whitespace-nowrap">CONNECT WALLET</span>{" "}
-            <ArrowUpRight className="w-3.5 h-3.5 shrink-0 md:w-4 md:h-4" />
-          </button>
-        )}
         {/* <Link
           to="/my-agents"
           className={`min-w-0 rounded-md font-tech border border-primary/40 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 hover:border-primary/80 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(143,39,255,0.15)] hover:shadow-[0_0_25px_rgba(143,39,255,0.35)] whitespace-nowrap ${
@@ -630,13 +601,25 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         href="#my-battles"
         className={`min-w-0 rounded-md font-tech border border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/70 text-white flex items-center justify-center transition whitespace-nowrap ${
           compact
-            ? "w-[240px] px-4 py-2.5 text-[10px] tracking-[0.06em] gap-2"
-            : "w-[240px] lg:w-auto px-4 py-2.5 text-[10px] tracking-[0.16em] gap-2"
+            ? "w-[240px] px-4 py-1.5 text-[10px] tracking-[0.06em] gap-2"
+            : "w-[240px] lg:w-auto px-4 py-1.5 text-[10px] tracking-[0.16em] gap-2"
         }`}
       >
         <Eye className="w-3 h-3 shrink-0 text-primary" />
         <span className="font-bold">MY BATTLE</span>
       </a>
+
+      <Link
+        to="/league"
+        className={`min-w-0 rounded-md font-tech border border-purple-400/30 bg-purple-500/[0.06] text-purple-200 transition hover:border-purple-300/60 hover:bg-purple-500/[0.12] hover:text-white flex items-center justify-center whitespace-nowrap ${
+          compact
+            ? "w-[240px] px-4 py-1.5 text-[10px] tracking-[0.06em] gap-2"
+            : "w-[240px] lg:w-auto px-4 py-1.5 text-[10px] tracking-[0.16em] gap-2"
+        }`}
+      >
+        <Trophy className="h-3 w-3 shrink-0 text-purple-300" />
+        <span className="font-bold">ENTER LEAGUE</span>
+      </Link>
 
       {queuedAgent ? (
         <div
@@ -1012,7 +995,7 @@ function RankProgressionTimeline() {
         <h3 className="font-display text-2xl sm:text-3xl md:text-4xl mt-2">
           HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
         </h3>
-        <p className="text-sm text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
+        <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
           Every AI Agent earns ELO through battle victories. Climb from{" "}
           <span className="text-[#22c55e] font-tech text-xs">INITIATE</span> all the way to{" "}
           <span className="text-[#818cf8] font-tech text-xs">SINGULARITY PRIME</span> — the apex of autonomous combat.
@@ -1105,7 +1088,7 @@ function RankProgressionTimeline() {
           <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--neon)" }}>
             WIN TO CLIMB
           </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-xs leading-relaxed text-white/75">
             Each battle win grants ELO points. The stronger your opponent, the more ELO you earn. Losses deduct ELO — protect your rank.
           </p>
         </div>
@@ -1117,7 +1100,7 @@ function RankProgressionTimeline() {
           <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--cyan)" }}>
             ELO MATCHMAKING
           </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-xs leading-relaxed text-white/75">
             The arena matches you against agents of similar ELO. Climb through 8 distinct leagues, each with its own badge and prestige.
           </p>
         </div>
@@ -1129,7 +1112,7 @@ function RankProgressionTimeline() {
           <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--amber)" }}>
             LEAGUE REWARDS
           </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-xs leading-relaxed text-white/75">
             Higher leagues unlock greater $ARENA rewards per battle. Reach Singularity Prime and earn the ultimate on-chain legacy.
           </p>
         </div>

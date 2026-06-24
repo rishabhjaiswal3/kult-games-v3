@@ -23,8 +23,6 @@ import {
   Hexagon,
   Video,
   Image as ImageIcon,
-  ThumbsUp,
-  Calendar,
   Loader2,
 } from "lucide-react";
 import { momentsApi } from "@/api/momentsApi";
@@ -46,6 +44,11 @@ import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import momentWarzone from "@/assets/moment-warzone.png";
 import momentRobowars from "@/assets/moment-robowars.png";
 import momentFeatured from "@/assets/moment-featured.png";
+import agentNexus from "@/assets/agent-nexus.jpg";
+import agentAegis from "@/assets/agent-aegis.jpg";
+import agentLumen from "@/assets/agent-lumen.jpg";
+import agentShadow from "@/assets/agent-shadow.jpg";
+import agentRageborn from "@/assets/agent-rageborn.jpg";
 
 
 type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
@@ -442,6 +445,27 @@ function MediaTypeBadge({ contentType, size = "sm" }: { contentType: "image" | "
   );
 }
 
+function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void }) {
+  return (
+    <article className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
+      <button type="button" onClick={() => onOpen(item)} className="group relative aspect-[16/8.7] cursor-pointer overflow-hidden bg-black/40 text-left">
+        <img src={item.thumbnail} alt={item.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
+        <div className="absolute left-3 top-3"><GameBadge game={item.game} /></div>
+        <div className="absolute right-3 top-3 flex items-center gap-1.5"><MediaTypeBadge contentType={item.contentType} /><div className="rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">{item.duration}</div></div>
+        {item.contentType === "video" && <div className="absolute inset-0 flex items-center justify-center"><div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]"><Play className="ml-0.5 h-5 w-5 fill-white text-white" /></div></div>}
+      </button>
+      <div className="flex flex-1 flex-col justify-between p-2.5">
+        <div>
+          <h3 onClick={() => onOpen(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">{item.title}</h3>
+          <div className="mt-1 flex items-center justify-between"><div className="flex items-center gap-1.5 text-[11px] text-white/50"><span>by {item.creator}</span><Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" /></div><div className="flex items-center gap-1.5 text-[10px] text-white/40"><ClanIconBadge type={item.clanIconType} /><span className="max-w-[90px] truncate">{item.clanName}</span></div></div>
+        </div>
+        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Eye className="h-4 w-4 text-white/30" />{item.views}</span><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2"><div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div><button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
+      </div>
+    </article>
+  );
+}
+
 // ── Dropdown ──────────────────────────────────────────────────────────────────
 function FilterDropdown({ label, options, value, onSelect, activeDropdown, name, onToggle }: {
   label: string; options: string[]; value: string;
@@ -668,20 +692,6 @@ export function AllMomentsPage() {
   const showViewMore =
     !isBrowseAll && activeTab === "DISCOVER" && !discoverQuery.isLoading && filteredMoments.length > 0;
 
-  const stats = useMemo(() => {
-    const totalMoments = discoverQuery.data?.pages[0]?.total ?? discoverCards.length;
-    const totalLikes = discoverCards.reduce((t, c) => t + c.likeCount, 0);
-    const totalViews = discoverCards.reduce((t, c) => t + c.viewCount, 0);
-    const thisWeek = discoverCards.filter((c) => isWithinTimeWindow(c.raw.createdAt, "THIS WEEK")).length;
-    return {
-      totalMoments,
-      thisWeek,
-      totalViews: totalViews > 0 ? compactMetric(totalViews) : "—",
-      totalLikes: compactMetric(totalLikes),
-      averageWatchTime: averageDurationLabel(discoverCards),
-    };
-  }, [discoverCards, discoverQuery.data]);
-
   const topCreators = useMemo(() => buildCreatorRows(discoverCards), [discoverCards]);
 
   const canLoadMore = isBrowseAll && activeTab === "DISCOVER" && Boolean(discoverQuery.hasNextPage);
@@ -731,7 +741,7 @@ export function AllMomentsPage() {
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
       <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
+        <div className="space-y-4">
 
           <div className="min-w-0 space-y-4">
             {isBrowseAll ? (
@@ -746,13 +756,10 @@ export function AllMomentsPage() {
 
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="font-tech text-3xl font-bold tracking-tight text-white">
-                  {isBrowseAll ? "ALL MOMENTS" : "MOMENTS"}
-                </h1>
+                <div className="font-tech text-[10px] font-semibold uppercase tracking-[0.38em] text-cyan-300">One feed · every world</div>
+                <h1 className="mt-2 font-tech text-3xl font-bold tracking-tight text-white">Moments</h1>
                 <p className="mt-1 text-[11px] font-medium text-white/55">
-                  {isBrowseAll
-                    ? `Browsing ${activeCategory.toLowerCase()} clips with your current filters.`
-                    : "Epic plays, insane clutches, and legendary victories. Replay and share your best battles."}
+                  Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
                 </p>
               </div>
               <button
@@ -761,7 +768,7 @@ export function AllMomentsPage() {
                 className="flex h-10 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>New Moment</span>
+                <span>Create Momentt</span>
               </button>
             </div>
 
@@ -777,6 +784,10 @@ export function AllMomentsPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
+            <div className="min-w-0 space-y-4">
 
             <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -847,13 +858,15 @@ export function AllMomentsPage() {
             </div>
 
             {discoverQuery.isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`}>
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex animate-pulse flex-col">
-                    <div className="aspect-[16/9] rounded border border-white/8 bg-white/5" />
-                    <div className="mt-3 h-4 w-2/3 rounded bg-white/5" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-white/5" />
-                    <div className="mt-4 h-4 w-full rounded bg-white/5" />
+                  <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
+                    <div className="aspect-[16/8.7] bg-white/5" />
+                    <div className="space-y-2.5 p-3">
+                      <div className="h-4 w-2/3 rounded bg-white/5" />
+                      <div className="h-3 w-1/2 rounded bg-white/5" />
+                      <div className="h-4 w-full border-t border-white/6 pt-3" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -870,13 +883,13 @@ export function AllMomentsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {displayMoments.map((item) => (
-                  <div key={item.id} className="flex flex-col">
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`}>
+                {displayMoments.slice(0, isBrowseAll ? undefined : 6).map((item) => (
+                  <article key={item.id} className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
                     <button
                       type="button"
                       onClick={() => openMoment(item)}
-                      className="group relative aspect-[16/9] cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
+                      className="group relative aspect-[16/8.7] cursor-pointer overflow-hidden bg-black/40 text-left"
                     >
                       <img
                         src={item.thumbnail}
@@ -899,12 +912,12 @@ export function AllMomentsPage() {
                       )}
                     </button>
 
-                    <div className="mt-3 flex flex-1 flex-col justify-between">
+                    <div className="flex flex-1 flex-col justify-between p-2.5">
                       <div>
                         <h3 onClick={() => openMoment(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">
                           {item.title}
                         </h3>
-                        <div className="mt-1.5 flex items-center justify-between">
+                        <div className="mt-1 flex items-center justify-between">
                           <div className="flex items-center gap-1.5 text-[11px] text-white/50">
                             <span>by {item.creator}</span>
                             <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
@@ -915,7 +928,7 @@ export function AllMomentsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3 flex items-center justify-between border-t border-white/6 pt-3 text-xs font-semibold text-white/45">
+                      <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45">
                         <div className="flex items-center gap-3">
                           <span className="flex items-center gap-1"><Eye className="h-4 w-4 text-white/30" />{item.views}</span>
                           <span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span>
@@ -933,7 +946,7 @@ export function AllMomentsPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
@@ -953,10 +966,27 @@ export function AllMomentsPage() {
           </div>
 
           {!isBrowseAll ? (
-          <aside className="space-y-4">
+          <aside className="relative space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)]">
+
+            <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-4 text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
+                <Zap className="h-7 w-7" strokeWidth={2.5} />
+              </div>
+              <h3 className="mt-4 font-tech text-sm font-semibold uppercase tracking-wider text-white/90">Earn KP for sharing</h3>
+              <p className="mt-3 text-xs leading-relaxed text-white/55">
+                Share any moment to X. When real people click through and play, you earn <span className="font-semibold text-[#d6acff]">5 KP per verified play.</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveTab("MY MOMENTS")}
+                className="mt-5 inline-flex h-10 w-full items-center justify-center rounded bg-[#9a35ff] px-4 font-tech text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
+              >
+                View Attention Rewards <ArrowUpRight className="ml-2 h-4 w-4" />
+              </button>
+            </section>
 
             {/* Featured moment */}
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+            <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">FEATURED MOMENT</h3>
 
               <button
@@ -1016,33 +1046,37 @@ export function AllMomentsPage() {
               </button>
             </div>
 
-            {/* Moments stats */}
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">MOMENTS STATS</h3>
-              <div className="divide-y divide-white/6 text-[11px] font-medium">
-                {[
-                  { Icon: Video,    label: "Total Moments", value: stats.totalMoments.toLocaleString(), badge: null },
-                  { Icon: Calendar, label: "This Week",     value: stats.thisWeek.toLocaleString(), badge: "LIVE" },
-                  { Icon: Eye,      label: "Total Views",   value: stats.totalViews, badge: null },
-                  { Icon: ThumbsUp, label: "Total Likes",   value: stats.totalLikes, badge: null },
-                  { Icon: Clock,    label: "Avg. Watch Time", value: stats.averageWatchTime, badge: null },
-                ].map(({ Icon, label, value, badge }) => (
-                  <div key={label} className="flex items-center justify-between py-2.5">
-                    <div className="flex items-center gap-2.5 text-white/55">
-                      <Icon className="h-4 w-4 text-white/30" />
-                      <span>{label}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-tech font-bold text-white">{value}</span>
-                      {badge && <span className="ml-1 rounded border border-emerald-500/20 bg-emerald-500/10 px-1 py-0.5 text-[8px] font-bold text-emerald-400 select-none">{badge}</span>}
+            {/* Top sharers */}
+            <section className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
+              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP SHARERS</h3>
+              {[
+                { wallet: "0xC27A…7541", plays: "612 plays", avatar: agentNexus },
+                { wallet: "0x41AC…F3D7", plays: "438 plays", avatar: agentAegis },
+                { wallet: "0xE9BB…9E10", plays: "252 plays", avatar: agentLumen },
+                { wallet: "0x4AF2…32B9", plays: "196 plays", avatar: agentShadow },
+                { wallet: "0x5E95…568E", plays: "144 plays", avatar: agentRageborn },
+              ].map((sharer, index) => (
+                <div key={sharer.wallet} className="flex items-center justify-between py-0.5 text-xs font-semibold">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="w-3 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
+                    <span className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+                      <img src={sharer.avatar} alt="" className="h-full w-full object-cover" />
+                    </span>
+                    <div className="flex min-w-0 items-center gap-1 text-white/90">
+                      <span className="truncate">{sharer.wallet}</span>
+                      <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="ml-3 flex shrink-0 items-center gap-1 text-[10px] text-white/55">
+                    <Eye className="h-3.5 w-3.5 text-white/30" />
+                    <span>{sharer.plays}</span>
+                  </div>
+                </div>
+              ))}
+            </section>
 
             {/* Top creators */}
-            <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+            <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP CREATORS</h3>
               <div className="space-y-3 text-xs font-semibold">
                 {topCreators.length === 0 ? (
@@ -1070,6 +1104,14 @@ export function AllMomentsPage() {
             </div>
           </aside>
           ) : null}
+        </div>
+        {!isBrowseAll && displayMoments.length > 6 ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {displayMoments.slice(6).map((item) => (
+              <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} />
+            ))}
+          </div>
+        ) : null}
         </div>
       </section>
 
