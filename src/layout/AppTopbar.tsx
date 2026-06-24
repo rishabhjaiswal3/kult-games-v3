@@ -24,7 +24,7 @@ export function AppTopbar() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[58px] max-w-full flex-nowrap items-center justify-between gap-2 px-3 py-2 sm:min-h-[68px] sm:flex-wrap sm:gap-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[54px] max-w-full flex-nowrap items-center justify-between gap-2 px-3 py-1.5 sm:min-h-[60px] sm:flex-wrap sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Link to="/" className="truncate font-tech text-lg font-bold sm:text-xl lg:hidden">
               KULT <span className="text-[#9a35ff]">GAMES</span>
@@ -38,7 +38,7 @@ export function AppTopbar() {
             {isAuthenticated && showStudio ? (
               <a
                 href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-3 font-tech text-[11px] font-black uppercase tracking-wider text-white transition hover:brightness-110 sm:px-4 sm:text-xs"
+                className="topbar-wallet-cta gap-2"
               >
                 <Clapperboard className="h-4 w-4" />
                 Studio
@@ -73,7 +73,7 @@ export function AppTopbar() {
               <button
                 type="button"
                 onClick={() => requestOpenLoginModal()}
-                className="btn-arena-primary rounded-md px-3 py-2.5 font-tech text-[10px] sm:px-4 sm:text-[11px]"
+                className="topbar-wallet-cta"
               >
                 CONNECT WALLET
               </button>

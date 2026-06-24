@@ -147,16 +147,16 @@ export function HomePage() {
             <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
               Kult Games
             </span>
-            <h1 className="font-tech text-4xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              YOUR
+            <h1 className="max-w-2xl font-tech text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              The operating
               <br />
-              AGENTS
+              layer for
               <br />
-              NEVER{" "}
+              intelligent
               <br />
-              SLEEP
+              gaming.
             </h1>
-            <p className="max-w-lg text-sm leading-relaxed text-white/60">
+            <p className="max-w-lg text-sm leading-relaxed text-white/75">
               One browser for games, agents, rivalries,
               <br />
               and live battles that never stop.
@@ -175,7 +175,7 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={isAuthenticated && canViewAiArena ? () => navigate("/dashboard") : login}
-                className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#0a0f1b]/60 px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white/75 transition hover:border-purple-500/35 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-md border border-purple-300/45 bg-purple-500/[0.12] px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-100 shadow-[0_0_14px_rgba(154,53,255,0.12)] transition hover:border-purple-200/75 hover:bg-purple-500/[0.18] hover:text-white hover:shadow-[0_0_20px_rgba(154,53,255,0.22)]"
               >
                 {isAuthenticated && canViewAiArena ? "Open dashboard" : "Connect wallet"}
               </button>
@@ -189,15 +189,20 @@ export function HomePage() {
         <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] md:items-center">
           <div>
             <div className="font-tech text-[10px] font-bold uppercase tracking-[0.26em] text-[#bd6cff]">Your KULT ID</div>
-            <h2 className="mt-2 font-tech text-xl font-black uppercase leading-tight text-white sm:text-2xl">One Identity, Infinite Games, Intelligent Agents, Capture moment, predict the future, .</h2>
+            <h2 className="mt-2 max-w-xl font-tech text-lg font-semibold leading-snug text-white sm:text-xl">
+              One identity for your entire game world.
+            </h2>
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/75">
+              Infinite Games, Intelligent Agents, Capture moment, predict the future.
+            </p>
           </div>
           {canViewAiArena ? (
             <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 p-3 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
               <div className="min-w-0">
-                <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-white/45">Identity card</div>
-                <div className="mt-1 font-tech text-xs font-bold uppercase text-white group-hover:text-[#66d5ff]">One profile across KULT</div>
-                <div className="mt-1 text-[11px] text-white/48">Wallet · Agents · Progress · Reputation</div>
+                <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
+                <div className="mt-1 text-sm font-semibold text-white group-hover:text-[#66d5ff]">One profile across Kult</div>
+                <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
               </div>
             </Link>
           ) : null}
@@ -213,7 +218,7 @@ export function HomePage() {
           <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-nowrap md:items-center md:justify-end">
             {["Play", "Create", "Compete", "Build", "Persist"].map((step, index) => (
               <div key={step} className="flex min-w-0 items-center justify-center gap-2 md:shrink-0">
-                <span className="rounded-md border border-white/15 bg-white/[0.035] px-2.5 py-1.5 shadow-[inset_0_0_20px_rgba(255,255,255,0.015)]">{step}</span>
+                <span className="rounded-md border border-[#b766ff]/35 bg-[#7c3aed]/[0.07] px-2.5 py-1.5 text-[#f1e6ff] shadow-[inset_0_0_20px_rgba(196,126,255,0.08),0_0_14px_rgba(154,53,255,0.12)] [text-shadow:0_0_10px_rgba(222,184,255,0.7)]">{step}</span>
                 {index < 4 ? <ArrowRight className={`h-3 w-3 shrink-0 text-[#a747ff] ${index === 2 ? "hidden md:block" : ""}`} aria-hidden /> : null}
               </div>
             ))}
@@ -322,7 +327,7 @@ export function HomePage() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="arena-panel aspect-[16/10] min-w-[82vw] animate-pulse snap-start border-white/8 bg-white/5 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
+                      className="arena-panel aspect-[16/10] min-w-[82vw] animate-pulse snap-start border-white/8 bg-white/5 sm:min-w-[360px] lg:min-w-[calc((100%-3.75rem)/4)]"
                   />
                 ))
               : featuredGames.map((game) => {
@@ -332,17 +337,19 @@ export function HomePage() {
                     <Link
                       key={game._id ?? id}
                       to={`/game/${id}`}
-                      className="group flex min-w-[82vw] snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-[#9a35ff]/35 sm:min-w-[360px] lg:min-w-[calc((100%-2.5rem)/3)]"
+                      className="group flex min-w-[82vw] snap-start flex-col overflow-hidden rounded-lg border border-[#5d6d8c]/45 bg-[#04080f]/95 shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-[#a855f7]/70 hover:shadow-[0_12px_34px_rgba(133,49,235,0.26)] sm:min-w-[360px] lg:min-w-[calc((100%-3.75rem)/4)]"
                     >
                       <div className="relative aspect-[16/10] overflow-hidden bg-[#0a0f18]">
                         {image ? (
                           <img
                             src={image}
                             alt={getGameName(game.name)}
-                            className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
+                            className="h-full w-full object-cover object-top brightness-125 saturate-130 contrast-105 transition duration-500 group-hover:scale-105 group-hover:brightness-135 group-hover:saturate-150"
                           />
                         ) : null}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] to-transparent" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(164,105,255,0.18),transparent_48%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#04080f]/58 via-[#04080f]/5 to-transparent" />
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent opacity-70" />
                       </div>
                       <div className="p-3">
                         <p className="truncate text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">
@@ -409,6 +416,7 @@ export function HomePage() {
             type="button"
             onClick={() => navigate("/ai-arena")}
             className="footer-arena-cta footer-arena-cta--compact group"
+            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
           >
             <span className="footer-arena-cta__shine" aria-hidden />
             <span className="footer-arena-cta__scan" aria-hidden />
@@ -610,8 +618,8 @@ function HomeLiveLeaguesSection() {
               <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Damage</div><div className="mt-1 font-tech text-xs font-bold text-white">{liveFixture.damage.toLocaleString()}</div></div>
             </div>
             <div className="mt-4">
-              <div className="mb-1.5 flex items-center justify-between font-tech text-[9px] uppercase tracking-[0.16em] text-white/45">
-                <span>Live agent consensus</span><span>HYBRID {liveFixture.hybridWin}%</span>
+              <div className="mb-1.5 font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-300">
+                <span>Live agent consensus</span>
               </div>
               <div className="flex h-2 overflow-hidden rounded-full bg-white/8">
                 <div className="bg-gradient-to-r from-[#a747ff] to-[#8051ed] transition-[width] duration-1000" style={{ width: `${liveFixture.hybridWin}%` }} />
@@ -642,7 +650,7 @@ function HomeLiveLeaguesSection() {
             </div>
             {leagueView === "league" ? (
               <>
-                <div className="mt-4 font-tech text-[10px] uppercase tracking-[0.18em] text-white/50">Top agents</div>
+                <div className="mt-4 font-tech text-[10px] uppercase tracking-[0.18em] text-[#bd6cff]">Top agents</div>
                 <div className="mt-3 space-y-2">
                   {leaders.map(([rank, agent, power]) => (
                     <div key={agent} className="flex items-center gap-3 rounded border border-white/6 bg-white/[0.025] px-3 py-2">
@@ -655,7 +663,7 @@ function HomeLiveLeaguesSection() {
               </>
             ) : (
               <div className="mt-4 space-y-2">
-                <div className="font-tech text-[10px] uppercase tracking-[0.18em] text-white/50">Live market signals</div>
+                <div className="font-tech text-[10px] uppercase tracking-[0.18em] text-[#bd6cff]">Live market signals</div>
                 {[
                   ["HYBRID", "Brazil win", "62%"],
                   ["TACTICIAN", "Draw", "18%"],
@@ -678,12 +686,12 @@ function HomeLiveLeaguesSection() {
 
 function HomeMomentsSection() {
   const { data, isLoading } = useQuery({
-    queryKey: ["moments", "home", 3],
-    queryFn: () => momentsApi.list({ perPage: 3 }),
+    queryKey: ["moments", "home", 4],
+    queryFn: () => momentsApi.list({ perPage: 4 }),
     staleTime: 3 * 60_000,
   });
 
-  const moments = data?.moments?.slice(0, 3) ?? [];
+  const moments = data?.moments?.slice(0, 4) ?? [];
 
   return (
     <section className="space-y-3">
@@ -699,9 +707,9 @@ function HomeMomentsSection() {
           View moments →
         </Link>
       </div>
-      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-3 md:overflow-visible md:pb-0 lg:grid-cols-4">
         {isLoading
-          ? Array.from({ length: 3 }).map((_, i) => (
+          ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
                 className="w-full min-w-full snap-start animate-pulse overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 md:min-w-0"

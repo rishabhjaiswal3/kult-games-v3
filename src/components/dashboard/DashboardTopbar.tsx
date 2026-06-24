@@ -44,7 +44,7 @@ export function DashboardTopbar() {
   return (
     <>
       <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
-        <div className="relative mx-auto flex min-h-[58px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-2 sm:min-h-[68px] sm:gap-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex min-h-[54px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-1.5 sm:min-h-[60px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
             {showArenaLinks ? (
             <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden">
@@ -60,7 +60,7 @@ export function DashboardTopbar() {
             {isAuthenticated && showStudio && (
               <a
                 href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
-                className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-0 font-tech text-[11px] font-black uppercase tracking-wider text-white transition hover:brightness-110 min-[430px]:w-auto min-[430px]:px-4 sm:text-xs"
+                className="topbar-wallet-cta h-9 w-9 shrink-0 gap-2 px-0 min-[430px]:w-auto min-[430px]:px-3"
               >
                 <Clapperboard className="h-4 w-4" />
                 <span className="hidden min-[430px]:inline">Studio</span>
@@ -94,9 +94,9 @@ export function DashboardTopbar() {
             <button
               type="button"
               onClick={handleConnectWallet}
-              className={isAuthenticated 
-                ? "block shrink-0 rounded-md bg-gradient-to-b from-[#1a0a14] to-[#0a0306] border border-red-500/20 px-2 py-2.5 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
-                : "btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+              className={isAuthenticated
+                ? "block h-9 shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-3 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)]"
+                : "topbar-wallet-cta block shrink-0"
               }
             >
               <span className="hidden min-[430px]:inline">{isAuthenticated ? "DISCONNECT" : "CONNECT WALLET"}</span>
