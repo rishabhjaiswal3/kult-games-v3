@@ -548,6 +548,24 @@ function HomeAIArenaSection() {
   );
 }
 
+function FixtureAgentPortrait({ src, color, name, sub }: { src: string; color: string; name: string; sub: string }) {
+  return (
+    <div className="flex flex-1 flex-col items-center gap-1.5">
+      <div
+        className="relative h-14 w-14 overflow-hidden rounded-2xl border-2 sm:h-16 sm:w-16"
+        style={{ borderColor: color, boxShadow: `0 0 22px ${color}66` }}
+      >
+        <video src={src} autoPlay loop muted playsInline className="h-full w-full object-cover" />
+        <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 55%, ${color}33)` }} />
+      </div>
+      <div className="text-center">
+        <div className="font-tech text-sm font-black uppercase tracking-wide" style={{ color }}>{name}</div>
+        <div className="mt-0.5 text-[10px] text-white/45">{sub}</div>
+      </div>
+    </div>
+  );
+}
+
 function HomeLiveLeaguesSection() {
   const [liveFixture, setLiveFixture] = useState({ hybridWin: 62, secondsLeft: 268, damage: 6840 });
   const [leagueView, setLeagueView] = useState<"league" | "polymarket">("league");
@@ -577,16 +595,16 @@ function HomeLiveLeaguesSection() {
   const timerSeconds = (liveFixture.secondsLeft % 60).toString().padStart(2, "0");
 
   return (
-    <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
+    <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-3.5 sm:p-4">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_22%,rgba(255,192,0,0.14),transparent_30%),radial-gradient(circle_at_8%_78%,rgba(154,53,255,0.16),transparent_32%)]" />
       <div className="relative">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#ffc42e]">
               <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.85)]" />
               Live leagues
             </div>
-            <h2 className="mt-2 font-tech text-2xl font-black uppercase text-white sm:text-3xl">Season is live.</h2>
+            <h2 className="mt-1 font-tech text-xl font-black uppercase text-white sm:text-2xl">Season is live.</h2>
           </div>
           <div className="hidden text-center lg:block">
             <div className="font-tech text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffc42e]">Make your first pick.</div>
@@ -595,37 +613,51 @@ function HomeLiveLeaguesSection() {
           <Link to="/league" className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#ffc42e] hover:text-[#ffd66b]">View all leagues →</Link>
         </div>
 
-        <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div className="rounded-lg border border-white/8 bg-black/30 p-4">
+        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <div className="relative overflow-hidden rounded-lg border border-[#9a35ff]/25 bg-[radial-gradient(circle_at_15%_0%,rgba(154,53,255,0.16),transparent_45%),radial-gradient(circle_at_85%_100%,rgba(82,203,255,0.14),transparent_45%),#06070f] p-3.5 shadow-[0_0_30px_rgba(154,53,255,0.08)]">
             <div className="flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.18em] text-white/50">
               <span>Live fixture</span>
-              <span className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-red-300">Now playing</span>
+              <span className="inline-flex items-center gap-1.5 rounded border border-red-500/40 bg-red-500/10 px-2 py-1 text-red-300">
+                <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" /></span>
+                Now playing
+              </span>
             </div>
-            <div className="mt-5 flex items-center justify-between gap-4 text-center">
-              <div className="flex-1">
-                <div className="font-tech text-base font-bold uppercase text-[#b66dff]">HYBRID</div>
-                <div className="mt-1 text-xs text-white/45">Neural Syndicate</div>
+
+            <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <FixtureAgentPortrait src={agentNexus} color="#b66dff" name="HYBRID" sub="Neural Syndicate" />
+              <div className="relative flex h-14 w-12 items-center justify-center">
+                <span className="absolute h-12 w-12 rounded-full blur-xl" style={{ background: "radial-gradient(circle, rgba(168,85,247,0.7), transparent 70%)" }} />
+                <span className="relative font-display text-2xl font-black text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.6)]">VS</span>
               </div>
-              <div className="font-tech text-xs font-bold text-white/45">VS</div>
-              <div className="flex-1">
-                <div className="font-tech text-base font-bold uppercase text-[#52cbff]">TACTICIAN</div>
-                <div className="mt-1 text-xs text-white/45">Protocol Zero</div>
+              <FixtureAgentPortrait src={agentAegis} color="#52cbff" name="TACTICIAN" sub="Protocol Zero" />
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 divide-x divide-white/8 rounded-lg border border-white/8 bg-white/[0.025] py-1.5 text-center">
+              <div>
+                <div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Round</div>
+                <div className="mt-1 font-tech text-xs font-bold text-white">03 / 05</div>
+                <div className="mt-1 flex items-center justify-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < 3 ? "bg-[#26e63b] shadow-[0_0_6px_rgba(38,230,59,0.8)]" : "bg-white/20"}`} />
+                  ))}
+                </div>
               </div>
+              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Time</div><div className="mt-1 font-tech text-base font-black tabular-nums text-[#26e63b]">{timerMinutes}:{timerSeconds}</div></div>
+              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Damage</div><div className="mt-1 font-tech text-base font-black tabular-nums text-white">{liveFixture.damage.toLocaleString()}</div></div>
             </div>
-            <div className="mt-4 grid grid-cols-3 divide-x divide-white/8 rounded border border-white/8 bg-white/[0.025] py-2 text-center">
-              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Round</div><div className="mt-1 font-tech text-xs font-bold text-white">03 / 05</div></div>
-              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Time</div><div className="mt-1 font-tech text-xs font-bold text-[#26e63b]">{timerMinutes}:{timerSeconds}</div></div>
-              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Damage</div><div className="mt-1 font-tech text-xs font-bold text-white">{liveFixture.damage.toLocaleString()}</div></div>
-            </div>
-            <div className="mt-4">
-              <div className="mb-1.5 font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-300">
+
+            <div className="mt-3">
+              <div className="mb-1.5 flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-300">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 <span>Live agent consensus</span>
               </div>
-              <div className="flex h-2 overflow-hidden rounded-full bg-white/8">
+              <div className="relative flex h-3 overflow-hidden rounded-full bg-white/8">
                 <div className="bg-gradient-to-r from-[#a747ff] to-[#8051ed] transition-[width] duration-1000" style={{ width: `${liveFixture.hybridWin}%` }} />
                 <div className="bg-gradient-to-r from-[#1c8fba] to-[#52cbff] transition-[width] duration-1000" style={{ width: `${tacticianWin}%` }} />
+                <div className="pointer-events-none absolute inset-0 overflow-hidden"><div className="animate-league-sheen h-full w-1/4 bg-gradient-to-r from-transparent via-white/30 to-transparent" /></div>
+                <div className="absolute top-1/2 h-4 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] transition-[left] duration-1000" style={{ left: `${liveFixture.hybridWin}%` }} />
               </div>
-              <div className="mt-1.5 flex justify-between font-tech text-[9px] uppercase tracking-wider text-white/48"><span>Hybrid win {liveFixture.hybridWin}%</span><span>Tactician win {tacticianWin}%</span></div>
+              <div className="mt-1.5 flex justify-between font-tech text-[9px] uppercase tracking-wider text-white/48"><span className="text-[#b66dff]">Hybrid win {liveFixture.hybridWin}%</span><span className="text-[#52cbff]">Tactician win {tacticianWin}%</span></div>
             </div>
           </div>
 
@@ -653,10 +685,10 @@ function HomeLiveLeaguesSection() {
                 <div className="mt-4 font-tech text-[10px] uppercase tracking-[0.18em] text-[#bd6cff]">Top agents</div>
                 <div className="mt-3 space-y-2">
                   {leaders.map(([rank, agent, power]) => (
-                    <div key={agent} className="flex items-center gap-3 rounded border border-white/6 bg-white/[0.025] px-3 py-2">
-                      <span className="font-tech text-xs text-[#ffc42e]">{rank}</span>
-                      <span className="flex-1 font-tech text-xs font-bold uppercase text-white/80">{agent}</span>
-                      <span className="text-[10px] text-white/45">{power} power</span>
+                    <div key={agent} className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2 transition hover:border-[#ffc42e]/35 hover:bg-[#ffc42e]/[0.06]">
+                      <span className={`grid h-5 w-5 place-items-center rounded font-tech text-[10px] font-black ${rank === "01" ? "bg-[#ffc42e]/20 text-[#ffc42e]" : "bg-white/8 text-white/55"}`}>{rank}</span>
+                      <span className="flex-1 font-tech text-xs font-bold uppercase text-white/85">{agent}</span>
+                      <span className="font-tech text-[10px] text-white/45">{power} power</span>
                     </div>
                   ))}
                 </div>
@@ -669,10 +701,10 @@ function HomeLiveLeaguesSection() {
                   ["TACTICIAN", "Draw", "18%"],
                   ["BERSERKER", "Argentina win", "20%"],
                 ].map(([agent, call, confidence]) => (
-                  <div key={agent} className="flex items-center gap-3 rounded border border-white/6 bg-white/[0.025] px-3 py-2">
-                    <span className="flex-1 font-tech text-[10px] font-bold uppercase text-white/80">{agent}</span>
+                  <div key={agent} className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2 transition hover:border-[#7f9cff]/35 hover:bg-[#7f9cff]/[0.06]">
+                    <span className="flex-1 font-tech text-[10px] font-bold uppercase text-white/85">{agent}</span>
                     <span className="text-[10px] text-white/45">{call}</span>
-                    <span className="font-tech text-[10px] text-[#9db0ff]">{confidence}</span>
+                    <span className="font-tech text-[10px] font-bold text-[#9db0ff]">{confidence}</span>
                   </div>
                 ))}
               </div>

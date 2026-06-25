@@ -1,4 +1,4 @@
-import { Flame, Search, Trophy } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 
 export function LeaguePageHeader() {
   return (
@@ -42,13 +42,6 @@ export function LeaguePageHeader() {
             <p className="font-tech text-base font-black text-amber-400 sm:text-lg">18</p>
           </div>
         </div>
-        <button
-          type="button"
-          aria-label="Search league"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition hover:border-[#a855f7]/40 hover:text-white"
-        >
-          <Search className="h-4 w-4" />
-        </button>
       </div>
     </header>
   );

@@ -30,6 +30,14 @@ import {
   type PolyEvent,
   type PolyMarket,
 } from "@/api/polymarketApi";
+import {
+  fetchAllMatches,
+  fetchWorldCupGroups,
+  type GroupStanding,
+  type UpcomingMatch,
+  type WorldCupGroup,
+} from "@/api/worldCupApi";
+import { fetchFootballNews, type NewsItem } from "@/api/footballNewsApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, type CountryCode } from "./FlagHex";
@@ -611,26 +619,26 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
 
   return (
-    <LeaguePanel fill={false} className="border-cyan-400/20 p-4 lg:col-span-6">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <LeaguePanel fill={false} className="border-cyan-400/20 p-3 lg:col-span-6">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Trending movers</h3>
           <p className="mt-0.5 text-[10px] text-white/45">Biggest price swings</p>
         </div>
         <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live</span>
       </div>
-      <div className="grid max-h-[230px] grid-cols-1 items-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
+      <div className="grid max-h-[196px] grid-cols-1 items-start gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
         {movers.map((market) => {
           const sessionDir = market.session > 0 ? "up" : market.session < 0 ? "down" : "flat";
           return (
-            <button key={market.id} type="button" onClick={() => onSelect(market.id)} className="w-full overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.1),transparent_55%),#070911] p-2.5 text-left transition hover:border-cyan-400/40">
+            <button key={market.id} type="button" onClick={() => onSelect(market.id)} className="w-full overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.1),transparent_55%),#070911] p-2 text-left transition hover:border-cyan-400/40">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0"><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">{market.category}</p><p className="mt-1 line-clamp-2 font-tech text-[10px] font-bold leading-snug text-white">{market.question}</p></div>
-                <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[10px] font-bold ${priceToneClass(sessionDir)}`}>
+                <div className="min-w-0"><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">{market.category}</p><p className="mt-0.5 line-clamp-2 font-tech text-[10px] font-bold leading-snug text-white">{market.question}</p></div>
+                <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-tech text-[10px] font-bold ${priceToneClass(sessionDir)}`}>
                   <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢
                 </span>
               </div>
-              <span className="mt-1.5 block font-tech text-sm font-black text-white">YES {market.yes}¢</span>
+              <span className="mt-1 block font-tech text-sm font-black text-white">YES {market.yes}¢</span>
             </button>
           );
         })}
@@ -841,6 +849,8 @@ const NAME_TO_FLAG: Record<string, string> = {
   morocco: "🇲🇦", senegal: "🇸🇳", tunisia: "🇹🇳", algeria: "🇩🇿", egypt: "🇪🇬", ghana: "🇬🇭",
   nigeria: "🇳🇬", cameroon: "🇨🇲", "ivory coast": "🇨🇮", "côte d'ivoire": "🇨🇮", mali: "🇲🇱",
   "south africa": "🇿🇦", england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", wales: "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+  "bosnia and herzegovina": "🇧🇦", "cape verde": "🇨🇻", "curaçao": "🇨🇼", curacao: "🇨🇼",
+  "democratic republic of the congo": "🇨🇩", uzbekistan: "🇺🇿", jordan: "🇯🇴",
 };
 
 function flagFor(label: string): string | undefined {
@@ -974,7 +984,7 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
         <div className="min-w-0">
           <div className="divide-y divide-white/8">
             {outcomes.map((o) => (
-              <div key={o.key} className="flex items-center justify-between gap-3 py-2.5">
+              <div key={o.key} className="flex items-center justify-between gap-3 py-2">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <OutcomeAvatar outcome={o} />
                   <span className="truncate font-tech text-sm font-bold text-white">{o.label}</span>
@@ -984,18 +994,10 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
             ))}
           </div>
 
-          <div className="mt-4 space-y-3 border-t border-white/8 pt-3">
-            <div className="flex items-center gap-1.5"><Radio className="h-3.5 w-3.5 text-cyan-300" /><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-300">Live chat</p></div>
+          <div className="mt-4 border-t border-white/8 pt-3">
+            <div className="mb-2 flex items-center gap-1.5"><Radio className="h-3.5 w-3.5 text-cyan-300" /><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-300">Live chat</p></div>
             {displayComments.length > 0 ? (
-              displayComments.slice(0, 3).map((c) => (
-                <div key={c.id} className="flex gap-2.5">
-                  <div className="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#2E5CFF]/25 font-tech text-[9px] font-bold uppercase text-[#aebfff]">{c.avatar ? <img src={c.avatar} alt="" className="h-full w-full object-cover" /> : c.author.charAt(0)}</div>
-                  <div className="min-w-0">
-                    <p className="font-tech text-[11px] font-bold text-white/80">{c.author}</p>
-                    <p className="text-[11px] leading-snug text-white/50">{c.body}</p>
-                  </div>
-                </div>
-              ))
+              <LiveChatTicker comments={displayComments} />
             ) : commentsLoading ? (
               <div className="flex items-center gap-2 text-[11px] text-white/40"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /> Loading chat…</div>
             ) : (
@@ -1031,6 +1033,29 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
   );
 }
 
+function LiveChatTicker({ comments }: { comments: PolyComment[] }) {
+  // Duplicate the list so the upward scroll loops seamlessly.
+  const loop = [...comments, ...comments];
+  const durationSec = Math.max(16, comments.length * 5);
+  return (
+    <div className="relative h-[132px] overflow-hidden">
+      <div className="animate-chat-marquee" style={{ animationDuration: `${durationSec}s` }}>
+        {loop.map((c, i) => (
+          <div key={`${c.id}-${i}`} className="flex gap-2.5 pb-3">
+            <div className="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#2E5CFF]/25 font-tech text-[9px] font-bold uppercase text-[#aebfff]">{c.avatar ? <img src={c.avatar} alt="" className="h-full w-full object-cover" /> : c.author.charAt(0)}</div>
+            <div className="min-w-0">
+              <p className="font-tech text-[11px] font-bold text-white/80">{c.author}</p>
+              <p className="text-[11px] leading-snug text-white/50">{c.body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#070911] to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#070911] to-transparent" />
+    </div>
+  );
+}
+
 function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
   const flag = flagFor(outcome.label);
   if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
@@ -1047,7 +1072,7 @@ function OutcomeLinesChart({ lines }: { lines: { color: string; series: number[]
   const bottom = 208;
 
   if (valid.length === 0) {
-    return <div className="grid h-48 w-full place-items-center sm:h-56"><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /></div>;
+    return <div className="grid h-40 w-full place-items-center sm:h-44"><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /></div>;
   }
 
   const all = valid.flatMap((l) => l.series);
@@ -1058,7 +1083,7 @@ function OutcomeLinesChart({ lines }: { lines: { color: string; series: number[]
   const yAt = (v: number) => bottom - (bottom - top) * ((v - min) / span);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-48 w-full sm:h-56">
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-40 w-full sm:h-44">
       {[0.25, 0.5, 0.75].map((g) => (
         <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 6" />
       ))}
@@ -1232,27 +1257,244 @@ function marketsForCategory(markets: LiveMarket[], category: (typeof MARKET_CATE
 }
 
 // ── Match Pulse view ────────────────────────────────────────────────────────
+function stand(team: string, w: number, d: number, l: number, gf: number, ga: number): GroupStanding {
+  return { position: 0, team, played: w + d + l, win: w, draw: d, loss: l, gf, ga, gd: gf - ga, points: w * 3 + d };
+}
+
+// Rotating result patterns so the 12 sample groups aren't identical.
+const GROUP_PATTERNS: [number, number, number, number, number][][] = [
+  [[3, 0, 0, 7, 1], [2, 0, 1, 5, 3], [1, 0, 2, 4, 5], [0, 0, 3, 1, 8]],
+  [[2, 1, 0, 6, 2], [2, 0, 1, 5, 3], [1, 1, 1, 4, 4], [0, 0, 3, 1, 7]],
+  [[2, 1, 0, 5, 1], [2, 0, 1, 4, 2], [1, 0, 2, 3, 4], [0, 1, 2, 2, 7]],
+  [[3, 0, 0, 8, 2], [1, 1, 1, 4, 4], [1, 1, 1, 3, 3], [0, 1, 2, 2, 8]],
+];
+
+function grp(name: string, teams: [string, string, string, string], idx: number): WorldCupGroup {
+  const pattern = GROUP_PATTERNS[idx % GROUP_PATTERNS.length];
+  return {
+    name,
+    standings: teams.map((team, i) => ({ ...stand(team, ...pattern[i]), position: i + 1 })),
+  };
+}
+
+/** Static fallback (all 12 groups) used until live data arrives, or if it fails. */
+const STATIC_GROUPS: WorldCupGroup[] = [
+  grp("Group A", ["Mexico", "Croatia", "Ecuador", "Qatar"], 0),
+  grp("Group B", ["United States", "Switzerland", "Ghana", "Saudi Arabia"], 1),
+  grp("Group C", ["Canada", "Belgium", "Morocco", "Australia"], 2),
+  grp("Group D", ["Argentina", "Poland", "Tunisia", "Iran"], 3),
+  grp("Group E", ["France", "Denmark", "Senegal", "Peru"], 0),
+  grp("Group F", ["Brazil", "Serbia", "Cameroon", "Chile"], 1),
+  grp("Group G", ["Spain", "Sweden", "Japan", "Paraguay"], 2),
+  grp("Group H", ["Portugal", "Uruguay", "Nigeria", "South Korea"], 3),
+  grp("Group I", ["England", "Colombia", "Egypt", "Wales"], 0),
+  grp("Group J", ["Germany", "Netherlands", "Algeria", "Scotland"], 1),
+  grp("Group K", ["Italy", "Norway", "Ivory Coast", "Austria"], 2),
+  grp("Group L", ["Ukraine", "Turkey", "Greece", "Mali"], 3),
+];
+
+function useWorldCup() {
+  const [groups, setGroups] = useState<WorldCupGroup[]>([]);
+  const [matches, setMatches] = useState<UpcomingMatch[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      void fetchWorldCupGroups().then((g) => { if (!cancelled && g.length > 0) setGroups(g); });
+      void fetchAllMatches().then((m) => { if (!cancelled && m.length > 0) setMatches(m); });
+    };
+    load();
+    // Refresh through the day so standings + fixtures stay current.
+    const poll = setInterval(load, 6 * 60 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(poll); };
+  }, []);
+  return { groups, matches };
+}
+
+type MatchFilter = "Upcoming" | "Live" | "Finished" | "All";
+const MATCH_FILTERS: MatchFilter[] = ["Upcoming", "Live", "Finished", "All"];
+
 function MatchPulseView({ category }: { category: (typeof MARKET_CATEGORIES)[number] }) {
-  const visibleMatches = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
+  const { groups, matches } = useWorldCup();
+  const [filter, setFilter] = useState<MatchFilter>("Upcoming");
+  const displayGroups = groups.length > 0 ? groups : STATIC_GROUPS;
+  const staticUpcoming = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
+  const hasLive = matches.length > 0;
+
+  const now = Date.now();
+  const filteredMatches = useMemo(() => {
+    if (filter === "Live") return matches.filter((m) => m.live);
+    if (filter === "Finished") return [...matches].filter((m) => m.finished).reverse();
+    if (filter === "All") return matches;
+    return matches.filter((m) => !m.finished && m.sortTs >= now - 3 * 60 * 60 * 1000);
+  }, [matches, filter, now]);
 
   return (
     <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12">
-      <div className="min-w-0 space-y-3 lg:col-span-7">
-        <div className="flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-[#7d97ff]" />
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Upcoming matches</h3>
-          <span className="font-mono text-[10px] text-white/40">· kickoff times in local</span>
-        </div>
-        {visibleMatches.map((match) => <UpcomingPulseCard key={match.id} match={match} />)}
-        {visibleMatches.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40">No fixtures in this category yet</div>
-        ) : null}
+      <div className="lg:col-span-12">
+        <GroupStandings groups={displayGroups} live={groups.length > 0} />
       </div>
 
-      <div className="min-w-0 lg:col-span-5">
+      <div className="min-w-0 space-y-3 lg:col-span-6 lg:flex lg:h-[760px] lg:flex-col">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 text-[#7d97ff]" />
+            <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Matches</h3>
+            <span className="font-mono text-[10px] text-white/40">· {hasLive ? "live · updates daily" : "kickoff times in local"}</span>
+          </div>
+          {hasLive ? (
+            <div className="flex flex-wrap items-center gap-1">
+              {MATCH_FILTERS.map((value) => {
+                const active = filter === value;
+                const count = value === "Live" ? matches.filter((m) => m.live).length : value === "Finished" ? matches.filter((m) => m.finished).length : undefined;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFilter(value)}
+                    className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider transition ${active ? "border-[#2E5CFF]/55 bg-[#2E5CFF]/15 text-[#d6e0ff]" : "border-white/10 bg-black/20 text-white/45 hover:text-white"}`}
+                  >
+                    {value}
+                    {count != null && count > 0 ? <span className={`rounded-full px-1 text-[8px] ${active ? "bg-white/15 text-white" : "bg-white/8 text-white/40"}`}>{count}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="max-h-[55vh] space-y-2.5 overflow-y-auto pr-1 [scrollbar-color:rgba(46,92,255,0.55)_transparent] [scrollbar-width:thin] lg:max-h-none lg:min-h-0 lg:flex-1 lg:space-y-3">
+          {hasLive ? (
+            filteredMatches.length > 0
+              ? filteredMatches.map((match) => <ApiMatchCard key={match.id} match={match} />)
+              : <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40">No {filter.toLowerCase()} matches right now</div>
+          ) : (
+            <>
+              {staticUpcoming.map((match) => <UpcomingPulseCard key={match.id} match={match} />)}
+              {staticUpcoming.length === 0 ? (
+                <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40">No fixtures in this category yet</div>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="min-w-0 lg:col-span-6 lg:h-[760px] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-color:rgba(34,211,238,0.55)_transparent] lg:[scrollbar-width:thin]">
         <NewsFeed title="Football news & match facts" subtitle="Factual updates feeding the markets" />
       </div>
     </div>
+  );
+}
+
+const GROUP_ACCENTS = [
+  { grad: "from-[#2E5CFF]/25 via-[#2E5CFF]/10", glow: "rgba(46,92,255,0.35)", text: "text-[#aebfff]" },
+  { grad: "from-[#a855f7]/25 via-[#a855f7]/10", glow: "rgba(168,85,247,0.32)", text: "text-[#d8b4fe]" },
+  { grad: "from-[#22d3ee]/25 via-[#22d3ee]/10", glow: "rgba(34,211,238,0.32)", text: "text-cyan-200" },
+  { grad: "from-[#f59e0b]/25 via-[#f59e0b]/10", glow: "rgba(251,191,36,0.3)", text: "text-amber-200" },
+  { grad: "from-[#34d399]/25 via-[#34d399]/10", glow: "rgba(52,211,153,0.3)", text: "text-emerald-200" },
+  { grad: "from-[#f472b6]/25 via-[#f472b6]/10", glow: "rgba(244,114,182,0.3)", text: "text-pink-200" },
+];
+
+function GroupStandings({ groups, live }: { groups: WorldCupGroup[]; live: boolean }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const scrollByCards = (dir: number) => scroller.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+
+  return (
+    <LeaguePanel fill={false} className="border-[#2E5CFF]/25">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Group standings</h3>
+          <p className="mt-0.5 text-[11px] text-white/45">FIFA World Cup 2026 · {groups.length} groups · top 2 advance</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider ${live ? "text-emerald-300" : "text-white/40"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${live ? "animate-pulse bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-white/40"}`} />
+            {live ? "Live · updates daily" : "Preview standings"}
+          </span>
+          <button type="button" aria-label="Previous" onClick={() => scrollByCards(-1)} className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/40 text-white/70 transition hover:bg-black/70"><ChevronLeft className="h-4 w-4" /></button>
+          <button type="button" aria-label="Next" onClick={() => scrollByCards(1)} className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/40 text-white/70 transition hover:bg-black/70"><ChevronRight className="h-4 w-4" /></button>
+        </div>
+      </div>
+      <div ref={scroller} className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {groups.map((group, i) => <GroupTable key={group.name} group={group} accent={GROUP_ACCENTS[i % GROUP_ACCENTS.length]} />)}
+      </div>
+    </LeaguePanel>
+  );
+}
+
+function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof GROUP_ACCENTS)[number] }) {
+  return (
+    <div className="relative w-[280px] shrink-0 snap-start overflow-hidden rounded-xl border border-white/12 bg-[#0a0e1a] sm:w-[300px]" style={{ boxShadow: `0 0 24px ${accent.glow}` }}>
+      <div className={`flex items-center justify-between border-b border-white/10 bg-gradient-to-r ${accent.grad} to-transparent px-3 py-2.5`}>
+        <p className="font-tech text-xs font-black uppercase tracking-wider text-white">{group.name}</p>
+        <span className={`font-tech text-[8px] font-bold uppercase tracking-wider ${accent.text}`}>Top 2 ↑</span>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="text-[8px] uppercase tracking-wider text-white/40">
+            <th className="px-3 py-1.5 text-left font-bold">#</th>
+            <th className="py-1.5 text-left font-bold">Team</th>
+            <th className="py-1.5 text-right font-bold">P</th>
+            <th className="py-1.5 text-right font-bold">GD</th>
+            <th className="px-3 py-1.5 text-right font-bold">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {group.standings.map((row) => {
+            const flag = flagFor(row.team);
+            const advancing = row.position <= 2;
+            return (
+              <tr key={row.team} className={`border-t border-white/8 transition ${advancing ? "bg-emerald-400/[0.08]" : "hover:bg-white/[0.03]"}`}>
+                <td className="px-3 py-2">
+                  <span className={`grid h-4 w-4 place-items-center rounded font-tech text-[9px] font-black ${advancing ? "bg-emerald-400/20 text-emerald-300" : "text-white/45"}`}>{row.position}</span>
+                </td>
+                <td className="py-2">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="text-base leading-none">{flag ?? "⚽"}</span>
+                    <span className="truncate font-tech text-[12px] font-bold text-white">{row.team}</span>
+                  </span>
+                </td>
+                <td className="py-2 text-right font-tech text-[11px] text-white/70">{row.played}</td>
+                <td className={`py-2 text-right font-tech text-[11px] font-bold ${row.gd > 0 ? "text-emerald-300" : row.gd < 0 ? "text-rose-300" : "text-white/60"}`}>{row.gd >= 0 ? "+" : ""}{row.gd}</td>
+                <td className="px-3 py-2 text-right font-tech text-sm font-black text-cyan-300">{row.points}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ApiMatchCard({ match }: { match: UpcomingMatch }) {
+  const homeFlag = flagFor(match.home);
+  const awayFlag = flagFor(match.away);
+  const hasScore = match.homeScore != null && match.awayScore != null && (match.finished || match.live);
+  return (
+    <article className={`rounded-xl border bg-[#0b0d12] p-2.5 transition hover:border-[#2E5CFF]/45 sm:p-3.5 ${match.live ? "border-emerald-400/40" : "border-white/10"}`}>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[9px] font-bold text-white sm:text-[10px]">
+          <Clock className="h-3 w-3 text-[#7d97ff]" />{[match.dateLabel, match.timeLabel].filter(Boolean).join(" · ") || "TBD"}
+        </span>
+        <div className="flex items-center gap-2">
+          {match.live ? <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-emerald-300"><span className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" />Live</span> : null}
+          {match.finished ? <span className="rounded-full border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-white/45">FT</span> : null}
+          {match.group ? <span className="font-mono text-[9px] uppercase tracking-wider text-white/35">{match.group}</span> : null}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{homeFlag ?? "⚽"}</span>
+          <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.home}</p>
+        </div>
+        <span className={`shrink-0 font-tech font-black ${hasScore ? "text-sm text-white sm:text-base" : "font-mono text-[10px] text-white/30"}`}>
+          {hasScore ? `${match.homeScore} – ${match.awayScore}` : "VS"}
+        </span>
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
+          <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.away}</p>
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{awayFlag ?? "⚽"}</span>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -1288,34 +1530,74 @@ function UpcomingPulseCard({ match }: { match: Match }) {
   );
 }
 
+function useFootballNews() {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => void fetchFootballNews(10).then((list) => { if (!cancelled && list.length > 0) setNews(list); });
+    load();
+    const poll = setInterval(load, 10 * 60 * 1000); // refresh every 10 min
+    return () => { cancelled = true; clearInterval(poll); };
+  }, []);
+  return news;
+}
+
 function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
+  const news = useFootballNews();
+  const live = news.length > 0;
   return (
     <LeaguePanel fill={false} className="border-cyan-400/20 bg-[radial-gradient(circle_at_100%_0%,rgba(34,211,238,0.1),transparent_45%),#080c14] p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Newspaper className="h-4 w-4 text-cyan-300" />
-          <div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">{title}</h3><p className="mt-0.5 text-[10px] text-white/45">{subtitle}</p></div>
+          <div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">{title}</h3><p className="mt-0.5 text-[10px] text-white/45">{live ? "Live headlines · auto-refreshes" : subtitle}</p></div>
         </div>
         <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
       </div>
-      <div className="space-y-2">
-        {MATCH_NEWS.map((item) => (
-          <article key={item.id} className="rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30">
-            <div className="flex items-center justify-between gap-2">
-              <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#9ab1ff]">{item.tag}</span>
-              <span className="font-mono text-[9px] text-white/35">{item.time}</span>
-            </div>
-            <p className="mt-2 font-tech text-[12px] font-bold leading-snug text-white">{item.title}</p>
-            <p className="mt-1 text-[10px] leading-relaxed text-white/45">{item.body}</p>
-            <div className="mt-2 flex items-center justify-between border-t border-white/8 pt-2">
-              <span className="truncate font-mono text-[9px] text-white/40">{item.market}</span>
-              <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold ${item.impact === "up" ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" : item.impact === "down" ? "border-rose-400/40 bg-rose-400/10 text-rose-300" : "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"}`}>
-                {item.impact === "up" ? <TrendingUp className="h-3 w-3" /> : item.impact === "down" ? <TrendingDown className="h-3 w-3" /> : null} {item.move}
-              </span>
-            </div>
-          </article>
-        ))}
-      </div>
+      {live ? (
+        <div className="space-y-2">
+          {news.map((item) => (
+            <a
+              key={item.id}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#9ab1ff]">{item.source}</span>
+                <span className="shrink-0 font-mono text-[9px] text-white/35">{item.timeLabel}</span>
+              </div>
+              <div className="mt-2 flex gap-2.5">
+                {item.image ? <img src={item.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-md border border-white/10 object-cover" /> : null}
+                <div className="min-w-0">
+                  <p className="font-tech text-[12px] font-bold leading-snug text-white">{item.title}</p>
+                  {item.body ? <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-white/45">{item.body}</p> : null}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {MATCH_NEWS.map((item) => (
+            <article key={item.id} className="rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30">
+              <div className="flex items-center justify-between gap-2">
+                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#9ab1ff]">{item.tag}</span>
+                <span className="font-mono text-[9px] text-white/35">{item.time}</span>
+              </div>
+              <p className="mt-2 font-tech text-[12px] font-bold leading-snug text-white">{item.title}</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-white/45">{item.body}</p>
+              <div className="mt-2 flex items-center justify-between border-t border-white/8 pt-2">
+                <span className="truncate font-mono text-[9px] text-white/40">{item.market}</span>
+                <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold ${item.impact === "up" ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" : item.impact === "down" ? "border-rose-400/40 bg-rose-400/10 text-rose-300" : "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"}`}>
+                  {item.impact === "up" ? <TrendingUp className="h-3 w-3" /> : item.impact === "down" ? <TrendingDown className="h-3 w-3" /> : null} {item.move}
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </LeaguePanel>
   );
 }
@@ -1353,13 +1635,13 @@ function AnalysisView({
         <AgentNewsReactions />
         <TopAgentsBoard sidebar={false} />
         <RecentTradesFeed trades={trades} />
+        <ResolvedMarkets />
       </div>
       <div className="lg:col-span-5">
         <NewsFeed title="News driving the board" subtitle="What's moving prices right now" />
       </div>
 
       <OpenPositions markets={markets} onSelect={onSelect} />
-      <ResolvedMarkets />
     </div>
   );
 }
@@ -1374,14 +1656,14 @@ function AgentWinRateCard() {
   const dashOffset = CIRCUMFERENCE * (1 - rate / 100);
 
   return (
-    <LeaguePanel fill={false} className="overflow-hidden border-cyan-400/20 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.14),transparent_45%),#070911] p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Agent accuracy</p><p className="mt-1 font-tech text-sm font-bold text-white">Win rate</p></div>
+    <LeaguePanel fill={false} className="overflow-hidden border-cyan-400/20 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.14),transparent_45%),#070911] p-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Agent accuracy</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Win rate</p></div>
         <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-emerald-300"><TrendingUp className="h-3.5 w-3.5" /> +5% wk</span>
       </div>
-      <div className="flex items-center gap-3.5">
-        <div className="relative grid h-[72px] w-[72px] shrink-0 place-items-center">
-          <svg className="h-[72px] w-[72px] -rotate-90" viewBox="0 0 72 72" aria-label={`${rate}% win rate`}>
+      <div className="flex items-center gap-3">
+        <div className="relative grid h-[60px] w-[60px] shrink-0 place-items-center">
+          <svg className="h-[60px] w-[60px] -rotate-90" viewBox="0 0 72 72" aria-label={`${rate}% win rate`}>
             <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="7" />
             <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="url(#pm-win-rate)" strokeWidth="7" strokeLinecap="round" strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
             <defs>
@@ -1395,9 +1677,9 @@ function AgentWinRateCard() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] text-white/50">{wins} hits · {losses} {losses === 1 ? "miss" : "misses"} settled</p>
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-1.5 flex flex-wrap gap-1">
             {RESOLVED_MARKETS.map((m) => (
-              <span key={m.id} className={`flex h-5 w-5 items-center justify-center rounded font-tech text-[9px] font-black ${m.correct ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{m.correct ? "W" : "L"}</span>
+              <span key={m.id} className={`flex h-4 w-4 items-center justify-center rounded font-tech text-[8px] font-black ${m.correct ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{m.correct ? "W" : "L"}</span>
             ))}
           </div>
         </div>
