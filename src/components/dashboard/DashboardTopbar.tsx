@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Clapperboard, HelpCircle, Menu } from "lucide-react";
+import { Bell, HelpCircle, Menu, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
@@ -12,8 +12,7 @@ export function DashboardTopbar() {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const { isAuthenticated, logout } = useAuth();
   const { canUse } = useAccess();
-  const { startWebsiteTour } = useTour();
-  const showStudio = canUse("creator_studio");
+  const { isRunning, startWebsiteTour } = useTour();
   const showArenaLinks = canUse("ai_arena");
   const showLeagueLinks = canUse("league");
   const showNotifications = showArenaLinks || showLeagueLinks;
@@ -63,21 +62,14 @@ export function DashboardTopbar() {
               type="button"
               onClick={startWebsiteTour}
               data-tour="tour-start"
-              className="hidden shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:border-[#9a35ff]/35 hover:text-white min-[390px]:inline-flex"
               aria-label="Start website tour"
+              aria-busy={isRunning}
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-cyan-200/25 bg-cyan-300/10 px-2 font-tech text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 shadow-[0_0_14px_rgba(34,211,238,0.12)] transition hover:border-cyan-100/45 hover:bg-cyan-300/16 hover:text-white min-[430px]:h-10 min-[430px]:px-3"
             >
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden min-[520px]:inline">Tour</span>
+              {isRunning ? <Sparkles className="h-4 w-4" /> : <HelpCircle className="h-4 w-4" />}
+              <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
             </button>
-            {isAuthenticated && showStudio && (
-              <a
-                href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
-                className="topbar-wallet-cta h-9 w-9 shrink-0 gap-2 px-0 min-[430px]:w-auto min-[430px]:px-3"
-              >
-                <Clapperboard className="h-4 w-4" />
-                <span className="hidden min-[430px]:inline">Studio</span>
-              </a>
-            )}
+
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block" data-tour="dashboard-profile">

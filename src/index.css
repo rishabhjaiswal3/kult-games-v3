@@ -214,6 +214,27 @@
     @apply rounded-xl border border-neon-purple/15 bg-gradient-to-b from-surface-elevated/80 to-background/50 p-4 sm:p-5;
   }
 
+  .access-code-input {
+    color-scheme: dark;
+    background-color: transparent !important;
+    caret-color: hsl(198 92% 68%);
+  }
+
+  .access-code-input::selection {
+    background: hsl(198 92% 68% / 0.35);
+    color: #ffffff;
+  }
+
+  .access-code-input:-webkit-autofill,
+  .access-code-input:-webkit-autofill:hover,
+  .access-code-input:-webkit-autofill:focus,
+  .access-code-input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff;
+    caret-color: hsl(198 92% 68%);
+    box-shadow: 0 0 0 1000px rgb(4 16 72 / 0.76) inset !important;
+    transition: background-color 9999s ease-out 0s;
+  }
+
   .arena-chip {
     @apply rounded-xl border border-white/10 bg-background/40 px-2.5 py-2.5 text-center text-muted-foreground transition hover:border-neon-purple/35 hover:bg-surface-elevated/60;
   }

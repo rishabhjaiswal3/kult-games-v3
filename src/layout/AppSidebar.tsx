@@ -177,13 +177,15 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
 
       {/* Studio — sticky bottom */}
       {isAuthenticated && showStudio && (
-        <div className="shrink-0 border-t border-white/5 p-3">
+        <div className={cn("shrink-0 border-t border-white/5", isCollapsed ? "p-2" : "p-3")} data-tour="sidebar-studio">
           <a
             href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
             onClick={onNavigate}
+            title="Studio"
+            aria-label="Open Studio"
             className={cn(
-              "group relative flex items-center rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
-              isCollapsed ? "h-10 w-10 justify-center mx-auto" : "justify-center gap-2 px-4 py-2.5",
+              "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
+              isCollapsed ? "mx-auto h-10 w-10 justify-center" : "justify-center gap-2 px-4 py-2.5",
             )}
           >
             <Clapperboard className="h-4 w-4 shrink-0" />

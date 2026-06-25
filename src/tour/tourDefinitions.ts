@@ -86,9 +86,10 @@ function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
 
   if (pathname.startsWith("/ai-arena")) {
     return [
-      step("[data-tour='ai-arena-hero']", "AI Arena command center", "Create agents, train them, send them into battle, and track their evolution across the 0G-backed arena."),
-      step("[data-tour='ai-arena-quick-links']", "Arena shortcuts", "Jump straight to agents, training, battles, achievements, or autonomous mode."),
-      step("[data-tour='ai-arena-matchmaking']", "Start matchmaking", isAuthenticated ? "Pick an agent and start a battle flow from here." : "Connect your wallet first to unlock matchmaking and your AI Arena session."),
+      step("[data-tour='ai-arena-hero']", "AI Arena", "This is where your AI agents enter the arena, get matched, fight automatically, and create moments you can share."),
+      step("[data-tour='ai-arena-create-agent']", "1. Create agent", "Start here first. Create an AI agent, then it becomes available for training, matchmaking, and battles."),
+      step("[data-tour='ai-arena-quick-links']", "Agent shortcuts", "Jump to My Agents to manage fighters, Training to improve them, or Battles to inspect lobbies and battle history."),
+      step("[data-tour='ai-arena-matchmaking']", "2. Start matchmaking", isAuthenticated ? "After you have an agent, use this button to queue it into matchmaking. When another player joins or a match is found, a battle is created." : "Connect your wallet first, create an agent, then queue that agent into matchmaking."),
     ];
   }
 
@@ -131,10 +132,10 @@ function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
     return [
       step("[data-tour='battles-stats']", "Battle overview", "Review your arena stats, agent rank, total battles, and current competitive position."),
       step("[data-tour='battles-game-modes']", "Game modes", "Browse the battle modes that explain where agents can fight and what style each mode supports."),
-      step("[data-tour='battles-board']", "Arena battle board", "Open lobbies and ranked snapshots live here. Pick a challenger and join available fights."),
-      step("[data-tour='battles-live-control']", "Live control deck", "Manage your own queued fighters, reopen match status, and start matchmaking."),
-      step("[data-tour='battles-my-queue']", "Your live queue", "This section shows agents currently waiting for opponents and lets you view or leave queue."),
-      step("[data-tour='battles-public-join']", "Join public battles", "Use the public board flow to challenge open lobbies with a free agent."),
+      step("[data-tour='battles-board']", "3. Battle board", "Open lobbies and ranked snapshots live here. A created battle can be joined from this board when an opponent is available."),
+      step("[data-tour='battles-live-control']", "Matchmaking control", "Manage your queued fighters, reopen match status, and start matchmaking from the battle page too."),
+      step("[data-tour='battles-my-queue']", "Your live queue", "When you start matchmaking, your agent appears here while waiting for a match or opponent."),
+      step("[data-tour='battles-public-join']", "Join public battle", "If someone else created an open lobby, pick one of your free agents and join that battle."),
       step("[data-tour='battles-console']", "Battle console", "Create direct fights, inspect battle IDs, watch socket traffic, and dispute results."),
       step("[data-tour='battles-direct-setup']", "Direct battle setup", "Choose your fighter, battle mode, game, opponent ID, and optional wager before creating a fight."),
       step("[data-tour='battles-lookup']", "Battle lookup", "Paste a battle ID to inspect live state, participants, socket events, and dispute controls."),
@@ -209,8 +210,8 @@ function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
     return [
       step("[data-tour='arena-game-topbar']", "Battle top bar", "Use this bar to go back, identify the battle, see live or ended status, and share a result as a Kult Moment."),
       step("[data-tour='arena-game-agents']", "Agent matchup", "The versus banner shows both agents, battle mode, rank context, and live battle identity."),
-      step("[data-tour='arena-game-canvas']", "Live battle canvas", "Unity renders the AI Arena battle here. Loading, pre-match, errors, and result overlays all appear inside this area."),
-      step("[data-tour='arena-game-chat']", "Observer chat", "Use the chat panel to follow system events, add observer messages, and share moments from the battle.", "left"),
+      step("[data-tour='arena-game-canvas']", "4. Watch the AI fight", "Once the battle opens, the agents fight on their own in this arena canvas. You watch the match, loading, pre-match, and result overlays here."),
+      step("[data-tour='arena-game-chat']", "5. Share trash talk", "Follow battle events here, then use the share/Kult Moment action after results to create trash talk or a battle moment.", "left"),
     ];
   }
 
@@ -219,7 +220,7 @@ function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
       step("[data-tour='robowar-topbar']", "Robowar header", "Use this red-themed header to identify the battle and navigate back."),
       step("[data-tour='robowar-agents']", "Robowar matchup", "Both competing agents, archetypes, ELO values, and battle mode are summarized here."),
       step("[data-tour='robowar-category-filter']", "Moment categories", "Filter the post-battle feed by For You, Trending, AI Arena, or Robowars."),
-      step("[data-tour='robowar-moments-feed']", "Battle moments feed", "Browse related moments, play video highlights, open detail pages, and continue loading more clips."),
+      step("[data-tour='robowar-moments-feed']", "Shareable battle moments", "After agents fight, browse related clips and open moment pages for sharing or trash-talk style highlights."),
     ];
   }
 

@@ -39,6 +39,7 @@ import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
 import { TourProvider } from "@/tour/TourProvider";
+import AccessLoginPage from "@/pages/AccessLoginPage";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
 
@@ -142,6 +143,10 @@ function BrowserApp() {
       staleTime: 5 * 60_000,
     });
   }, [canUse, hasAccess]);
+
+  if (!hasAccess) {
+    return <AccessLoginPage />;
+  }
 
   return (
     <AuthProvider>

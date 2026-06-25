@@ -7,6 +7,7 @@ import {
   hasFeature,
   isAccessSessionValid,
 } from "@/lib/accessControl";
+import { clearBrowserAccessSession } from "@/lib/sessionCleanup";
 
 type AccessContextValue = {
   session: BrowserAccessSession | null;
@@ -31,7 +32,7 @@ function readStoredSession(): BrowserAccessSession | null {
 
 function writeStoredSession(session: BrowserAccessSession | null) {
   if (!session) {
-    localStorage.removeItem(StorageKeys.local.browserAccessSession);
+    clearBrowserAccessSession();
     return;
   }
   localStorage.setItem(StorageKeys.local.browserAccessSession, JSON.stringify(session));

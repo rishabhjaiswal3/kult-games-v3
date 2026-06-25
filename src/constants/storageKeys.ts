@@ -26,6 +26,8 @@ export const StorageKeys = {
     aiArenaCustodialSolanaAddress: "kult_aiarena_custodial_solana",
     /** Last AI Arena battle id seen or created in the live arena flow. */
     aiArenaLastBattleId: "kult_aiarena_last_battle_id",
+    /** Unity bridge payload for the current AI Arena battle. */
+    arenaBattlePayload: "arenaBattlePayload",
     /** Verified shared browser access-code session. */
     browserAccessSession: "kult_browser_access_session",
     /** Local product tour progress for website walkthroughs. */
@@ -36,6 +38,8 @@ export const StorageKeys = {
     warzoneAgentWalletVerified: "kult_ai_agent_wallet_verified",
     /** Derived Warzone agent id (`address_keccak…`). */
     warzoneAgentId: "kult_warzone_agent_id",
+    /** Selected game while an arena agent waits in matchmaking. */
+    arenaQueuedGameId: "arena_queued_game_id",
   },
 } as const;
 

@@ -388,6 +388,11 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     isAuthenticated &&
     agents.length > 0 &&
     (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+  const actionButtonSize = compact
+    ? "h-11 w-[240px] px-4 text-[10px] tracking-[0.12em] gap-2"
+    : "h-11 w-[208px] px-4 text-[10px] tracking-[0.16em] gap-2";
+  const actionButtonBase =
+    "min-w-0 rounded-md font-tech font-bold uppercase flex items-center justify-center transition whitespace-nowrap border shadow-[0_0_15px_rgba(0,210,255,0.10)] hover:shadow-[0_0_24px_rgba(0,210,255,0.24)] disabled:cursor-not-allowed disabled:opacity-60";
 
   const handleArenaAction = () => {
     if (!isAuthenticated) {
@@ -446,42 +451,30 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={handleArenaAction}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`min-w-0 rounded-md font-tech border border-accent/45 bg-gradient-to-r from-accent/12 to-primary/12 hover:from-accent/20 hover:to-primary/20 hover:border-accent/75 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(0,210,255,0.12)] hover:shadow-[0_0_25px_rgba(0,210,255,0.28)] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60 ${
-          compact
-            ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.06em] gap-2"
-            : "w-[240px] lg:w-auto px-5 py-3 text-[10.5px] tracking-[0.18em] gap-2"
-        }`}
+        className={`${actionButtonBase} ${actionButtonSize} border-accent/45 bg-gradient-to-r from-accent/12 to-primary/12 text-white hover:border-accent/75 hover:from-accent/20 hover:to-primary/20`}
       >
         {startButtonDisabled && !queuedAgent ? (
-          <Loader2 className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 animate-spin text-accent" />
+          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" />
         ) : (
-          <Swords className="w-3 h-3 shrink-0 md:w-3.5 md:h-3.5 text-accent" />
+          <Swords className="h-3.5 w-3.5 shrink-0 text-accent" />
         )}
-        <span className="leading-tight text-center font-bold whitespace-nowrap">{buttonLabel}</span>
+        <span className="leading-tight text-center whitespace-nowrap">{buttonLabel}</span>
       </button>
 
       <a
         href="#my-battles"
-        className={`min-w-0 rounded-md font-tech border border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/70 text-white flex items-center justify-center transition whitespace-nowrap ${
-          compact
-            ? "w-[240px] px-4 py-1.5 text-[10px] tracking-[0.06em] gap-2"
-            : "w-[240px] lg:w-auto px-4 py-1.5 text-[10px] tracking-[0.16em] gap-2"
-        }`}
+        className={`${actionButtonBase} ${actionButtonSize} border-primary/40 bg-primary/10 text-white hover:border-primary/70 hover:bg-primary/20`}
       >
-        <Eye className="w-3 h-3 shrink-0 text-primary" />
-        <span className="font-bold">MY BATTLE</span>
+        <Eye className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <span>MY BATTLE</span>
       </a>
 
       <Link
         to="/league"
-        className={`min-w-0 rounded-md font-tech border border-purple-400/30 bg-purple-500/[0.06] text-purple-200 transition hover:border-purple-300/60 hover:bg-purple-500/[0.12] hover:text-white flex items-center justify-center whitespace-nowrap ${
-          compact
-            ? "w-[240px] px-4 py-1.5 text-[10px] tracking-[0.06em] gap-2"
-            : "w-[240px] lg:w-auto px-4 py-1.5 text-[10px] tracking-[0.16em] gap-2"
-        }`}
+        className={`${actionButtonBase} ${actionButtonSize} border-purple-400/35 bg-purple-500/[0.08] text-purple-100 hover:border-purple-300/65 hover:bg-purple-500/[0.14] hover:text-white`}
       >
-        <Trophy className="h-3 w-3 shrink-0 text-purple-300" />
-        <span className="font-bold">ENTER LEAGUE</span>
+        <Trophy className="h-3.5 w-3.5 shrink-0 text-purple-300" />
+        <span>ENTER LEAGUE</span>
       </Link>
 
       {queuedAgent ? (
@@ -714,6 +707,7 @@ function FeaturesBlock() {
               <Link
                 key={f.title}
                 to={f.path}
+                data-tour={f.title === "CREATE AGENT" ? "ai-arena-create-agent" : undefined}
                 className="card-glass group rounded-xl p-3 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] md:text-left"
               >
                 {content}

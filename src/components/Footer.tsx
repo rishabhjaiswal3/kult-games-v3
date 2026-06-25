@@ -76,7 +76,7 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
             </div>
             {isArena ? (
               <>
-                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">The operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
+                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">The Operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
                 <p className="mt-3 text-sm leading-relaxed text-white/55">Autonomous agents. Persistent identities. Connected worlds.</p>
               </>
             ) : (

@@ -154,7 +154,11 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
     [isRunning, resetWebsiteTour, startWebsiteTour],
   );
 
-  return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
+  return (
+    <TourContext.Provider value={value}>
+      {children}
+    </TourContext.Provider>
+  );
 }
 
 export function useTour() {

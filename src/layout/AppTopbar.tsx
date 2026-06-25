@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bell, Clapperboard, HelpCircle, Menu, User } from "lucide-react";
+import { Bell, HelpCircle, Menu, Sparkles, User } from "lucide-react";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
@@ -15,8 +15,7 @@ import {
 export function AppTopbar() {
   const { isAuthenticated, walletAddress, player, logout } = useAuth();
   const { canUse } = useAccess();
-  const { startWebsiteTour } = useTour();
-  const showStudio = canUse("creator_studio");
+  const { isRunning, startWebsiteTour } = useTour();
   const showArenaLinks = canUse("ai_arena");
 
   const displayName =
@@ -41,21 +40,13 @@ export function AppTopbar() {
               type="button"
               onClick={startWebsiteTour}
               data-tour="tour-start"
-              className="hidden h-10 items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:border-[#9a35ff]/35 hover:text-white min-[390px]:inline-flex"
               aria-label="Start website tour"
+              aria-busy={isRunning}
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-cyan-200/25 bg-cyan-300/10 px-2.5 font-tech text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 shadow-[0_0_14px_rgba(34,211,238,0.12)] transition hover:border-cyan-100/45 hover:bg-cyan-300/16 hover:text-white min-[430px]:px-3"
             >
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden min-[520px]:inline">Tour</span>
+              {isRunning ? <Sparkles className="h-4 w-4" /> : <HelpCircle className="h-4 w-4" />}
+              <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
             </button>
-            {isAuthenticated && showStudio ? (
-              <a
-                href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
-                className="topbar-wallet-cta gap-2"
-              >
-                <Clapperboard className="h-4 w-4" />
-                Studio
-              </a>
-            ) : null}
 
             {isAuthenticated ? (
               <DropdownMenu>

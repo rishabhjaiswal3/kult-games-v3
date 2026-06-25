@@ -1,14 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { useAccess } from "@/contexts/AccessContext";
 import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
 import {
   clearAiArenaAuthTokens,
   getAiArenaAccessToken,
   tryExchangePrivyTokenForAiArenaToken,
 } from "@/lib/aiArenaAuth";
+import { clearUserSessionCache } from "@/lib/sessionCleanup";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import {
   clearUserLoginIntent,
@@ -87,6 +90,8 @@ async function waitForSigningWallet(
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { ready, authenticated, user, getAccessToken, logout: privyLogout } = usePrivy();
   const { wallets } = useWallets();
+  const queryClient = useQueryClient();
+  const { clearAccess } = useAccess();
 
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,15 +121,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getAccessTokenRef.current = getAccessToken;
   }, [getAccessToken]);
 
-  const clearLocalAuthState = useCallback(() => {
+  const clearLocalAuthState = useCallback((options?: { clearAccessCode?: boolean; clearQueryCache?: boolean }) => {
     siweInFlightByAddress.clear();
     clearUserLoginIntent();
+    clearUserSessionCache();
     playerApi.logout();
     clearAiArenaAuthTokens();
     clearAiAgentInfo();
+    if (options?.clearAccessCode) {
+      clearAccess();
+    }
+    if (options?.clearQueryCache) {
+      queryClient.clear();
+    }
     setHasKultSession(false);
     setPlayer(null);
-  }, []);
+  }, [clearAccess, queryClient]);
 
   const resetStalePrivySession = useCallback(async () => {
     if (staleLogoutInFlightRef.current) return;
@@ -333,7 +345,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleLogout = async () => {
-    clearLocalAuthState();
+    clearLocalAuthState({ clearAccessCode: true, clearQueryCache: true });
     await privyLogout();
   };
 
