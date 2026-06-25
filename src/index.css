@@ -1411,3 +1411,29 @@
     }
   }
 }
+
+/* Continuous upward auto-scroll for the live chat ticker (Polymarket-style). */
+@keyframes chat-marquee-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+.animate-chat-marquee {
+  animation: chat-marquee-up linear infinite;
+  will-change: transform;
+}
+.animate-chat-marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-chat-marquee { animation: none; }
+}
+
+/* Sweeping sheen for the live consensus bar. */
+@keyframes league-sheen {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(360%); }
+}
+.animate-league-sheen { animation: league-sheen 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-league-sheen { animation: none; }
+}

@@ -266,7 +266,7 @@ function ArenaQuickLinks() {
 function ArenaGames() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(() =>
-    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches ? 2 : 1,
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches ? 3 : 1,
   );
   const maxIndex = Math.max(0, arenaGames.length - visibleCards);
 
@@ -280,7 +280,7 @@ function ArenaGames() {
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
-    const updateVisibleCards = () => setVisibleCards(media.matches ? 2 : 1);
+    const updateVisibleCards = () => setVisibleCards(media.matches ? 3 : 1);
 
     updateVisibleCards();
     media.addEventListener("change", updateVisibleCards);
@@ -307,7 +307,7 @@ function ArenaGames() {
             type="button"
             onClick={previousGame}
             aria-label="Previous AI Arena game"
-            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white"
+            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white lg:hidden"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -315,7 +315,7 @@ function ArenaGames() {
             type="button"
             onClick={nextGame}
             aria-label="Next AI Arena game"
-            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white"
+            className="grid h-9 w-9 place-items-center rounded border border-[#9b32ff]/50 bg-[#230b35]/55 text-[#d773ff] transition hover:border-[#9b32ff]/80 hover:bg-[#230b35]/80 hover:text-white lg:hidden"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -334,7 +334,7 @@ function ArenaGames() {
           style={{ transform: `translateX(-${carouselIndex * (100 / visibleCards)}%)` }}
         >
           {arenaGames.map((game) => (
-            <div key={game.title} className="w-full shrink-0 px-2 py-3 first:pl-0 last:pr-0 lg:w-1/2">
+            <div key={game.title} className="w-full shrink-0 px-2 py-3 first:pl-0 last:pr-0 lg:w-1/3">
               <article className="arena-panel group relative h-[330px] overflow-hidden rounded-xl border border-white/10 shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] sm:h-[320px]">
             {game.video ? (
               <video
@@ -359,7 +359,11 @@ function ArenaGames() {
             <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-[#b84cff] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative z-10 flex h-full flex-col justify-end p-5">
-              <h3 className="font-tech text-4xl font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:text-[#f0d7ff] group-hover:drop-shadow-[0_0_18px_rgba(184,76,255,0.65)] sm:text-5xl">
+              <h3
+                className={`font-tech text-3xl font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:text-[#f0d7ff] group-hover:drop-shadow-[0_0_18px_rgba(184,76,255,0.65)] sm:text-4xl ${
+                  game.title === "ROBOWARS" ? "-translate-y-10" : ""
+                }`}
+              >
                 {game.title}
               </h3>
               <span className="mt-5 inline-flex w-fit rounded border border-[#9f2dff]/70 bg-[#5b1499]/35 px-3 py-2 font-tech text-[10px] text-[#d773ff] transition duration-500 group-hover:border-[#d187ff] group-hover:bg-[#721fc0]/55 group-hover:text-white group-hover:shadow-[0_0_18px_rgba(154,53,255,0.35)]">
