@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Clapperboard, Menu } from "lucide-react";
+import { Bell, Clapperboard, HelpCircle, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
+import { useTour } from "@/tour/TourProvider";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
 export function DashboardTopbar() {
@@ -11,6 +12,7 @@ export function DashboardTopbar() {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const { isAuthenticated, logout } = useAuth();
   const { canUse } = useAccess();
+  const { startWebsiteTour } = useTour();
   const showStudio = canUse("creator_studio");
   const showArenaLinks = canUse("ai_arena");
   const showLeagueLinks = canUse("league");
@@ -46,17 +48,27 @@ export function DashboardTopbar() {
       <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[54px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-1.5 sm:min-h-[60px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            {showArenaLinks ? (
-            <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden">
-              <img
-                src={dashboardAvatar}
-                alt="Profile"
-                className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff]"
-              />
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden" data-tour="dashboard-profile">
+                <img
+                  src={dashboardAvatar}
+                  alt="Profile"
+                  className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff]"
+                />
+              </Link>
             ) : null}
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
+            <button
+              type="button"
+              onClick={startWebsiteTour}
+              data-tour="tour-start"
+              className="hidden shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:border-[#9a35ff]/35 hover:text-white min-[390px]:inline-flex"
+              aria-label="Start website tour"
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden min-[520px]:inline">Tour</span>
+            </button>
             {isAuthenticated && showStudio && (
               <a
                 href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
@@ -66,42 +78,51 @@ export function DashboardTopbar() {
                 <span className="hidden min-[430px]:inline">Studio</span>
               </a>
             )}
-            {showArenaLinks ? (
-            <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block">
-              <img
-                src={dashboardAvatar}
-                alt="Profile"
-                className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff] sm:h-10 sm:w-10"
-              />
-            </Link>
-            ) : null}
-            {showNotifications ? (
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block" data-tour="dashboard-profile">
+                  <img
+                    src={dashboardAvatar}
+                    alt="Profile"
+                    className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff] sm:h-10 sm:w-10"
+                  />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    togglePanel("notifications");
+                    setHasUnreadNotifications(false);
+                  }}
+                  data-tour="topbar-notifications"
+                  className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
+                  aria-label="Open notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                  {hasUnreadNotifications && (
+                    <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConnectWallet}
+                  data-tour="topbar-connect"
+                  className="block shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-2 py-2.5 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+                >
+                  <span className="hidden min-[430px]:inline">DISCONNECT</span>
+                  <span className="min-[430px]:hidden">LOGOUT</span>
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
-                onClick={() => {
-                  togglePanel("notifications");
-                  setHasUnreadNotifications(false);
-                }}
-                className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
-                aria-label="Open notifications"
+                onClick={handleConnectWallet}
+                data-tour="topbar-connect"
+                className="btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
               >
-                <Bell className="h-5 w-5" />
-                {hasUnreadNotifications && (
-                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
-                )}
+                <span className="hidden min-[430px]:inline">CONNECT WALLET</span>
+                <span className="min-[430px]:hidden">LOGIN</span>
               </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleConnectWallet}
-              className={isAuthenticated
-                ? "block h-9 shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-3 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)]"
-                : "topbar-wallet-cta block shrink-0"
-              }
-            >
-              <span className="hidden min-[430px]:inline">{isAuthenticated ? "DISCONNECT" : "CONNECT WALLET"}</span>
-              <span className="min-[430px]:hidden">{isAuthenticated ? "LOGOUT" : "LOGIN"}</span>
-            </button>
+            )}
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))}

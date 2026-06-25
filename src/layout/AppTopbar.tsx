@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Bell, Clapperboard, Menu, User } from "lucide-react";
+import { Bell, Clapperboard, HelpCircle, Menu, User } from "lucide-react";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
+import { useTour } from "@/tour/TourProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
 export function AppTopbar() {
   const { isAuthenticated, walletAddress, player, logout } = useAuth();
   const { canUse } = useAccess();
+  const { startWebsiteTour } = useTour();
   const showStudio = canUse("creator_studio");
   const showArenaLinks = canUse("ai_arena");
 
@@ -35,6 +37,16 @@ export function AppTopbar() {
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-wrap sm:gap-3">
+            <button
+              type="button"
+              onClick={startWebsiteTour}
+              data-tour="tour-start"
+              className="hidden h-10 items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:border-[#9a35ff]/35 hover:text-white min-[390px]:inline-flex"
+              aria-label="Start website tour"
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden min-[520px]:inline">Tour</span>
+            </button>
             {isAuthenticated && showStudio ? (
               <a
                 href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
@@ -49,6 +61,7 @@ export function AppTopbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   type="button"
+                  data-tour="topbar-connect"
                   className="flex h-10 items-center gap-2 rounded-md border border-white/12 bg-white/[0.02] px-3 font-tech text-xs text-white/86 transition hover:bg-white/6"
                 >
                   <User className="h-4 w-4" />
@@ -73,20 +86,24 @@ export function AppTopbar() {
               <button
                 type="button"
                 onClick={() => requestOpenLoginModal()}
+                data-tour="topbar-connect"
                 className="topbar-wallet-cta"
               >
                 CONNECT WALLET
               </button>
             )}
 
-            <button
-              type="button"
-              className="relative hidden rounded-md p-2 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
-            </button>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                data-tour="topbar-notifications"
+                className="relative hidden rounded-md p-2 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block"
+                aria-label="Notifications"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
+              </button>
+            ) : null}
 
             <button
               type="button"

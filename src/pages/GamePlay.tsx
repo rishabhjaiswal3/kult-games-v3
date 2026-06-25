@@ -97,7 +97,7 @@ const GamePlay = () => {
       typeof game.name === "string" ? game.name : game.name?.en ?? Object.values(game.name ?? {})[0] ?? "Game";
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 lg:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3" data-tour="game-play-download-nav">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -116,7 +116,7 @@ const GamePlay = () => {
         </div>
 
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <div className="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(7,12,24,0.96),rgba(4,8,16,0.92))] p-8 text-center shadow-[0_0_60px_rgba(0,0,0,0.28)]">
+          <div className="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(7,12,24,0.96),rgba(4,8,16,0.92))] p-8 text-center shadow-[0_0_60px_rgba(0,0,0,0.28)]" data-tour="game-play-download-card">
             <p className="font-display text-lg text-white">{title}</p>
             <p className="mx-auto mt-3 max-w-md text-sm text-white/60">
               {canDownload
@@ -175,7 +175,7 @@ const GamePlay = () => {
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/55 to-transparent" />
-      <div className="absolute left-0 top-0 z-20 flex items-center gap-2">
+      <div className="absolute left-0 top-0 z-20 flex items-center gap-2" data-tour="game-play-chrome-toggle">
         <button
           type="button"
           onClick={() => shellContext?.toggleGameChrome()}
@@ -195,7 +195,7 @@ const GamePlay = () => {
           </span>
         </button>
       </div>
-      <div className="h-full w-full">
+      <div className="h-full w-full" data-tour="game-play-iframe">
         <iframe
           src={playUrl}
           title={gameTitle}

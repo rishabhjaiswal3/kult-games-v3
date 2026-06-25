@@ -189,7 +189,7 @@ const GameDetail = () => {
         </div>
       </div>
 
-      <article className="arena-panel group relative min-h-[360px] overflow-hidden border-white/8 bg-[#03070d] shadow-[0_28px_90px_rgba(0,0,0,0.35)]">
+      <article className="arena-panel group relative min-h-[360px] overflow-hidden border-white/8 bg-[#03070d] shadow-[0_28px_90px_rgba(0,0,0,0.35)]" data-tour="game-detail-hero">
         {showcaseSrc ? (
           <img
             src={showcaseSrc}
@@ -243,7 +243,7 @@ const GameDetail = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-black/35 p-3 backdrop-blur-md">
+          <div className="rounded-xl border border-white/10 bg-black/35 p-3 backdrop-blur-md" data-tour="game-detail-launch">
             <div className="mb-3 flex items-center justify-between">
               <span className="font-tech text-[10px] uppercase tracking-[0.2em] text-white/48">Launch control</span>
               <span className="rounded border border-white/10 bg-white/[0.04] px-2 py-0.5 font-tech text-[9px] uppercase text-white/55">
@@ -283,7 +283,7 @@ const GameDetail = () => {
         </div>
       </article>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-tour="game-detail-facts">
         {facts.map((fact) => (
           <div key={fact.label} className="arena-panel flex items-center gap-3 border-white/8 bg-[#04080f]/95 p-4">
             <div className="grid h-11 w-11 place-items-center rounded-md border border-white/8 bg-white/[0.04]">
@@ -334,7 +334,7 @@ const GameDetail = () => {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 space-y-5">
           {about ? (
-            <div className="arena-panel relative overflow-hidden space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6">
+            <div className="arena-panel relative overflow-hidden space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6" data-tour="game-detail-briefing">
               <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/55 to-transparent" />
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Mission briefing</h2>
               <div className="space-y-3 text-sm leading-relaxed text-white/60">
@@ -346,11 +346,13 @@ const GameDetail = () => {
           ) : null}
 
           {isHighwayHustle ? (
-            <HighwayHustleGarage title="Garage — select your ride" />
+            <div data-tour="game-detail-garage">
+              <HighwayHustleGarage title="Garage — select your ride" />
+            </div>
           ) : null}
 
           {features.length > 0 ? (
-            <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6">
+            <div className="arena-panel space-y-4 border-white/8 bg-[#04080f]/95 p-5 sm:p-6" data-tour="game-detail-features">
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Features</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {features.map((feature) => (
@@ -368,7 +370,7 @@ const GameDetail = () => {
             </div>
           ) : null}
 
-          <div className="arena-panel relative overflow-hidden flex flex-wrap items-center justify-between gap-4 border-purple-500/30 bg-[#070a12]/95 p-5 sm:p-6">
+          <div className="arena-panel relative overflow-hidden flex flex-wrap items-center justify-between gap-4 border-purple-500/30 bg-[#070a12]/95 p-5 sm:p-6" data-tour="game-detail-cta">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_50%,rgba(154,53,255,0.20),transparent_34%)]" />
             <div>
               <p className="font-tech text-[10px] uppercase tracking-wider text-[#d773ff]">
@@ -403,7 +405,7 @@ const GameDetail = () => {
         </div>
 
         <aside className="space-y-4">
-          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95 shadow-[0_20px_70px_rgba(0,0,0,0.26)]">
+          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95 shadow-[0_20px_70px_rgba(0,0,0,0.26)]" data-tour="game-detail-media">
             <div className="border-b border-white/8 px-4 py-3">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Media deck</h3>
             </div>

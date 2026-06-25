@@ -28,7 +28,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#9a35ff]/30 hover:shadow-[0_8px_40px_rgba(154,53,255,0.15)]">
+    <div data-tour="dashboard-profile" className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#9a35ff]/30 hover:shadow-[0_8px_40px_rgba(154,53,255,0.15)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(154,53,255,0.15),transparent_40%),radial-gradient(circle_at_80%_100%,rgba(0,137,255,0.1),transparent_40%)]" />
       <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">

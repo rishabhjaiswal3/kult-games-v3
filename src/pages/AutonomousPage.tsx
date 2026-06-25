@@ -406,7 +406,7 @@ const AutonomousPage = () => {
       <section className="mx-auto max-w-full px-4 py-5 sm:px-6 lg:px-8 space-y-4">
 
         {/* Title */}
-        <div>
+        <div data-tour="autonomous-header">
           <h1 className="font-tech text-3xl font-bold tracking-tight text-white uppercase">AUTONOMOUS COMMAND</h1>
           <p className="mt-1 text-[11px] text-white/55 font-medium">
             Your agents operate, earn, and grow even when you are away.
@@ -414,7 +414,7 @@ const AutonomousPage = () => {
         </div>
 
         {/* Metric Cards */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10" data-tour="autonomous-metrics">
 
           <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
             <div className="space-y-1">
@@ -506,7 +506,7 @@ const AutonomousPage = () => {
             <div className="grid gap-4 md:grid-cols-2">
 
               {/* Brain pulse */}
-              <div className="arena-panel p-5 flex flex-col items-center justify-center border-white/8 bg-[#04080f]/95 relative overflow-hidden">
+              <div className="arena-panel p-5 flex flex-col items-center justify-center border-white/8 bg-[#04080f]/95 relative overflow-hidden" data-tour="autonomous-brain">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(154,53,255,0.06),transparent_60%)]" />
                 <div className="relative w-40 h-40 flex items-center justify-center">
                   <div className="absolute inset-0 rounded-full border border-purple-500/10 animate-[ping_3s_infinite]" />
@@ -541,7 +541,7 @@ const AutonomousPage = () => {
               </div>
 
               {/* Capabilities */}
-              <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 space-y-4">
+              <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 space-y-4" data-tour="autonomous-status">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTONOMOUS STATUS</h3>
                 <div className="space-y-3.5">
                   {[
@@ -568,7 +568,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* Agents Table */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden">
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden" data-tour="autonomous-agent-table">
               <div className="p-5 border-b border-white/8 flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">MY AGENTS</h3>
                 <span className="text-[10px] text-purple-400 font-tech font-bold uppercase tracking-wider">
@@ -619,7 +619,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* Live Terminal Console */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden">
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 overflow-hidden" data-tour="autonomous-telemetry">
               <div className="p-4 border-b border-white/8 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
@@ -658,7 +658,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* How it works */}
-            <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-4">
+            <div className="arena-panel p-5 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-4" data-tour="autonomous-how-it-works">
               <div className="flex items-center gap-2">
                 <Info className="h-4.5 w-4.5 text-purple-400 shrink-0" />
                 <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white">HOW AUTONOMOUS MODE WORKS</span>
@@ -696,7 +696,7 @@ const AutonomousPage = () => {
           <aside className="space-y-4">
 
             {/* Strategy card */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="autonomous-strategy">
               <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTONOMOUS STRATEGY</h3>
               <div className="space-y-1">
                 <span className="text-[9px] font-semibold text-white/40 uppercase tracking-wide block">Current Strategy</span>
@@ -732,7 +732,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* Radar chart */}
-            <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-4 sm:p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="autonomous-performance">
               <h3 className="font-tech text-[11px] uppercase text-white/86 tracking-wider font-semibold">PERFORMANCE PROFILE (7D)</h3>
               <div className="relative flex justify-center py-4">
                 <img src={autonomousGraph} alt="Performance Profile radar chart" className="w-full max-w-[360px] aspect-[1.22/1] object-contain scale-[1.35]" />
@@ -744,7 +744,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* Reward crate card */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 flex items-center justify-between gap-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 flex items-center justify-between gap-4" data-tour="autonomous-rewards">
               <div className="space-y-2 flex-1">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">AUTO-LOOT & REWARDS</h3>
                 <p className="text-[10px] text-white/55 leading-relaxed font-semibold">Battle rewards collect automatically for all autonomous agents.</p>
@@ -766,7 +766,7 @@ const AutonomousPage = () => {
             </div>
 
             {/* Activity Log — battles + training combined */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="autonomous-activity">
               <div className="flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">ACTIVITY LOG</h3>
                 <div className="flex items-center gap-2">

@@ -121,7 +121,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <section className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
+      <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <video
           src={heroVideo}
           aria-hidden
@@ -227,7 +227,7 @@ export function HomePage() {
       </section>
 
       {visibleStatTiles.length > 0 ? (
-        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="home-quick-links">
           {visibleStatTiles.map((stat) => (
             <Link
               key={stat.label}

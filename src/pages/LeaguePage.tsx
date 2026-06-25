@@ -20,7 +20,9 @@ const LeaguePage = () => {
 
   return (
     <div className="min-w-0 w-full max-w-full overflow-x-hidden bg-black px-3 py-3 sm:px-6 lg:px-8">
-      <LeaguePageHeader />
+      <div data-tour="league-header">
+        <LeaguePageHeader />
+      </div>
       <LeagueModeTabs mode={mode} onModeChange={setMode} />
       {mode === "league" ? <KultLeagueBoard /> : <LeaguePolymarketBoard />}
     </div>
@@ -34,52 +36,52 @@ function KultLeagueBoard() {
         <div className="lg:col-span-12">
           <SectionKicker label="Live now" detail="Follow the match, read the room, make your move" />
         </div>
-        <div className="min-w-0 w-full lg:col-span-8 xl:col-span-9">
+        <div className="min-w-0 w-full lg:col-span-8 xl:col-span-9" data-tour="league-featured">
           <LeagueFeaturedBanner />
         </div>
-        <div className="flex min-w-0 w-full flex-col gap-2.5 lg:col-span-4 xl:col-span-3">
+        <div className="flex min-w-0 w-full flex-col gap-2.5 lg:col-span-4 xl:col-span-3" data-tour="league-stats">
           <LeagueStatsSidebar />
           <LeagueTopAgentsPanel />
           <LeagueWinRatePanel />
         </div>
 
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12" data-tour="league-moments">
           <LeagueMomentsTicker />
         </div>
 
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12" data-tour="league-upcoming">
           <LeagueUpcomingCarousel />
         </div>
 
         <div className="lg:col-span-12 mt-3">
           <SectionKicker label="Your league desk" detail="Your picks, rivalries, and agent performance in one place" />
         </div>
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12" data-tour="league-predictions">
           <LeagueTodayPredictions />
         </div>
 
-        <div className="min-w-0 w-full lg:col-span-12">
+        <div className="min-w-0 w-full lg:col-span-12" data-tour="league-agent-desk">
           <LeagueAgentDesk />
         </div>
 
-        <div className="min-w-0 w-full self-stretch lg:col-span-4">
+        <div className="min-w-0 w-full self-stretch lg:col-span-4" data-tour="league-recent-picks">
           <LeagueRecentPicks />
         </div>
-        <div className="min-w-0 w-full self-stretch lg:col-span-4">
+        <div className="min-w-0 w-full self-stretch lg:col-span-4" data-tour="league-rivalries">
           <LeagueRivalries />
         </div>
-        <div className="min-w-0 w-full self-stretch lg:col-span-4">
+        <div className="min-w-0 w-full self-stretch lg:col-span-4" data-tour="league-lineup">
           <LeagueYourLineup />
         </div>
 
         <div className="lg:col-span-12 mt-3">
           <SectionKicker label="Explore the board" detail="Compare agent conviction and find the next market to watch" />
         </div>
-        <div className="min-w-0 w-full self-stretch lg:col-span-6">
+        <div className="min-w-0 w-full self-stretch lg:col-span-6" data-tour="league-fights">
           <LeagueFightCarousel />
         </div>
 
-        <div className="min-w-0 w-full self-stretch lg:col-span-6">
+        <div className="min-w-0 w-full self-stretch lg:col-span-6" data-tour="league-questions">
           <LeagueQuestionsCarousel />
         </div>
 
@@ -130,7 +132,7 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   return (
-    <div className="mb-3 grid grid-cols-2 gap-2 sm:gap-3">
+    <div className="mb-3 grid grid-cols-2 gap-2 sm:gap-3" data-tour="league-mode-tabs">
       <button
         type="button"
         onClick={() => onModeChange("league")}

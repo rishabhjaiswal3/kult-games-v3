@@ -200,7 +200,7 @@ function AIArenaPageContent() {
 
 function ArenaQuickLinks() {
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    <div className="flex h-full min-w-0 flex-col" data-tour="ai-arena-quick-links">
       <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
       <div className="grid flex-1 grid-cols-1 gap-3 lg:gap-2 xl:gap-3">
         {arenaQuickLinks.map((link) => (
@@ -445,6 +445,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         type="button"
         onClick={handleArenaAction}
         disabled={startButtonDisabled}
+        data-tour="ai-arena-matchmaking"
         className={`min-w-0 rounded-md font-tech border border-accent/45 bg-gradient-to-r from-accent/12 to-primary/12 hover:from-accent/20 hover:to-primary/20 hover:border-accent/75 text-white flex items-center justify-center transition shadow-[0_0_15px_rgba(0,210,255,0.12)] hover:shadow-[0_0_25px_rgba(0,210,255,0.28)] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60 ${
           compact
             ? "w-[240px] px-4 py-3 text-[10px] tracking-[0.06em] gap-2"
@@ -537,7 +538,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
 function Hero() {
   return (
-    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]">
+    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]" data-tour="ai-arena-hero">
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden

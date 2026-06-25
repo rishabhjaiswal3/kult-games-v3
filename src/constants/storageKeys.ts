@@ -28,6 +28,8 @@ export const StorageKeys = {
     aiArenaLastBattleId: "kult_aiarena_last_battle_id",
     /** Verified shared browser access-code session. */
     browserAccessSession: "kult_browser_access_session",
+    /** Local product tour progress for website walkthroughs. */
+    productTourState: "kult_product_tour_state",
   },
   session: {
     /** Wallet address after Warzone agent binding sign. */

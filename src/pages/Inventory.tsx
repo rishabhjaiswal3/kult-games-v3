@@ -252,7 +252,7 @@ const Inventory = () => {
 
   return (
     <ArenaPageLayout contentClassName="max-w-none">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6" data-tour="inventory-summary">
         <div className="min-w-0 shrink-0 lg:max-w-[45%] xl:max-w-[40%]">
           <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
             Inventory
@@ -271,20 +271,22 @@ const Inventory = () => {
       </div>
 
       <div className="w-full space-y-4">
-        <InventoryToolbar
-          itemCategories={itemCategories}
-          itemCategory={itemCategory}
-          onCategoryChange={setItemCategory}
-          categoriesLoading={categoriesLoading}
-          itemSearch={itemSearch}
-          onSearchChange={setItemSearch}
-          itemGame={itemGame}
-          onGameChange={handleGameChange}
-          games={games}
-          gamesLoading={gamesLoading}
-          getGameName={getGameName}
-          onReset={handleReset}
-        />
+        <div data-tour="inventory-filters">
+          <InventoryToolbar
+            itemCategories={itemCategories}
+            itemCategory={itemCategory}
+            onCategoryChange={setItemCategory}
+            categoriesLoading={categoriesLoading}
+            itemSearch={itemSearch}
+            onSearchChange={setItemSearch}
+            itemGame={itemGame}
+            onGameChange={handleGameChange}
+            games={games}
+            gamesLoading={gamesLoading}
+            getGameName={getGameName}
+            onReset={handleReset}
+          />
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/6 pb-2">
           <div>
@@ -298,7 +300,7 @@ const Inventory = () => {
           </div>
         </div>
 
-        <div className="pb-6">{itemsGrid}</div>
+        <div className="pb-6" data-tour="inventory-grid">{itemsGrid}</div>
       </div>
 
       <MarketplacePurchaseDialog

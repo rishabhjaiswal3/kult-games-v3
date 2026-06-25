@@ -357,7 +357,7 @@ function GameModeCard({ mode }: { mode: GameMode }) {
 
 function GameCarouselSection() {
   return (
-    <section className="mt-7">
+    <section className="mt-7" data-tour="battles-game-modes">
       <h2 className="font-tech text-sm uppercase tracking-[0.08em]">CHOOSE YOUR GAME</h2>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {gameModes.map((mode) => (
@@ -1222,7 +1222,7 @@ const BattlesPage = () => {
         <p className="mt-2 text-sm text-white/68">Compete in epic battles across different games and modes.</p>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_270px]" data-tour="battles-stats">
         <StatsRail myAgents={myAgents} />
         <RankCard firstAgent={myAgents[0] ?? null} />
       </div>
@@ -1231,7 +1231,7 @@ const BattlesPage = () => {
 
       <div className="mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-5">
-          <div className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
+          <div className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5" data-tour="battles-board">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <SectionTitle className="!mt-0">ALL ARENA BATTLES</SectionTitle>
@@ -1331,7 +1331,7 @@ const BattlesPage = () => {
           </div>
 
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
-            <div className="arena-panel relative overflow-hidden border border-cyan-500/14 bg-[linear-gradient(180deg,rgba(4,8,15,0.98),rgba(3,7,13,0.94))] p-4 sm:p-5">
+            <div className="arena-panel relative overflow-hidden border border-cyan-500/14 bg-[linear-gradient(180deg,rgba(4,8,15,0.98),rgba(3,7,13,0.94))] p-4 sm:p-5" data-tour="battles-live-control">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,212,255,0.12),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(139,92,246,0.08),transparent_34%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/35 to-transparent" />
               <div className="relative flex flex-wrap items-start justify-between gap-4 border-b border-white/8 pb-5">
@@ -1378,7 +1378,7 @@ const BattlesPage = () => {
                     <MetaStat label="Queued now" value={String(myQueueRows.length)} />
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-cyan-500/12 bg-[linear-gradient(180deg,rgba(7,16,24,0.88),rgba(3,8,14,0.72))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                    <div className="mt-5 rounded-2xl border border-cyan-500/12 bg-[linear-gradient(180deg,rgba(7,16,24,0.88),rgba(3,8,14,0.72))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" data-tour="battles-my-queue">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-100/82">My live queue</div>
@@ -1418,7 +1418,7 @@ const BattlesPage = () => {
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-purple-500/12 bg-[linear-gradient(180deg,rgba(19,10,28,0.72),rgba(9,10,18,0.66))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                    <div className="mt-5 rounded-2xl border border-purple-500/12 bg-[linear-gradient(180deg,rgba(19,10,28,0.72),rgba(9,10,18,0.66))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" data-tour="battles-public-join">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-purple-100/82">Join public battles</div>
@@ -1444,7 +1444,7 @@ const BattlesPage = () => {
               )}
             </div>
 
-            <div className="arena-panel relative overflow-hidden border border-amber-500/12 bg-[linear-gradient(180deg,rgba(5,8,14,0.98),rgba(3,7,13,0.95))] p-4 sm:p-5">
+            <div className="arena-panel relative overflow-hidden border border-amber-500/12 bg-[linear-gradient(180deg,rgba(5,8,14,0.98),rgba(3,7,13,0.95))] p-4 sm:p-5" data-tour="battles-console">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.08),transparent_32%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent" />
               <div className="relative border-b border-white/8 pb-5">
@@ -1472,7 +1472,7 @@ const BattlesPage = () => {
 
               {canUseBattleOps ? (
                 <>
-                  <div className="mt-5 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="mt-5 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" data-tour="battles-direct-setup">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/75">Direct battle setup</div>
@@ -1564,7 +1564,7 @@ const BattlesPage = () => {
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(6,12,20,0.76),rgba(3,7,13,0.7))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="mt-5 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(6,12,20,0.76),rgba(3,7,13,0.7))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" data-tour="battles-lookup">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/75">Battle lookup</div>
@@ -1628,7 +1628,7 @@ const BattlesPage = () => {
           </div>
         </div>
 
-        <aside className="flex flex-col gap-6 self-start xl:sticky xl:top-24">
+        <aside className="flex flex-col gap-6 self-start xl:sticky xl:top-24" data-tour="battles-sidebar">
           <div>
             <div className="mb-3">
               <SectionTitle className="!mt-0">BATTLE REWARDS</SectionTitle>

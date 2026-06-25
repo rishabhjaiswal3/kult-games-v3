@@ -32,7 +32,7 @@ function SidebarNav({
   const visibleNavItems = navItemsForAccess(session, isAuthenticated);
 
   return (
-    <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1">
+    <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1" data-tour="sidebar-nav">
       {visibleNavItems.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
@@ -89,6 +89,7 @@ function SidebarNav({
               href={item.externalUrl}
               onClick={onNavigate}
               title={isCollapsed ? item.label : undefined}
+              data-tour={`sidebar-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               className={sharedClassName}
               style={{ animationDelay: `${idx * 30}ms` }}
             >
@@ -103,6 +104,7 @@ function SidebarNav({
             to={item.path}
             onClick={onNavigate}
             title={isCollapsed ? item.label : undefined}
+            data-tour={`sidebar-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             className={sharedClassName}
             style={{ animationDelay: `${idx * 30}ms` }}
           >
@@ -123,7 +125,7 @@ function SidebarBrand({
   onToggleCollapse?: () => void;
 }) {
   return (
-    <div className={cn("flex items-start", isCollapsed ? "justify-center pt-5 pb-4" : "justify-between px-5 pt-5 pb-4")}>
+    <div className={cn("flex items-start", isCollapsed ? "justify-center pt-5 pb-4" : "justify-between px-5 pt-5 pb-4")} data-tour="sidebar-brand">
       {!isCollapsed && (
         <Link to="/" className="group block shrink-0">
           <div className="flex items-center gap-2.5">
@@ -131,9 +133,6 @@ function SidebarBrand({
             <span className="h-4 w-px bg-gradient-to-b from-transparent via-[#9a35ff]/40 to-transparent" aria-hidden />
             <img src={kultLogo} alt="Kult Games" className="h-5 w-auto object-contain transition-all group-hover:drop-shadow-[0_0_8px_rgba(154,53,255,0.5)]" />
           </div>
-          {/* <p className="mt-2.5 font-mono text-[8px] uppercase tracking-[0.32em] text-white/35 transition-colors group-hover:text-white/50">
-            Powered by 0G · AI Arena
-          </p> */}
           <div className="mt-3 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/35 to-transparent" />
         </Link>
       )}

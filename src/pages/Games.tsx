@@ -259,7 +259,7 @@ const Games = () => {
         </Link>
       </div>
 
-      <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+      <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="games-stats">
         {[
           { label: "TOTAL GAMES", value: String(allGames.length), icon: Gamepad2, color: "#0089ff" },
           { label: "VISIBLE", value: String(filtered.length), icon: Layers, color: "#b338ff" },
@@ -278,7 +278,7 @@ const Games = () => {
         ))}
       </div>
 
-      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-3">
+      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-3" data-tour="games-filters">
         <div className="flex flex-wrap items-center gap-1">
           {GAME_TYPE_FILTERS.map((cat) => (
             <button
@@ -416,7 +416,7 @@ const Games = () => {
         <span className="font-tech text-[10px] text-white/40">{filtered.length} titles</span>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-tour="games-grid">
         {gamesLoading
           ? Array.from({ length: 8 }).map((_, i) => <GameListingCardSkeleton key={i} />)
           : filtered.map((game) => (
