@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Activity,
   ArrowUpRight,
@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Info,
   Layers,
+  Package,
   Search,
   Smartphone,
   Trophy,
@@ -242,13 +243,20 @@ const Games = () => {
 
   return (
     <ArenaPageLayout>
-      <div>
-        <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
-          Play Today. Build Forever.
-        </h1>
-        <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
-          Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+            Play Today. Build Forever.
+          </h1>
+          <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
+            Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
+          </p>
+        </div>
+        <Link to="/inventory" className="topbar-wallet-cta group h-10 shrink-0 gap-2 px-4 text-[11px] tracking-wider">
+          <Package className="h-4 w-4" />
+          Inventory
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-75 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+        </Link>
       </div>
 
       <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">

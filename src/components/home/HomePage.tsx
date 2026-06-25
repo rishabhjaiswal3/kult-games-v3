@@ -597,6 +597,11 @@ function HomeLiveLeaguesSection() {
   return (
     <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-3.5 sm:p-4">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_22%,rgba(255,192,0,0.14),transparent_30%),radial-gradient(circle_at_8%_78%,rgba(154,53,255,0.16),transparent_32%)]" />
+
+      {/* Floating football accents */}
+      <span className="pointer-events-none absolute right-4 top-7 select-none text-2xl opacity-[0.12] [transform:rotate(8deg)]" aria-hidden>⚽</span>
+      <span className="pointer-events-none absolute bottom-4 left-5 select-none text-lg opacity-[0.09] [transform:rotate(-12deg)]" aria-hidden>⚽</span>
+
       <div className="relative">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -604,7 +609,10 @@ function HomeLiveLeaguesSection() {
               <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.85)]" />
               Live leagues
             </div>
-            <h2 className="mt-1 font-tech text-xl font-black uppercase text-white sm:text-2xl">Season is live.</h2>
+            <h2 className="mt-1 flex items-center gap-2 font-tech text-xl font-black uppercase text-white sm:text-2xl">
+              <span className="select-none text-lg sm:text-xl" aria-hidden>⚽</span>
+              Season is live.
+            </h2>
           </div>
           <div className="hidden text-center lg:block">
             <div className="font-tech text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffc42e]">Make your first pick.</div>

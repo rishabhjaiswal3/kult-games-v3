@@ -109,9 +109,11 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
               <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
               <Link
                 to={startLink.href}
-                className="footer-enter-cta mt-4"
+                className="footer-enter-cta mt-4 mx-auto sm:mx-0"
                 style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
               >
+                <span className="footer-enter-cta__pitch" aria-hidden />
+                <span className="footer-enter-cta__ball" aria-hidden>⚽</span>
                 <span>{startLink.label}</span>
                 <ArrowUpRight aria-hidden />
               </Link>

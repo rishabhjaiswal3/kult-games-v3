@@ -283,9 +283,9 @@ export const aiArenaGatewayApi = {
   },
 
   /** GET /v1/leaderboards/global?limit= */
-  getGlobalLeaderboard: async (limit = 20): Promise<AiArenaGlobalLeaderboardResponse> => {
+  getGlobalLeaderboard: async (limit = 20, period: "all_time" | "weekly" | "monthly" = "all_time"): Promise<AiArenaGlobalLeaderboardResponse> => {
     const { data } = await http().get<AiArenaGlobalLeaderboardResponse>("/v1/leaderboards/global", {
-      params: { limit },
+      params: { limit, period },
     });
     return {
       ...data,

@@ -19,26 +19,30 @@ function normalizeEntries(entries: AiArenaLeaderboardEntry[]): AiArenaLeaderboar
   }));
 }
 
+type LeaderboardPeriod = "all_time" | "weekly" | "monthly";
+
 type UseEnrichedArenaLeaderboardOptions = {
   enabled?: boolean;
   refetchInterval?: number | false;
   staleTime?: number;
+  period?: LeaderboardPeriod;
 };
 
 export function useEnrichedArenaLeaderboard(options: boolean | UseEnrichedArenaLeaderboardOptions = true) {
-  const normalized =
+  const normalized: { enabled: boolean; refetchInterval: number | false; staleTime: number; period: LeaderboardPeriod } =
     typeof options === "boolean"
-      ? { enabled: options, refetchInterval: false, staleTime: 5 * 60_000 }
+      ? { enabled: options, refetchInterval: false, staleTime: 5 * 60_000, period: "all_time" as LeaderboardPeriod }
       : {
           enabled: options.enabled ?? true,
           refetchInterval: options.refetchInterval ?? false,
           staleTime: options.staleTime ?? 5 * 60_000,
+          period: options.period ?? ("all_time" as LeaderboardPeriod),
         };
 
   return useQuery({
-    queryKey: [...AI_ARENA_LEADERBOARD_QUERY_KEY, "enriched"],
+    queryKey: [...AI_ARENA_LEADERBOARD_QUERY_KEY, "enriched", normalized.period],
     queryFn: async () => {
-      const data = await aiArenaGatewayApi.getGlobalLeaderboard(AI_ARENA_LEADERBOARD_LIMIT);
+      const data = await aiArenaGatewayApi.getGlobalLeaderboard(AI_ARENA_LEADERBOARD_LIMIT, normalized.period);
       return { entries: normalizeEntries(data.entries ?? []) };
     },
     enabled: normalized.enabled,
