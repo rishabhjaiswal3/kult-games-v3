@@ -21,6 +21,13 @@ import { RANKS, getRankFromElo } from "@/utils/rankSystem";
 
 const PAGE_SIZE = 10;
 type LeaderboardMode = "KULT_POINTS" | "AI_ARENA";
+type LeaderboardPeriod = "all_time" | "weekly" | "monthly";
+
+const PERIOD_OPTIONS: { value: LeaderboardPeriod; label: string }[] = [
+  { value: "weekly", label: "WEEKLY" },
+  { value: "monthly", label: "MONTHLY" },
+  { value: "all_time", label: "ALL TIME" },
+];
 
 const Leaderboard = () => {
   const { isAuthenticated, walletAddress } = useAuth();
@@ -30,11 +37,12 @@ const Leaderboard = () => {
   const [kultPage, setKultPage] = useState(1);
   const [arenaPage, setArenaPage] = useState(1);
   const [selectedLeagueTier, setSelectedLeagueTier] = useState<number | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<LeaderboardPeriod>("all_time");
 
   // ── KULT backend leaderboard data ───────────────────────────────────────────
   const kultLeaderboardQ = useQuery({
-    queryKey: ["kult", "leaderboard", "global", kultPage],
-    queryFn: () => leaderboardApi.getGlobal(kultPage, PAGE_SIZE),
+    queryKey: ["kult", "leaderboard", "global", kultPage, selectedPeriod],
+    queryFn: () => leaderboardApi.getGlobal(kultPage, PAGE_SIZE, selectedPeriod),
     enabled: activeMode === "KULT_POINTS" && activeKultTab === "GLOBAL",
     staleTime: 60_000,
   });
@@ -73,7 +81,7 @@ const Leaderboard = () => {
   const kultSidebarPoints = activeKultTab === "MY RANK" ? kultProfile?.totalScore ?? 0 : Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
-  const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" });
+  const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });
   const allEntries = enrichedQ.data?.entries ?? [];
 
   // ── Current user's agents ───────────────────────────────────────────────────
@@ -180,6 +188,12 @@ const Leaderboard = () => {
     setArenaPage(1);
   };
 
+  const handlePeriodChange = (period: LeaderboardPeriod) => {
+    setSelectedPeriod(period);
+    setKultPage(1);
+    setArenaPage(1);
+  };
+
   const selectedLeagueInfo = selectedLeagueTier !== null
     ? RANKS.find((r) => r.tier === selectedLeagueTier) ?? null
     : null;
@@ -236,6 +250,28 @@ const Leaderboard = () => {
               ))}
             </div>
 
+            <div className="flex flex-wrap items-center gap-3">
+            {/* Period filter — on GLOBAL tab for both modes */}
+            {(activeMode === "KULT_POINTS" ? activeKultTab : activeArenaTab) === "GLOBAL" ? (
+              <div className="flex items-center gap-2">
+                <span className="font-tech text-[10px] uppercase tracking-widest text-white/35">Period</span>
+                <div className="relative">
+                  <select
+                    value={selectedPeriod}
+                    onChange={(e) => handlePeriodChange(e.target.value as LeaderboardPeriod)}
+                    className="peer appearance-none cursor-pointer rounded-lg border border-white/12 bg-[#04080f] py-2 pl-3 pr-8 font-tech text-[11px] uppercase tracking-wider text-white/80 transition hover:border-[#9a35ff]/40 hover:text-white focus:outline-none focus:border-[#9a35ff]/60 focus:ring-1 focus:ring-[#9a35ff]/40"
+                  >
+                    {PERIOD_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-white/40 transition peer-hover:text-[#b95cff]/80 peer-focus:rotate-180" />
+                </div>
+              </div>
+            ) : null}
+
             {/* League filter — only on GLOBAL tab */}
             {activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" ? (
               <div className="flex items-center gap-2">
@@ -246,7 +282,7 @@ const Leaderboard = () => {
                     onChange={(e) =>
                       handleLeagueChange(e.target.value === "" ? null : Number(e.target.value))
                     }
-                    className="appearance-none rounded border border-white/12 bg-[#04080f] py-1.5 pl-2.5 pr-7 font-tech text-[11px] uppercase tracking-wider text-white/80 focus:outline-none focus:ring-1 focus:ring-[#9a35ff]/50"
+                    className="peer appearance-none cursor-pointer rounded-lg border border-white/12 bg-[#04080f] py-2 pl-3 pr-8 font-tech text-[11px] uppercase tracking-wider text-white/80 transition hover:border-[#9a35ff]/40 hover:text-white focus:outline-none focus:border-[#9a35ff]/60 focus:ring-1 focus:ring-[#9a35ff]/40"
                     style={
                       selectedLeagueInfo
                         ? { borderColor: `${selectedLeagueInfo.color}55`, color: selectedLeagueInfo.color }
@@ -260,7 +296,7 @@ const Leaderboard = () => {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-white/40" />
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-white/40 transition peer-hover:text-[#b95cff]/80 peer-focus:rotate-180" />
                 </div>
 
                 {/* Selected league badge */}
@@ -277,6 +313,7 @@ const Leaderboard = () => {
                 ) : null}
               </div>
             ) : null}
+            </div>
           </div>
 
           {activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" && !isAuthenticated ? (
@@ -515,21 +552,19 @@ const Leaderboard = () => {
           userPoints={activeMode === "KULT_POINTS" ? kultSidebarPoints : sidebarPoints}
           seasonProgress={activeMode === "KULT_POINTS" ? 40 : sidebarProgress}
           userElo={activeMode === "AI_ARENA" && myElo > 0 ? myElo : undefined}
-          pointLabel={activeMode === "KULT_POINTS" ? "KP" : "PTS"}
-          title={activeMode === "KULT_POINTS" ? "KULT POINTS" : "AI ARENA"}
-          rankLabel={activeMode === "KULT_POINTS" ? "YOUR KULT RANK" : "YOUR ARENA RANK"}
-          infoItems={
+          pointLabel={activeMode === "KULT_POINTS" ? "KP" : "ELO"}
+          title="Your Rank"
+          totalPlayers={
             activeMode === "KULT_POINTS"
-              ? [
-                  "KULT Points reflect game contribution from the KULT backend leaderboard.",
-                  "Dedicated KP ledger, idempotency, and period filters still need backend support.",
-                  "No token conversion, cash value, or guaranteed reward is shown.",
-                ]
-              : [
-                  "AI Arena rankings use ELO-style battle data.",
-                  "League filters apply only to AI Arena rankings.",
-                  "This tab remains separate from KULT Points.",
-                ]
+              ? kultLeaderboardQ.data?.total
+              : allEntries.length > 0
+                ? allEntries.length
+                : undefined
+          }
+          aboutText={
+            activeMode === "KULT_POINTS"
+              ? "Your KULT Points reflect game contribution from the backend leaderboard, updated from verified activity. No token conversion, cash value, or guaranteed reward is implied."
+              : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
           }
         />
       </div>

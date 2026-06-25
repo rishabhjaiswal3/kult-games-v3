@@ -1,15 +1,17 @@
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
-import { BrainCircuit, BriefcaseBusiness, Gamepad2, Trophy, Video } from "lucide-react";
+import { ArrowUpRight, BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
-import sceneVideo from "@/assets/Scene 1.mp4";
+import { useAccess } from "@/contexts/AccessContext";
+import type { AccessFeature } from "@/lib/accessControl";
 
 const platformLinks = [
-  { label: "Games", href: "/", icon: Gamepad2 },
-  { label: "Inventory", href: "/inventory", icon: BriefcaseBusiness },
-  { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit },
-  { label: "Moments", href: "/moments", icon: Video },
-  { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
+  { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
+  { label: "AI Arena", href: "/ai-arena", icon: BrainCircuit, feature: "ai_arena" },
+  { label: "Moments", href: "/moments", icon: Video, feature: "moments" },
+  { label: "Leaderboard", href: "/leaderboard", icon: Trophy, feature: "league" },
+  { label: "League", href: "/league", icon: Trophy, feature: "league" },
+  { label: "Home", href: "/", icon: Gamepad2, feature: null },
 ];
 
 const socials = [
@@ -45,9 +47,19 @@ const socials = [
   },
 ];
 
-const Footer = () => {
+const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
+  const isArena = variant === "arena";
+  const { canUse } = useAccess();
+  const footerLinks = platformLinks.filter((link) => {
+    if (isArena && link.label === "AI Arena") return false;
+    if (!isArena && link.label === "League") return false;
+    return !link.feature || canUse(link.feature as AccessFeature);
+  });
+  const startLink = { label: "Enter League", href: "/league", feature: "league" as AccessFeature };
+  const showStartLink = canUse(startLink.feature);
+
   return (
-    <footer className="arena-panel relative mb-6 border border-white/8 bg-[#04080f] overflow-hidden">
+    <footer className={`relative -mx-4 mb-0 w-[calc(100%+2rem)] overflow-hidden border-y border-white/8 bg-[#04080f] pb-24 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:pb-0 lg:-mx-8 lg:w-[calc(100%+4rem)] ${isArena ? "pb-28" : ""}`}>
       <div className="absolute inset-0 ai-grid-overlay pointer-events-none opacity-[0.09]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[hsl(278_100%_74%/0.85)] to-transparent" />
       <div className="pointer-events-none absolute -left-28 top-8 h-56 w-56 rounded-full bg-[hsl(278_100%_60%/0.16)] blur-3xl" />
@@ -55,82 +67,59 @@ const Footer = () => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(278_100%_70%/0.12),transparent_34%),linear-gradient(180deg,rgba(7,10,22,0.92),rgba(2,5,12,0.98))]" />
 
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="grid gap-8 py-10 lg:grid-cols-[1.15fr_0.85fr_0.7fr] lg:items-center lg:py-12">
-          <div className="group/brand relative w-full max-w-[390px] overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/38 bg-[linear-gradient(140deg,rgba(31,21,78,0.82),rgba(4,7,18,0.97)_58%)] p-5 shadow-[0_0_34px_rgba(104,62,255,0.16),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-[#8f73ff]/70 hover:shadow-[0_0_48px_rgba(104,62,255,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-6">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_6%_0%,rgba(130,91,255,0.28),transparent_32%)] transition duration-300 group-hover/brand:opacity-80" />
-            <div className="relative flex min-w-0 flex-col items-start gap-5 text-left">
-              <div className="flex h-[72px] w-full max-w-[300px] shrink-0 items-center justify-center gap-5 rounded-lg bg-black/48 px-4 shadow-[0_0_26px_rgba(112,73,255,0.16)] transition duration-300 group-hover/brand:bg-black/65 group-hover/brand:shadow-[0_0_34px_rgba(112,73,255,0.28)]">
-                <img src={kultLogo} alt="Kult Games" className="h-9 w-auto max-w-[132px] object-contain transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]" />
-                <span className="h-10 w-px bg-white/16 transition duration-300 group-hover/brand:bg-[#a790ff]/55" aria-hidden />
-                <img src={zeroGLogo} alt="0G" className="h-9 w-auto max-w-[78px] object-contain transition duration-300 group-hover/brand:scale-105 group-hover/brand:drop-shadow-[0_0_12px_rgba(255,255,255,0.45)]" />
-              </div>
-              <div className="min-w-0 max-w-[320px]">
-                <h2 className="font-tech text-[15px] font-black uppercase leading-[1.5] tracking-[0.22em] text-[#dce5ff] transition duration-300 group-hover/brand:text-white">
-                  THE OPERATING LAYER FOR <span className="text-[#a790ff] transition duration-300 group-hover/brand:text-[#cbbcff]">INTELLIGENT GAMING.</span>
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/56 transition duration-300 group-hover/brand:text-white/78">
-                  Autonomous agents. Persistent identities. Connected worlds.
-                </p>
-              </div>
+        <div className="grid gap-10 py-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-[1.15fr_0.7fr_0.7fr_1fr] lg:gap-8 lg:py-12">
+          <div className="mx-auto max-w-[290px] sm:mx-0">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
+              <img src={kultLogo} alt="Kult Games" className="h-10 w-auto max-w-[145px] object-contain" />
+              <span className="h-8 w-px bg-white/15" />
+              <img src={zeroGLogo} alt="0G" className="h-8 w-auto max-w-[72px] object-contain" />
             </div>
+            {isArena ? (
+              <>
+                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">The operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
+                <p className="mt-3 text-sm leading-relaxed text-white/55">Autonomous agents. Persistent identities. Connected worlds.</p>
+              </>
+            ) : (
+              <>
+                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">One browser for <span className="text-[#c084fc]">every game world.</span></h2>
+                <p className="mt-3 text-sm leading-relaxed text-white/55">Play games. Predict markets. Command AI agents. Own every move.</p>
+              </>
+            )}
           </div>
 
-          <nav
-            className="group/explore flex flex-col justify-center border-white/8 transition duration-300 hover:border-[#7d5cff]/35 lg:min-h-[168px] lg:border-x lg:px-6"
-            aria-label="Footer navigation"
-          >
-            <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/explore:text-[#d8c7ff] group-hover/explore:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">EXPLORE</p>
-            <div className="flex flex-wrap gap-3">
-              {platformLinks.map((link) => {
+          <nav aria-label="Footer navigation">
+            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Explore</p>
+            <div className="mt-4 space-y-3">
+              {footerLinks.map((link) => {
                 const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    className="group inline-flex h-11 items-center justify-start gap-2.5 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 text-[13px] font-medium text-white/86 shadow-[inset_0_0_0_1px_rgba(130,98,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#7d5cff]/55 hover:bg-[#120d2d] hover:text-white hover:shadow-[0_0_20px_rgba(112,73,255,0.2)]"
-                  >
-                    <Icon className="h-4 w-4 shrink-0 text-[#8b6dff] transition group-hover:scale-110 group-hover:text-[#cbbcff]" />
-                    <span className="whitespace-nowrap transition group-hover:text-white">{link.label}</span>
-                  </Link>
-                );
+                return <Link key={link.href} to={link.href} className="flex items-center justify-center gap-2 text-sm text-white/60 transition hover:text-white sm:justify-start"><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
               })}
             </div>
           </nav>
 
-          <div className="group/social flex flex-col justify-center gap-7 lg:min-h-[168px] lg:items-start">
-            <div>
-              <p className="mb-5 font-tech text-[12px] font-black uppercase tracking-[0.46em] text-[#a790ff] transition duration-300 group-hover/social:text-[#d8c7ff] group-hover/social:drop-shadow-[0_0_10px_rgba(167,144,255,0.55)]">
-                FOLLOW KULT GAMES
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {socials.map((s) => (
-                  <a
-                    key={s.key}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex h-12 w-12 items-center justify-center rounded-full border border-[#6645ff]/48 bg-black/20 text-[#a790ff] transition hover:-translate-y-0.5 hover:border-[#9d86ff] hover:bg-[#140f35] hover:text-white hover:shadow-[0_0_24px_rgba(112,73,255,0.32)]"
-                    aria-label={s.label}
-                    title={s.label}
-                  >
-                    <span className="transition-transform group-hover:scale-110">{s.icon}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-
-            <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px]">
-              <video
-                src={sceneVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
-              />
+          <div>
+            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Community</p>
+            <div className="mt-4 space-y-3">
+              {socials.map((social) => <a key={social.key} href={social.href} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 text-sm text-white/60 transition hover:text-white sm:justify-start"><span className="text-[#a855f7]">{social.icon}</span>{social.label}</a>)}
             </div>
           </div>
+
+          {showStartLink ? (
+            <div className="mx-auto w-full max-w-[320px] sm:mx-0">
+              <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
+              <Link
+                to={startLink.href}
+                className="footer-enter-cta mt-4 mx-auto sm:mx-0"
+                style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+              >
+                <span className="footer-enter-cta__pitch" aria-hidden />
+                <span className="footer-enter-cta__ball" aria-hidden>⚽</span>
+                <span>{startLink.label}</span>
+                <ArrowUpRight aria-hidden />
+              </Link>
+              <p className="mt-3 text-xs leading-relaxed text-white/35">Make your picks, follow the action, and climb the League.</p>
+            </div>
+          ) : null}
         </div>
 
         <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">

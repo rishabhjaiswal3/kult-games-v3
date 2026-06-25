@@ -1,22 +1,28 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Activity,
   ArrowUpRight,
+  ChevronLeft,
   ChevronRight,
+  Clock3,
   Download,
+  Flame,
   Gamepad2,
   Info,
   Layers,
+  Package,
   Search,
   Smartphone,
+  Trophy,
   Volume2,
   Zap,
 } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { GameListingCard, GameListingCardSkeleton } from "@/components/games/GameListingCard";
 import { gamesApi } from "@/api/gamesApi";
+import { useAccess } from "@/contexts/AccessContext";
 import { isGameDownloadable } from "@/lib/gameDownload";
 import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
 import type { Game } from "@/types/api";
@@ -31,10 +37,147 @@ const GAME_TYPE_GAME_KEYS: Record<(typeof GAME_TYPE_FILTERS)[number], string[]> 
   Racing: ["highwayhustle"],
 };
 
+const RECENT_GAMES_KEY = "kult-recent-games";
+
+function gameId(game: Game) {
+  return game.identification ?? game.slug ?? game._id ?? "";
+}
+
+function formatPlays(plays?: number) {
+  if (!plays) return "Arena ready";
+  if (plays >= 1_000_000) return `${(plays / 1_000_000).toFixed(1)}M plays`;
+  if (plays >= 1_000) return `${Math.round(plays / 1_000)}K plays`;
+  return `${plays} plays`;
+}
+
+function DiscoveryGameCard({
+  game,
+  label,
+  index,
+  fillMobileWidth,
+  onOpen,
+}: {
+  game: Game;
+  label: string;
+  index: number;
+  fillMobileWidth: boolean;
+  onOpen: () => void;
+}) {
+  const image = getGameImage(game);
+  const name = getGameName(game.name);
+  const downloadable = isGameDownloadable(game);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`group relative shrink-0 snap-start overflow-hidden rounded-xl border border-white/10 bg-[#070b15] text-left transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/65 hover:shadow-[0_16px_34px_rgba(0,0,0,0.32),0_0_28px_rgba(154,53,255,0.18)] sm:w-[250px] lg:w-[calc((100%-1.5rem)/3)] ${fillMobileWidth ? "w-full" : "w-[230px]"}`}
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#050914]">
+        {image ? <img src={image} alt="" className="h-full w-full object-cover object-center brightness-125 saturate-130 contrast-105 transition duration-500 group-hover:scale-105 group-hover:brightness-135 group-hover:saturate-150" loading="lazy" /> : null}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.18),transparent_52%)] opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
+        <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-lg border border-white/15 bg-black/55 font-tech text-[10px] font-black text-white backdrop-blur-sm">
+          0{index + 1}
+        </span>
+        <span className="absolute bottom-2 right-3 rounded border border-[#00f080]/25 bg-[#001d16]/75 px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-wider text-[#72f7bb]">
+          {downloadable ? "Download" : "Play now"}
+        </span>
+      </div>
+      <div className="relative p-3">
+        <p className="font-tech text-[8px] font-bold uppercase tracking-[0.16em] text-[#c78aff]">{label}</p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <h3 className="truncate font-tech text-sm font-black uppercase text-white">{name}</h3>
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-white/35 transition group-hover:text-[#d6acff]" />
+        </div>
+        <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-white/42">
+          {game.rating != null ? `★ ${game.rating} · ` : ""}{formatPlays(game.play_count)}
+        </p>
+      </div>
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc] to-transparent opacity-0 transition group-hover:opacity-100" />
+    </button>
+  );
+}
+
+function DiscoverySection({
+  title,
+  subtitle,
+  icon: Icon,
+  accent,
+  games,
+  label,
+  onOpen,
+}: {
+  title: string;
+  subtitle: string;
+  icon: typeof Flame;
+  accent: string;
+  games: Game[];
+  label: string;
+  onOpen: (game: Game) => void;
+}) {
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const hasOverflow = games.length > 3;
+
+  if (!games.length) return null;
+
+  return (
+    <section className="relative overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(112deg,rgba(8,13,25,0.96),rgba(5,8,16,0.98))] p-4 sm:p-5">
+      <div className="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full blur-3xl" style={{ backgroundColor: accent, opacity: 0.1 }} />
+      <div className="relative mb-4 flex items-end justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.045]" style={{ color: accent }}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-tech text-sm font-black uppercase tracking-wide text-white">{title}</h2>
+            <p className="mt-0.5 text-[10px] text-white/46">{subtitle}</p>
+          </div>
+        </div>
+        {hasOverflow ? (
+          <div className="flex items-center gap-2">
+            <span className="hidden font-tech text-[9px] uppercase tracking-wider text-white/35 sm:block">More to explore</span>
+            <button
+              type="button"
+              aria-label={`Show previous ${title} games`}
+              onClick={() => carouselRef.current?.scrollBy({ left: -carouselRef.current.clientWidth, behavior: "smooth" })}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/[0.035] text-white/60 transition hover:border-[#9a35ff]/50 hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label={`Show more ${title} games`}
+              onClick={() => carouselRef.current?.scrollBy({ left: carouselRef.current.clientWidth, behavior: "smooth" })}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/[0.035] text-white/60 transition hover:border-[#9a35ff]/50 hover:text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+      </div>
+      <div ref={carouselRef} className="relative flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {games.map((game, index) => (
+          <DiscoveryGameCard
+            key={gameId(game)}
+            game={game}
+            label={label}
+            index={index}
+            fillMobileWidth={games.length === 1}
+            onOpen={() => onOpen(game)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const Games = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<(typeof GAME_TYPE_FILTERS)[number]>("All");
+  const [recentGameIds, setRecentGameIds] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { canUse } = useAccess();
+  const canViewLeague = canUse("league");
 
   const { data: gamesData, isLoading: gamesLoading } = useQuery({
     queryKey: ["games", "all"],
@@ -42,7 +185,16 @@ const Games = () => {
     staleTime: 5 * 60_000,
   });
 
-  const allGames = gamesData?.games ?? [];
+  const allGames = useMemo(() => gamesData?.games ?? [], [gamesData?.games]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(RECENT_GAMES_KEY) ?? "[]");
+      if (Array.isArray(stored)) setRecentGameIds(stored.filter((id): id is string => typeof id === "string"));
+    } catch {
+      // A malformed saved value should never block the games catalogue.
+    }
+  }, []);
 
   const filtered = useMemo(() => {
     return allGames.filter((game) => {
@@ -56,6 +208,19 @@ const Games = () => {
   }, [allGames, search, selectedCategory]);
 
   const featuredGames = useMemo(() => filtered.slice(0, 2), [filtered]);
+  const trendingGames = useMemo(
+    () => [...filtered].sort((a, b) => (b.play_count ?? 0) - (a.play_count ?? 0) || (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 4),
+    [filtered],
+  );
+  const popularGames = useMemo(
+    () => [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.play_count ?? 0) - (a.play_count ?? 0)).slice(0, 4),
+    [filtered],
+  );
+  const continuePlayingGames = useMemo(() => {
+    const byId = new Map(filtered.map((game) => [gameId(game), game]));
+    const recent = recentGameIds.map((id) => byId.get(id)).filter((game): game is Game => Boolean(game));
+    return recentGameIds.length ? recent.slice(0, 4) : filtered.slice(0, 4);
+  }, [filtered, recentGameIds]);
 
   const instantPlayCount = useMemo(
     () => allGames.filter((g) => !isGameDownloadable(g)).length,
@@ -64,17 +229,34 @@ const Games = () => {
   const downloadableCount = allGames.length - instantPlayCount;
 
   const openGame = (game: Game) => {
-    const gameId = game.identification ?? game.slug ?? game._id;
-    if (gameId) navigate(`/game/${gameId}`);
+    const id = gameId(game);
+    if (!id) return;
+    const nextRecent = [id, ...recentGameIds.filter((recentId) => recentId !== id)].slice(0, 8);
+    setRecentGameIds(nextRecent);
+    try {
+      window.localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(nextRecent));
+    } catch {
+      // Browsers may block storage in private or embedded contexts.
+    }
+    navigate(`/game/${id}`);
   };
 
   return (
     <ArenaPageLayout>
-      <div>
-        <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">GAMES</h1>
-        <p className="mt-1 text-[11px] font-medium text-white/55">
-          Browse and play on-chain games across the Kult platform.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+            Play Today. Build Forever.
+          </h1>
+          <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
+            Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
+          </p>
+        </div>
+        <Link to="/inventory" className="topbar-wallet-cta group h-10 shrink-0 gap-2 px-4 text-[11px] tracking-wider">
+          <Package className="h-4 w-4" />
+          Inventory
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-75 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+        </Link>
       </div>
 
       <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
@@ -124,6 +306,38 @@ const Games = () => {
           />
         </div>
       </div>
+
+      {!gamesLoading ? (
+        <div className="space-y-4">
+          <DiscoverySection
+            title="Continue playing"
+            subtitle={recentGameIds.length ? "Your recent worlds are waiting for you." : "Start a run — your recent games will appear here."}
+            icon={Clock3}
+            accent="#00e5ff"
+            games={continuePlayingGames}
+            label={recentGameIds.length ? "Pick up where you left off" : "Ready to launch"}
+            onOpen={openGame}
+          />
+          <DiscoverySection
+            title="Trending games"
+            subtitle="The arena's hottest runs right now."
+            icon={Flame}
+            accent="#ff6b3d"
+            games={trendingGames}
+            label="Trending now"
+            onOpen={openGame}
+          />
+          <DiscoverySection
+            title="Most popular"
+            subtitle="Top-rated titles built for repeat victories."
+            icon={Trophy}
+            accent="#ffc000"
+            games={popularGames}
+            label="Community favorite"
+            onOpen={openGame}
+          />
+        </div>
+      ) : null}
 
       {!gamesLoading && featuredGames.length > 0 ? (
         <div className="space-y-3">
@@ -244,14 +458,16 @@ const Games = () => {
             <Smartphone className="h-3.5 w-3.5" />
             Cross-platform
           </span>
-          <button
-            type="button"
-            onClick={() => navigate("/leaderboard")}
-            className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
-          >
-            <span>View Leaderboard</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          {canViewLeague ? (
+            <button
+              type="button"
+              onClick={() => navigate("/leaderboard")}
+              className="flex cursor-pointer items-center gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-5 py-2.5 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+            >
+              <span>View Leaderboard</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
         </div>
       </div>
     </ArenaPageLayout>

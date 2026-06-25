@@ -156,15 +156,11 @@ function AgentLoadingCard({
   const color = agent ? clanColor(agent.clan) : "#8b6dff";
 
   return (
-    <div className="flex flex-col items-center gap-3" style={{ width: 180 }}>
+    <div className="flex w-[132px] flex-col items-center gap-2 sm:w-[180px] sm:gap-3">
       {/* Portrait frame */}
       <div
-        className="relative overflow-hidden rounded-2xl border border-white/20"
-        style={{
-          width: 180,
-          height: 220,
-          boxShadow: `0 0 48px ${color}55, 0 12px 40px rgba(0,0,0,0.7)`,
-        }}
+        className="relative h-[165px] w-[132px] overflow-hidden rounded-2xl border border-white/20 sm:h-[220px] sm:w-[180px]"
+        style={{ boxShadow: `0 0 48px ${color}55, 0 12px 40px rgba(0,0,0,0.7)` }}
       >
         {portrait ? (
           isVideo ? (
@@ -199,7 +195,7 @@ function AgentLoadingCard({
           className="absolute inset-x-0 bottom-0 px-3 pb-3 pt-10"
           style={{ background: `linear-gradient(to top, ${color}cc 0%, ${color}40 60%, transparent 100%)` }}
         >
-          <div className="font-display text-base font-black leading-tight text-white drop-shadow-lg truncate">
+          <div className="font-display text-sm font-black leading-tight text-white drop-shadow-lg truncate sm:text-base">
             {agent?.name ?? "???"}
           </div>
           <div className="font-tech text-[9px] uppercase tracking-widest text-white/70 mt-0.5">
@@ -210,10 +206,10 @@ function AgentLoadingCard({
 
       {/* Stats panel — glassmorphism */}
       <div
-        className="w-full rounded-xl border border-white/10 px-4 py-2.5 text-center"
+        className="w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
         style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
       >
-        <div className="font-tech text-lg font-bold" style={{ color }}>
+        <div className="font-tech text-base font-bold sm:text-lg" style={{ color }}>
           {agent?.eloRating?.toLocaleString() ?? "—"}
           <span className="text-[9px] text-white/30 font-normal ml-1">ELO</span>
         </div>
@@ -459,20 +455,20 @@ function UnityLoadingScreen({
       />
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-8 px-6">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
 
         {/* Title */}
         <div className="text-center">
           <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
             ⚡ &nbsp;AI Battle&nbsp; ⚡
           </div>
-          <div className="font-display text-4xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)]">
+          <div className="font-display text-3xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)] sm:text-4xl">
             AI ARENA
           </div>
         </div>
 
         {/* Agent cards + VS */}
-        <div className="flex items-center gap-10 sm:gap-16">
+        <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
 
           {/* My agent */}
           <AgentLoadingCard agent={myAgent} side="left" />
@@ -480,15 +476,15 @@ function UnityLoadingScreen({
           {/* VS center — single column, perfectly centred */}
           <div className="flex flex-col items-center gap-2 shrink-0">
             <div
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-primary/60"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
               style={{
                 background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
                 boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
               }}
             >
-              <Swords className="h-7 w-7 text-primary" />
+              <Swords className="h-5 w-5 text-primary sm:h-7 sm:w-7" />
             </div>
-            <span className="font-display text-3xl font-black text-gradient leading-none">VS</span>
+            <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
               {mode}
             </span>
@@ -566,7 +562,7 @@ function AgentCard({
         />
         <ArenaAgentThumbnail
           agent={agent}
-          className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-xl border-white/15"
+          className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15"
         />
         {isWinner && (
           <Crown
@@ -577,7 +573,7 @@ function AgentCard({
       </div>
 
       <div className={`min-w-0 ${isRight ? "text-right" : "text-left"}`}>
-        <div className="font-display text-base sm:text-lg font-bold leading-tight truncate max-w-[120px] sm:max-w-[160px]">
+        <div className="font-display text-sm sm:text-lg font-bold leading-tight truncate max-w-[88px] sm:max-w-[160px]">
           {agent.name}
         </div>
         <div className="text-[10px] font-mono uppercase tracking-wider text-white/45 mt-0.5">
@@ -617,7 +613,7 @@ function AgentCard({
 
   return (
     <div
-      className={`flex flex-1 items-center gap-2 sm:gap-3 px-2 sm:px-4 transition-all duration-500 ${
+      className={`flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3 px-1.5 sm:px-4 transition-all duration-500 ${
         isLoser ? "opacity-40 grayscale" : ""
       } ${isRight ? "flex-row-reverse" : ""}`}
     >
@@ -950,7 +946,7 @@ function GameChatPanel({
   };
 
   return (
-    <div className="flex w-[280px] sm:w-[300px] lg:w-[320px] shrink-0 flex-col border-l border-white/8 bg-[#04080f]/90">
+    <div className="flex h-[460px] w-full shrink-0 flex-col border-t border-white/8 bg-[#04080f]/90 md:h-auto md:w-[300px] md:border-l md:border-t-0 lg:w-[320px]">
       <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2.5">
         <MessageSquare className="h-3.5 w-3.5 text-primary/70" />
         <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">
@@ -1817,10 +1813,10 @@ export default function ArenaGamePage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col bg-[#030710] text-white overflow-hidden">
+    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
 
       {/* ── Top Nav ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/8 bg-[#04080f]/95 px-3 sm:px-5 py-2 backdrop-blur z-30">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -1882,10 +1878,10 @@ export default function ArenaGamePage() {
       />
 
       {/* ── Main: Canvas + Chat ───────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
 
         {/* Canvas area */}
-        <div className="relative min-h-0 flex-1 bg-[#040810] overflow-hidden">
+        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1">
 
           {/* Error state — centred */}
           {isError && (

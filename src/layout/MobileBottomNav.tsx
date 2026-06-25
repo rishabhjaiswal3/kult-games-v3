@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Bot, Gamepad2, Home, Package, Swords } from "lucide-react";
+import { Bot, Gamepad2, Home, Medal, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAccess } from "@/contexts/AccessContext";
 import { hasFeature, type AccessFeature } from "@/lib/accessControl";
@@ -8,8 +8,8 @@ const MOBILE_NAV_ITEMS = [
   { label: "Home", path: "/", icon: Home },
   { label: "Games", path: "/games", icon: Gamepad2, feature: "games" },
   { label: "Arena", path: "/ai-arena", icon: Bot, feature: "ai_arena" },
-  { label: "Battles", path: "/battles", icon: Swords, feature: "ai_arena" },
-  { label: "Items", path: "/inventory", icon: Package, feature: "full_browser" },
+  { label: "League", path: "/league", icon: Medal, feature: "league" },
+  { label: "Rank", path: "/leaderboard", icon: Trophy, feature: "league" },
 ] as const;
 
 export function MobileBottomNav() {

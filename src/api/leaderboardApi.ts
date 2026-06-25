@@ -40,10 +40,12 @@ function normalizeLeaderboardResponse(payload: unknown, fallbackPage: number, fa
   };
 }
 
+export type LeaderboardPeriod = "all_time" | "weekly" | "monthly";
+
 export const leaderboardApi = {
-  getGlobal: async (page = 1, limit = 50): Promise<LeaderboardResponse> => {
+  getGlobal: async (page = 1, limit = 50, period: LeaderboardPeriod = "all_time"): Promise<LeaderboardResponse> => {
     const { data } = await apiClient.get<ApiEnvelope<unknown>>("/leaderboard/global", {
-      params: { page, page_size: limit, limit },
+      params: { page, page_size: limit, limit, period },
     });
     return normalizeLeaderboardResponse(unwrapApiData(data), page, limit);
   },

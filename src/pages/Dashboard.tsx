@@ -68,6 +68,7 @@ const Dashboard = () => {
         profile={profile}
         isLoading={profileLoading}
         walletAddress={walletAddress}
+        agentCount={agents.length}
       />
 
       {profileError ? (
