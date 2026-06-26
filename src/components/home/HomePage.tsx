@@ -270,7 +270,7 @@ export function HomePage() {
               autoPlay
               controls
               muted
-              preload="auto"
+              preload="metadata"
               playsInline
               className="aspect-video h-full w-full bg-black object-cover"
             />

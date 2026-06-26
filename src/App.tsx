@@ -6,13 +6,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { AccessProvider, useAccess } from "@/contexts/AccessContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
-import { useState, useCallback, useEffect, useRef, Suspense } from "react";
-import gsap from "gsap";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { RouteChunkErrorBoundary } from "@/components/RouteChunkErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
-import AllMomentsPage from "./pages/AllMomentsPage";
-import MomentDetailPage from "./pages/MomentDetailPage";
 
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const Games = lazyWithRetry(() => import("./pages/Games"));
@@ -29,17 +26,18 @@ const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
 const LeaguePage = lazyWithRetry(() => import("./pages/LeaguePage"));
-
+const AllMomentsPage = lazyWithRetry(() => import("./pages/AllMomentsPage"));
+const MomentDetailPage = lazyWithRetry(() => import("./pages/MomentDetailPage"));
+const AccessLoginPage = lazyWithRetry(() => import("./pages/AccessLoginPage"));
 const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
-import LoadingScreen from "./components/LoadingScreen";
+const LoadingScreen = lazyWithRetry(() => import("./components/LoadingScreen"));
 import { LoginModalHost } from "@/components/LoginModalHost";
-import KultAIFloating from "./components/KultAIFloating";
+const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating"));
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
 import { TourProvider } from "@/tour/TourProvider";
-import AccessLoginPage from "@/pages/AccessLoginPage";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
 
@@ -71,7 +69,6 @@ function BrowserApp() {
   const { canUse, hasAccess } = useAccess();
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
   const [showPreview, setShowPreview] = useState(readSplashAlreadySeen);
-  const contentRef = useRef<HTMLDivElement>(null);
   const handleComplete = useCallback(() => {
     try {
       sessionStorage.setItem(SPLASH_SEEN_KEY, "1");
@@ -96,56 +93,27 @@ function BrowserApp() {
     };
   }, [loaded]);
 
+  /** Warm a likely next route after first paint instead of competing with startup work. */
   useEffect(() => {
-    const content = contentRef.current;
-    if (!content) {
-      return;
-    }
+    if (!loaded || !hasAccess || !canUse("games")) return;
 
-    gsap.killTweensOf(content);
-
-    if (loaded) {
-      gsap.to(content, {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        duration: 0.45,
-        ease: "power2.out",
-        clearProps: "transform",
+    const timer = window.setTimeout(() => {
+      void queryClient.prefetchQuery({
+        queryKey: ["games", "all"],
+        queryFn: () => gamesApi.getAll(1, 50),
+        staleTime: 5 * 60_000,
       });
-      return;
-    }
+    }, 1200);
 
-    if (showPreview) {
-      gsap.to(content, {
-        opacity: PREVIEW_OPACITY,
-        scale: 1,
-        y: 0,
-        duration: 0.35,
-        ease: "power2.out",
-      });
-      return;
-    }
-
-    gsap.set(content, {
-      opacity: 0,
-      scale: 1,
-      y: 0,
-    });
-  }, [loaded, showPreview]);
-
-  /** Start loading game list + thumbnails as soon as the shell mounts (overlaps splash). */
-  useEffect(() => {
-    if (!hasAccess || !canUse("games")) return;
-    void queryClient.prefetchQuery({
-      queryKey: ["games", "all"],
-      queryFn: () => gamesApi.getAll(1, 50),
-      staleTime: 5 * 60_000,
-    });
-  }, [canUse, hasAccess]);
+    return () => window.clearTimeout(timer);
+  }, [loaded, canUse, hasAccess]);
 
   if (!hasAccess) {
-    return <AccessLoginPage />;
+    return (
+      <Suspense fallback={<PageRouteFallback />}>
+        <AccessLoginPage />
+      </Suspense>
+    );
   }
 
   return (
@@ -154,13 +122,19 @@ function BrowserApp() {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        {!loaded ? <LoadingScreen onComplete={handleComplete} /> : null}
+        {!loaded ? (
+          <Suspense fallback={null}>
+            <LoadingScreen onComplete={handleComplete} />
+          </Suspense>
+        ) : null}
         <BrowserRouter>
           <TourProvider enabled={loaded}>
             <div
-              ref={contentRef}
               className={loaded ? "" : "pointer-events-none"}
-              style={loaded ? { opacity: 1 } : { opacity: 0 }}
+              style={{
+                opacity: loaded ? 1 : showPreview ? PREVIEW_OPACITY : 0,
+                transition: loaded ? "opacity 450ms ease" : "opacity 350ms ease",
+              }}
             >
               <RouteChunkErrorBoundary>
                 <Suspense fallback={<PageRouteFallback />}>
@@ -196,7 +170,11 @@ function BrowserApp() {
               </RouteChunkErrorBoundary>
             </div>
             <LoginModalHost />
-            {loaded && <KultAIFloating />}
+            {loaded ? (
+              <Suspense fallback={null}>
+                <KultAIFloating />
+              </Suspense>
+            ) : null}
           </TourProvider>
         </BrowserRouter>
       </TooltipProvider>
