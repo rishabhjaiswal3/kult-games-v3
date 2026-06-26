@@ -307,7 +307,7 @@ const Games = () => {
         </div>
       </div>
 
-      {/* {!gamesLoading ? (
+       {!gamesLoading ? (
         <div className="space-y-4">
           <DiscoverySection
             title="Continue playing"
@@ -337,9 +337,9 @@ const Games = () => {
             onOpen={openGame}
           />
         </div>
-      ) : null} */}
+      ) : null} 
 
-      {/* {!gamesLoading && featuredGames.length > 0 ? (
+      {!gamesLoading && featuredGames.length > 0 ? (
         <div className="space-y-3">
           <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Featured titles</h2>
           <div className="grid gap-4 md:grid-cols-2">
@@ -409,7 +409,7 @@ const Games = () => {
             })}
           </div>
         </div>
-      ) : null} */}
+      ) : null} 
 
       <div className="flex items-center justify-between pt-1">
         <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">All games</h2>
