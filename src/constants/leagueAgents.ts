@@ -9,6 +9,7 @@ import assassinPortrait from "@/assets/assassin.gif";
 export type LeagueArenaAgent = {
   rank: string;
   name: string;
+  callsign: string;
   chain: string;
   tier: string;
   lvl: number;
@@ -23,6 +24,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "01",
     name: "HYBRID",
+    callsign: "NOVA-11",
     chain: "Zerog",
     tier: "Legendary",
     lvl: 12,
@@ -34,6 +36,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "02",
     name: "DEFENDER",
+    callsign: "AEGIS-04",
     chain: "Base",
     tier: "Epic",
     lvl: 11,
@@ -45,6 +48,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "03",
     name: "TACTICIAN",
+    callsign: "ORION-07",
     chain: "Solana",
     tier: "Epic",
     lvl: 12,
@@ -56,6 +60,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "04",
     name: "SUPPORT",
+    callsign: "LYRA-09",
     chain: "Zerog",
     tier: "Epic",
     lvl: 11,
@@ -67,6 +72,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "05",
     name: "BERSERKER",
+    callsign: "VOLT-13",
     chain: "Base",
     tier: "Legendary",
     lvl: 12,
@@ -78,6 +84,7 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   {
     rank: "06",
     name: "ASSASSIN",
+    callsign: "NYX-06",
     chain: "Solana",
     tier: "Epic",
     lvl: 11,

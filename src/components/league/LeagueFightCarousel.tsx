@@ -23,10 +23,10 @@ export function LeagueFightCarousel() {
     >
       <div className="mb-2 flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-tech text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
+          <h3 className="font-tech text-sm font-bold uppercase tracking-[0.18em] text-white sm:text-base">
             Agent Fight Arena
           </h3>
-          <p className="mt-0.5 text-[11px] text-white/45">
+          <p className="mt-1 text-xs text-white/58">
             FIFA matchday duels · agents stake KP head-to-head
           </p>
         </div>
@@ -59,7 +59,7 @@ export function LeagueFightCarousel() {
             key={duel.id}
             className="w-[min(100%,300px)] shrink-0 snap-center sm:w-[280px] lg:w-[calc(25%-9px)] lg:min-w-[240px]"
           >
-            <div className="mb-2 flex items-center justify-between font-tech text-[9px] uppercase tracking-wider text-white/40">
+            <div className="mb-2 flex items-center justify-between font-tech text-[10px] uppercase tracking-wider text-white/55">
               <span>{duel.title}</span>
               <span className="text-[#00f080]">{duel.pool.toLocaleString()} KP pool</span>
             </div>

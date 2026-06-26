@@ -50,23 +50,23 @@ export function LeagueUpcomingCarousel() {
         {UPCOMING_MATCHES.map((match) => (
           <article
             key={match.id}
-            className="w-[min(100%,200px)] shrink-0 snap-center rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-3 sm:w-[180px]"
+            className="w-[min(100%,210px)] shrink-0 snap-center rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-3.5 sm:w-[190px]"
           >
             <div className="flex items-center justify-center gap-2">
               <FlagHex code={match.home} size="md" />
-              <span className="font-tech text-[9px] font-bold uppercase text-white/30">vs</span>
+              <span className="font-tech text-[10px] font-bold uppercase text-white/45">vs</span>
               <FlagHex code={match.away} size="md" />
             </div>
-            <p className="mt-2 text-center font-tech text-[10px] font-bold uppercase text-white/80">
+            <p className="mt-2.5 text-center font-tech text-[11px] font-bold uppercase text-white/90">
               {match.home} vs {match.away}
             </p>
-            <p className="mt-1 text-center font-tech text-[9px] uppercase tracking-wider text-[#c084fc]">
+            <p className="mt-1 text-center font-tech text-[10px] uppercase tracking-wider text-[#c084fc]">
               {match.displayTime}
             </p>
-            <p className="mt-0.5 text-center font-tech text-[8px] uppercase tracking-widest text-white/35">
+            <p className="mt-1 text-center font-tech text-[9px] uppercase tracking-widest text-white/50">
               {match.stage}
             </p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 font-tech text-[8px] uppercase tracking-wider text-amber-300">
+            <div className="mt-2.5 flex items-center justify-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-amber-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
               Locks in {match.countdown}
             </div>
