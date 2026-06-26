@@ -101,8 +101,8 @@ export function LeagueFeaturedBanner() {
                   <ArenaAgentMedia src={agent.img} alt={agent.name} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-tech text-[10px] font-black text-white">{agent.name}</p>
-                  <p className="font-tech text-[8px] uppercase tracking-wider" style={{ color: agent.accentHex }}>{index % 2 ? "Argentina" : "Brazil"} · {78 - index * 4}%</p>
+                  <p className="truncate font-tech text-xs font-black uppercase text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">{agent.name}</p>
+                  <p className="font-tech text-[9px] font-bold uppercase tracking-wider" style={{ color: agent.accentHex }}>{index % 2 ? "Argentina" : "Brazil"} · {78 - index * 4}%</p>
                 </div>
               </div>
             ))}

@@ -64,9 +64,9 @@ export function DashboardTopbar() {
               data-tour="tour-start"
               aria-label="Start website tour"
               aria-busy={isRunning}
-              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-cyan-200/25 bg-cyan-300/10 px-2 font-tech text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 shadow-[0_0_14px_rgba(34,211,238,0.12)] transition hover:border-cyan-100/45 hover:bg-cyan-300/16 hover:text-white min-[430px]:h-10 min-[430px]:px-3"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-2.5 font-tech text-[9px] font-black uppercase tracking-[0.12em] text-cyan-100/90 transition hover:border-cyan-200/40 hover:bg-cyan-300/12 hover:text-white min-[430px]:px-3"
             >
-              {isRunning ? <Sparkles className="h-4 w-4" /> : <HelpCircle className="h-4 w-4" />}
+              {isRunning ? <Sparkles className="h-3.5 w-3.5" /> : <HelpCircle className="h-3.5 w-3.5" />}
               <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
             </button>
 
@@ -98,10 +98,10 @@ export function DashboardTopbar() {
                   type="button"
                   onClick={handleConnectWallet}
                   data-tour="topbar-connect"
-                  className="block shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-2 py-2.5 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+                  className="block h-8 shrink-0 rounded-full border border-red-400/18 bg-red-500/[0.06] px-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-red-300/85 transition-all hover:border-red-300/38 hover:bg-red-500/12 hover:text-red-200 min-[430px]:px-3"
                 >
-                  <span className="hidden min-[430px]:inline">DISCONNECT</span>
-                  <span className="min-[430px]:hidden">LOGOUT</span>
+                  <span className="hidden min-[430px]:inline">Disconnect</span>
+                  <span className="min-[430px]:hidden">Out</span>
                 </button>
               </>
             ) : (
@@ -109,10 +109,10 @@ export function DashboardTopbar() {
                 type="button"
                 onClick={handleConnectWallet}
                 data-tour="topbar-connect"
-                className="btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+                className="block h-8 shrink-0 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/14 px-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-[#e4c8ff] transition hover:border-[#c084fc]/60 hover:bg-[#9a35ff]/22 hover:text-white min-[430px]:px-3"
               >
-                <span className="hidden min-[430px]:inline">CONNECT WALLET</span>
-                <span className="min-[430px]:hidden">LOGIN</span>
+                <span className="hidden min-[430px]:inline">Connect</span>
+                <span className="min-[430px]:hidden">In</span>
               </button>
             )}
             <button
