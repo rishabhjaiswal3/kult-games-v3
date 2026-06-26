@@ -1597,31 +1597,32 @@ function LiveBattles() {
 function PartnersBlock() {
   const partners = ["0G", "Base", "Solana"];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-6 xl:py-8">
-      <div className="card-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-5 xl:p-8 relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="relative grid md:grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(150px,0.7fr)_minmax(280px,1.2fr)_minmax(240px,0.9fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 sm:gap-6 lg:gap-4 xl:gap-6">
-          <div className="flex items-center justify-center md:justify-start gap-3 lg:gap-2 xl:gap-3">
-            <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground lg:text-[8px] lg:tracking-[0.22em] xl:text-[10px] xl:tracking-[0.3em]">
+    <section className="mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:py-5 xl:py-6">
+      <div className="card-glass relative overflow-hidden rounded-xl border-white/8 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.24)] sm:p-5 lg:p-4 xl:p-5">
+        <div className="absolute inset-0 grid-bg opacity-15" />
+        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent/45 to-transparent" />
+        <div className="relative grid items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(130px,0.7fr)_minmax(260px,1.2fr)_minmax(220px,0.9fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <div className="flex items-center justify-center gap-2.5 md:justify-start">
+            <div className="font-tech text-[9px] tracking-[0.28em] text-muted-foreground lg:text-[8px] lg:tracking-[0.22em] xl:text-[9px] xl:tracking-[0.28em]">
               POWERED BY
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center p-2 lg:h-8 lg:w-8 xl:h-10 xl:w-10">
-              <ZeroGLogo className="h-6 w-auto lg:h-4 xl:h-6" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/12 p-1.5 lg:h-7 lg:w-7 xl:h-8 xl:w-8">
+              <ZeroGLogo className="h-4.5 w-auto lg:h-3.5 xl:h-4.5" />
             </div>
           </div>
-          <div className="font-display text-2xl md:text-3xl lg:text-xl xl:text-3xl text-center leading-tight lg:leading-snug xl:leading-tight">
+          <div className="text-center font-display text-xl leading-tight md:text-2xl lg:text-lg lg:leading-snug xl:text-2xl xl:leading-tight">
             BUILDING THE FUTURE
             <br />
             OF AI GAMING <span className="text-accent">TOGETHER</span>
           </div>
-          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center md:justify-end lg:gap-1.5 xl:gap-3">
+          <div className="flex flex-wrap justify-center gap-2 md:justify-end lg:gap-1.5 xl:gap-2">
             {partners.map((p) => (
               <div
                 key={p}
-                className="px-3 py-2 rounded-md border border-border bg-card/50 font-tech text-xs flex items-center gap-2 lg:px-2 lg:py-1.5 lg:text-[10px] lg:gap-1.5 xl:px-3 xl:py-2 xl:text-xs xl:gap-2"
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2.5 py-1.5 font-tech text-[11px] text-white/80 lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
-                <span className="w-2 h-2 rounded-full bg-accent lg:h-1.5 lg:w-1.5 xl:h-2 xl:w-2" />
-                <ChainLogo name={p} className="h-3.5 w-auto lg:h-3 xl:h-3.5" />
+                <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
+                <ChainLogo name={p} className="h-3 w-auto xl:h-3.5" />
               </div>
             ))}
           </div>
