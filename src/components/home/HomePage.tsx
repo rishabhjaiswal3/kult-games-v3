@@ -119,9 +119,18 @@ export function HomePage() {
     navigate("/?login=1");
   };
 
+  const handlePrimaryCta = () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    navigate("/dashboard");
+  };
+
   return (
     <div className="space-y-6 pb-10">
-      <section className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
+      <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <video
           src={heroVideo}
           aria-hidden
@@ -148,7 +157,7 @@ export function HomePage() {
               Kult Games
             </span>
             <h1 className="max-w-2xl font-tech text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              The operating
+              The Operating
               <br />
               layer for
               <br />
@@ -172,13 +181,15 @@ export function HomePage() {
                   <ArrowUpRight className="h-4 w-4" />
                 </button>
               ) : null}
-              <button
-                type="button"
-                onClick={isAuthenticated && canViewAiArena ? () => navigate("/dashboard") : login}
-                className="inline-flex items-center gap-2 rounded-md border border-purple-300/45 bg-purple-500/[0.12] px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-100 shadow-[0_0_14px_rgba(154,53,255,0.12)] transition hover:border-purple-200/75 hover:bg-purple-500/[0.18] hover:text-white hover:shadow-[0_0_20px_rgba(154,53,255,0.22)]"
-              >
-                {isAuthenticated && canViewAiArena ? "Open dashboard" : "Connect wallet"}
-              </button>
+              {isAuthenticated && !canViewAiArena ? null : (
+                <button
+                  type="button"
+                  onClick={handlePrimaryCta}
+                  className="inline-flex items-center gap-2 rounded-md border border-purple-300/45 bg-purple-500/[0.12] px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-100 shadow-[0_0_14px_rgba(154,53,255,0.12)] transition hover:border-purple-200/75 hover:bg-purple-500/[0.18] hover:text-white hover:shadow-[0_0_20px_rgba(154,53,255,0.22)]"
+                >
+                  {isAuthenticated ? "Open dashboard" : "Connect wallet"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -227,7 +238,7 @@ export function HomePage() {
       </section>
 
       {visibleStatTiles.length > 0 ? (
-        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="home-quick-links">
           {visibleStatTiles.map((stat) => (
             <Link
               key={stat.label}

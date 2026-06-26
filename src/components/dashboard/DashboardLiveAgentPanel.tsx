@@ -39,7 +39,7 @@ export function DashboardLiveAgentPanel({
 }: DashboardLiveAgentPanelProps) {
   if (isLoading) {
     return (
-      <section className="arena-panel flex min-h-[200px] items-center justify-center border-white/8 bg-[#04080f]/95 p-8">
+      <section data-tour="dashboard-agent" className="arena-panel flex min-h-[200px] items-center justify-center border-white/8 bg-[#04080f]/95 p-8">
         <span className="font-tech text-[10px] uppercase tracking-wider text-white/40">Loading agent…</span>
       </section>
     );
@@ -47,7 +47,7 @@ export function DashboardLiveAgentPanel({
 
   if (!agent) {
     return (
-      <section className="arena-panel flex flex-col items-center justify-center gap-4 border-white/8 bg-[#04080f]/95 p-8 text-center">
+      <section data-tour="dashboard-agent" className="arena-panel flex flex-col items-center justify-center gap-4 border-white/8 bg-[#04080f]/95 p-8 text-center">
         <p className="text-sm text-white/55">No AI agent yet. Create one to enter the arena.</p>
         <button
           type="button"
@@ -62,7 +62,7 @@ export function DashboardLiveAgentPanel({
   }
 
   return (
-    <section className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8b29ff]/40 hover:shadow-[0_8px_40px_rgba(139,41,255,0.15)]">
+    <section data-tour="dashboard-agent" className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8b29ff]/40 hover:shadow-[0_8px_40px_rgba(139,41,255,0.15)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_50%,rgba(139,41,255,0.05),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(0,255,128,0.03),transparent_50%)]" />
       <div className="relative z-10 grid lg:grid-cols-[280px_minmax(0,1fr)]">
         <div className="relative h-[280px] overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] lg:h-auto lg:border-b-0 lg:border-r">

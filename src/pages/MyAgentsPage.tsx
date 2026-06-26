@@ -215,7 +215,7 @@ function BattlesCarouselSection({
   const canNextBattle = battlePage < totalBattlePages - 1;
 
   return (
-    <section className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5">
+    <section className="arena-panel border-white/8 bg-[#04080f]/95 p-4 sm:p-5" data-tour="my-agents-battle-history">
       <div className="flex items-center justify-between gap-3 border-b border-white/8 pb-4">
         <div>
           <h2 className="font-tech text-lg font-bold uppercase tracking-tight text-white">MY BATTLES</h2>
@@ -458,12 +458,12 @@ const MyAgentsPage = () => {
 
   return (
     <ArenaPageLayout>
-      <div>
+      <div data-tour="my-agents-header">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">MY AGENTS</h1>
         <p className="mt-1 text-[11px] font-medium text-white/55">Manage, train, and deploy your AI agents.</p>
       </div>
 
-      <div className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" data-tour="my-agents-stats">
         <div className="arena-panel flex items-center justify-between border-white/8 bg-[#04080f]/90 p-4">
           <div className="space-y-1">
             <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">YOUR AGENTS</span>
@@ -518,7 +518,7 @@ const MyAgentsPage = () => {
         </div>
       </div>
 
-      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-3">
+      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-3" data-tour="my-agents-filters">
         <div className="flex flex-wrap items-center gap-1">
           {filterTabs.map((tab) => (
             <button
@@ -563,6 +563,7 @@ const MyAgentsPage = () => {
           <button
             type="button"
             onClick={() => openCreateAgent()}
+            data-tour="my-agents-create"
             className="flex cursor-pointer items-center justify-center max-sm:flex-1 gap-1.5 rounded bg-[#9a35ff] px-3.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:bg-purple-600"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -577,7 +578,7 @@ const MyAgentsPage = () => {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" data-tour="my-agents-grid">
         {myAgentsQ.isLoading || waitingForArenaSession ? (
           <div className="arena-panel col-span-full border-white/8 bg-[#04080f]/95 px-5 py-10 text-center text-sm text-white/55">
             {waitingForArenaSession ? "Connecting to AI Arena…" : "Loading your agents…"}
@@ -743,7 +744,7 @@ const MyAgentsPage = () => {
         agentsById={agentsById}
       />
 
-      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-4">
+      <div className="arena-panel flex flex-wrap items-center justify-between gap-3 border-white/8 bg-[#04080f]/95 p-4" data-tour="my-agents-ai-arena-link">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
             <Info className="h-4 w-4" />

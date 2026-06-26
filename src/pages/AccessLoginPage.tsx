@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyRound, Loader2, LockKeyhole } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, LockKeyhole } from "lucide-react";
 import { useAccess } from "@/contexts/AccessContext";
 import heroVideo from "@/assets/hero-video.mp4";
 import kultLogo from "@/assets/Kult Logo.png";
@@ -19,6 +19,7 @@ export default function AccessLoginPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCode, setShowCode] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -69,16 +70,25 @@ export default function AccessLoginPage() {
             <KeyRound className="h-5 w-5 shrink-0 text-cyan-200" />
             <input
               id="access-code"
-              type="password"
+              type={showCode ? "text" : "password"}
               inputMode="numeric"
               pattern="[0-9]*"
               maxLength={6}
-              autoComplete="off"
+              autoComplete="new-password"
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="Access code"
-              className="h-14 min-w-0 flex-1 bg-transparent font-tech text-sm font-bold tracking-[0.18em] text-white outline-none placeholder:text-cyan-100/42"
+              className="access-code-input h-14 min-w-0 flex-1 rounded-none border-0 bg-transparent font-tech text-sm font-bold tracking-[0.18em] text-white outline-none placeholder:text-cyan-100/42"
             />
+            <button
+              type="button"
+              onClick={() => setShowCode((current) => !current)}
+              aria-label={showCode ? "Hide access code" : "Show access code"}
+              aria-pressed={showCode}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-100/15 bg-cyan-300/8 text-cyan-100/78 transition hover:border-cyan-100/35 hover:bg-cyan-300/14 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/45"
+            >
+              {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
 
           {error ? (

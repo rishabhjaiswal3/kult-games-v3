@@ -296,10 +296,12 @@ export function MomentDetailPage() {
           {/* ── Main column ── */}
           <div className="min-w-0 space-y-5">
 
-            <MomentMediaPlayer moment={moment} />
+            <div data-tour="moment-detail-media">
+              <MomentMediaPlayer moment={moment} />
+            </div>
 
             {/* Title + meta */}
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="moment-detail-meta">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-xl font-bold leading-snug text-white sm:text-2xl">
@@ -358,18 +360,20 @@ export function MomentDetailPage() {
               )}
             </div>
 
-            <MomentEngagementBar
-              moment={moment}
-              bookmarked={bookmarked}
-              onBookmarkToggle={() => setBookmarked((b) => !b)}
-              onLike={handleLike}
-              onComments={scrollToComments}
-              isLiking={likeMutation.isPending}
-            />
+            <div data-tour="moment-detail-engagement">
+              <MomentEngagementBar
+                moment={moment}
+                bookmarked={bookmarked}
+                onBookmarkToggle={() => setBookmarked((b) => !b)}
+                onLike={handleLike}
+                onComments={scrollToComments}
+                isLiking={likeMutation.isPending}
+              />
+            </div>
 
             {/* 0G storage proof (when available) */}
             {moment.assetZgHash && (
-              <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+              <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-4 py-3" data-tour="moment-detail-storage">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-[11px] text-emerald-400">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -391,7 +395,7 @@ export function MomentDetailPage() {
             )}
 
             {/* Comments section */}
-            <div ref={commentsRef} id="comments" className="scroll-mt-4">
+            <div ref={commentsRef} id="comments" className="scroll-mt-4" data-tour="moment-detail-comments">
               <MomentThreadPanel moment={moment} />
             </div>
           </div>
@@ -400,7 +404,7 @@ export function MomentDetailPage() {
           <aside className="space-y-4">
 
             {/* Moment stats */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-4">
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-4" data-tour="moment-detail-info">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Moment Info</h3>
               <div className="divide-y divide-white/6 text-[11px] font-medium">
                 <div className="flex items-center justify-between py-2.5">
@@ -438,7 +442,7 @@ export function MomentDetailPage() {
 
             {/* AI analysis card (when available) */}
             {(moment.aiStatus === "processed" || moment.aiCaption || moment.aiMomentType) && (
-              <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3">
+              <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-ai">
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">AI Analysis</h3>
                 {moment.aiCaption && (
                   <p className="text-[11px] leading-relaxed text-white/60">{moment.aiCaption}</p>
@@ -486,13 +490,13 @@ export function MomentDetailPage() {
             )}
 
             {/* Share */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3">
+            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-share">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
               <MomentShareDialog moment={moment} triggerVariant="button" />
             </div>
 
             {isOwner && (
-              <div className="arena-panel border-[#9a35ff]/20 bg-[#04080f]/95 p-5 space-y-3">
+              <div className="arena-panel border-[#9a35ff]/20 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-manage">
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Manage Moment</h3>
                 <p className="text-[11px] leading-relaxed text-white/45">
                   You created this moment. Edit details or permanently remove it.

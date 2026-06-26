@@ -35,7 +35,7 @@ export function QuickActions() {
   ];
 
   return (
-    <section className="w-full pt-4 pb-2">
+    <section className="w-full pt-4 pb-2" data-tour="dashboard-quick-actions">
       <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
         <h3 className="font-display text-2xl sm:text-3xl text-center uppercase tracking-wider">QUICK ACTIONS</h3>

@@ -394,6 +394,7 @@ export default function RobowarGamePage() {
     >
       {/* ── Top nav ──────────────────────────────────────────────────── */}
       <div
+        data-tour="robowar-topbar"
         className="flex shrink-0 items-center justify-between gap-3 px-3 sm:px-5 py-2 z-30"
         style={{ background: "rgba(10,2,2,0.97)", borderBottom: `1px solid ${R.border}` }}
       >
@@ -428,6 +429,7 @@ export default function RobowarGamePage() {
 
       {/* ── Agent VS strip ───────────────────────────────────────────── */}
       <div
+        data-tour="robowar-agents"
         className="flex shrink-0 items-center justify-between gap-4 px-4 sm:px-8 py-3"
         style={{ background: "rgba(10,2,2,0.9)", borderBottom: `1px solid ${R.border}` }}
       >
@@ -479,10 +481,12 @@ export default function RobowarGamePage() {
       </div>
 
       {/* ── Category filter ──────────────────────────────────────────── */}
-      <CategoryStrip active={activeCategory} onChange={setActiveCategory} />
+      <div data-tour="robowar-category-filter">
+        <CategoryStrip active={activeCategory} onChange={setActiveCategory} />
+      </div>
 
       {/* ── Moments feed ─────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-[hsl(268_35%_7%/0.5)]">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-[hsl(268_35%_7%/0.5)]" data-tour="robowar-moments-feed">
         {feedQuery.isLoading ? (
           <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
