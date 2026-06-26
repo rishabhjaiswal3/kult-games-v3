@@ -19,7 +19,24 @@ type TourContextValue = {
 
 const TOUR_VERSION = "v2";
 const AUTO_TOUR_DELAY_MS = 1200;
+const TOUR_GLOBALLY_DISMISSED_KEY = "kult_tour_globally_dismissed";
 const TourContext = createContext<TourContextValue | null>(null);
+
+function isTourGloballyDismissed(): boolean {
+  try {
+    return localStorage.getItem(TOUR_GLOBALLY_DISMISSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markTourGloballyDismissed() {
+  try {
+    localStorage.setItem(TOUR_GLOBALLY_DISMISSED_KEY, "1");
+  } catch {
+    /* storage may be blocked */
+  }
+}
 
 function tourIdForPathname(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -120,6 +137,7 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
         onDestroyed: () => {
           setIsRunning(false);
           markTourCompleted(currentTourId);
+          markTourGloballyDismissed();
         },
       });
 
@@ -136,6 +154,7 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
 
   useEffect(() => {
     if (!enabled) return;
+    if (isTourGloballyDismissed()) return;
     if (autoStartedRef.current.has(currentTourId) || hasCompletedTour(currentTourId)) return;
     autoStartedRef.current.add(currentTourId);
     const timer = window.setTimeout(() => startWebsiteTour(), AUTO_TOUR_DELAY_MS);
