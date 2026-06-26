@@ -21,7 +21,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
-import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import { EditMomentDialog } from "@/components/moments/EditMomentDialog";
 import { isMomentOwner } from "@/lib/momentOwnership";
 import type { Moment } from "@/types/api";
@@ -337,10 +336,10 @@ export function MomentDetailPage() {
 
               {/* Tags */}
               {moment.tags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Tag className="h-3.5 w-3.5 shrink-0 text-white/30" />
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 shrink-0 text-[#9a35ff]/70" />
                   {moment.tags.map((tag) => (
-                    <span key={tag} className="rounded border border-white/8 bg-white/[0.04] px-2 py-0.5 font-tech text-[9px] text-white/50">
+                    <span key={tag} className="rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-2.5 py-0.5 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]">
                       #{tag}
                     </span>
                   ))}
@@ -488,12 +487,6 @@ export function MomentDetailPage() {
                 )}
               </div>
             )}
-
-            {/* Share */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-share">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
-              <MomentShareDialog moment={moment} triggerVariant="button" />
-            </div>
 
             {isOwner && (
               <div className="arena-panel border-[#9a35ff]/20 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-manage">

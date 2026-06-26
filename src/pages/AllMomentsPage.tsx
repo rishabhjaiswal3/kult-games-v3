@@ -229,6 +229,9 @@ function deriveMode(moment: Moment) {
     moment.description,
   ].filter((v): v is string => Boolean(v)).join(" ").toLowerCase();
 
+  if (hay.includes("trash talk") || hay.includes("trashtalk")) return "TRASH TALK";
+  if (hay.includes("robowars") || hay.includes("ai arena") || hay.includes("aiarena") || hay.includes("guesstheai") || hay.includes("guess the ai")) return "AI ARENA";
+  if (hay.includes("league")) return "LEAGUE";
   if (hay.includes("autonomous")) return "AUTONOMOUS";
   if (hay.includes("5v5") || hay.includes("squad")) return "5V5 SHOWDOWN";
   if (hay.includes("1v1") || hay.includes("duel") || hay.includes("arena")) return "1V1 ARENA";
@@ -793,7 +796,7 @@ export function AllMomentsPage() {
             <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2" data-tour="moments-filters">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
-                <FilterDropdown label="Mode" options={["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
+                <FilterDropdown label="Mode" options={["ALL MODES", "AI ARENA", "TRASH TALK", "LEAGUE"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
                 <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
                 <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>

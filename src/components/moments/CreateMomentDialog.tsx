@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Trash2, Video as VideoIcon, X } from "lucide-react";
+import { ImagePlus, Loader2, Trash2, Video as VideoIcon, X as XIcon } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import {
   ArenaDialogBody,
@@ -67,17 +67,6 @@ function isAcceptedMimeType(file: File): boolean {
   return (MOMENT_ACCEPTED_MIME_TYPES as readonly string[]).includes(file.type);
 }
 
-function parseTagsInput(value: string): string[] {
-  return Array.from(
-    new Set(
-      value
-        .split(/[,\n]/)
-        .map((tag) => tag.trim().replace(/^#/, ""))
-        .filter((tag) => tag.length > 0 && tag.length <= 32),
-    ),
-  );
-}
-
 export function CreateMomentDialog({
   open,
   onOpenChange,
@@ -90,8 +79,10 @@ export function CreateMomentDialog({
   const [asset, setAsset] = useState<SelectedAsset | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
-  const [selectedGameSlugs, setSelectedGameSlugs] = useState<Set<string>>(new Set());
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isPrefilling, setIsPrefilling] = useState(false);
   const [awaitingCommentary, setAwaitingCommentary] = useState(false);
@@ -110,8 +101,10 @@ export function CreateMomentDialog({
     setAsset(null);
     setTitle("");
     setDescription("");
-    setTagsInput("");
-    setSelectedGameSlugs(new Set());
+    setTagInput("");
+    setTags([]);
+    setSelectedGame(null);
+    setSelectedMode(null);
     prefillKeyRef.current = null;
     setAwaitingCommentary(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -142,8 +135,8 @@ export function CreateMomentDialog({
         }
         setTitle(draft.title);
         setDescription(draft.description);
-        setTagsInput(draft.tags.join(", "));
-        setSelectedGameSlugs(new Set(draft.relatedGameSlugs));
+        setTags(draft.tags);
+        setSelectedGame(draft.relatedGameSlugs[0] ?? null);
         setAsset({
           file: draft.imageFile,
           previewKind: "image",
@@ -180,8 +173,8 @@ export function CreateMomentDialog({
           if (cancelled || draft.pendingCommentary || !draft.description.trim()) return;
           prefillKeyRef.current = `${battleId}:${myAgentId ?? ""}`;
           setDescription(draft.description);
-          setTagsInput(draft.tags.join(", "));
-          setSelectedGameSlugs(new Set(draft.relatedGameSlugs));
+          setTags(draft.tags);
+          setSelectedGame(draft.relatedGameSlugs[0] ?? null);
           setAwaitingCommentary(false);
           toast.success("AI commentary loaded");
         })
@@ -195,8 +188,6 @@ export function CreateMomentDialog({
     };
   }, [awaitingCommentary, battleId, isAuthenticated, myAgentId, open]);
 
-  const tagPreview = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
-
   const createMomentMutation = useMutation({
     mutationFn: async () => {
       if (!asset) throw new Error("Pick an image or video first");
@@ -205,8 +196,9 @@ export function CreateMomentDialog({
         assetFile: file,
         title: title.trim(),
         description: description.trim() || undefined,
-        tags: tagPreview,
-        relatedGames: [...selectedGameSlugs],
+        tags,
+        relatedGames: selectedGame ? [selectedGame] : [],
+        assetMetadata: selectedMode ? { mode: selectedMode.toLowerCase() } : undefined,
       });
     },
     onSuccess: async (response) => {
@@ -274,13 +266,23 @@ export function CreateMomentDialog({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const addTag = (raw: string) => {
+    const tag = raw.trim().replace(/^#/, "");
+    if (!tag || tag.length > 32) return;
+    setTags((prev) => prev.includes(tag) ? prev : [...prev, tag]);
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
   const toggleGame = (slug: string) => {
-    setSelectedGameSlugs((current) => {
-      const next = new Set(current);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
-      return next;
-    });
+    setSelectedGame((current) => current === slug ? null : slug);
+  };
+
+  const toggleMode = (mode: string) => {
+    setSelectedMode((current) => current === mode ? null : mode);
   };
 
   const trimmedTitle = title.trim();
@@ -487,34 +489,48 @@ export function CreateMomentDialog({
             <input
               id="moment-tags"
               type="text"
-              value={tagsInput}
-              onChange={(event) => setTagsInput(event.target.value)}
-              placeholder="clutch, 1v3, mvp"
+              value={tagInput}
+              onChange={(event) => setTagInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addTag(tagInput);
+                }
+              }}
+              placeholder="Type a tag and press Enter"
               className="h-10 w-full rounded-md border border-white/10 bg-[#0a0f1b]/80 px-3 text-sm text-white/90 placeholder-white/30 transition focus:border-[#9a35ff]/55 focus:outline-none focus:ring-2 focus:ring-[#9a35ff]/20"
             />
-            {tagPreview.length > 0 ? (
+            {tags.length > 0 ? (
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {tagPreview.map((tag) => (
+                {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-2 py-0.5 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]"
+                    className="inline-flex items-center gap-1 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 py-0.5 pl-2 pr-1 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]"
                   >
                     #{tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      aria-label={`Remove tag ${tag}`}
+                      className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-white/10"
+                    >
+                      <XIcon className="h-2.5 w-2.5" />
+                    </button>
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-white/35">Comma- or newline-separated, up to 32 characters each.</p>
+              <p className="text-[10px] text-white/35">Type a tag and press Enter to add it.</p>
             )}
           </div>
 
           <div className="space-y-1.5">
             <Label className="font-tech text-[11px] font-bold uppercase tracking-wider text-white/70">
-              Related games
+              Related game
             </Label>
             <div className="flex flex-wrap gap-2">
               {KNOWN_MOMENT_GAMES.map((game) => {
-                const isActive = selectedGameSlugs.has(game.slug);
+                const isActive = selectedGame === game.slug;
                 return (
                   <button
                     key={game.slug}
@@ -526,8 +542,34 @@ export function CreateMomentDialog({
                         : "border-white/10 bg-[#0a0f1b]/60 text-white/55 hover:border-[#9a35ff]/30 hover:text-white"
                     }`}
                   >
-                    {isActive ? <X className="h-3 w-3" /> : null}
+                    {isActive ? <XIcon className="h-3 w-3" /> : null}
                     <span>{game.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="font-tech text-[11px] font-bold uppercase tracking-wider text-white/70">
+              Mode
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {(["AI ARENA", "TRASH TALK", "LEAGUE"] as const).map((mode) => {
+                const isActive = selectedMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => toggleMode(mode)}
+                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1 font-tech text-[10px] font-bold uppercase tracking-wider transition ${
+                      isActive
+                        ? "border-cyan-500/55 bg-cyan-500/15 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                        : "border-white/10 bg-[#0a0f1b]/60 text-white/55 hover:border-cyan-500/30 hover:text-white"
+                    }`}
+                  >
+                    {isActive ? <XIcon className="h-3 w-3" /> : null}
+                    <span>{mode}</span>
                   </button>
                 );
               })}
