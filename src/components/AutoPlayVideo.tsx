@@ -21,7 +21,7 @@ const AutoPlayVideo = ({ src, type = "video/mp4", className, style, ...props }: 
   }, [src]);
 
   return (
-    <video ref={ref} autoPlay muted playsInline preload="auto" {...props} className={className} style={style}>
+    <video ref={ref} autoPlay muted playsInline preload="metadata" {...props} className={className} style={style}>
       <source src={src} type={type} />
     </video>
   );

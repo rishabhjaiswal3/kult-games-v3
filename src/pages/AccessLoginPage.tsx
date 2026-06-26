@@ -44,6 +44,7 @@ export default function AccessLoginPage() {
         autoPlay
         muted
         loop
+        preload="metadata"
         playsInline
         aria-hidden
       />

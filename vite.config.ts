@@ -8,6 +8,56 @@ export default defineConfig(({ mode }) => ({
     global: "globalThis",
   },
   assetsInclude: ['**/*.MOV'],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+
+          if (
+            id.includes("@privy-io") ||
+            id.includes("@walletconnect") ||
+            id.includes("/viem/") ||
+            id.includes("/ox/") ||
+            id.includes("/abitype/")
+          ) {
+            return "vendor-wallet";
+          }
+
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("react-router") ||
+            id.includes("/scheduler/")
+          ) {
+            return "vendor-react";
+          }
+
+          if (id.includes("@tanstack")) {
+            return "vendor-query";
+          }
+
+          if (id.includes("framer-motion") || id.includes("/gsap/")) {
+            return "vendor-motion";
+          }
+
+          if (id.includes("recharts") || id.includes("/d3-")) {
+            return "vendor-charts";
+          }
+
+          if (
+            id.includes("@radix-ui") ||
+            id.includes("lucide-react") ||
+            id.includes("sonner") ||
+            id.includes("embla-carousel-react") ||
+            id.includes("/vaul/")
+          ) {
+            return "vendor-ui";
+          }
+        },
+      },
+    },
+  },
   optimizeDeps: {
     include: ["buffer", "@privy-io/react-auth"],
   },
