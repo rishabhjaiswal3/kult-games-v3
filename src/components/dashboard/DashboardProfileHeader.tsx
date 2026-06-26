@@ -20,6 +20,13 @@ function formatKultPoints(value: number): string {
 export function DashboardProfileHeader({ profile, isLoading, walletAddress, agentCount }: DashboardProfileHeaderProps) {
   const displayName = profile?.player.name?.trim() || "Arena Pilot";
   const inventoryCount = Array.isArray(profile?.purchasedAssets) ? profile.purchasedAssets.length : null;
+  const profileStats = [
+    { label: "Kult Points", value: profile ? formatKultPoints(profile.kultPoints) : "—" },
+    { label: "KP Rank", value: profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—" },
+    { label: "Level", value: profile?.level ?? "—" },
+    ...(profile?.rank != null ? [{ label: "Rank", value: `#${profile.rank}` }] : []),
+    ...(profile?.totalGamesPlayed ? [{ label: "Games played", value: profile.totalGamesPlayed }] : []),
+  ];
 
   const copyWallet = () => {
     if (!walletAddress) return;
@@ -60,21 +67,23 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:max-w-3xl">
-          {[
-            { label: "Kult Points", value: profile ? formatKultPoints(profile.kultPoints) : "—" },
-            { label: "KP Rank", value: profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—" },
-            { label: "Level", value: profile?.level ?? "—" },
-            { label: "Rank", value: profile?.rank != null ? `#${profile.rank}` : "—" },
-            { label: "Games played", value: profile?.totalGamesPlayed ?? "—" },
-          ].map((stat) => (
-            <div key={stat.label} className="relative overflow-hidden rounded-lg border border-white/[0.08] bg-[#0a0f1b]/50 px-3 py-2.5 text-center backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-[#c78aff]/30 hover:bg-[#111626]/70 hover:shadow-[0_4px_20px_rgba(154,53,255,0.1)]">
-              <div className="font-tech text-[9px] uppercase tracking-wider text-white/50">{stat.label}</div>
-              <div className="mt-1 text-lg font-black text-white tabular-nums drop-shadow-sm">{stat.value}</div>
+        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 lg:max-w-[460px]">
+          {profileStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="relative min-h-[58px] overflow-hidden rounded-md border border-white/[0.08] bg-[#0a0f1b]/50 px-2.5 py-2 text-center backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-[#c78aff]/30 hover:bg-[#111626]/70 hover:shadow-[0_4px_20px_rgba(154,53,255,0.1)]"
+            >
+              <div className="font-tech text-[7.5px] uppercase tracking-[0.14em] text-white/48">
+                {stat.label}
+              </div>
+              <div className="mt-1 text-sm font-black text-white tabular-nums drop-shadow-sm">
+                {stat.value}
+              </div>
             </div>
           ))}
         </div>
       </div>
+      {/*
       <div className="relative z-10 mt-5 grid grid-cols-2 gap-2 border-t border-white/8 pt-4 sm:grid-cols-4">
         {[
           { label: "Games", value: profile?.totalGamesPlayed ?? "—", detail: "Progress saved" },
@@ -89,6 +98,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
           </div>
         ))}
       </div>
+      */}
     </div>
   );
 }

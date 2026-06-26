@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useParams, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Maximize2, Minimize2 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { HighwayHustleModeModal } from "@/components/highway/HighwayHustleModeModal";
 import { StorageKeys } from "@/constants/storageKeys";
@@ -16,7 +16,6 @@ import { buildGameIframeUrl } from "@/lib/buildGameIframeUrl";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { GamePlaySkeleton } from "@/components/skeleton";
 import type { AppShellOutletContext } from "@/layout/AppShell";
-import { cn } from "@/lib/utils";
 
 const GamePlay = () => {
   const { id } = useParams<{ id: string }>();
@@ -175,24 +174,32 @@ const GamePlay = () => {
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/55 to-transparent" />
-      <div className="absolute left-0 top-0 z-20 flex items-center gap-2" data-tour="game-play-chrome-toggle">
+      <div className="absolute left-0 top-0 z-20 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="Back to previous page"
+          title="Back"
+          className="group relative grid h-6 w-6 place-items-center rounded-br-lg border-b border-r border-white/14 bg-[linear-gradient(135deg,rgba(5,10,18,0.92),rgba(0,210,255,0.16),rgba(155,50,255,0.2))] shadow-[0_6px_16px_rgba(0,0,0,0.3),0_0_14px_rgba(0,210,255,0.1)] backdrop-blur-md transition duration-200 hover:border-cyan-300/55 hover:shadow-[0_8px_20px_rgba(0,0,0,0.34),0_0_18px_rgba(0,210,255,0.18)]"
+        >
+          <span className="pointer-events-none absolute inset-0 rounded-br-lg bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_45%)] opacity-80" />
+          <ArrowLeft className="relative h-3.5 w-3.5 text-white/95 transition-colors group-hover:text-cyan-200" />
+        </button>
+      </div>
+      <div className="absolute right-0 top-0 z-20 flex items-center gap-2" data-tour="game-play-chrome-toggle">
         <button
           type="button"
           onClick={() => shellContext?.toggleGameChrome()}
           aria-label={shellContext?.isGameChromeVisible ? "Hide header and sidebar" : "Show header and sidebar"}
           title={shellContext?.isGameChromeVisible ? "Hide header and sidebar" : "Show header and sidebar"}
-          className="group relative h-8 w-8 rounded-none rounded-br-[14px] border-b border-r border-white/14 bg-[linear-gradient(135deg,rgba(5,10,18,0.92),rgba(0,210,255,0.2),rgba(155,50,255,0.24))] shadow-[0_8px_20px_rgba(0,0,0,0.3),0_0_18px_rgba(0,210,255,0.1)] backdrop-blur-md transition duration-200 hover:border-cyan-300/55 hover:shadow-[0_10px_24px_rgba(0,0,0,0.34),0_0_22px_rgba(0,210,255,0.18)]"
+          className="group relative grid h-6 w-6 place-items-center rounded-bl-lg border-b border-l border-white/14 bg-[linear-gradient(225deg,rgba(5,10,18,0.94),rgba(0,210,255,0.2),rgba(155,50,255,0.24))] text-white/92 shadow-[0_6px_16px_rgba(0,0,0,0.3),0_0_14px_rgba(0,210,255,0.1)] backdrop-blur-md transition duration-200 hover:border-cyan-300/55 hover:text-cyan-100 hover:shadow-[0_8px_20px_rgba(0,0,0,0.34),0_0_18px_rgba(0,210,255,0.18)]"
         >
-          <span className="pointer-events-none absolute inset-0 rounded-none rounded-br-[14px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_45%)] opacity-80" />
-          <span
-            className={cn(
-              "absolute inset-0 transition-transform duration-200",
-              shellContext?.isGameChromeVisible ? "rotate-0" : "rotate-180",
-            )}
-          >
-            <span className="absolute left-[7px] top-[7px] h-[2px] w-[10px] rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.32)] transition-colors group-hover:bg-cyan-200" />
-            <span className="absolute left-[7px] top-[7px] h-[10px] w-[2px] rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.32)] transition-colors group-hover:bg-cyan-200" />
-          </span>
+          <span className="pointer-events-none absolute inset-0 rounded-bl-lg bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_45%)] opacity-80" />
+          {shellContext?.isGameChromeVisible ? (
+            <Maximize2 className="relative h-3.5 w-3.5 shrink-0" />
+          ) : (
+            <Minimize2 className="relative h-3.5 w-3.5 shrink-0" />
+          )}
         </button>
       </div>
       <div className="h-full w-full" data-tour="game-play-iframe">
