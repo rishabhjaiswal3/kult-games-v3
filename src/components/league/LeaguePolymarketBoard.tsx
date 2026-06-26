@@ -442,8 +442,8 @@ function WorldCupOddsHero() {
       color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
     }));
 
-  // Double the items around the orbit so flags are packed closer together
-  const orbitItems = useMemo(() => [...outcomes, ...outcomes], [outcomes]);
+  // Repeat the items around the orbit so the visible arc stays densely populated.
+  const orbitItems = useMemo(() => [...outcomes, ...outcomes, ...outcomes], [outcomes]);
   const count = orbitItems.length;
   const containerRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
@@ -467,8 +467,8 @@ function WorldCupOddsHero() {
 
       // Wide semicircular arc: center sits below the visible area so only the
       // top half of the ellipse (the arc) sweeps left → up → right.
-      const rx = W * 0.52;  // nearly full-width spread
-      const ry = H * 0.60;  // tall so the arc has a nice curve
+      const rx = W * 0.48;  // broad but tighter, reducing empty gaps
+      const ry = H * 0.54;  // tall so the arc has a nice curve
       const cx = W * 0.50;  // centered horizontally
       const cy = H * 0.82;  // pushed down — only the top arc is visible
 
@@ -482,10 +482,10 @@ function WorldCupOddsHero() {
 
         // depth: -sinT → 1 at top of arc (visible), -1 at bottom (hidden)
         const depth = -sinT;
-        // Only show the top semicircle (depth > 0); hide the bottom half completely
-        const visible = depth > -0.1;
+        // Keep a little more of the side arc visible so the card never feels sparse.
+        const visible = depth > -0.28;
         const scale = 0.5 + 0.5 * Math.max(0, depth);       // 0.5 → 1.0
-        const opacity = visible ? 0.15 + 0.85 * Math.max(0, depth) : 0; // fully hidden at bottom
+        const opacity = visible ? 0.28 + 0.72 * Math.max(0, depth) : 0; // fully hidden at bottom
         const rotate = cosT * -15; // gentle tilt following position on arc
 
         return { x, y, scale, z: depth * 100, rotate, opacity };
