@@ -1,19 +1,22 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
+import { useAccess } from "@/contexts/AccessContext";
 import { clearAiAgentInfo } from "@/lib/aiAgentStorage";
 import {
   clearAiArenaAuthTokens,
   getAiArenaAccessToken,
   tryExchangePrivyTokenForAiArenaToken,
 } from "@/lib/aiArenaAuth";
+import { clearUserSessionCache } from "@/lib/sessionCleanup";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import {
   clearUserLoginIntent,
+  getUserLoginMethod,
   hasUserLoginIntent,
-  markUserLoginIntent,
   requestOpenLoginModal,
 } from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
@@ -87,6 +90,8 @@ async function waitForSigningWallet(
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { ready, authenticated, user, getAccessToken, logout: privyLogout } = usePrivy();
   const { wallets } = useWallets();
+  const queryClient = useQueryClient();
+  const { clearAccess } = useAccess();
 
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => typeof localStorage !== "undefined" && !!localStorage.getItem(TOKEN_KEY),
   );
 
-  const resolvedAddress = resolvePrivyWalletAddress(user, wallets);
+  const loginMethod = getUserLoginMethod();
+  const walletPreference =
+    loginMethod === "email" || loginMethod === "google"
+      ? "embedded"
+      : loginMethod === "wallet"
+        ? "external"
+        : "any";
+  const resolvedAddress = resolvePrivyWalletAddress(user, wallets, walletPreference);
   const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
 
   const walletsRef = useRef(wallets);
@@ -109,15 +121,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getAccessTokenRef.current = getAccessToken;
   }, [getAccessToken]);
 
-  const clearLocalAuthState = useCallback(() => {
+  const clearLocalAuthState = useCallback((options?: { clearAccessCode?: boolean; clearQueryCache?: boolean }) => {
     siweInFlightByAddress.clear();
     clearUserLoginIntent();
+    clearUserSessionCache();
     playerApi.logout();
     clearAiArenaAuthTokens();
     clearAiAgentInfo();
+    if (options?.clearAccessCode) {
+      clearAccess();
+    }
+    if (options?.clearQueryCache) {
+      queryClient.clear();
+    }
     setHasKultSession(false);
     setPlayer(null);
-  }, []);
+  }, [clearAccess, queryClient]);
 
   const resetStalePrivySession = useCallback(async () => {
     if (staleLogoutInFlightRef.current) return;
@@ -186,16 +205,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     const timer = window.setTimeout(() => {
       setIsLoading(false);
-      if (!resolvePrivyWalletAddress(user, walletsRef.current)) {
+      if (!resolvePrivyWalletAddress(user, walletsRef.current, walletPreference)) {
         requestOpenLoginModal({
           mode: "recover",
           message:
-            "Your wallet is still being set up. Please wait a moment and try again, or use Wallet login.",
+            walletPreference === "embedded"
+              ? "Your email/Google wallet is still being set up. Please wait a moment and try again."
+              : "Your wallet is still being set up. Please wait a moment and try again, or use Wallet login.",
         });
       }
     }, SIGNING_WALLET_WAIT_MS);
     return () => window.clearTimeout(timer);
-  }, [ready, authenticated, resolvedAddress, user]);
+  }, [ready, authenticated, resolvedAddress, user, walletPreference]);
 
   // SIWE only when the user explicitly started login (Connect / wallet / email / Google).
   useEffect(() => {
@@ -231,7 +252,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     requestOpenLoginModal({ mode: "finishing" });
-    toast.info("Approve the wallet signature to finish signing in.", { duration: 12_000 });
+    if (walletPreference === "embedded") {
+      toast.info("Finishing sign-in with your Privy wallet…", { duration: 8_000 });
+    } else {
+      toast.info("Approve the wallet signature to finish signing in.", { duration: 12_000 });
+    }
 
     const run = withTimeout(
       (async () => {
@@ -239,7 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const message = buildSiweMessage(address, nonce);
 
         const privyWallet = await waitForSigningWallet(() =>
-          pickSigningWallet(walletsRef.current, address)
+          pickSigningWallet(walletsRef.current, address, walletPreference)
         );
         if (!privyWallet) throw new Error("No Privy wallet available to sign");
 
@@ -313,15 +338,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           siweInFlightByAddress.delete(addrKey);
         }
       });
-  }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout, clearLocalAuthState]);
+  }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout, clearLocalAuthState, walletPreference]);
 
   const beginLogin = useCallback(() => {
-    markUserLoginIntent();
     requestOpenLoginModal();
   }, []);
 
   const handleLogout = async () => {
-    clearLocalAuthState();
+    clearLocalAuthState({ clearAccessCode: true, clearQueryCache: true });
     await privyLogout();
   };
 

@@ -195,9 +195,9 @@ export function MarketplacePurchaseDialog({
   return (
     <Dialog open={!!selectedItem} onOpenChange={(open) => !open && onClose()}>
       {selectedItem ? (
-        <DialogContent className="max-w-md gap-0 border-0 bg-transparent p-0 shadow-none sm:rounded-lg [&>button]:hidden">
-          <div className="arena-panel w-full overflow-hidden border-white/10 bg-[#04080f] shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] max-w-sm gap-0 border-0 bg-transparent p-0 shadow-none sm:max-w-md sm:rounded-lg [&>button]:hidden">
+          <div className="arena-panel flex max-h-[92dvh] w-full flex-col overflow-hidden border-white/10 bg-[#04080f] shadow-2xl">
+            <div className="shrink-0 flex items-center justify-between border-b border-white/8 px-4 py-3">
               <h2 className="font-tech text-sm font-bold uppercase tracking-wider text-white">
                 Confirm purchase
               </h2>
@@ -211,12 +211,12 @@ export function MarketplacePurchaseDialog({
               </button>
             </div>
 
-            <div className="relative flex aspect-[16/10] items-center justify-center border-b border-white/6 bg-[#0a0f18]">
+            <div className="relative flex h-36 shrink-0 items-center justify-center border-b border-white/6 bg-[#0a0f18] sm:h-40">
               {selectedItem.assetUrl ? (
                 <img
                   src={selectedItem.assetUrl}
                   alt={selectedItem.name}
-                  className="max-h-[80%] max-w-[80%] object-contain p-4"
+                  className="max-h-full max-w-full object-contain p-3"
                 />
               ) : (
                 <span className="font-tech text-[9px] uppercase text-white/35">No preview</span>
@@ -228,13 +228,13 @@ export function MarketplacePurchaseDialog({
               </span>
             </div>
 
-            <div className="space-y-4 p-4">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 pr-2 [scrollbar-color:rgba(154,53,255,0.45)_transparent] [scrollbar-width:thin] sm:space-y-4 sm:p-4 sm:pr-3">
               <div>
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-bold text-white">{selectedItem.name}</p>
                   <Hexagon className="h-3.5 w-3.5 fill-[#9a35ff] text-[#9a35ff]" />
                 </div>
-                <p className="mt-2 font-tech text-2xl font-bold text-[#ffc000]">
+                <p className="mt-1.5 font-tech text-xl font-bold text-[#ffc000] sm:text-2xl">
                   {selectedItem.price}
                   <span className="ml-1 text-sm text-white/45">{selectedItem.currency}</span>
                 </p>
@@ -319,7 +319,7 @@ export function MarketplacePurchaseDialog({
                 ) : null}
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="sticky bottom-0 -mx-3 flex gap-2 border-t border-white/8 bg-[#04080f]/95 px-3 pt-3 backdrop-blur sm:-mx-4 sm:px-4">
                 <button
                   type="button"
                   onClick={onClose}

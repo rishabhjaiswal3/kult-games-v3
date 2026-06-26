@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Clapperboard, Menu } from "lucide-react";
+import { Bell, HelpCircle, Menu, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
+import { useTour } from "@/tour/TourProvider";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
 export function DashboardTopbar() {
@@ -11,7 +12,7 @@ export function DashboardTopbar() {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const { isAuthenticated, logout } = useAuth();
   const { canUse } = useAccess();
-  const showStudio = canUse("creator_studio");
+  const { isRunning, startWebsiteTour } = useTour();
   const showArenaLinks = canUse("ai_arena");
   const showLeagueLinks = canUse("league");
   const showNotifications = showArenaLinks || showLeagueLinks;
@@ -46,62 +47,74 @@ export function DashboardTopbar() {
       <header ref={containerRef} className="relative z-30 shrink-0 border-b border-white/10 bg-[#03070d]/88 backdrop-blur-xl">
         <div className="relative mx-auto flex min-h-[54px] max-w-full flex-nowrap items-center justify-between gap-1.5 px-3 py-1.5 sm:min-h-[60px] sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            {showArenaLinks ? (
-            <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden">
-              <img
-                src={dashboardAvatar}
-                alt="Profile"
-                className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff]"
-              />
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard" aria-label="Open dashboard" className="shrink-0 sm:hidden" data-tour="dashboard-profile">
+                <img
+                  src={dashboardAvatar}
+                  alt="Profile"
+                  className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff]"
+                />
+              </Link>
             ) : null}
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
-            {isAuthenticated && showStudio && (
-              <a
-                href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
-                className="topbar-wallet-cta h-9 w-9 shrink-0 gap-2 px-0 min-[430px]:w-auto min-[430px]:px-3"
-              >
-                <Clapperboard className="h-4 w-4" />
-                <span className="hidden min-[430px]:inline">Studio</span>
-              </a>
-            )}
-            {showArenaLinks ? (
-            <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block">
-              <img
-                src={dashboardAvatar}
-                alt="Profile"
-                className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff] sm:h-10 sm:w-10"
-              />
-            </Link>
-            ) : null}
-            {showNotifications ? (
-              <button
-                type="button"
-                onClick={() => {
-                  togglePanel("notifications");
-                  setHasUnreadNotifications(false);
-                }}
-                className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
-                aria-label="Open notifications"
-              >
-                <Bell className="h-5 w-5" />
-                {hasUnreadNotifications && (
-                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
-                )}
-              </button>
-            ) : null}
             <button
               type="button"
-              onClick={handleConnectWallet}
-              className={isAuthenticated
-                ? "block h-9 shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-3 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)]"
-                : "topbar-wallet-cta block shrink-0"
-              }
+              onClick={startWebsiteTour}
+              data-tour="tour-start"
+              aria-label="Start website tour"
+              aria-busy={isRunning}
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-cyan-200/25 bg-cyan-300/10 px-2 font-tech text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 shadow-[0_0_14px_rgba(34,211,238,0.12)] transition hover:border-cyan-100/45 hover:bg-cyan-300/16 hover:text-white min-[430px]:h-10 min-[430px]:px-3"
             >
-              <span className="hidden min-[430px]:inline">{isAuthenticated ? "DISCONNECT" : "CONNECT WALLET"}</span>
-              <span className="min-[430px]:hidden">{isAuthenticated ? "LOGOUT" : "LOGIN"}</span>
+              {isRunning ? <Sparkles className="h-4 w-4" /> : <HelpCircle className="h-4 w-4" />}
+              <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
             </button>
+
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" aria-label="Open dashboard" className="hidden shrink-0 sm:block" data-tour="dashboard-profile">
+                  <img
+                    src={dashboardAvatar}
+                    alt="Profile"
+                    className="h-9 w-9 rounded-lg border border-[#8b27ff]/40 object-cover transition hover:border-[#b54cff] sm:h-10 sm:w-10"
+                  />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    togglePanel("notifications");
+                    setHasUnreadNotifications(false);
+                  }}
+                  data-tour="topbar-notifications"
+                  className="relative hidden shrink-0 rounded-md p-1.5 text-white/70 transition hover:bg-white/5 hover:text-white min-[380px]:block sm:p-2"
+                  aria-label="Open notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                  {hasUnreadNotifications && (
+                    <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#8b29ff]" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConnectWallet}
+                  data-tour="topbar-connect"
+                  className="block shrink-0 rounded-md border border-red-500/20 bg-gradient-to-b from-[#1a0a14] to-[#0a0306] px-2 py-2.5 font-tech text-[10px] text-red-400 transition-all hover:border-red-500/50 hover:from-red-950/40 hover:to-red-900/40 hover:text-red-300 hover:shadow-[0_0_12px_rgba(220,38,38,0.2)] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+                >
+                  <span className="hidden min-[430px]:inline">DISCONNECT</span>
+                  <span className="min-[430px]:hidden">LOGOUT</span>
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConnectWallet}
+                data-tour="topbar-connect"
+                className="btn-primary block shrink-0 rounded-md px-2 py-2.5 font-tech text-[10px] min-[430px]:px-3 sm:px-5 sm:py-3 sm:text-[11px]"
+              >
+                <span className="hidden min-[430px]:inline">CONNECT WALLET</span>
+                <span className="min-[430px]:hidden">LOGIN</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))}

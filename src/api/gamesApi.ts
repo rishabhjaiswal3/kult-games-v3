@@ -73,6 +73,57 @@ function collectImages(raw: Record<string, unknown>, thumbnail: GameThumbnail | 
   return images;
 }
 
+const KNOWN_GAME_CATEGORIES: Record<string, string> = {
+  guesstheai: "Puzzle",
+  highwayhustle: "Racing",
+  highwayhustleoneway: "Racing",
+  highwayhustletwoway: "Racing",
+  highwayhustlespeedrun: "Racing",
+  highwayhustletimebomb: "Racing",
+  robowars: "Action",
+  warzonewarriors: "Action",
+  zerogpool: "Arcade",
+  zerodash: "Arcade",
+};
+
+function normalizeCategoryLabel(value: string | undefined) {
+  if (!value?.trim() || value.trim().toLowerCase() === "uncategorized") return undefined;
+  return value
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function gameKeyFromRaw(raw: Record<string, unknown>, identification: string) {
+  return pickString(raw.identification, raw.slug, raw.id, raw._id, identification)
+    ?.toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
+function deriveGameCategory(raw: Record<string, unknown>, metadata: Record<string, unknown> | undefined, identification: string) {
+  const direct = normalizeCategoryLabel(
+    pickString(
+      raw.category,
+      raw.genre,
+      raw.gameType,
+      raw.game_type,
+      raw.type,
+      metadata?.category,
+      metadata?.genre,
+      metadata?.gameType,
+      metadata?.game_type,
+      metadata?.type,
+    ),
+  );
+  if (direct) return direct;
+
+  const key = gameKeyFromRaw(raw, identification);
+  if (key && KNOWN_GAME_CATEGORIES[key]) return KNOWN_GAME_CATEGORIES[key];
+
+  return "Game";
+}
+
 function normalizeGame(rawValue: unknown): Game {
   const raw = isRecord(rawValue) ? rawValue : {};
   const thumbnail =
@@ -108,7 +159,7 @@ function normalizeGame(rawValue: unknown): Game {
         : identification,
     description,
     about,
-    category: pickString(raw.category) ?? "Uncategorized",
+    category: deriveGameCategory(raw, metadata, identification),
     platform,
     rating: pickNumber(raw.rating),
     image_url:

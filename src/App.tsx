@@ -37,8 +37,9 @@ import { LoginModalHost } from "@/components/LoginModalHost";
 import KultAIFloating from "./components/KultAIFloating";
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
-import AccessLoginPage from "@/pages/AccessLoginPage";
 import { AccessRoute } from "@/components/AccessRoute";
+import { TourProvider } from "@/tour/TourProvider";
+import AccessLoginPage from "@/pages/AccessLoginPage";
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
 
@@ -155,46 +156,48 @@ function BrowserApp() {
         <Sonner />
         {!loaded ? <LoadingScreen onComplete={handleComplete} /> : null}
         <BrowserRouter>
-          <div
-            ref={contentRef}
-            className={loaded ? "" : "pointer-events-none"}
-            style={loaded ? { opacity: 1 } : { opacity: 0 }}
-          >
-            <RouteChunkErrorBoundary>
-              <Suspense fallback={<PageRouteFallback />}>
-                <Routes>
-                <Route element={<AppShell />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<AccessRoute><Dashboard /></AccessRoute>} />
-                  <Route path="/games" element={<AccessRoute><Games /></AccessRoute>} />
-                  <Route path="/my-agents" element={<AccessRoute><MyAgentsPage /></AccessRoute>} />
-                  <Route path="/training" element={<AccessRoute><TrainingPage /></AccessRoute>} />
-                  <Route path="/battles" element={<AccessRoute><BattlesPage /></AccessRoute>} />
-                  <Route path="/inventory" element={<AccessRoute><Inventory /></AccessRoute>} />
-                  <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
-                  <Route path="/leaderboard" element={<AccessRoute><Leaderboard /></AccessRoute>} />
-                  <Route path="/league" element={<AccessRoute><LeaguePage /></AccessRoute>} />
-                  <Route path="/ai-arena" element={<AccessRoute><AIArenaPage /></AccessRoute>} />
-                  <Route path="/moments" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
-                  <Route path="/moments/browse" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
-                  <Route path="/moments/:id" element={<AccessRoute><MomentDetailPage /></AccessRoute>} />
+          <TourProvider enabled={loaded}>
+            <div
+              ref={contentRef}
+              className={loaded ? "" : "pointer-events-none"}
+              style={loaded ? { opacity: 1 } : { opacity: 0 }}
+            >
+              <RouteChunkErrorBoundary>
+                <Suspense fallback={<PageRouteFallback />}>
+                  <Routes>
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<AccessRoute><Dashboard /></AccessRoute>} />
+                    <Route path="/games" element={<AccessRoute><Games /></AccessRoute>} />
+                    <Route path="/my-agents" element={<AccessRoute><MyAgentsPage /></AccessRoute>} />
+                    <Route path="/training" element={<AccessRoute><TrainingPage /></AccessRoute>} />
+                    <Route path="/battles" element={<AccessRoute><BattlesPage /></AccessRoute>} />
+                    <Route path="/inventory" element={<AccessRoute><Inventory /></AccessRoute>} />
+                    <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
+                    <Route path="/leaderboard" element={<AccessRoute><Leaderboard /></AccessRoute>} />
+                    <Route path="/league" element={<AccessRoute><LeaguePage /></AccessRoute>} />
+                    <Route path="/ai-arena" element={<AccessRoute><AIArenaPage /></AccessRoute>} />
+                    <Route path="/moments" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
+                    <Route path="/moments/browse" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
+                    <Route path="/moments/:id" element={<AccessRoute><MomentDetailPage /></AccessRoute>} />
 
-                  <Route path="/autonomous" element={<AccessRoute><AutonomousPage /></AccessRoute>} />
-                  <Route path="/achievements" element={<AccessRoute><AchievementsPage /></AccessRoute>} />
-                  <Route path="/game/:id" element={<AccessRoute><GameDetail /></AccessRoute>} />
-                  <Route path="/game/:id/play" element={<AccessRoute><GamePlay /></AccessRoute>} />
-                </Route>
-                {/* Full-screen arena game page — no AppShell sidebar */}
-                <Route path="/arena/game/:battleId" element={<AccessRoute><ArenaGamePage /></AccessRoute>} />
-                {/* Robowar simulation page — red theme, no Unity, 120s sim */}
-                <Route path="/arena/robowar/:battleId" element={<AccessRoute><RobowarGamePage /></AccessRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              </Suspense>
-            </RouteChunkErrorBoundary>
-          </div>
-          <LoginModalHost />
-          {loaded && <KultAIFloating />}
+                    <Route path="/autonomous" element={<AccessRoute><AutonomousPage /></AccessRoute>} />
+                    <Route path="/achievements" element={<AccessRoute><AchievementsPage /></AccessRoute>} />
+                    <Route path="/game/:id" element={<AccessRoute><GameDetail /></AccessRoute>} />
+                    <Route path="/game/:id/play" element={<AccessRoute><GamePlay /></AccessRoute>} />
+                  </Route>
+                  {/* Full-screen arena game page — no AppShell sidebar */}
+                  <Route path="/arena/game/:battleId" element={<AccessRoute><ArenaGamePage /></AccessRoute>} />
+                  {/* Robowar simulation page — red theme, no Unity, 120s sim */}
+                  <Route path="/arena/robowar/:battleId" element={<AccessRoute><RobowarGamePage /></AccessRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                </Suspense>
+              </RouteChunkErrorBoundary>
+            </div>
+            <LoginModalHost />
+            {loaded && <KultAIFloating />}
+          </TourProvider>
         </BrowserRouter>
       </TooltipProvider>
       </CreateAgentProvider>

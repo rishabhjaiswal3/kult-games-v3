@@ -765,6 +765,7 @@ export function AllMomentsPage() {
               <button
                 type="button"
                 onClick={() => handleCreateOpenChange(true)}
+                data-tour="moments-create"
                 className="flex h-10 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -772,7 +773,7 @@ export function AllMomentsPage() {
               </button>
             </div>
 
-            <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6">
+            <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6" data-tour="moments-tabs">
               {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
                 <button
                   key={tab}
@@ -789,7 +790,7 @@ export function AllMomentsPage() {
           <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
             <div className="min-w-0 space-y-4">
 
-            <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2">
+            <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2" data-tour="moments-filters">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
                 <FilterDropdown label="Mode" options={["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
@@ -858,7 +859,7 @@ export function AllMomentsPage() {
             </div>
 
             {discoverQuery.isLoading ? (
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`}>
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
                     <div className="aspect-[16/8.7] bg-white/5" />

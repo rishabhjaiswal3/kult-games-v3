@@ -1816,7 +1816,7 @@ export default function ArenaGamePage() {
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
 
       {/* ── Top Nav ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5" data-tour="arena-game-topbar">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -1869,19 +1869,21 @@ export default function ArenaGamePage() {
       </div>
 
       {/* ── Agent VS Banner ───────────────────────────────────────────────── */}
-      <AgentBanner
-        myAgent={myAgent}
-        opponent={opponent}
-        battle={battle}
-        gamePhase={gamePhase}
-        mode={mode}
-      />
+      <div data-tour="arena-game-agents">
+        <AgentBanner
+          myAgent={myAgent}
+          opponent={opponent}
+          battle={battle}
+          gamePhase={gamePhase}
+          mode={mode}
+        />
+      </div>
 
       {/* ── Main: Canvas + Chat ───────────────────────────────────────────── */}
       <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
 
         {/* Canvas area */}
-        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1">
+        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="arena-game-canvas">
 
           {/* Error state — centred */}
           {isError && (
@@ -2048,31 +2050,33 @@ export default function ArenaGamePage() {
         </div>
 
         {/* Chat panel */}
-        <GameChatPanel
-          messages={messages}
-          chatInput={chatInput}
-          onInputChange={setChatInput}
-          onSend={() => {
-            if (!chatInput.trim()) return;
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: uid(),
-                kind: "player" as const,
-                agentId: myAgentId ?? "observer",
-                agentName: myAgent?.name ?? "Observer",
-                color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
-                text: chatInput.trim(),
-                ts: new Date(),
-              },
-            ]);
-            setChatInput("");
-          }}
-          chatEndRef={chatEndRef}
-          myAgent={myAgent}
-          observerCount={observerCount}
-          onShareMoment={shareMomentHandler}
-        />
+        <div data-tour="arena-game-chat">
+          <GameChatPanel
+            messages={messages}
+            chatInput={chatInput}
+            onInputChange={setChatInput}
+            onSend={() => {
+              if (!chatInput.trim()) return;
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: uid(),
+                  kind: "player" as const,
+                  agentId: myAgentId ?? "observer",
+                  agentName: myAgent?.name ?? "Observer",
+                  color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
+                  text: chatInput.trim(),
+                  ts: new Date(),
+                },
+              ]);
+              setChatInput("");
+            }}
+            chatEndRef={chatEndRef}
+            myAgent={myAgent}
+            observerCount={observerCount}
+            onShareMoment={shareMomentHandler}
+          />
+        </div>
       </div>
     </div>
   );

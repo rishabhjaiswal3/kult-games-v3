@@ -33,7 +33,9 @@ const Dashboard = () => {
     queryKey: ["player", "full-profile"],
     queryFn: () => playerApi.getFullProfile(),
     enabled: isAuthenticated,
-    staleTime: 60_000,
+    staleTime: 10_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const myAgentsQ = useMyArenaAgents(1, 50);

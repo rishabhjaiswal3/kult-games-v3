@@ -207,7 +207,7 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      <div className="mb-5 flex flex-wrap gap-2 rounded-2xl border border-white/8 bg-black/20 p-1.5">
+      <div className="mb-5 flex flex-wrap gap-2 rounded-2xl border border-white/8 bg-black/20 p-1.5" data-tour="leaderboard-mode-switch">
         {([
           ["KULT_POINTS", "KULT POINTS"],
           ["AI_ARENA", "AI ARENA"],
@@ -229,7 +229,7 @@ const Leaderboard = () => {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_332px]">
         <div className="min-w-0 space-y-5">
-          <div className="flex flex-col justify-between gap-4 border-b border-white/8 pb-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col justify-between gap-4 border-b border-white/8 pb-3 sm:flex-row sm:items-center" data-tour="leaderboard-tabs-filters">
             <div className="flex gap-6 font-tech text-[12px] font-bold uppercase tracking-wider">
               {(["GLOBAL", "MY RANK"] as LeaderboardTab[]).map((tab) => (
                 <button
@@ -316,6 +316,7 @@ const Leaderboard = () => {
             </div>
           </div>
 
+          <div data-tour="leaderboard-rankings">
           {activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" && !isAuthenticated ? (
             <div className="arena-panel border border-white/8 px-6 py-14 text-center">
               <p className="font-tech text-sm uppercase tracking-wider text-[#b95cff]">
@@ -545,28 +546,31 @@ const Leaderboard = () => {
               </div>
             </>
           )}
+          </div>
         </div>
 
-        <LeaderboardSidebar
-          userRank={activeMode === "KULT_POINTS" ? kultSidebarRank : sidebarRank}
-          userPoints={activeMode === "KULT_POINTS" ? kultSidebarPoints : sidebarPoints}
-          seasonProgress={activeMode === "KULT_POINTS" ? 40 : sidebarProgress}
-          userElo={activeMode === "AI_ARENA" && myElo > 0 ? myElo : undefined}
-          pointLabel={activeMode === "KULT_POINTS" ? "KP" : "ELO"}
-          title="Your Rank"
-          totalPlayers={
-            activeMode === "KULT_POINTS"
-              ? kultLeaderboardQ.data?.total
-              : allEntries.length > 0
-                ? allEntries.length
-                : undefined
-          }
-          aboutText={
-            activeMode === "KULT_POINTS"
-              ? "Your KULT Points reflect game contribution from the backend leaderboard, updated from verified activity. No token conversion, cash value, or guaranteed reward is implied."
-              : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
-          }
-        />
+        <div data-tour="leaderboard-sidebar">
+          <LeaderboardSidebar
+            userRank={activeMode === "KULT_POINTS" ? kultSidebarRank : sidebarRank}
+            userPoints={activeMode === "KULT_POINTS" ? kultSidebarPoints : sidebarPoints}
+            seasonProgress={activeMode === "KULT_POINTS" ? 40 : sidebarProgress}
+            userElo={activeMode === "AI_ARENA" && myElo > 0 ? myElo : undefined}
+            pointLabel={activeMode === "KULT_POINTS" ? "KP" : "ELO"}
+            title="Your Rank"
+            totalPlayers={
+              activeMode === "KULT_POINTS"
+                ? kultLeaderboardQ.data?.total
+                : allEntries.length > 0
+                  ? allEntries.length
+                  : undefined
+            }
+            aboutText={
+              activeMode === "KULT_POINTS"
+                ? "Your KULT Points reflect game contribution from the backend leaderboard, updated from verified activity. No token conversion, cash value, or guaranteed reward is implied."
+                : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
+            }
+          />
+        </div>
       </div>
     </div>
   );

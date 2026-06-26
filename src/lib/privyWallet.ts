@@ -9,17 +9,26 @@ function isEmbeddedPrivyWallet(walletClientType?: string | null) {
   return walletClientType === "privy" || walletClientType === "privy-v2";
 }
 
+type WalletPreference = "embedded" | "external" | "any";
+
 /** Prefer embedded Privy wallet (email / Google) then any linked wallet. */
-export function getWalletAddressFromPrivyUser(user: User | null | undefined): string | undefined {
+export function getWalletAddressFromPrivyUser(
+  user: User | null | undefined,
+  preference: WalletPreference = "any",
+): string | undefined {
   if (!user) return undefined;
 
   const linked = user.linkedAccounts ?? [];
   const walletAccounts = linked.filter((a): a is Extract<(typeof linked)[number], { type: "wallet" }> => a.type === "wallet");
 
   const embedded = walletAccounts.find((a) => isEmbeddedPrivyWallet(a.walletClientType));
+  if (preference === "embedded") return embedded?.address;
+
+  const external = walletAccounts.find((a) => a.address && !isEmbeddedPrivyWallet(a.walletClientType));
+  if (preference === "external" && external?.address) return external.address;
+
   if (embedded?.address) return embedded.address;
 
-  const external = walletAccounts.find((a) => a.address);
   if (external?.address) return external.address;
 
   const smart = linked.find((a): a is Extract<(typeof linked)[number], { type: "smart_wallet" }> => a.type === "smart_wallet");
@@ -31,26 +40,45 @@ export function getWalletAddressFromPrivyUser(user: User | null | undefined): st
 /** Merge `user.linkedAccounts` with live `useWallets()` (embedded wallet can appear here first). */
 export function resolvePrivyWalletAddress(
   user: User | null | undefined,
-  wallets: ConnectedWallet[]
+  wallets: ConnectedWallet[],
+  preference: WalletPreference = "any",
 ): string | undefined {
+  const embeddedWallet = wallets.find((w) => isEmbeddedPrivyWallet(w.walletClientType));
+  const externalWallet = wallets.find((w) => !isEmbeddedPrivyWallet(w.walletClientType));
+
+  if (preference === "embedded") {
+    return getWalletAddressFromPrivyUser(user, "embedded") ?? embeddedWallet?.address;
+  }
+
+  if (preference === "external") {
+    return externalWallet?.address ?? getWalletAddressFromPrivyUser(user, "external") ?? embeddedWallet?.address;
+  }
+
   const fromUser = getWalletAddressFromPrivyUser(user);
   if (fromUser) return fromUser;
 
-  const embedded = wallets.find((w) => isEmbeddedPrivyWallet(w.walletClientType));
-  if (embedded?.address) return embedded.address;
+  if (embeddedWallet?.address) return embeddedWallet.address;
 
   return wallets[0]?.address;
 }
 
 export function pickSigningWallet(
   wallets: ConnectedWallet[],
-  address: string
+  address: string,
+  preference: WalletPreference = "any",
 ): ConnectedWallet | undefined {
-  const match = wallets.find((w) => w.address.toLowerCase() === address.toLowerCase());
+  const candidates =
+    preference === "embedded"
+      ? wallets.filter((w) => isEmbeddedPrivyWallet(w.walletClientType))
+      : preference === "external"
+        ? wallets.filter((w) => !isEmbeddedPrivyWallet(w.walletClientType))
+        : wallets;
+
+  const match = candidates.find((w) => w.address.toLowerCase() === address.toLowerCase());
   if (match) return match;
 
-  const embedded = wallets.find((w) => isEmbeddedPrivyWallet(w.walletClientType));
-  return embedded ?? wallets[0];
+  const embedded = candidates.find((w) => isEmbeddedPrivyWallet(w.walletClientType));
+  return embedded ?? candidates[0];
 }
 
 export function isEmbeddedPrivyConnectedWallet(wallet: ConnectedWallet | undefined) {

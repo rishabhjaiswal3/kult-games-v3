@@ -314,14 +314,14 @@ const TrainingPage = () => {
 
   return (
     <ArenaPageLayout>
-      <div>
+      <div data-tour="training-header">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">TRAINING CENTER</h1>
         <p className="mt-1 text-[11px] font-medium text-white/55">
           Monitor real AI Arena training jobs, queue new runs, and check eligibility by agent.
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" data-tour="training-stats">
         <StatCard label="MY AGENTS" value={agents.length.toLocaleString()} icon={Zap} color="text-purple-400" />
         <StatCard label="TRAINING JOBS" value={allJobs.length.toLocaleString()} icon={Activity} color="text-blue-400" />
         <StatCard label="ACTIVE JOBS" value={activeJobs.length.toLocaleString()} icon={Clock} color="text-emerald-400" />
@@ -329,7 +329,7 @@ const TrainingPage = () => {
         <StatCard label="ELIGIBLE AGENTS" value={eligibleAgentsCount.toLocaleString()} icon={TrendingUp} color="text-amber-400" />
       </div>
 
-      <div className="arena-panel border-white/8 bg-[#04080f]/95 p-3">
+      <div className="arena-panel border-white/8 bg-[#04080f]/95 p-3" data-tour="training-tabs">
         <div className="flex flex-wrap items-center gap-1">
           {trainingTabs.map((tab) => (
             <button
@@ -348,7 +348,7 @@ const TrainingPage = () => {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_376px]">
         <div className="min-w-0 space-y-4">
-          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95">
+          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95" data-tour="training-queue">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 p-5">
               <div>
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training queue</h3>
@@ -378,7 +378,7 @@ const TrainingPage = () => {
               </div>
             </div>
 
-            <div className="border-b border-white/8 px-5 py-4">
+            <div className="border-b border-white/8 px-5 py-4" data-tour="training-agent-selector">
               <div className="mb-2 font-tech text-[9px] uppercase tracking-[0.18em] text-white/38">Selected agent</div>
               <div className="flex flex-wrap gap-2">
                 {agents.map((agent) => {
@@ -481,7 +481,7 @@ const TrainingPage = () => {
             </div>
           </div>
 
-          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95">
+          <div className="arena-panel overflow-hidden border-white/8 bg-[#04080f]/95" data-tour="training-global-feed">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 p-5">
               <div>
                 <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Global training feed</h3>
@@ -542,7 +542,7 @@ const TrainingPage = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="training-programs">
             <div className="flex items-center justify-between">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training programs</h3>
               <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Queue from the same page</span>
@@ -578,7 +578,7 @@ const TrainingPage = () => {
         </div>
 
         <aside className="space-y-4 self-start xl:sticky xl:top-24">
-          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5" data-tour="training-job-inspector">
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Job inspector</h3>
               <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Look up any job by ID</span>
@@ -654,7 +654,7 @@ const TrainingPage = () => {
             )}
           </div>
 
-          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5" data-tour="training-readiness">
             <div className="flex items-center justify-between">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Agent readiness</h3>
               {eligibilityQ.isLoading ? <Loader2 className="h-4 w-4 animate-spin text-white/40" /> : null}
@@ -693,7 +693,7 @@ const TrainingPage = () => {
             )}
           </div>
 
-          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5">
+          <div className="arena-panel relative space-y-4 overflow-hidden border-white/8 bg-[#04080f]/95 p-5" data-tour="training-boosts">
             <div className="flex items-center justify-between">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Training boosts</h3>
               <Sparkles className="h-4 w-4 text-purple-300" />

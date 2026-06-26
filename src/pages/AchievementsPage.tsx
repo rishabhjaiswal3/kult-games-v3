@@ -350,7 +350,7 @@ const AchievementsPage = () => {
       <section className="mx-auto max-w-full px-4 py-5 sm:px-6 lg:px-8 space-y-4">
 
         {/* Top Title Section */}
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3" data-tour="achievements-header">
           <div>
             <h1 className="font-tech text-3xl font-bold tracking-tight text-white uppercase">ACHIEVEMENTS</h1>
             <p className="mt-1 text-[11px] text-white/55 font-medium">
@@ -368,7 +368,7 @@ const AchievementsPage = () => {
         )}
 
         {/* Stats strip */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 relative z-10" data-tour="achievements-stats">
           <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
             <div className="space-y-1">
               <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">ACHIEVEMENT POINTS</span>
@@ -448,7 +448,7 @@ const AchievementsPage = () => {
         </div>
 
         {/* Filter Strip */}
-        <div className="arena-panel p-3 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-3">
+        <div className="arena-panel p-3 border-white/8 bg-[#04080f]/95 flex flex-wrap items-center justify-between gap-3" data-tour="achievements-filters">
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1">
             {tabs.map((tab) => (
@@ -504,7 +504,7 @@ const AchievementsPage = () => {
           <div className="min-w-0 space-y-4">
 
             {/* Categories progress */}
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="achievements-categories">
               <div className="flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
                   ACHIEVEMENT CATEGORIES
@@ -543,7 +543,7 @@ const AchievementsPage = () => {
             </div>
 
             {/* Achievements List */}
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="achievements-list">
               <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
                 {activeTab === "OVERVIEW" ? "RECENT ACHIEVEMENTS" : activeTab}
               </h3>
@@ -651,7 +651,7 @@ const AchievementsPage = () => {
           <aside className="space-y-4">
 
             {/* ACHIEVEMENT OVERVIEW Donut Chart */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-overview">
               <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
                 ACHIEVEMENT OVERVIEW
               </h3>
@@ -673,7 +673,7 @@ const AchievementsPage = () => {
             </div>
 
             {/* MILESTONE REWARDS */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-rewards">
               <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
                 MILESTONE REWARDS
               </h3>
@@ -730,7 +730,7 @@ const AchievementsPage = () => {
             </div>
 
             {/* RECENTLY UNLOCKED feed */}
-            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4">
+            <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-recent">
               <div className="flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
                   RECENTLY UNLOCKED
