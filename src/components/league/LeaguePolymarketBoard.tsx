@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import {
   Activity,
   ArrowDown,
   ArrowUp,
   BarChart3,
-  BookOpen,
   Brain,
   CalendarClock,
   ChevronLeft,
@@ -380,9 +379,9 @@ function useLiveMarketData() {
 
 export function LeaguePolymarketBoard() {
   const [selectedMarketId, setSelectedMarketId] = useState<string>(MARKETS[0].id);
-  const [category, setCategory] = useState<(typeof MARKET_CATEGORIES)[number]>("All");
+  const category: (typeof MARKET_CATEGORIES)[number] = "All";
   const [view, setView] = useState<BoardView>("market");
-  const { markets, prices, trades, history } = useLiveMarketData();
+  const { markets, prices, trades, history, source } = useLiveMarketData();
 
   const liveMarkets: LiveMarket[] = markets.map((market) => {
     const live = prices[market.id];
@@ -392,14 +391,10 @@ export function LeaguePolymarketBoard() {
   const selectedMarket = liveMarkets.find((market) => market.id === selectedMarketId) ?? liveMarkets[0];
   const visibleMatches = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
 
-  const categoryCount = (value: (typeof MARKET_CATEGORIES)[number]) =>
-    value === "All" ? MATCHES.length : MATCHES.filter((match) => match.category === value).length;
-
   return (
     <div className="min-w-0 space-y-3">
+      <PolymarketComplianceNotice source={source} />
       <BoardViewTabs view={view} onChange={setView} marketCount={MATCHES.length} newsCount={MATCH_NEWS.length} />
-
-      <CategoryFilterBar category={category} onCategory={setCategory} count={categoryCount} />
 
       {view === "pulse" ? (
         <MatchPulseView category={category} />
@@ -411,8 +406,10 @@ export function LeaguePolymarketBoard() {
         <FeaturedEventCard category={category} />
       </div>
 
+      <div className="h-full lg:col-span-6">
+        <WorldCupOddsHero />
+      </div>
       <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={setSelectedMarketId} />
-      <TodayAgentPredictions />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
         {visibleMatches.map((match) => <MatchCard key={match.id} match={match} />)}
@@ -433,37 +430,37 @@ function TradeReview({ agent, market, side, price, token }: { agent: string; mar
   return (
     <div className="mt-3 rounded-lg border border-cyan-400/30 bg-cyan-400/[0.07] p-3">
       <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-300" /><p className="font-tech text-[9px] font-bold uppercase tracking-[0.16em] text-cyan-200">Your approval is required</p></div>
-      <p className="mt-2 text-[10px] leading-relaxed text-white/60"><span className="font-tech font-bold text-white">{agent}</span> recommends <span className="font-tech font-bold text-cyan-300">{side} at {price}¢</span> on {market}. If trading is enabled, you will see stake, fees, and final execution details before approving.</p>
-      <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 font-tech text-[9px] text-white/45"><span>Proposed payment</span><span className="font-bold text-white">{token} · demo only</span></div>
+      <p className="mt-2 text-[10px] leading-relaxed text-white/60"><span className="font-tech font-bold text-white">{agent}</span> shares a <span className="font-tech font-bold text-cyan-300">{side} signal at {price}¢</span> on {market}. Execution opens on Polymarket; KULT does not hold funds or execute trades.</p>
+      <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 font-tech text-[9px] text-white/45"><span>External venue</span><span className="font-bold text-white">Polymarket · {token}</span></div>
     </div>
   );
 }
 
 function MatchCard({ match }: { match: Match }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-[#0b0d12] p-3.5 transition hover:border-[#2E5CFF]/45">
-      <div className="mb-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+    <article className="relative overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(0,200,83,0.08),transparent_55%),#0b0d12] p-3.5 transition hover:border-[#2E5CFF]/45">
+      <div className="relative mb-2.5 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white">{match.kickoff}</span>
-          <span className="font-mono text-[10px] text-white/40">{match.vol} Vol</span>
-          <span className="hidden font-mono text-[9px] uppercase tracking-wider text-white/30 sm:inline">· {match.league}</span>
+          <span className="shrink-0 font-mono text-[10px] text-white/40">{match.vol} Vol</span>
+          <span className="hidden min-w-0 truncate font-mono text-[9px] uppercase tracking-wider text-white/30 sm:inline">· {match.league}</span>
         </div>
-        <span className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/40"><BookOpen className="h-3.5 w-3.5" /></span>
+        <MatchdayBadge label={shortMatchDate(match.day)} tone="green" />
       </div>
 
-      <div>
+      <div className="relative">
         <div className="flex items-center gap-2.5">
           <FlagCircle code={match.home.code} className="h-9 w-9 rounded-lg" />
           <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Will {match.home.name} win?</p></div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>Yes</span><span>{match.home.price}¢</span></button>
-          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>No</span><span>{100 - match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20" title="Opens this market on Polymarket. KULT does not execute or custody."><span>YES signal</span><span>{match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20" title="Opens this market on Polymarket. KULT does not execute or custody."><span>NO signal</span><span>{100 - match.home.price}¢</span></button>
         </div>
       </div>
 
       {/* Agent predictions on the card */}
-      <div className="mt-3 border-t border-white/10 pt-2.5">
+      <div className="relative mt-3 border-t border-white/10 pt-2.5">
         <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent predictions</p>
         <div className="grid grid-cols-2 gap-2">
           {match.agents.map((prediction) => <MarketCardAgentPrediction key={prediction.name} prediction={prediction} />)}
@@ -619,26 +616,27 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
 
   return (
-    <LeaguePanel fill={false} className="border-cyan-400/20 p-3 lg:col-span-6">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+    <LeaguePanel fill={false} className="relative overflow-hidden border-cyan-400/20 p-3 lg:col-span-6">
+      <div className="relative mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Trending movers</h3>
-          <p className="mt-0.5 text-[10px] text-white/45">Biggest price swings</p>
+          <h3 className="font-mono text-sm font-bold uppercase tracking-[0.18em] text-white">Trending movers</h3>
+          <p className="mt-1 text-xs text-white/58">Biggest price swings</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live</span>
+        <MatchdayBadge label="Live market" />
       </div>
-      <div className="grid max-h-[196px] grid-cols-1 items-start gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
+      <div className="relative grid max-h-[220px] grid-cols-1 items-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
         {movers.map((market) => {
           const sessionDir = market.session > 0 ? "up" : market.session < 0 ? "down" : "flat";
           return (
-            <button key={market.id} type="button" onClick={() => onSelect(market.id)} className="w-full overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.1),transparent_55%),#070911] p-2 text-left transition hover:border-cyan-400/40">
+            <button key={market.id} type="button" onClick={() => onSelect(market.id)} className="relative w-full overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.1),transparent_55%),#070911] p-3 text-left transition hover:border-cyan-400/40">
+              <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0"><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">{market.category}</p><p className="mt-0.5 line-clamp-2 font-tech text-[10px] font-bold leading-snug text-white">{market.question}</p></div>
-                <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-tech text-[10px] font-bold ${priceToneClass(sessionDir)}`}>
+                <div className="min-w-0"><p className="font-tech text-[9px] uppercase tracking-wider text-white/50">⚽ {market.category}</p><p className="mt-1 line-clamp-2 font-tech text-[11px] font-bold leading-snug text-white">{market.question}</p></div>
+                <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 font-tech text-[11px] font-bold ${priceToneClass(sessionDir)}`}>
                   <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢
                 </span>
               </div>
-              <span className="mt-1 block font-tech text-sm font-black text-white">YES {market.yes}¢</span>
+              <span className="mt-1.5 block font-tech text-base font-black text-white">YES {market.yes}¢</span>
             </button>
           );
         })}
@@ -769,7 +767,7 @@ function MarketCardAgentPrediction({ prediction }: { prediction: (typeof MARKETS
   return (
     <div className={`flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 ${isPositive ? "border-cyan-400/15 bg-cyan-400/[0.04]" : "border-fuchsia-400/15 bg-fuchsia-400/[0.04]"}`}>
       <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-      <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{prediction.name}</p><p className={`mt-0.5 truncate font-tech text-[9px] font-bold ${isPositive ? "text-emerald-300" : "text-rose-300"}`}>{binaryPick}</p><p className="mt-0.5 text-[8px] text-white/40">{prediction.confidence}% confidence</p><p className="mt-1 line-clamp-2 text-[8px] leading-snug text-white/35">{prediction.reason}</p></div>
+      <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{prediction.name}</p><p className={`mt-0.5 truncate font-tech text-[9px] font-bold ${isPositive ? "text-emerald-300" : "text-rose-300"}`}>{binaryPick}</p><p className="mt-0.5 text-[10px] font-semibold text-white/65">{prediction.confidence}% confidence</p><p className="mt-1 line-clamp-2 text-[10px] font-medium leading-snug text-white/58">{prediction.reason}</p></div>
     </div>
   );
 }
@@ -958,15 +956,18 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
   const canCycle = pool.length > 1;
 
   return (
-    <LeaguePanel fill={false} className="border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4 sm:p-5">
+    <LeaguePanel fill={false} className="relative overflow-hidden border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4 sm:p-5">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="relative flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/15 bg-black/40 text-2xl">
             {headerIcon ? <img src={headerIcon} alt="" className="h-full w-full object-cover" /> : "⚽"}
           </div>
           <div className="min-w-0">
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/40">Sports · Soccer</p>
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <MatchdayBadge label="FIFA market" />
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/45">Sports · Soccer</span>
+            </div>
             <h3 className="truncate font-tech text-lg font-black text-white sm:text-xl">{title}</h3>
           </div>
         </div>
@@ -979,7 +980,7 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+      <div className="relative mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
         {/* Left: outcomes + comments */}
         <div className="min-w-0">
           <div className="divide-y divide-white/8">
@@ -994,7 +995,7 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
             ))}
           </div>
 
-          <div className="mt-4 border-t border-white/8 pt-3">
+          <div className="mt-4 rounded-lg border border-white/8 bg-black/20 p-3">
             <div className="mb-2 flex items-center gap-1.5"><Radio className="h-3.5 w-3.5 text-cyan-300" /><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-300">Live chat</p></div>
             {displayComments.length > 0 ? (
               <LiveChatTicker comments={displayComments} />
@@ -1015,14 +1016,15 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
               </span>
             ))}
           </div>
-          <div className="mt-3 overflow-hidden rounded-lg border border-white/8 bg-black/30">
+          <div className="relative mt-3 overflow-hidden rounded-lg border border-white/8 bg-black/30">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent" />
             <OutcomeLinesChart lines={chartLines} />
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="mt-4 flex items-center justify-between border-t border-white/8 pt-3">
+      <div className="relative mt-4 flex items-center justify-between border-t border-white/8 pt-3">
         <span className="font-mono text-[11px] font-bold text-white/55">{volume} Vol</span>
         <span className="flex items-center gap-2 font-mono text-[11px] text-white/40">
           {endsLabel ? <>Ends {endsLabel} ·</> : null}
@@ -1066,39 +1068,133 @@ function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
 
 function OutcomeLinesChart({ lines }: { lines: { color: string; series: number[] }[] }) {
   const valid = lines.filter((l) => l.series.length >= 2);
+  const [hover, setHover] = useState<{ x: number; index: number } | null>(null);
   const W = 720;
-  const H = 220;
-  const top = 12;
-  const bottom = 208;
+  const H = 340;
+  const top = 28;
+  const bottom = 304;
+  const leftPad = 10;
+  const rightPad = 46;
+  const plotW = W - leftPad - rightPad;
 
   if (valid.length === 0) {
-    return <div className="grid h-40 w-full place-items-center sm:h-44"><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /></div>;
+    return <div className="grid h-[260px] w-full place-items-center sm:h-[300px]"><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-300" /></div>;
   }
 
   const all = valid.flatMap((l) => l.series);
   const max = Math.max(...all) + 2;
   const min = Math.max(0, Math.min(...all) - 2);
   const span = Math.max(1, max - min);
-  const xAt = (i: number, n: number) => (n <= 1 ? W : (i / (n - 1)) * W);
+  const xAt = (i: number, n: number) => (n <= 1 ? leftPad : leftPad + (i / (n - 1)) * plotW);
   const yAt = (v: number) => bottom - (bottom - top) * ((v - min) / span);
+  const longest = valid.reduce((best, line) => (line.series.length > best.series.length ? line : best), valid[0]);
+  const hoverIndex = hover?.index ?? longest.series.length - 1;
+  const hoverX = hover?.x ?? xAt(longest.series.length - 1, longest.series.length);
+  const tickValues = [max - span * 0.25, max - span * 0.5, max - span * 0.75].map(Math.round);
+  const stepPath = (series: number[]) => {
+    const points = series.map((v, i) => ({ x: xAt(i, series.length), y: yAt(v) }));
+    return points
+      .map((point, i) => {
+        if (i === 0) return `M${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+        const prev = points[i - 1];
+        return `H${point.x.toFixed(1)} V${point.y.toFixed(1)}`;
+      })
+      .join(" ");
+  };
+
+  const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    const index = Math.round(ratio * (longest.series.length - 1));
+    setHover({ x: xAt(index, longest.series.length), index });
+  };
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-40 w-full sm:h-44">
-      {[0.25, 0.5, 0.75].map((g) => (
-        <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 6" />
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      className="h-[260px] w-full cursor-crosshair sm:h-[300px] lg:h-[340px]"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={() => setHover(null)}
+    >
+      <defs>
+        <filter id="outcome-chart-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {[0.25, 0.5, 0.75].map((g, i) => (
+        <g key={g}>
+          <line x1={leftPad} x2={W - rightPad} y1={top + (bottom - top) * g} y2={top + (bottom - top) * g} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3 7" />
+          <text x={W - 34} y={top + (bottom - top) * g + 4} fill="rgba(255,255,255,0.44)" fontSize="13" fontFamily="monospace">
+            {tickValues[i]}%
+          </text>
+        </g>
       ))}
+
+      <text x={leftPad + 70} y={H - 15} fill="rgba(255,255,255,0.22)" fontSize="13" fontFamily="monospace">May 31</text>
+      <text x={leftPad + plotW * 0.58} y={H - 15} fill="rgba(255,255,255,0.22)" fontSize="13" fontFamily="monospace">Jun 14</text>
+
       {valid.map((line, idx) => {
         const n = line.series.length;
-        const d = line.series.map((v, i) => `${i === 0 ? "M" : "L"}${xAt(i, n).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+        const d = stepPath(line.series);
         const lastX = xAt(n - 1, n);
         const lastY = yAt(line.series[n - 1]);
+        const valueAtHover = line.series[Math.min(line.series.length - 1, hoverIndex)] ?? line.series[n - 1];
+        const hoverY = yAt(valueAtHover);
         return (
           <g key={idx}>
-            <path d={d} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-            <circle cx={lastX} cy={lastY} r="3.5" fill={line.color} />
+            <path
+              d={d}
+              fill="none"
+              stroke={line.color}
+              strokeWidth="3"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              filter="url(#outcome-chart-glow)"
+              style={{
+                strokeDasharray: 1200,
+                strokeDashoffset: 0,
+                animation: `chartLineDraw 900ms ease-out ${idx * 120}ms both`,
+              }}
+            />
+            <circle cx={lastX} cy={lastY} r="5" fill={line.color} opacity="0.18">
+              <animate attributeName="r" values="5;18;5" dur="2s" repeatCount="indefinite" begin={`${idx * 0.2}s`} />
+              <animate attributeName="opacity" values="0.32;0;0.32" dur="2s" repeatCount="indefinite" begin={`${idx * 0.2}s`} />
+            </circle>
+            <circle cx={lastX} cy={lastY} r="4.5" fill={line.color} />
+            {hover ? <circle cx={hoverX} cy={hoverY} r="3.5" fill={line.color} stroke="#111827" strokeWidth="1.5" /> : null}
           </g>
         );
       })}
+
+      {hover ? (
+        <g>
+          <line x1={hoverX} x2={hoverX} y1={top} y2={bottom} stroke="rgba(255,255,255,0.22)" strokeWidth="1" strokeDasharray="4 6" />
+          <rect x={Math.min(W - 158, Math.max(14, hoverX - 72))} y={18} width="144" height={28 + valid.length * 18} rx="10" fill="rgba(5,7,15,0.92)" stroke="rgba(255,255,255,0.14)" />
+          {valid.map((line, i) => {
+            const value = line.series[Math.min(line.series.length - 1, hoverIndex)] ?? line.series[line.series.length - 1];
+            const x = Math.min(W - 146, Math.max(26, hoverX - 60));
+            return (
+              <g key={line.color} transform={`translate(${x}, ${45 + i * 18})`}>
+                <circle cx="0" cy="-4" r="4" fill={line.color} />
+                <text x="10" y="0" fill="rgba(255,255,255,0.8)" fontSize="12" fontFamily="monospace">{Math.round(value)}%</text>
+              </g>
+            );
+          })}
+        </g>
+      ) : null}
+
+      <style>{`
+        @keyframes chartLineDraw {
+          from { stroke-dashoffset: 1200; opacity: 0.35; }
+          to { stroke-dashoffset: 0; opacity: 1; }
+        }
+      `}</style>
     </svg>
   );
 }
@@ -1112,7 +1208,7 @@ function BoardViewTabs({ view, onChange, marketCount, newsCount }: { view: Board
   ];
 
   return (
-    <div className="flex items-stretch gap-1 rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
+    <div className="relative flex items-stretch gap-1 overflow-hidden rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
       {tabs.map(({ id, label, desc, Icon, meta }) => {
         const active = view === id;
         return (
@@ -1121,7 +1217,7 @@ function BoardViewTabs({ view, onChange, marketCount, newsCount }: { view: Board
             type="button"
             title={desc}
             onClick={() => onChange(id)}
-            className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-2.5 py-2.5 transition ${active ? "bg-[linear-gradient(120deg,rgba(46,92,255,0.22),rgba(46,92,255,0.06))] text-white shadow-[inset_0_0_0_1px_rgba(46,92,255,0.45)]" : "text-white/55 hover:bg-white/[0.04] hover:text-white"}`}
+            className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-2.5 py-2.5 transition ${active ? "bg-[linear-gradient(120deg,rgba(46,92,255,0.22),rgba(0,200,83,0.08))] text-white shadow-[inset_0_0_0_1px_rgba(46,92,255,0.45)]" : "text-white/55 hover:bg-white/[0.04] hover:text-white"}`}
           >
             <Icon className={`h-4 w-4 shrink-0 transition ${active ? "text-[#9ab1ff]" : "text-white/45 group-hover:text-white/80"}`} />
             <span className="truncate font-tech text-[12px] font-bold tracking-tight sm:text-[13px]">{label}</span>
@@ -1210,38 +1306,6 @@ function LiveMarketChart({ market, markets, onSelect, history }: { market: LiveM
             >
               <span className="block max-w-[120px] truncate">{m.short}</span>
               <span className={`mt-0.5 inline-flex items-center gap-1 ${priceToneClass(m.dir).split(" ").pop()}`}>{m.yes}¢ <PriceArrow dir={m.dir} /></span>
-            </button>
-          );
-        })}
-      </div>
-    </LeaguePanel>
-  );
-}
-
-// ── Shared category filter (shown on every tab) ─────────────────────────────
-function CategoryFilterBar({
-  category,
-  onCategory,
-  count,
-}: {
-  category: (typeof MARKET_CATEGORIES)[number];
-  onCategory: (v: (typeof MARKET_CATEGORIES)[number]) => void;
-  count: (v: (typeof MARKET_CATEGORIES)[number]) => number;
-}) {
-  return (
-    <LeaguePanel fill={false} className="border-[#2E5CFF]/25 p-2 sm:p-2.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        {MARKET_CATEGORIES.map((value) => {
-          const active = category === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onCategory(value)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider transition ${active ? "border-[#2E5CFF]/55 bg-[#2E5CFF]/15 text-[#d6e0ff]" : "border-white/10 bg-black/20 text-white/45 hover:text-white"}`}
-            >
-              {value}
-              <span className={`rounded-full px-1.5 py-0.5 text-[8px] ${active ? "bg-white/15 text-white" : "bg-white/8 text-white/40"}`}>{count(value)}</span>
             </button>
           );
         })}

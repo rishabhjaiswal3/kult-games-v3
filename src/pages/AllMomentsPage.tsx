@@ -1045,31 +1045,31 @@ export function AllMomentsPage() {
           {!isBrowseAll ? (
           <aside className="relative space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)]">
 
-            <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-4 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
-                <Zap className="h-7 w-7" strokeWidth={2.5} />
+            <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
+              <div className="mx-auto grid h-10 w-10 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
+                <Zap className="h-6 w-6" strokeWidth={2.5} />
               </div>
-              <h3 className="mt-4 font-tech text-sm font-semibold uppercase tracking-wider text-white/90">Earn KP for sharing</h3>
-              <p className="mt-3 text-xs leading-relaxed text-white/55">
+              <h3 className="mt-3 font-tech text-[13px] font-semibold uppercase tracking-wider text-white/90">Earn KP for sharing</h3>
+              <p className="mt-2 text-[11px] leading-relaxed text-white/55">
                 Share any moment to X. When real people click through and play, you earn <span className="font-semibold text-[#d6acff]">5 KP per verified play.</span>
               </p>
               <button
                 type="button"
                 onClick={() => setActiveTab("MY MOMENTS")}
-                className="mt-5 inline-flex h-10 w-full items-center justify-center rounded bg-[#9a35ff] px-4 font-tech text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
+                className="mt-4 inline-flex h-9 w-full items-center justify-center rounded bg-[#9a35ff] px-3 font-tech text-[9px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
-                View Attention Rewards <ArrowUpRight className="ml-2 h-4 w-4" />
+                View Attention Rewards <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
               </button>
             </section>
 
             {/* Featured moment */}
-            <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
+            <div className="arena-panel relative space-y-2.5 overflow-hidden border-white/8 bg-[#04080f]/95 p-3">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">FEATURED MOMENT</h3>
 
               <button
                 type="button"
                 onClick={() => openMoment(featuredMoment)}
-                className="group relative aspect-[16/10] w-full cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
+                className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
               >
                 <img
                   src={featuredMoment?.thumbnail ?? momentFeatured}
@@ -1085,14 +1085,14 @@ export function AllMomentsPage() {
                 </div>
                 {featuredMoment?.contentType === "video" && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.5)]">
-                      <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.5)]">
+                      <Play className="ml-0.5 h-4.5 w-4.5 fill-white text-white" />
                     </div>
                   </div>
                 )}
               </button>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <h4 className="cursor-pointer text-sm font-bold text-white transition hover:text-purple-400">
                     {featuredMoment?.title ?? "No featured moment yet"}
@@ -1102,12 +1102,12 @@ export function AllMomentsPage() {
                     <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
                   </div>
                 </div>
-                <p className="text-[11px] font-medium leading-relaxed text-white/55">
+                <p className="line-clamp-2 text-[11px] font-medium leading-relaxed text-white/55">
                   {featuredMoment?.description ?? "As soon as fresh moments land in the feed, the best-performing clip shows up here."}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/6 pt-3 text-[10px] font-semibold text-white/45">
+              <div className="flex items-center justify-between border-t border-white/6 pt-2.5 text-[10px] font-semibold text-white/45">
                 <span className="flex items-center gap-1.5"><Eye className="h-4 w-4 text-white/30" />{featuredMoment?.views ?? "—"}</span>
                 <span className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-white/30" />{featuredMoment?.likes ?? "—"}</span>
                 <span className="flex items-center gap-1.5"><Share2 className="h-4 w-4 text-white/30" />{featuredMoment ? featuredMoment.raw.numComments.toLocaleString() : "—"}</span>
@@ -1116,7 +1116,7 @@ export function AllMomentsPage() {
               <button
                 type="button"
                 onClick={() => openMoment(featuredMoment)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-[#9a35ff] py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-[#9a35ff] py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
                 <span>WATCH NOW</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
