@@ -1,6 +1,6 @@
 /** Matches AI Arena gateway `POST /v1/agents` — see `0g-aiarena/docs/FRONTEND.md`. */
 export const AI_ARENA_CLAN_OPTIONS = [
-  { value: "ZEROG" as const, label: "Zerog", hint: "OG native" },
+  { value: "ZEROG" as const, label: "ZeroG", hint: "OG native" },
   { value: "BASE" as const, label: "Base", hint: "Base" },
   { value: "SOLANA" as const, label: "Solana", hint: "Solana" },
 ];

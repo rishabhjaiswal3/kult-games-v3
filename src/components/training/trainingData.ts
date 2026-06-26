@@ -25,7 +25,7 @@ export function getRadarPoints(stats: number[], scale = 1) {
 export const queueSessions = [
   {
     agent: "HYBRID",
-    clan: "Zerog",
+    clan: "ZeroG",
     image: agentNexus,
     title: "Battle Simulation",
     pct: 68,

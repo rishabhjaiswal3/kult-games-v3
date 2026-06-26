@@ -109,9 +109,9 @@ export function DashboardTopbar() {
                 type="button"
                 onClick={handleConnectWallet}
                 data-tour="topbar-connect"
-                className="block h-8 shrink-0 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/14 px-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-[#e4c8ff] transition hover:border-[#c084fc]/60 hover:bg-[#9a35ff]/22 hover:text-white min-[430px]:px-3"
+                className="block h-8 shrink-0 rounded-full border border-[#9a35ff]/55 bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] px-2.5 font-tech text-[9px] font-black uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:border-[#c084fc]/70 hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110 min-[430px]:px-4"
               >
-                <span className="hidden min-[430px]:inline">Connect</span>
+                <span className="hidden min-[430px]:inline">Connect wallet</span>
                 <span className="min-[430px]:hidden">In</span>
               </button>
             )}

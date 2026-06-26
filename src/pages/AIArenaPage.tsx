@@ -68,7 +68,7 @@ const agents = [
   {
     rank: "01",
     name: "HYBRID",
-    chain: "Zerog",
+    chain: "ZeroG",
     tier: "Legendary",
     lvl: 12,
     power: "14,850",
@@ -98,7 +98,7 @@ const agents = [
   {
     rank: "04",
     name: "SUPPORT",
-    chain: "Zerog",
+    chain: "ZeroG",
     tier: "Epic",
     lvl: 11,
     power: "12,150",
@@ -536,7 +536,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         data-tour="ai-arena-enter-league"
         className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.2),rgba(154,53,255,0.16),rgba(4,8,15,0.78))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.28),rgba(154,53,255,0.22),rgba(4,8,15,0.82))] hover:text-white`}
       >
-        <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-200" />
+        <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
         <span>ENTER LEAGUE</span>
       </Link>
 
