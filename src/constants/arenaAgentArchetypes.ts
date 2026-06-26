@@ -102,7 +102,7 @@ const LEADERBOARD_PORTRAIT_POOL = [
   lbAegis,      // DEFENDER (Base clan)
   lbNexus,      // ASSASSIN
   lbVoidwalker, // SUPPORT
-  lbLumen,      // HYBRID (Zerog clan)
+  lbLumen,      // HYBRID (ZeroG clan)
 ];
 
 function portraitIndexFromAgentId(agentId: string): number {

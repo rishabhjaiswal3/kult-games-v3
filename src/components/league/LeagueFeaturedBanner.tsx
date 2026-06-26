@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
+import { FlagCircle } from "./FlagHex";
 import { LeagueStadiumBackground } from "./LeagueStadiumBackground";
 import { FEATURED_MATCH } from "./leagueData";
 
@@ -66,7 +67,7 @@ export function LeagueFeaturedBanner() {
         <div className="mt-2.5 rounded-lg border border-white/12 bg-[#080914]/95 p-3 sm:p-3.5">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <div className="text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-blue-400/35 bg-blue-500/10 font-tech text-base font-black text-white sm:h-[3.25rem] sm:w-[3.25rem] sm:text-lg">BRA</div>
+              <FlagCircle code={match.home.code} className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
               <p className="mt-1 font-tech text-xs font-black uppercase text-white">Brazil</p>
             </div>
             <div className="min-w-[88px] text-center sm:min-w-[130px]">
@@ -75,7 +76,7 @@ export function LeagueFeaturedBanner() {
               <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-400 sm:text-[10px]">Live · {match.liveMinute}&apos;</p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-cyan-400/35 bg-cyan-500/10 font-tech text-base font-black text-white sm:h-[3.25rem] sm:w-[3.25rem] sm:text-lg">ARG</div>
+              <FlagCircle code={match.away.code} className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
               <p className="mt-1 font-tech text-xs font-black uppercase text-white">Argentina</p>
             </div>
           </div>

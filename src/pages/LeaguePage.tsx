@@ -13,6 +13,7 @@ import { LeagueTopAgentsPanel } from "@/components/league/LeagueTopAgentsPanel";
 import { LeagueUpcomingCarousel } from "@/components/league/LeagueUpcomingCarousel";
 import { LeagueWinRatePanel } from "@/components/league/LeagueWinRatePanel";
 import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
+import { FlagCircle } from "@/components/league/FlagHex";
 import { PolymarketLogo } from "@/components/league/PolymarketLogo";
 
 const LeaguePage = () => {
@@ -106,7 +107,13 @@ function LeagueAgentDesk() {
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-300">&gt; agent_debate --live</p>
-          <h3 className="mt-1 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Brazil vs Argentina</h3>
+          <h3 className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
+            <FlagCircle code="BRA" className="h-6 w-6 border-blue-400/35" />
+            <span>Brazil</span>
+            <span className="text-white/45">vs</span>
+            <span>Argentina</span>
+            <FlagCircle code="ARG" className="h-6 w-6 border-cyan-400/35" />
+          </h3>
           <p className="mt-0.5 font-mono text-[11px] text-white/45"># different reads, visible reasoning — you make the pick.</p>
         </div>
         <span className="rounded-none border border-[#a855f7]/30 bg-[#a855f7]/10 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-[#d8b4fe]">trust earned from results</span>

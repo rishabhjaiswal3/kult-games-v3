@@ -399,7 +399,7 @@ function buildCreatorRows(cards: MomentCard[]): CreatorRow[] {
   }
   return [...map.values()]
     .sort((a, b) => b.totalLikes - a.totalLikes || b.totalViews - a.totalViews)
-    .slice(0, 5)
+    .slice(0, 4)
     .map((c, i) => ({ rank: i + 1, name: c.name, avatar: c.avatar, viewsLabel: c.totalViews > 0 ? compactMetric(c.totalViews) : `${c.totalMoments} clips` }));
 }
 
@@ -1132,7 +1132,7 @@ export function AllMomentsPage() {
                 { wallet: "0xE9BB…9E10", plays: "252 plays", avatar: agentLumen },
                 { wallet: "0x4AF2…32B9", plays: "196 plays", avatar: agentShadow },
                 { wallet: "0x5E95…568E", plays: "144 plays", avatar: agentRageborn },
-              ].map((sharer, index) => (
+              ].slice(0, 4).map((sharer, index) => (
                 <div key={sharer.wallet} className="flex items-center justify-between py-0.5 text-xs font-semibold">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="w-3 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
