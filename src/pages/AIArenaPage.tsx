@@ -957,6 +957,7 @@ function WhereAgentsCompete() {
                 autoPlay
                 loop
                 muted
+                preload="metadata"
                 playsInline
                 className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
@@ -1002,6 +1003,7 @@ function WhereAgentsCompete() {
             autoPlay
             loop
             muted
+            preload="metadata"
             playsInline
             className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
@@ -1755,6 +1757,7 @@ function ArenaLandingFooter() {
                 autoPlay
                 loop
                 muted
+                preload="metadata"
                 playsInline
                 className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
               />
