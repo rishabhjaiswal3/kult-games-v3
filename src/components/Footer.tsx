@@ -112,8 +112,6 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
                 className="footer-enter-cta mt-4 mx-auto sm:mx-0"
                 style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
               >
-                <span className="footer-enter-cta__pitch" aria-hidden />
-                <span className="footer-enter-cta__ball" aria-hidden>⚽</span>
                 <span>{startLink.label}</span>
                 <ArrowUpRight aria-hidden />
               </Link>
