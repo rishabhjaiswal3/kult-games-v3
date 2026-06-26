@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Pencil, X } from "lucide-react";
+import { Loader2, Pencil, X as XIcon } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import {
   ArenaDialogBody,
@@ -29,42 +29,51 @@ const TITLE_MIN_LENGTH = 2;
 const TITLE_MAX_LENGTH = 80;
 const DESCRIPTION_MAX_LENGTH = 500;
 
-function parseTagsInput(value: string): string[] {
-  return Array.from(
-    new Set(
-      value
-        .split(/[,\n]/)
-        .map((tag) => tag.trim().replace(/^#/, ""))
-        .filter((tag) => tag.length > 0 && tag.length <= 32),
-    ),
-  );
-}
-
 export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: EditMomentDialogProps) {
   const [title, setTitle] = useState(moment.title);
   const [description, setDescription] = useState(moment.description ?? "");
-  const [tagsInput, setTagsInput] = useState(moment.tags.join(", "));
-  const [selectedGameSlugs, setSelectedGameSlugs] = useState<Set<string>>(
-    () => new Set(moment.relatedGames ?? []),
-  );
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>(() => moment.tags);
+  const [selectedGame, setSelectedGame] = useState<string | null>(() => moment.relatedGames?.[0] ?? null);
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setTitle(moment.title);
     setDescription(moment.description ?? "");
-    setTagsInput(moment.tags.join(", "));
-    setSelectedGameSlugs(new Set(moment.relatedGames ?? []));
+    setTagInput("");
+    setTags(moment.tags);
+    setSelectedGame(moment.relatedGames?.[0] ?? null);
+    setSelectedMode(null);
   }, [moment, open]);
 
-  const tagPreview = useMemo(() => parseTagsInput(tagsInput), [tagsInput]);
+  const addTag = (raw: string) => {
+    const tag = raw.trim().replace(/^#/, "");
+    if (!tag || tag.length > 32) return;
+    setTags((prev) => prev.includes(tag) ? prev : [...prev, tag]);
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const toggleGame = (slug: string) => {
+    setSelectedGame((current) => current === slug ? null : slug);
+  };
+
+  const toggleMode = (mode: string) => {
+    setSelectedMode((current) => current === mode ? null : mode);
+  };
 
   const updateMutation = useMutation({
     mutationFn: () =>
       momentsApi.update(moment.momentId, {
         title: title.trim(),
         description: description.trim() || undefined,
-        tags: tagPreview,
-        relatedGames: [...selectedGameSlugs],
+        tags,
+        relatedGames: selectedGame ? [selectedGame] : [],
+        assetMetadata: selectedMode ? { mode: selectedMode.toLowerCase() } : undefined,
       }),
     onSuccess: async (updated) => {
       toast.success("Moment updated");
@@ -83,15 +92,6 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
 
   const trimmedTitle = title.trim();
   const canSubmit = trimmedTitle.length >= TITLE_MIN_LENGTH && !updateMutation.isPending;
-
-  const toggleGame = (slug: string) => {
-    setSelectedGameSlugs((current) => {
-      const next = new Set(current);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
-      return next;
-    });
-  };
 
   const handleSubmit = () => {
     if (trimmedTitle.length < TITLE_MIN_LENGTH) {
@@ -161,32 +161,48 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
               <input
                 id="edit-moment-tags"
                 type="text"
-                value={tagsInput}
-                onChange={(event) => setTagsInput(event.target.value)}
-                placeholder="clutch, 1v3, mvp"
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addTag(tagInput);
+                  }
+                }}
+                placeholder="Type a tag and press Enter"
                 className="h-10 w-full rounded-md border border-white/10 bg-[#0a0f1b]/80 px-3 text-sm text-white/90 placeholder-white/30 transition focus:border-[#9a35ff]/55 focus:outline-none focus:ring-2 focus:ring-[#9a35ff]/20"
               />
-              {tagPreview.length > 0 ? (
+              {tags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {tagPreview.map((tag) => (
+                  {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-2 py-0.5 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]"
+                      className="inline-flex items-center gap-1 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 py-0.5 pl-2 pr-1 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]"
                     >
                       #{tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        aria-label={`Remove tag ${tag}`}
+                        className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-white/10"
+                      >
+                        <XIcon className="h-2.5 w-2.5" />
+                      </button>
                     </span>
                   ))}
                 </div>
-              ) : null}
+              ) : (
+                <p className="text-[10px] text-white/35">Type a tag and press Enter to add it.</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <Label className="font-tech text-[11px] font-bold uppercase tracking-wider text-white/70">
-                Related games
+                Related game
               </Label>
               <div className="flex flex-wrap gap-2">
                 {KNOWN_MOMENT_GAMES.map((game) => {
-                  const isActive = selectedGameSlugs.has(game.slug);
+                  const isActive = selectedGame === game.slug;
                   return (
                     <button
                       key={game.slug}
@@ -198,8 +214,34 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
                           : "border-white/10 bg-[#0a0f1b]/60 text-white/55 hover:border-[#9a35ff]/30 hover:text-white"
                       }`}
                     >
-                      {isActive ? <X className="h-3 w-3" /> : null}
+                      {isActive ? <XIcon className="h-3 w-3" /> : null}
                       {game.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="font-tech text-[11px] font-bold uppercase tracking-wider text-white/70">
+                Mode
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {(["AI ARENA", "TRASH TALK", "LEAGUE"] as const).map((mode) => {
+                  const isActive = selectedMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => toggleMode(mode)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1 font-tech text-[10px] font-bold uppercase tracking-wider transition ${
+                        isActive
+                          ? "border-cyan-500/55 bg-cyan-500/15 text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                          : "border-white/10 bg-[#0a0f1b]/60 text-white/55 hover:border-cyan-500/30 hover:text-white"
+                      }`}
+                    >
+                      {isActive ? <XIcon className="h-3 w-3" /> : null}
+                      {mode}
                     </button>
                   );
                 })}

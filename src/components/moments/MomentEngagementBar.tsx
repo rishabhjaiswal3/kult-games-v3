@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Bookmark, Eye, Heart, Loader2, MessageCircle } from "lucide-react";
+import { Bookmark, Heart, Loader2, MessageCircle } from "lucide-react";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import type { Moment } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,6 @@ type MomentEngagementBarProps = {
   onLike: () => void;
   onComments: () => void;
   isLiking?: boolean;
-  viewCount?: string;
 };
 
 type EngagementChipProps = {
@@ -102,7 +101,6 @@ export function MomentEngagementBar({
   onLike,
   onComments,
   isLiking = false,
-  viewCount = "—",
 }: MomentEngagementBarProps) {
   const likeCount = moment.numLikes > 0 ? moment.numLikes.toLocaleString() : "—";
   const commentCount = moment.numComments > 0 ? moment.numComments.toLocaleString() : "—";
@@ -133,18 +131,6 @@ export function MomentEngagementBar({
             accent="purple"
           />
           <EngagementChip
-            icon={Eye}
-            label="Views"
-            count={viewCount}
-            accent="cyan"
-          />
-        </div>
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
-            <MomentShareDialog moment={moment} triggerVariant="icon" />
-          </div>
-          <EngagementChip
             icon={Bookmark}
             label={bookmarked ? "Remove bookmark" : "Bookmark moment"}
             onClick={onBookmarkToggle}
@@ -152,6 +138,12 @@ export function MomentEngagementBar({
             accent="amber"
             iconOnly
           />
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
+            <MomentShareDialog moment={moment} triggerVariant="icon" />
+          </div>
         </div>
       </div>
     </div>

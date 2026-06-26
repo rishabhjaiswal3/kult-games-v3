@@ -21,7 +21,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
-import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import { EditMomentDialog } from "@/components/moments/EditMomentDialog";
 import { isMomentOwner } from "@/lib/momentOwnership";
 import type { Moment } from "@/types/api";
@@ -174,7 +173,6 @@ export function MomentDetailPage() {
   const { isAuthenticated, walletAddress } = useAuth();
   const queryClient = useQueryClient();
   const commentsRef = useRef<HTMLDivElement>(null);
-  const [bookmarked, setBookmarked] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -204,6 +202,41 @@ export function MomentDetailPage() {
     if (!isAuthenticated) { requestOpenLoginModal(); return; }
     likeMutation.mutate();
   };
+
+  const bookmarkStatusQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmark-status", id],
+    queryFn: () => momentsApi.getBookmarkStatus(id!),
+    enabled: Boolean(id) && isAuthenticated,
+    staleTime: 60_000,
+    select: (data) => data.bookmarked,
+  });
+
+  const bookmarked = bookmarkStatusQuery.data ?? false;
+
+  const bookmarkMutation = useMutation({
+    mutationFn: () => momentsApi.toggleBookmark(id!),
+    onSuccess: (data) => {
+      queryClient.setQueryData([MOMENTS_QUERY_KEY_ROOT, "bookmark-status", id], data);
+      void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"] });
+      toast.success(data.bookmarked ? "Bookmarked" : "Bookmark removed");
+    },
+    onError: (e: unknown) => {
+      const status = (e as { response?: { status?: number } })?.response?.status;
+      if (status === 401) { requestOpenLoginModal(); return; }
+      toast.error("Could not update bookmark");
+    },
+  });
+
+  const handleBookmarkToggle = () => {
+    if (!isAuthenticated) { requestOpenLoginModal(); return; }
+    bookmarkMutation.mutate();
+  };
+
+  useEffect(() => {
+    if (id && isAuthenticated) {
+      void momentsApi.recordWatch(id).catch(() => {});
+    }
+  }, [id, isAuthenticated]);
 
   const deleteMutation = useMutation({
     mutationFn: () => momentsApi.remove(id!),
@@ -337,10 +370,10 @@ export function MomentDetailPage() {
 
               {/* Tags */}
               {moment.tags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Tag className="h-3.5 w-3.5 shrink-0 text-white/30" />
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 shrink-0 text-[#9a35ff]/70" />
                   {moment.tags.map((tag) => (
-                    <span key={tag} className="rounded border border-white/8 bg-white/[0.04] px-2 py-0.5 font-tech text-[9px] text-white/50">
+                    <span key={tag} className="rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/12 px-2.5 py-0.5 font-tech text-[10px] font-bold uppercase tracking-wide text-[#d6acff]">
                       #{tag}
                     </span>
                   ))}
@@ -364,7 +397,7 @@ export function MomentDetailPage() {
               <MomentEngagementBar
                 moment={moment}
                 bookmarked={bookmarked}
-                onBookmarkToggle={() => setBookmarked((b) => !b)}
+                onBookmarkToggle={handleBookmarkToggle}
                 onLike={handleLike}
                 onComments={scrollToComments}
                 isLiking={likeMutation.isPending}
@@ -488,12 +521,6 @@ export function MomentDetailPage() {
                 )}
               </div>
             )}
-
-            {/* Share */}
-            <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-share">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Share</h3>
-              <MomentShareDialog moment={moment} triggerVariant="button" />
-            </div>
 
             {isOwner && (
               <div className="arena-panel border-[#9a35ff]/20 bg-[#04080f]/95 p-5 space-y-3" data-tour="moment-detail-manage">
