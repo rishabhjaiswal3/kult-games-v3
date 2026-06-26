@@ -29,6 +29,7 @@ import {
   AI_ARENA_DEFAULT_GAME_ID,
   AI_ARENA_GAME_IDS,
   AI_ARENA_MATCH_MODES,
+  type AiArenaGameId,
 } from "@/constants/aiArenaMatchmaking";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
@@ -56,6 +57,7 @@ export type GameMode = {
   title: string;
   tag: string;
   body: string;
+  gameId: AiArenaGameId;
   image?: string;
   video?: string;
   tone: string;
@@ -66,6 +68,7 @@ const gameModes: GameMode[] = [
     title: "WARZONE WARRIORS",
     tag: "2D SHOOTER",
     body: "Fast-paced 2D arcade shooter. Team up, deploy, and dominate the battlefield.",
+    gameId: "warzone",
     image: heroTrio,
     video: warzoneVideo,
     tone: "from-[#101824]/30 via-[#0b0f16]/55 to-[#070910]/95",
@@ -74,6 +77,7 @@ const gameModes: GameMode[] = [
     title: "ROBOWARS",
     tag: "VEHICLE ARENA",
     body: "Build. Upgrade. Destroy. Fight in intense robotic vehicle battles.",
+    gameId: "robowar",
     video: battleStep5,
     tone: "from-[#201007]/30 via-[#100b0c]/55 to-[#070910]/95",
   },
@@ -81,6 +85,7 @@ const gameModes: GameMode[] = [
     title: "HIGHWAY HUSTLE",
     tag: "RACING",
     body: "High-speed chases on neon-lit highways. Dodge, boost, and outrun your rivals.",
+    gameId: "highway-hustle",
     video: battleStep3,
     tone: "from-[#071820]/30 via-[#0b1016]/55 to-[#070910]/95",
   },
@@ -331,13 +336,17 @@ function RankCard({ firstAgent }: { firstAgent: AiArenaAgent | null }) {
   );
 }
 
-function GameModeCard({ mode }: { mode: GameMode }) {
+function GameModeCard({ mode, onStartMatchmaking }: { mode: GameMode; onStartMatchmaking: (gameId: AiArenaGameId) => void }) {
   return (
-    <article className="arena-panel relative h-[260px] overflow-hidden">
+    <button
+      type="button"
+      onClick={() => onStartMatchmaking(mode.gameId)}
+      className="arena-panel group relative h-[260px] overflow-hidden text-left transition hover:-translate-y-1 hover:border-cyan-300/40 hover:shadow-[0_18px_46px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
+    >
       {mode.video ? (
-        <video src={mode.video} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-78" />
+        <video src={mode.video} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
       ) : (
-        <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78" />
+        <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
       )}
       <div className={`absolute inset-0 bg-gradient-to-r ${mode.tone}`} />
       <div className="relative z-10 h-full p-5">
@@ -349,19 +358,23 @@ function GameModeCard({ mode }: { mode: GameMode }) {
             {mode.tag}
           </span>
           <p className="mt-2 max-w-[250px] text-xs leading-relaxed text-white/72">{mode.body}</p>
+          <span className="mt-4 inline-flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100 transition group-hover:gap-2.5 group-hover:text-white">
+            Start matchmaking
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
         </div>
       </div>
-    </article>
+    </button>
   );
 }
 
-function GameCarouselSection() {
+function GameCarouselSection({ onStartMatchmaking }: { onStartMatchmaking: (gameId: AiArenaGameId) => void }) {
   return (
     <section className="mt-7" data-tour="battles-game-modes">
       <h2 className="font-tech text-sm uppercase tracking-[0.08em]">CHOOSE YOUR GAME</h2>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {gameModes.map((mode) => (
-          <GameModeCard key={mode.title} mode={mode} />
+          <GameModeCard key={mode.title} mode={mode} onStartMatchmaking={onStartMatchmaking} />
         ))}
       </div>
     </section>
@@ -932,6 +945,7 @@ const BattlesPage = () => {
   const trackedBattleId = getTrackedAiArenaBattleId();
 
   const [startModalOpen, setStartModalOpen] = useState(false);
+  const [startModalGameId, setStartModalGameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAgentId, setStatusAgentId] = useState<string | null>(null);
   const [challengeAgentId, setChallengeAgentId] = useState<string | null>(null);
@@ -1215,6 +1229,23 @@ const BattlesPage = () => {
 
   const canUseBattleOps = isAuthenticated && isAiArenaReady;
 
+  const openStartMatchmaking = (gameId: AiArenaGameId = AI_ARENA_DEFAULT_GAME_ID) => {
+    setStartModalGameId(gameId);
+    setManualGameId(gameId);
+
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    if (myAgents.length === 0) {
+      navigate("/my-agents");
+      return;
+    }
+
+    setStartModalOpen(true);
+  };
+
   return (
     <ArenaPageLayout>
       <div className="mb-4">
@@ -1227,7 +1258,7 @@ const BattlesPage = () => {
         <RankCard firstAgent={myAgents[0] ?? null} />
       </div>
 
-      <GameCarouselSection />
+      <GameCarouselSection onStartMatchmaking={openStartMatchmaking} />
 
       <div className="mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-5">
@@ -1354,7 +1385,7 @@ const BattlesPage = () => {
                 {canUseBattleOps ? (
                   <button
                     type="button"
-                    onClick={() => setStartModalOpen(true)}
+                    onClick={() => openStartMatchmaking()}
                     className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/28 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(12,18,28,0.55))] px-3.5 py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/55 hover:text-white"
                   >
                     <Swords className="h-3.5 w-3.5" />
@@ -1667,6 +1698,7 @@ const BattlesPage = () => {
         onOpenChange={setStartModalOpen}
         agents={myAgents}
         defaultAgentId={challengeAgentId}
+        defaultGameId={startModalGameId}
         onQueued={async (agentId) => {
           setStatusAgentId(agentId);
           setStatusModalOpen(true);
