@@ -8,15 +8,18 @@
 
 export type KnownMomentGame = {
   /** Display label shown on cards, filter dropdowns, chip toggles. */
-  label: "WARZONE WARRIORS" | "ROBOWARS" | "HIGHWAY HUSTLE";
+  label: "WARZONE WARRIORS" | "ROBOWARS" | "HIGHWAY HUSTLE" | "ZERODASH" | "ZEROGPOOL" | "GUESS THE AI";
   /** Lowercase slug persisted on `Moment.relatedGames`. */
-  slug: "warzonewarriors" | "robowars" | "highwayhustle";
+  slug: "warzonewarriors" | "robowars" | "highwayhustle" | "zerodash" | "zerogpool" | "guesstheai";
 };
 
 export const KNOWN_MOMENT_GAMES: readonly KnownMomentGame[] = [
   { label: "WARZONE WARRIORS", slug: "warzonewarriors" },
   { label: "ROBOWARS", slug: "robowars" },
   { label: "HIGHWAY HUSTLE", slug: "highwayhustle" },
+  { label: "ZERODASH", slug: "zerodash" },
+  { label: "ZEROGPOOL", slug: "zerogpool" },
+  { label: "GUESS THE AI", slug: "guesstheai" },
 ] as const;
 
 export const KNOWN_MOMENT_GAME_LABELS = KNOWN_MOMENT_GAMES.map(

@@ -1,5 +1,6 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -25,9 +26,11 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { momentsApi } from "@/api/momentsApi";
 import {
   isMomentsCreateQueryOpen,
+  KNOWN_MOMENT_GAMES,
   KNOWN_MOMENT_GAME_LABELS,
   MOMENTS_BATTLE_ID_QUERY_PARAM,
   MOMENTS_CREATE_QUERY_PARAM,
@@ -229,6 +232,9 @@ function deriveMode(moment: Moment) {
     moment.description,
   ].filter((v): v is string => Boolean(v)).join(" ").toLowerCase();
 
+  if (hay.includes("trash talk") || hay.includes("trashtalk")) return "TRASH TALK";
+  if (hay.includes("robowars") || hay.includes("ai arena") || hay.includes("aiarena") || hay.includes("guesstheai") || hay.includes("guess the ai")) return "AI ARENA";
+  if (hay.includes("league")) return "LEAGUE";
   if (hay.includes("autonomous")) return "AUTONOMOUS";
   if (hay.includes("5v5") || hay.includes("squad")) return "5V5 SHOWDOWN";
   if (hay.includes("1v1") || hay.includes("duel") || hay.includes("arena")) return "1V1 ARENA";
@@ -533,8 +539,6 @@ export function AllMomentsPage() {
     location.pathname === "/moments/browse" ? searchParams.get("q") ?? "" : "",
   );
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-  const [recentlyWatchedIds, setRecentlyWatchedIds] = useState<Set<string>>(new Set());
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -543,7 +547,33 @@ export function AllMomentsPage() {
   const myAgentIdParam = createSearchParams.get(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const deferredSearch = useDeferredValue(searchQuery.trim());
+
+  const myMomentsQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "mine"],
+    queryFn: () => momentsApi.getMine(1, 50),
+    enabled: isAuthenticated && activeTab === "MY MOMENTS",
+    staleTime: 30_000,
+  });
+
+  const bookmarksQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"],
+    queryFn: () => momentsApi.getBookmarks(1, 100),
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+  });
+
+  const recentlyWatchedQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "recentlyWatched"],
+    queryFn: () => momentsApi.getRecentlyWatched(1, 20),
+    enabled: isAuthenticated && activeTab === "RECENTLY WATCHED",
+    staleTime: 10_000,
+  });
+
+  const bookmarkedIds = useMemo(
+    () => new Set((bookmarksQuery.data?.moments ?? []).map((m) => m.momentId)),
+    [bookmarksQuery.data],
+  );
+  const deferredSearch = useDebounce(searchQuery.trim(), 400);
 
   const syncCreateQueryParam = useCallback(
     (open: boolean) => {
@@ -624,9 +654,35 @@ export function AllMomentsPage() {
     setSearchParams,
   ]);
 
+  const apiGame = selectedGame !== "ALL GAMES"
+    ? KNOWN_MOMENT_GAMES.find((g) => g.label === selectedGame)?.slug
+    : undefined;
+
+  const apiMode = selectedMode === "AI ARENA" ? "ai_arena"
+    : selectedMode === "TRASH TALK" ? "trash_talk"
+    : selectedMode === "LEAGUE" ? "league"
+    : undefined;
+
+  const apiDate = selectedTime === "LAST 24 HOURS" ? "last_24h"
+    : selectedTime === "THIS WEEK" ? "this_week"
+    : selectedTime === "THIS MONTH" ? "this_month"
+    : undefined;
+
+  const apiSort = selectedBestOf === "MOST LIKES" ? "most_liked"
+    : selectedBestOf === "TOP CREATORS" ? "top_creator"
+    : "newest";
+
   const discoverQuery = useInfiniteQuery({
-    queryKey: [MOMENTS_QUERY_KEY_ROOT, "discover", deferredSearch],
-    queryFn: ({ pageParam }) => momentsApi.list({ page: pageParam, perPage: PAGE_SIZE, searchQuery: deferredSearch || undefined }),
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "discover", deferredSearch, apiGame, apiMode, apiDate, apiSort],
+    queryFn: ({ pageParam }) => momentsApi.list({
+      page: pageParam,
+      perPage: PAGE_SIZE,
+      searchQuery: deferredSearch || undefined,
+      game: apiGame,
+      mode: apiMode,
+      date: apiDate,
+      sort: apiSort,
+    }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages, lastPageParam) => feedHasMore(lastPage, allPages) ? lastPageParam + 1 : undefined,
     staleTime: 30_000,
@@ -646,14 +702,20 @@ export function AllMomentsPage() {
   }, [allKnownMoments]);
 
   const discoverCards = useMemo(() => discoverMoments.map((m) => deriveMomentCard(m, bookmarkedIds)), [discoverMoments, bookmarkedIds]);
-  const allKnownCards = useMemo(() => allKnownMoments.map((m) => deriveMomentCard(m, bookmarkedIds)), [allKnownMoments, bookmarkedIds]);
   const featuredMoment = useMemo(() => pickFeaturedMoment(discoverCards), [discoverCards]);
 
   const sourceCards = useMemo(() => {
-    if (activeTab === "BOOKMARKS") return allKnownCards.filter((c) => bookmarkedIds.has(c.id));
-    if (activeTab === "RECENTLY WATCHED") return allKnownCards.filter((c) => recentlyWatchedIds.has(c.id));
+    if (activeTab === "MY MOMENTS") {
+      return (myMomentsQuery.data?.moments ?? []).map((m) => deriveMomentCard(m, bookmarkedIds));
+    }
+    if (activeTab === "BOOKMARKS") {
+      return (bookmarksQuery.data?.moments ?? []).map((m) => deriveMomentCard(m, bookmarkedIds));
+    }
+    if (activeTab === "RECENTLY WATCHED") {
+      return (recentlyWatchedQuery.data?.moments ?? []).map((m) => deriveMomentCard(m, bookmarkedIds));
+    }
     return discoverCards;
-  }, [activeTab, allKnownCards, bookmarkedIds, discoverCards, recentlyWatchedIds]);
+  }, [activeTab, bookmarkedIds, bookmarksQuery.data, discoverCards, myMomentsQuery.data, recentlyWatchedQuery.data]);
 
   const filteredMoments = useMemo(() => {
     const cards = sourceCards.filter((card) => {
@@ -715,13 +777,21 @@ export function AllMomentsPage() {
 
   useEffect(() => () => { observerRef.current?.disconnect(); }, []);
 
+  const bookmarkMutation = useMutation({
+    mutationFn: (momentId: string) => momentsApi.toggleBookmark(momentId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"] });
+    },
+    onError: () => toast.error("Could not update bookmark"),
+  });
+
   const handleBookmarkToggle = useCallback((id: string) => {
-    setBookmarkedIds((cur) => { const next = new Set(cur); next.has(id) ? next.delete(id) : next.add(id); return next; });
-  }, []);
+    if (!isAuthenticated) { requestOpenLoginModal(); return; }
+    bookmarkMutation.mutate(id);
+  }, [isAuthenticated, bookmarkMutation]);
 
   const openMoment = useCallback((card: MomentCard | null) => {
     if (!card) return;
-    setRecentlyWatchedIds((cur) => new Set([card.id, ...[...cur].filter((x) => x !== card.id)].slice(0, 24)));
     navigate(`/moments/${card.id}`);
   }, [navigate]);
 
@@ -793,7 +863,7 @@ export function AllMomentsPage() {
             <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2" data-tour="moments-filters">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
-                <FilterDropdown label="Mode" options={["ALL MODES", "1V1 ARENA", "5V5 SHOWDOWN", "AUTONOMOUS"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
+                <FilterDropdown label="Mode" options={["ALL MODES", "AI ARENA", "TRASH TALK", "LEAGUE"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
                 <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
                 <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>
@@ -817,6 +887,7 @@ export function AllMomentsPage() {
               </div>
             </div>
 
+            {/* Subcategory filters — hidden for now
             <div className="relative z-10 grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-3 2xl:grid-cols-6">
               {[
                 { label: "TRENDING", Icon: Flame, desc: "Most popular" },
@@ -844,9 +915,10 @@ export function AllMomentsPage() {
                 );
               })}
             </div>
+            */}
 
             <div className="flex items-center justify-between gap-3 pt-3">
-              <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">{activeCategory} MOMENTS</h2>
+              <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">MOMENTS</h2>
               {showViewMore ? (
                 <Link
                   to={browseHref}
@@ -858,7 +930,11 @@ export function AllMomentsPage() {
               ) : null}
             </div>
 
-            {discoverQuery.isLoading ? (
+            {(discoverQuery.isLoading
+              || (activeTab === "MY MOMENTS" && myMomentsQuery.isLoading)
+              || (activeTab === "BOOKMARKS" && bookmarksQuery.isLoading)
+              || (activeTab === "RECENTLY WATCHED" && recentlyWatchedQuery.isLoading)
+            ) ? (
               <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
