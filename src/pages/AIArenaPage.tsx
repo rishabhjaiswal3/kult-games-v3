@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -34,6 +34,7 @@ import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
+import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import heroVideo from "@/assets/hero-video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
@@ -166,15 +167,203 @@ function shortBattleId(value?: string | null) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
 
+type AiArenaMatchmakingContextValue = {
+  buttonLabel: string;
+  helperText: string;
+  queuedAgent: AiArenaAgent | null;
+  startButtonDisabled: boolean;
+  startMatchmaking: (gameId?: AiArenaGameId) => void;
+  openQueuedMatchStatus: () => void;
+};
+
+const AiArenaMatchmakingContext = createContext<AiArenaMatchmakingContextValue | null>(null);
+
+function useAiArenaMatchmakingFlow() {
+  const context = useContext(AiArenaMatchmakingContext);
+  if (!context) throw new Error("useAiArenaMatchmakingFlow must be used within AiArenaMatchmakingProvider");
+  return context;
+}
+
 const AIArenaPage = () => {
   return (
     <ArenaLiveMatchProvider>
-      <AIArenaPageContent />
+      <AiArenaMatchmakingProvider>
+        <AIArenaPageContent />
+      </AiArenaMatchmakingProvider>
     </ArenaLiveMatchProvider>
   );
 };
 
 export default AIArenaPage;
+
+function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const { isAiArenaReady } = useAiArenaGatewaySession();
+  const { setActiveBattleId } = useArenaLiveMatch();
+  const myAgentsQ = useMyArenaAgents(1, 50);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
+  const [selectedGameId, setSelectedGameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
+  const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
+  const announcedBattleIdRef = useRef<string | null>(null);
+  const selectedGameIdRef = useRef<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
+
+  const agents = myAgentsQ.data?.agents ?? [];
+
+  const queueQ = useQuery({
+    queryKey: ["aiArenaGateway", "landingMatchmakingStatus", agents.map((agent) => agent.id).join(",")],
+    queryFn: async () =>
+      Promise.all(
+        agents.map(async (agent) => {
+          try {
+            const statusRes = await aiArenaGatewayApi.getMatchmakingStatus(agent.id);
+            return { agent, status: statusRes.status };
+          } catch {
+            return { agent, status: null };
+          }
+        })
+      ),
+    enabled: isAiArenaReady && agents.length > 0,
+    staleTime: 2_000,
+    refetchInterval: 2_000,
+    retry: 1,
+  });
+
+  const queuedAgent = useMemo(
+    () => queueQ.data?.find((row) => row.status?.inQueue)?.agent ?? null,
+    [queueQ.data]
+  );
+
+  const leaveQueueMut = useMutation({
+    mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
+    onSuccess: async () => {
+      toast.success("Left matchmaking queue");
+      setStatusModalAgent(null);
+      await queueQ.refetch();
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not leave queue");
+    },
+  });
+
+  const buttonLabel = !isAuthenticated
+    ? "START MATCHMAKING"
+    : agents.length > 0
+      ? "START MATCHMAKING"
+      : "CREATE AGENT TO MATCH";
+
+  const helperText = !isAuthenticated
+    ? "Connect your wallet to unlock AI Arena matchmaking."
+    : !isAiArenaReady
+      ? "Syncing your AI Arena session..."
+      : myAgentsQ.isLoading
+        ? "Loading your fighters..."
+        : agents.length > 0
+          ? "Queue one of your agents into the live arena lobby."
+          : "Create an AI Arena agent first, then you can queue it here.";
+
+  const startButtonDisabled =
+    isAuthenticated &&
+    agents.length > 0 &&
+    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+
+  const startMatchmaking = useCallback((gameId: AiArenaGameId = AI_ARENA_DEFAULT_GAME_ID) => {
+    selectedGameIdRef.current = gameId;
+    setSelectedGameId(gameId);
+
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    if (agents.length === 0) {
+      navigate("/my-agents");
+      return;
+    }
+
+    setStartModalOpen(true);
+  }, [agents.length, isAuthenticated, login, navigate]);
+
+  const handleMatchFound = (payload: {
+    agent: AiArenaAgent;
+    opponent: AiArenaAgent;
+    battleId: string;
+    mode: string;
+    gameId: string;
+  }) => {
+    saveTrackedAiArenaBattleId(payload.battleId);
+    setActiveBattleId(payload.battleId);
+    setTrackedBattleId(payload.battleId);
+    if (announcedBattleIdRef.current !== payload.battleId) {
+      announcedBattleIdRef.current = payload.battleId;
+      toast.success(`Match found! Entering arena…`);
+      setStatusModalAgent(null);
+
+      const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
+
+      let gameId: string = selectedGameIdRef.current;
+      if (!gameId || gameId === "default") {
+        try { gameId = sessionStorage.getItem("arena_queued_game_id") || "default"; } catch { gameId = "default"; }
+      }
+      if (!gameId || gameId === "default") gameId = payload.gameId || "default";
+
+      if (gameId === "robowar") {
+        navigate(`/arena/robowar/${payload.battleId}?${base}`);
+      } else {
+        navigate(`/arena/game/${payload.battleId}?${base}`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (trackedBattleId) {
+      setActiveBattleId(trackedBattleId);
+    }
+  }, [trackedBattleId, setActiveBattleId]);
+
+  const value = useMemo<AiArenaMatchmakingContextValue>(
+    () => ({
+      buttonLabel,
+      helperText,
+      queuedAgent,
+      startButtonDisabled,
+      startMatchmaking,
+      openQueuedMatchStatus: () => queuedAgent && setStatusModalAgent(queuedAgent),
+    }),
+    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking],
+  );
+
+  return (
+    <AiArenaMatchmakingContext.Provider value={value}>
+      {children}
+      <ArenaStartMatchmakingModal
+        open={startModalOpen}
+        onOpenChange={setStartModalOpen}
+        agents={agents}
+        defaultAgentId={queuedAgent?.id ?? agents[0]?.id ?? null}
+        defaultGameId={selectedGameId}
+        onQueued={async (agentId, gameId) => {
+          selectedGameIdRef.current = (gameId as AiArenaGameId) ?? AI_ARENA_DEFAULT_GAME_ID;
+          const queued = agents.find((agent) => agent.id === agentId) ?? null;
+          if (queued) setStatusModalAgent(queued);
+          await queueQ.refetch();
+        }}
+      />
+
+      <ArenaMatchStatusModal
+        open={!!statusModalAgent}
+        onOpenChange={(open) => {
+          if (!open) setStatusModalAgent(null);
+        }}
+        agent={statusModalAgent}
+        leaving={leaveQueueMut.isPending}
+        onLeave={(agentId) => leaveQueueMut.mutate(agentId)}
+        onMatchFound={handleMatchFound}
+      />
+    </AiArenaMatchmakingContext.Provider>
+  );
+}
 
 function AIArenaPageContent() {
   return (
@@ -293,8 +482,8 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <div
         className={
           compact
-            ? "mt-6 flex flex-col items-center gap-2.5"
-            : "mt-8 flex flex-col items-start gap-3"
+            ? "mt-6 flex w-full max-w-[268px] flex-col items-center gap-2.5 rounded-xl border border-cyan-200/14 bg-black/45 p-3 shadow-[0_18px_42px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)] backdrop-blur-md"
+            : "mt-8 flex w-[256px] flex-col items-start gap-2.5 rounded-xl border border-cyan-200/14 bg-black/45 p-3 shadow-[0_18px_42px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)] backdrop-blur-md"
         }
       >
         {/* <Link
@@ -315,165 +504,50 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 }
 
 function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) {
-  const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
-  const { isAiArenaReady } = useAiArenaGatewaySession();
-  const { setActiveBattleId } = useArenaLiveMatch();
-  const myAgentsQ = useMyArenaAgents(1, 50);
-  const [startModalOpen, setStartModalOpen] = useState(false);
-  const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
-  const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
-  // Always start null so the first match found in this session always triggers navigation,
-  // even if the same battle is still active in Redis after a page refresh.
-  const announcedBattleIdRef = useRef<string | null>(null);
-  // Captures the gameId the user explicitly selected when they started matchmaking.
-  // This is the source of truth for routing — more reliable than polling status.gameId.
-  const selectedGameIdRef = useRef<string>("default");
-
-  const agents = myAgentsQ.data?.agents ?? [];
-
-  const queueQ = useQuery({
-    queryKey: ["aiArenaGateway", "landingMatchmakingStatus", agents.map((agent) => agent.id).join(",")],
-    queryFn: async () =>
-      Promise.all(
-        agents.map(async (agent) => {
-          try {
-            const statusRes = await aiArenaGatewayApi.getMatchmakingStatus(agent.id);
-            return { agent, status: statusRes.status };
-          } catch {
-            return { agent, status: null };
-          }
-        })
-      ),
-    enabled: isAiArenaReady && agents.length > 0,
-    staleTime: 2_000,
-    refetchInterval: 2_000,
-    retry: 1,
-  });
-
-  const queuedAgent = useMemo(
-    () => queueQ.data?.find((row) => row.status?.inQueue)?.agent ?? null,
-    [queueQ.data]
-  );
-
-  const leaveQueueMut = useMutation({
-    mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
-    onSuccess: async () => {
-      toast.success("Left matchmaking queue");
-      setStatusModalAgent(null);
-      await queueQ.refetch();
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Could not leave queue");
-    },
-  });
-
-  const buttonLabel = !isAuthenticated
-    ? "START MATCHMAKING"
-    : agents.length > 0
-      ? "START MATCHMAKING"
-      : "CREATE AGENT TO MATCH";
-
-  const helperText = !isAuthenticated
-    ? "Connect your wallet to unlock AI Arena matchmaking."
-    : !isAiArenaReady
-      ? "Syncing your AI Arena session..."
-      : myAgentsQ.isLoading
-        ? "Loading your fighters..."
-        : agents.length > 0
-          ? "Queue one of your agents into the live arena lobby."
-          : "Create an AI Arena agent first, then you can queue it here.";
-
-  const startButtonDisabled =
-    isAuthenticated &&
-    agents.length > 0 &&
-    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
-  const actionButtonSize = compact
-    ? "h-11 w-[240px] px-4 text-[10px] tracking-[0.12em] gap-2"
-    : "h-11 w-[208px] px-4 text-[10px] tracking-[0.16em] gap-2";
+  const {
+    buttonLabel,
+    helperText,
+    queuedAgent,
+    startButtonDisabled,
+    startMatchmaking,
+    openQueuedMatchStatus,
+  } = useAiArenaMatchmakingFlow();
+  const actionButtonSize = "h-11 w-full px-4 text-[10px] tracking-[0.16em] gap-2";
   const actionButtonBase =
-    "min-w-0 rounded-md font-tech font-bold uppercase flex items-center justify-center transition whitespace-nowrap border shadow-[0_0_15px_rgba(0,210,255,0.10)] hover:shadow-[0_0_24px_rgba(0,210,255,0.24)] disabled:cursor-not-allowed disabled:opacity-60";
-
-  const handleArenaAction = () => {
-    if (!isAuthenticated) {
-      login();
-      return;
-    }
-    if (agents.length === 0) {
-      navigate("/my-agents");
-      return;
-    }
-    setStartModalOpen(true);
-  };
-
-  const handleMatchFound = (payload: {
-    agent: AiArenaAgent;
-    opponent: AiArenaAgent;
-    battleId: string;
-    mode: string;
-    gameId: string;
-  }) => {
-    saveTrackedAiArenaBattleId(payload.battleId);
-    setActiveBattleId(payload.battleId);
-    setTrackedBattleId(payload.battleId);
-    if (announcedBattleIdRef.current !== payload.battleId) {
-      announcedBattleIdRef.current = payload.battleId;
-      toast.success(`Match found! Entering arena…`);
-      setStatusModalAgent(null);
-
-      const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
-
-      // Priority: ref (current session) → sessionStorage (survives refresh) → payload → default
-      let gameId = selectedGameIdRef.current;
-      if (!gameId || gameId === "default") {
-        try { gameId = sessionStorage.getItem("arena_queued_game_id") || "default"; } catch { gameId = "default"; }
-      }
-      if (!gameId || gameId === "default") gameId = payload.gameId || "default";
-
-      if (gameId === "robowar") {
-        navigate(`/arena/robowar/${payload.battleId}?${base}`);
-      } else {
-        navigate(`/arena/game/${payload.battleId}?${base}`);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (trackedBattleId) {
-      setActiveBattleId(trackedBattleId);
-    }
-  }, [trackedBattleId, setActiveBattleId]);
+    "min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60";
 
   return (
     <>
       <button
         type="button"
-        onClick={handleArenaAction}
+        onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} border-accent/45 bg-gradient-to-r from-accent/12 to-primary/12 text-white hover:border-accent/75 hover:from-accent/20 hover:to-primary/20`}
+        className={`${actionButtonBase} ${actionButtonSize} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.28),rgba(154,53,255,0.24),rgba(4,8,15,0.78))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.36),rgba(168,85,247,0.3),rgba(4,8,15,0.82))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" />
+          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
         ) : (
-          <Swords className="h-3.5 w-3.5 shrink-0 text-accent" />
+          <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
         <span className="leading-tight text-center whitespace-nowrap">{buttonLabel}</span>
       </button>
 
       <a
         href="#my-battles"
-        className={`${actionButtonBase} ${actionButtonSize} border-primary/40 bg-primary/10 text-white hover:border-primary/70 hover:bg-primary/20`}
+        data-tour="ai-arena-my-battle"
+        className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.22),rgba(4,8,15,0.78))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.3),rgba(4,8,15,0.82))]`}
       >
-        <Eye className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
         <span>MY BATTLE</span>
       </a>
 
       <Link
         to="/league"
-        className={`${actionButtonBase} ${actionButtonSize} border-purple-400/35 bg-purple-500/[0.08] text-purple-100 hover:border-purple-300/65 hover:bg-purple-500/[0.14] hover:text-white`}
+        data-tour="ai-arena-enter-league"
+        className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.2),rgba(154,53,255,0.16),rgba(4,8,15,0.78))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.28),rgba(154,53,255,0.22),rgba(4,8,15,0.82))] hover:text-white`}
       >
-        <Trophy className="h-3.5 w-3.5 shrink-0 text-purple-300" />
+        <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-200" />
         <span>ENTER LEAGUE</span>
       </Link>
 
@@ -487,7 +561,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           </p>
           <button
             type="button"
-            onClick={() => setStatusModalAgent(queuedAgent)}
+            onClick={openQueuedMatchStatus}
             className="mt-2 inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-accent transition hover:text-accent/80"
           >
             <Eye className="h-3.5 w-3.5" />
@@ -501,30 +575,6 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           {helperText}
         </p>
       )}
-
-      <ArenaStartMatchmakingModal
-        open={startModalOpen}
-        onOpenChange={setStartModalOpen}
-        agents={agents}
-        defaultAgentId={queuedAgent?.id ?? agents[0]?.id ?? null}
-        onQueued={async (agentId, gameId) => {
-          selectedGameIdRef.current = gameId ?? "default";
-          const queued = agents.find((agent) => agent.id === agentId) ?? null;
-          if (queued) setStatusModalAgent(queued);
-          await queueQ.refetch();
-        }}
-      />
-
-      <ArenaMatchStatusModal
-        open={!!statusModalAgent}
-        onOpenChange={(open) => {
-          if (!open) setStatusModalAgent(null);
-        }}
-        agent={statusModalAgent}
-        leaving={leaveQueueMut.isPending}
-        onLeave={(agentId) => leaveQueueMut.mutate(agentId)}
-        onMatchFound={handleMatchFound}
-      />
     </>
   );
 }
@@ -846,7 +896,7 @@ type CompeteGame = {
   reputation: string;
   body: string;
   cta: string;
-  to: string;
+  gameId: AiArenaGameId;
   video?: string;
   image?: string;
   tone: string;
@@ -859,7 +909,7 @@ const competeGames: CompeteGame[] = [
     reputation: "Combat reputation",
     body: "Deploy your agent into fast-paced 2D combat and earn battle reputation.",
     cta: "Enter",
-    to: "/games",
+    gameId: "warzone",
     video: warzoneVideo,
     image: heroTrio,
     tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
@@ -870,7 +920,7 @@ const competeGames: CompeteGame[] = [
     reputation: "Racing reputation",
     body: "Race through neon highways and build your agent's speed reputation.",
     cta: "Race",
-    to: "/games",
+    gameId: "highway-hustle",
     video: battleStep3,
     tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
     color: "#ffc000",
@@ -880,7 +930,7 @@ const competeGames: CompeteGame[] = [
     reputation: "Strategic combat",
     body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery.",
     cta: "Deploy",
-    to: "/games",
+    gameId: "robowar",
     video: battleStep5,
     tone: "from-[#25100d]/10 via-[#170b23]/45 to-[#070910]/95",
     color: "#52cbff",
@@ -888,6 +938,8 @@ const competeGames: CompeteGame[] = [
 ];
 
 function WhereAgentsCompete() {
+  const { startMatchmaking } = useAiArenaMatchmakingFlow();
+
   return (
     <section className="mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <div className="mb-8 text-center sm:mb-10">
@@ -904,10 +956,11 @@ function WhereAgentsCompete() {
 
       <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4">
         {competeGames.map((game) => (
-          <Link
+          <button
+            type="button"
             key={game.title}
-            to={game.to}
-            className="arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)]"
+            onClick={() => startMatchmaking(game.gameId)}
+            className="arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
           >
             {game.video ? (
               <video
@@ -947,7 +1000,7 @@ function WhereAgentsCompete() {
                 <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </span>
             </div>
-          </Link>
+          </button>
         ))}
 
         {/* Prediction AI — connects Arena to League */}

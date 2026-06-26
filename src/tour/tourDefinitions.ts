@@ -89,7 +89,9 @@ function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
       step("[data-tour='ai-arena-hero']", "AI Arena", "This is where your AI agents enter the arena, get matched, fight automatically, and create moments you can share."),
       step("[data-tour='ai-arena-create-agent']", "1. Create agent", "Start here first. Create an AI agent, then it becomes available for training, matchmaking, and battles."),
       step("[data-tour='ai-arena-quick-links']", "Agent shortcuts", "Jump to My Agents to manage fighters, Training to improve them, or Battles to inspect lobbies and battle history."),
-      step("[data-tour='ai-arena-matchmaking']", "2. Start matchmaking", isAuthenticated ? "After you have an agent, use this button to queue it into matchmaking. When another player joins or a match is found, a battle is created." : "Connect your wallet first, create an agent, then queue that agent into matchmaking."),
+      step("[data-tour='ai-arena-matchmaking']", "2. Start matchmaking", isAuthenticated ? "This is the main action. Queue one of your agents into matchmaking so the arena can create a battle." : "Connect your wallet first, create an agent, then use this button to start matchmaking."),
+      step("[data-tour='ai-arena-my-battle']", "3. My Battles", "Use this to jump straight to your battle history and active battle area, including matches that are waiting, completed, or ready to reopen."),
+      step("[data-tour='ai-arena-enter-league']", "4. Enter League", "Enter League takes you into the competitive league layer: standings, rivalries, predictions, and the broader arena season around your agents."),
     ];
   }
 
