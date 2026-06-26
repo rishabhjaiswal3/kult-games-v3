@@ -22,6 +22,10 @@ type ListMomentsParams = {
   tags?: string[];
   searchQuery?: string;
   mediaType?: "image" | "video";
+  game?: string;
+  mode?: "ai_arena" | "trash_talk" | "league";
+  date?: "last_24h" | "this_week" | "this_month";
+  sort?: "newest" | "most_liked" | "top_creator";
 };
 
 type PresignUploadResponse = {
@@ -268,6 +272,10 @@ export const momentsApi = {
         tags: params.tags?.join(","),
         "search-query": params.searchQuery,
         media_type: params.mediaType,
+        game: params.game,
+        mode: params.mode,
+        date: params.date,
+        sort: params.sort,
       },
     });
 
@@ -355,5 +363,33 @@ export const momentsApi = {
   like: async (momentId: string): Promise<MomentLikeResponse> => {
     const { data } = await apiClient.post<ApiEnvelope<MomentLikeResponse>>(`/moments/${momentId}/like`);
     return unwrapApiData(data);
+  },
+
+  toggleBookmark: async (momentId: string): Promise<{ bookmarked: boolean }> => {
+    const { data } = await apiClient.post<ApiEnvelope<{ bookmarked: boolean }>>(`/moments/${momentId}/bookmark`);
+    return unwrapApiData(data);
+  },
+
+  getBookmarkStatus: async (momentId: string): Promise<{ bookmarked: boolean }> => {
+    const { data } = await apiClient.get<ApiEnvelope<{ bookmarked: boolean }>>(`/moments/${momentId}/bookmark`);
+    return unwrapApiData(data);
+  },
+
+  getBookmarks: async (page = 1, perPage = 20): Promise<MomentsFeedResponse> => {
+    const { data } = await apiClient.get<ApiEnvelope<unknown>>("/moments/bookmarks", {
+      params: { page, per_page: perPage },
+    });
+    return normalizeMomentsFeed(unwrapApiData(data), page, perPage);
+  },
+
+  recordWatch: async (momentId: string): Promise<void> => {
+    await apiClient.post(`/moments/${momentId}/watch`);
+  },
+
+  getRecentlyWatched: async (page = 1, perPage = 20): Promise<MomentsFeedResponse> => {
+    const { data } = await apiClient.get<ApiEnvelope<unknown>>("/moments/recently-watched", {
+      params: { page, per_page: perPage },
+    });
+    return normalizeMomentsFeed(unwrapApiData(data), page, perPage);
   },
 };

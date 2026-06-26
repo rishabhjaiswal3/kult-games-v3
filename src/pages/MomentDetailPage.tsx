@@ -173,7 +173,6 @@ export function MomentDetailPage() {
   const { isAuthenticated, walletAddress } = useAuth();
   const queryClient = useQueryClient();
   const commentsRef = useRef<HTMLDivElement>(null);
-  const [bookmarked, setBookmarked] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -203,6 +202,41 @@ export function MomentDetailPage() {
     if (!isAuthenticated) { requestOpenLoginModal(); return; }
     likeMutation.mutate();
   };
+
+  const bookmarkStatusQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmark-status", id],
+    queryFn: () => momentsApi.getBookmarkStatus(id!),
+    enabled: Boolean(id) && isAuthenticated,
+    staleTime: 60_000,
+    select: (data) => data.bookmarked,
+  });
+
+  const bookmarked = bookmarkStatusQuery.data ?? false;
+
+  const bookmarkMutation = useMutation({
+    mutationFn: () => momentsApi.toggleBookmark(id!),
+    onSuccess: (data) => {
+      queryClient.setQueryData([MOMENTS_QUERY_KEY_ROOT, "bookmark-status", id], data);
+      void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"] });
+      toast.success(data.bookmarked ? "Bookmarked" : "Bookmark removed");
+    },
+    onError: (e: unknown) => {
+      const status = (e as { response?: { status?: number } })?.response?.status;
+      if (status === 401) { requestOpenLoginModal(); return; }
+      toast.error("Could not update bookmark");
+    },
+  });
+
+  const handleBookmarkToggle = () => {
+    if (!isAuthenticated) { requestOpenLoginModal(); return; }
+    bookmarkMutation.mutate();
+  };
+
+  useEffect(() => {
+    if (id && isAuthenticated) {
+      void momentsApi.recordWatch(id).catch(() => {});
+    }
+  }, [id, isAuthenticated]);
 
   const deleteMutation = useMutation({
     mutationFn: () => momentsApi.remove(id!),
@@ -363,7 +397,7 @@ export function MomentDetailPage() {
               <MomentEngagementBar
                 moment={moment}
                 bookmarked={bookmarked}
-                onBookmarkToggle={() => setBookmarked((b) => !b)}
+                onBookmarkToggle={handleBookmarkToggle}
                 onLike={handleLike}
                 onComments={scrollToComments}
                 isLiking={likeMutation.isPending}

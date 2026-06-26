@@ -93,15 +93,6 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
   const trimmedTitle = title.trim();
   const canSubmit = trimmedTitle.length >= TITLE_MIN_LENGTH && !updateMutation.isPending;
 
-  const toggleGame = (slug: string) => {
-    setSelectedGameSlugs((current) => {
-      const next = new Set(current);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
-      return next;
-    });
-  };
-
   const handleSubmit = () => {
     if (trimmedTitle.length < TITLE_MIN_LENGTH) {
       toast.error(`Title must be at least ${TITLE_MIN_LENGTH} characters`);
