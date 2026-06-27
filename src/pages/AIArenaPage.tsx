@@ -367,13 +367,13 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
 function AIArenaPageContent() {
   return (
-    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 max-w-full">
+    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full space-y-6 px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
       <FeaturesBlock />
       <HowItWorks />
       <WhereAgentsCompete />
-      <section className="mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
         <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
           <ArenaQuickLinks />
           <TopAgents />
@@ -390,13 +390,13 @@ function AIArenaPageContent() {
 function ArenaQuickLinks() {
   return (
     <div className="flex h-full min-w-0 flex-col" data-tour="ai-arena-quick-links">
-      <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
+      <h2 className="mb-3 font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white/86 sm:text-3xl">Jump in</h2>
       <div className="grid flex-1 grid-cols-1 gap-3 lg:gap-2 xl:gap-3">
         {arenaQuickLinks.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] p-4 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] lg:p-3 xl:p-4"
+            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] px-4 py-1.5 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] lg:px-3 lg:py-1 xl:px-4 xl:py-1.5"
             style={
               {
                 "--quick-link-color": link.color,
@@ -410,10 +410,10 @@ function ArenaQuickLinks() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <div className="flex items-center gap-3">
               <div
-                className="relative z-10 grid h-10 w-10 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)] lg:h-9 lg:w-9 xl:h-10 xl:w-10"
+                className="relative z-10 grid h-8 w-8 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)] lg:h-8 lg:w-8 xl:h-8 xl:w-8"
                 style={{ color: link.color }}
               >
-                <link.icon className="h-5 w-5" />
+                <link.icon className="h-4 w-4" />
               </div>
               <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-[var(--quick-link-color)] transition duration-300 group-hover:brightness-125 lg:text-xs xl:text-sm">
                 {link.label}
@@ -458,12 +458,12 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         BUILT FOR WEB3
       </span>
       <h1
-        className={`font-tech font-black uppercase leading-[0.95] tracking-tight text-white ${compact ? "text-4xl min-[380px]:text-5xl min-[420px]:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl"}`}
+        className="font-tech text-4xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl"
       >
         AI{compact ? " " : <br />}ARENA
       </h1>
       <h2
-        className={`font-display mt-3 md:mt-5 text-foreground/90 ${compact ? "text-lg min-[380px]:text-xl leading-tight" : "text-xl sm:text-2xl md:text-3xl"}`}
+        className="font-tech mt-3 text-xl font-black uppercase leading-tight text-foreground/90 sm:text-2xl md:mt-5"
       >
         Where AI
         <br />
@@ -474,7 +474,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           Supremacy
         </span>
       </h2>
-      <p className="mt-4 max-w-md text-xs text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:text-sm">
+      <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5">
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -482,7 +482,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <div
         className={
           compact
-            ? "mt-6 flex w-full max-w-[268px] flex-col items-center gap-2.5  p-3 "
+            ? "mt-6 mx-auto flex w-full max-w-[268px] flex-col items-center gap-2.5  p-3 "
             : "mt-8 flex w-[256px] flex-col items-start gap-2.5 p-3 "
         }
       >
@@ -601,24 +601,24 @@ function Hero() {
         </video>
         <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
-          <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
             <span className="flex items-center gap-1.5">
-              Presented by <KultLogo className="h-3.5 w-auto" />
+              Presented by <KultLogo className="h-4 w-auto" />
             </span>
             <span className="flex items-center gap-1.5">
-              Powered by <ZeroGLogo className="h-3.5 w-auto" />
+              Powered by <ZeroGLogo className="h-4 w-auto" />
             </span>
           </div>
           <HeroCopy compact />
         </div>
       </div>
       <div className="relative mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
-        <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
           <span className="flex items-center gap-1.5">
-            Presented by <KultLogo className="h-3.5 w-auto" />
+            Presented by <KultLogo className="h-4 w-auto" />
           </span>
           <span className="flex items-center gap-1.5">
-            Powered by <ZeroGLogo className="h-3.5 w-auto" />
+            Powered by <ZeroGLogo className="h-4 w-auto" />
           </span>
         </div>
         <HeroCopy />
@@ -629,36 +629,39 @@ function Hero() {
 
 function StatsBar() {
   const stats = [
-    { icon: BrainCircuit, label: "AI AGENTS", detail: "Mint & Train", c: "var(--neon)" },
-    { icon: Swords, label: "24/7 MATCHMAKING", detail: "Humans vs Agents", c: "var(--cyan)" },
-    { icon: Trophy, label: "FOUNDING SEASON", detail: "Early Access", c: "var(--amber)" },
+    { icon: BrainCircuit, label: "AI Agents", detail: "Mint & Train", color: "#a855ff" },
+    { icon: Swords, label: "24/7 Matchmaking", detail: "Humans vs Agents", color: "#11a7ff" },
+    { icon: Trophy, label: "Founding Season", detail: "Early Access", color: "#ffc42e" },
   ];
   return (
-    <section className="mx-auto px-4 sm:px-6 -mt-4 md:-mt-6 relative z-10 text-center md:text-left">
-      <div className="card-glass grid grid-cols-1 divide-y divide-border/50 rounded-xl p-4 sm:grid-cols-2 sm:divide-x sm:divide-y-0 sm:p-5 lg:grid-cols-4 lg:p-3 xl:p-5">
-        <div className="flex min-w-0 items-center justify-center py-3 sm:justify-start sm:pr-5 lg:py-2 lg:pr-3 xl:py-3 xl:pr-5">
-          <div>
-            <div className="flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
-              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
-              BETA LIVE
-            </div>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:justify-start sm:text-sm">
-              <span>Powered by</span>
-              <ZeroGLogo className="h-4 w-auto" />
+    <section className="relative z-10">
+      <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+        <div
+          className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+          style={{ "--stat-color": "#00f080" } as CSSProperties}
+        >
+          <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-tech text-xs font-semibold text-primary sm:text-sm">Beta Live</div>
+            <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold text-white">
+              Powered by <ZeroGLogo className="h-4 w-auto" />
             </div>
           </div>
         </div>
         {stats.map((s) => (
           <div
             key={s.label}
-            className="flex min-w-0 items-center justify-center py-3 sm:justify-start sm:px-5 lg:py-2 lg:px-3 xl:py-3 xl:px-5"
+            className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+            style={{ "--stat-color": s.color } as CSSProperties}
           >
+            <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
+              <s.icon className="h-5 w-5" />
+            </div>
             <div className="min-w-0">
-              <div className="flex items-center justify-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[0.12em] text-white sm:justify-start sm:text-[11px]">
-                <s.icon className="h-4 w-4 shrink-0" style={{ color: `oklch(from ${s.c} l c h)` }} />
-                {s.label}
-              </div>
-              <div className="mt-2 text-xs text-muted-foreground sm:text-sm">{s.detail}</div>
+              <div className="font-tech text-xs font-semibold text-primary sm:text-sm">{s.label}</div>
+              <div className="mt-0.5 truncate text-base font-semibold text-white">{s.detail}</div>
             </div>
           </div>
         ))}
@@ -695,18 +698,18 @@ function FeaturesBlock() {
     },
   ];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center lg:text-left">
-      <div className="grid items-stretch gap-5 rounded-xl border border-white/8 bg-[#04080f]/70 p-4 shadow-[0_0_36px_rgba(154,53,255,0.06)] sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)]">
+    <section className="arena-panel p-4 text-center shadow-[0_0_36px_rgba(154,53,255,0.06)] sm:p-6 lg:text-left">
+      <div className="grid items-stretch gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)]">
         <div className="h-full">
           <span className="text-[10px] tracking-[0.24em] sm:tracking-[0.3em] font-tech text-accent">
             BUILT DIFFERENT
           </span>
-          <h3 className="font-display text-3xl sm:text-4xl mt-3 leading-tight">
+          <h3 className="font-tech mt-3 text-2xl font-black uppercase leading-tight sm:text-3xl">
             THE NEXT ERA
             <br />
             OF <span className="text-gradient">AI GAMING</span>
           </h3>
-          <p className="text-sm text-muted-foreground mt-4">
+          <p className="text-sm leading-relaxed text-muted-foreground mt-4">
             AI Arena is the ultimate battleground for AI Agents across Web3. Powered by{" "}
             <ZeroGLogo className="mx-1 h-4 w-auto align-[-0.2em]" />, owned by you.
           </p>
@@ -716,8 +719,8 @@ function FeaturesBlock() {
         </div>
         <div className="h-full">
           <div className="mb-3 text-center lg:text-left">
-            <span className="font-tech text-[9px] uppercase tracking-[0.26em] text-primary">Start here</span>
-            <p className="mt-1 text-xs text-muted-foreground">Three steps to get your agent into the Arena.</p>
+            <span className="font-tech text-[11px] uppercase tracking-[0.26em] text-primary">Start here</span>
+            <p className="mt-1 text-sm leading-relaxed text-white/80">Three steps to get your agent into the Arena.</p>
           </div>
           <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
           {features.map((f) => {
@@ -733,7 +736,7 @@ function FeaturesBlock() {
                 <f.icon className="w-5 h-5" style={{ color: `oklch(from ${f.c} l c h)` }} />
               </div>
               <h4
-                className="font-tech text-sm font-bold tracking-wider mb-2 flex flex-wrap items-center justify-center md:justify-start gap-2"
+                className="font-tech text-base font-black uppercase leading-tight tracking-wider mb-2 flex flex-wrap items-center justify-center md:justify-start gap-2 sm:text-lg"
                 style={{ color: `oklch(from ${f.c} l c h)` }}
               >
                 {f.title}
@@ -834,10 +837,10 @@ function HowItWorks() {
     { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
   ];
   return (
-    <section className="mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5 sm:mb-12">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
-        <h3 className="font-display text-lg sm:text-3xl text-center">HOW IT WORKS</h3>
+        <h3 className="font-tech text-2xl font-black uppercase leading-tight text-center sm:text-3xl">HOW IT WORKS</h3>
         <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
@@ -896,7 +899,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "WARZONE WARRIORS",
     reputation: "Combat reputation",
-    body: "Deploy your agent into fast-paced 2D combat and earn battle reputation.",
+    body: "Deploy your agent into fast-paced 2D combat and earn battle reputation",
     cta: "Enter",
     gameId: "warzone",
     video: warzoneVideo,
@@ -907,7 +910,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "HIGHWAY HUSTLE",
     reputation: "Racing reputation",
-    body: "Race through neon highways and build your agent's speed reputation.",
+    body: "Race through neon highways and build your agent's speed reputation",
     cta: "Race",
     gameId: "highway-hustle",
     video: battleStep3,
@@ -917,7 +920,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "ROBOWARS",
     reputation: "Strategic combat",
-    body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery.",
+    body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery",
     cta: "Deploy",
     gameId: "robowar",
     video: battleStep5,
@@ -930,12 +933,12 @@ function WhereAgentsCompete() {
   const { startMatchmaking } = useAiArenaMatchmakingFlow();
 
   return (
-    <section className="mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="mb-8 text-center sm:mb-10">
         <span className="inline-block rounded-sm border border-primary/40 px-3 py-1 font-tech text-[9px] tracking-[0.22em] text-primary sm:text-[10px] sm:tracking-[0.3em]">
           ONE AGENT · MANY EXPERIENCES
         </span>
-        <h3 className="mt-4 font-display text-2xl sm:text-3xl md:text-4xl">
+        <h3 className="mt-4 font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">
           WHERE YOUR <span className="text-gradient glow-text">AGENTS COMPETE</span>
         </h3>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
@@ -981,7 +984,7 @@ function WhereAgentsCompete() {
             </span>
 
             <div className="relative z-10 flex h-full flex-col justify-end p-4">
-              <h4 className="whitespace-nowrap font-tech text-base font-black italic leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-0.5 group-hover:text-[#f0d7ff]">
+              <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-0.5 group-hover:text-[#f0d7ff] sm:text-lg">
                 {game.title}
               </h4>
               <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">{game.body}</p>
@@ -1018,9 +1021,9 @@ function WhereAgentsCompete() {
           </span>
 
           <div className="relative z-10 flex h-full flex-col justify-end">
-            <h4 className="font-tech text-base font-black italic uppercase leading-[0.95] tracking-[-0.04em] text-white drop-shadow-lg">Prediction AI</h4>
+            <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg sm:text-lg">Prediction AI</h4>
             <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">
-              Forecast live events alongside your AI agent. Debate. Predict. Build forecasting reputation.
+              Forecast live events alongside your AI agent, Debate, Predict and Build forecasting reputation.
             </p>
             <span className="mt-2 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#d08bff] transition group-hover:gap-2.5">
               Enter League
@@ -1035,13 +1038,13 @@ function WhereAgentsCompete() {
 
 function RankProgressionTimeline() {
   return (
-    <section className="mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       {/* Header */}
       <div className="text-center mb-10 sm:mb-14">
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
           COMPETITIVE PROGRESSION
         </span>
-        <h3 className="font-display text-2xl sm:text-3xl md:text-4xl mt-2">
+        <h3 className="font-tech text-2xl font-black uppercase leading-tight mt-2 sm:text-3xl">
           HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
         </h3>
         <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
@@ -1134,7 +1137,7 @@ function RankProgressionTimeline() {
             style={{ background: "oklch(from var(--neon) l c h / 0.15)", border: "1px solid oklch(from var(--neon) l c h / 0.4)" }}>
             <Swords className="w-5 h-5" style={{ color: "var(--neon)" }} />
           </div>
-          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--neon)" }}>
+          <h4 className="font-tech text-base font-black uppercase leading-tight tracking-wider mb-2 sm:text-lg" style={{ color: "var(--neon)" }}>
             WIN TO CLIMB
           </h4>
           <p className="text-xs leading-relaxed text-white/75">
@@ -1146,7 +1149,7 @@ function RankProgressionTimeline() {
             style={{ background: "oklch(from var(--cyan) l c h / 0.15)", border: "1px solid oklch(from var(--cyan) l c h / 0.4)" }}>
             <ArrowUp className="w-5 h-5" style={{ color: "var(--cyan)" }} />
           </div>
-          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--cyan)" }}>
+          <h4 className="font-tech text-base font-black uppercase leading-tight tracking-wider mb-2 sm:text-lg" style={{ color: "var(--cyan)" }}>
             ELO MATCHMAKING
           </h4>
           <p className="text-xs leading-relaxed text-white/75">
@@ -1158,7 +1161,7 @@ function RankProgressionTimeline() {
             style={{ background: "oklch(from var(--amber) l c h / 0.15)", border: "1px solid oklch(from var(--amber) l c h / 0.4)" }}>
             <Trophy className="w-5 h-5" style={{ color: "var(--amber)" }} />
           </div>
-          <h4 className="font-tech text-xs tracking-wider mb-2" style={{ color: "var(--amber)" }}>
+          <h4 className="font-tech text-base font-black uppercase leading-tight tracking-wider mb-2 sm:text-lg" style={{ color: "var(--amber)" }}>
             LEAGUE REWARDS
           </h4>
           <p className="text-xs leading-relaxed text-white/75">
@@ -1206,7 +1209,7 @@ function TopAgents() {
   return (
     <div className="flex h-full min-w-0 flex-col">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 text-center sm:text-left">
-        <h3 className="font-tech text-base sm:text-lg font-semibold uppercase tracking-wider text-white/86">TOP AI AGENTS</h3>
+        <h3 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white/86 sm:text-3xl">TOP AI AGENTS</h3>
         <div className="flex items-center justify-between sm:justify-end gap-4">
           <Link to="/my-agents" className="text-sm text-accent hover:underline">
             View All
@@ -1305,7 +1308,7 @@ function TopAgents() {
 
 function BattlesRow() {
   return (
-    <section className="mx-auto px-4 py-8 sm:px-6 sm:py-10">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <LiveBattles />
         <MyBattleSection />
@@ -1405,8 +1408,8 @@ function MyBattleSection() {
     <div id="my-battles" className="flex h-full min-h-[420px] flex-col scroll-mt-24">
       <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div>
-          <h3 className="font-display text-2xl sm:text-3xl">MY BATTLES</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Your completed arena battle history.</p>
+          <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">MY BATTLES</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Your completed arena battle history.</p>
         </div>
         <div className="flex items-center gap-4">
           {memories.length > CARDS_PER_PAGE && (
@@ -1556,8 +1559,8 @@ function LiveBattles() {
     <div className="flex h-full min-h-[420px] flex-col">
       <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div>
-          <h3 className="font-display text-2xl sm:text-3xl">LIVE BATTLES</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Watch ranked agents fight in real time.</p>
+          <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">LIVE BATTLES</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Watch ranked agents fight in real time.</p>
         </div>
         <Link to="/battles" className="text-sm text-accent hover:underline">
           View All
@@ -1588,7 +1591,7 @@ function LiveBattles() {
 function PartnersBlock() {
   const partners = ["0G", "Base", "Solana"];
   return (
-    <section className="mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:py-5 xl:py-6">
+    <section>
       <div className="card-glass relative overflow-hidden rounded-xl border-white/8 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.24)] sm:p-5 lg:p-4 xl:p-5">
         <div className="absolute inset-0 grid-bg opacity-15" />
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent/45 to-transparent" />

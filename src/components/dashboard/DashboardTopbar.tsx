@@ -64,7 +64,7 @@ export function DashboardTopbar() {
               data-tour="tour-start"
               aria-label="Start website tour"
               aria-busy={isRunning}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-2.5 font-tech text-[9px] font-black uppercase tracking-[0.12em] text-cyan-100/90 transition hover:border-cyan-200/40 hover:bg-cyan-300/12 hover:text-white min-[430px]:px-3"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-2.5 font-tech text-[11px] font-black uppercase tracking-[0.12em] text-cyan-100/90 transition hover:border-cyan-200/40 hover:bg-cyan-300/12 hover:text-white min-[430px]:px-3"
             >
               {isRunning ? <Sparkles className="h-3.5 w-3.5" /> : <HelpCircle className="h-3.5 w-3.5" />}
               <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
