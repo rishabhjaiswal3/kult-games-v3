@@ -89,13 +89,11 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#25d366",
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url];
-      if (p.mediaUrl) parts.push(p.mediaUrl);
+      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     },
     buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url];
-      if (p.mediaUrl) parts.push(p.mediaUrl);
+      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
       return parts.filter(Boolean).join("\n");
     },
   },
@@ -189,8 +187,7 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
         text: `${templateText}\n${platformPayload.url}`,
       })}`;
     case "whatsapp": {
-      const parts = [templateText, platformPayload.url];
-      if (platformPayload.mediaUrl) parts.push(platformPayload.mediaUrl);
+      const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     }
     case "reddit": {
