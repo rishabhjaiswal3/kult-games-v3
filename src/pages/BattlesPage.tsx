@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -280,15 +280,19 @@ function StatsRail({ myAgents }: { myAgents: AiArenaAgent[] }) {
     { label: "TOTAL REWARDS", value: "—", suffix: "$ARENA",         icon: Hexagon,   color: "#ffc000" },
   ];
   return (
-    <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+    <div className="arena-panel home-stats-panel home-stats-panel--static grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
       {stats.map((stat) => (
-        <div key={stat.label} className="flex items-center gap-4 p-4">
-          <div className="grid h-11 w-11 place-items-center rounded-md bg-white/[0.04]">
-            <stat.icon className="h-6 w-6" style={{ color: stat.color }} />
+        <div
+          key={stat.label}
+          className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+          style={{ "--stat-color": stat.color } as CSSProperties}
+        >
+          <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
+            <stat.icon className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-tech text-[9px] text-white/48">{stat.label}</div>
-            <div className="mt-1 text-2xl font-semibold">
+            <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+            <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">
               {stat.value} {stat.suffix && <span className="text-xs text-white/45">{stat.suffix}</span>}
             </div>
           </div>
@@ -310,16 +314,24 @@ function RankCard({ firstAgent }: { firstAgent: AiArenaAgent | null }) {
   const elo        = firstAgent?.eloRating ?? 0;
   const leagueInfo = elo > 0 ? getRankFromElo(elo) : null;
   const rank       = rankQ.data?.rank;
+  const accent     = leagueInfo?.color ?? "#b338ff";
 
   return (
-    <div className="arena-panel relative min-h-[94px] overflow-hidden p-4 flex items-center justify-between gap-3">
+    <div
+      className="arena-panel relative min-h-[94px] overflow-hidden p-4 flex items-center justify-between gap-3 transition hover:-translate-y-0.5"
+      style={{
+        borderColor: `color-mix(in srgb, ${accent} 45%, rgba(255,255,255,0.1))`,
+        background: `radial-gradient(circle at 12% 0%, color-mix(in srgb, ${accent} 20%, transparent), transparent 55%), linear-gradient(180deg, rgba(9,14,25,0.9), rgba(4,8,15,0.88))`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 28px color-mix(in srgb, ${accent} 18%, transparent)`,
+      } as CSSProperties}
+    >
       <div>
-        <div className="font-tech text-[9px] text-white/50">ARENA RANK</div>
-        <div className="mt-2 text-xl font-bold">
+        <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">ARENA RANK</div>
+        <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">
           {firstAgent ? (rank != null ? `#${rank.toLocaleString()}` : "UNRANKED") : "—"}
         </div>
         {leagueInfo && firstAgent ? (
-          <div className="mt-0.5 font-tech text-[9px] uppercase tracking-wider" style={{ color: leagueInfo.color }}>
+          <div className="mt-0.5 font-tech text-[10px] font-bold uppercase tracking-wider" style={{ color: leagueInfo.color }}>
             {leagueInfo.name}
           </div>
         ) : null}
