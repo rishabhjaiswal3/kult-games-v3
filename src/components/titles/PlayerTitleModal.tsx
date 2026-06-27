@@ -69,7 +69,7 @@ export function PlayerTitleModal({ open, titles, onClose }: PlayerTitleModalProp
     <DialogPrimitive.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[300] bg-black/88 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-[300] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 p-4 focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-[300] w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4 focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
 
           {/* Card */}
           <div className={`relative overflow-hidden rounded-2xl border ${cfg.border} bg-[#03070d] ${cfg.glow}`}>
@@ -83,33 +83,33 @@ export function PlayerTitleModal({ open, titles, onClose }: PlayerTitleModalProp
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
 
-            {/* Title image — full width, tall */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden">
+            {/* Title image — full width, no aspect ratio crop */}
+            <div className="relative w-full overflow-hidden">
               <img
                 src={cfg.img}
                 alt={cfg.label}
-                className="h-full w-full object-cover"
+                className="h-auto w-full object-contain"
               />
               {/* Bottom fade into card body */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03070d] via-[#03070d]/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#03070d] to-transparent" />
 
               {/* Badge pill overlaid on image */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                <span className={`inline-flex items-center rounded-full px-4 py-1.5 font-tech text-[10px] font-black tracking-[0.22em] backdrop-blur-sm ${cfg.badgePill}`}>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                <span className={`inline-flex items-center rounded-full px-5 py-1.5 font-tech text-[10px] font-black tracking-[0.22em] backdrop-blur-sm ${cfg.badgePill}`}>
                   {cfg.badge}
                 </span>
               </div>
             </div>
 
             {/* Body */}
-            <div className="space-y-3 px-5 pb-5 pt-4 text-center">
+            <div className="space-y-3 px-6 pb-6 pt-3 text-center">
               {titles.length > 1 && (
                 <p className="font-tech text-[9px] font-semibold uppercase tracking-[0.3em] text-white/35">
                   {page + 1} of {titles.length}
                 </p>
               )}
 
-              <h2 className={`font-tech text-lg font-bold leading-tight ${cfg.accentColor}`}>
+              <h2 className={`font-tech text-xl font-bold leading-tight ${cfg.accentColor}`}>
                 {cfg.headline}
               </h2>
 
@@ -121,14 +121,14 @@ export function PlayerTitleModal({ open, titles, onClose }: PlayerTitleModalProp
                 {cfg.sub}
               </p>
 
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2 pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     if (isLast) onClose();
                     else setPage((p) => p + 1);
                   }}
-                  className={`w-full rounded-xl py-3 font-tech text-[11px] uppercase tracking-wider transition ${cfg.btnClass}`}
+                  className={`w-full rounded-xl py-3.5 font-tech text-[11px] uppercase tracking-wider transition ${cfg.btnClass}`}
                 >
                   {isLast ? "Enter the Arena" : "See Next Title"}
                 </button>
