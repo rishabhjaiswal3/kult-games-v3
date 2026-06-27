@@ -88,7 +88,6 @@ function SidebarNav({
               key={item.label}
               href={item.externalUrl}
               onClick={onNavigate}
-              title={isCollapsed ? item.label : undefined}
               data-tour={`sidebar-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               className={sharedClassName}
               style={{ animationDelay: `${idx * 30}ms` }}
@@ -103,7 +102,6 @@ function SidebarNav({
             key={item.label}
             to={item.path}
             onClick={onNavigate}
-            title={isCollapsed ? item.label : undefined}
             data-tour={`sidebar-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             className={sharedClassName}
             style={{ animationDelay: `${idx * 30}ms` }}
@@ -140,7 +138,6 @@ function SidebarBrand({
         <button
           onClick={onToggleCollapse}
           className={cn("text-white/50 hover:text-white transition-colors hidden lg:block", isCollapsed && "mt-1")}
-          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
         </button>
@@ -181,7 +178,6 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
           <a
             href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
             onClick={onNavigate}
-            title="Studio"
             aria-label="Open Studio"
             className={cn(
               "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",

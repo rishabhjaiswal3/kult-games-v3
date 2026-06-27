@@ -69,7 +69,6 @@ function EngagementChip({
       onClick={onClick}
       disabled={disabled}
       aria-label={iconOnly ? label : undefined}
-      title={label}
       className={cn(
         "group inline-flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] font-tech text-[11px] font-semibold text-white/62 transition duration-200",
         iconOnly ? "h-9 w-9 px-0" : "h-9 min-w-[3.25rem] px-3",

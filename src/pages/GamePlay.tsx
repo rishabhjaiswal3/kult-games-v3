@@ -179,7 +179,6 @@ const GamePlay = () => {
           type="button"
           onClick={() => navigate(-1)}
           aria-label="Back to previous page"
-          title="Back"
           className="group relative grid h-6 w-6 place-items-center rounded-br-lg border-b border-r border-white/14 bg-[linear-gradient(135deg,rgba(5,10,18,0.92),rgba(0,210,255,0.16),rgba(155,50,255,0.2))] shadow-[0_6px_16px_rgba(0,0,0,0.3),0_0_14px_rgba(0,210,255,0.1)] backdrop-blur-md transition duration-200 hover:border-cyan-300/55 hover:shadow-[0_8px_20px_rgba(0,0,0,0.34),0_0_18px_rgba(0,210,255,0.18)]"
         >
           <span className="pointer-events-none absolute inset-0 rounded-br-lg bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_45%)] opacity-80" />
@@ -191,7 +190,6 @@ const GamePlay = () => {
           type="button"
           onClick={() => shellContext?.toggleGameChrome()}
           aria-label={shellContext?.isGameChromeVisible ? "Hide header and sidebar" : "Show header and sidebar"}
-          title={shellContext?.isGameChromeVisible ? "Hide header and sidebar" : "Show header and sidebar"}
           className="group relative grid h-6 w-6 place-items-center rounded-bl-lg border-b border-l border-white/14 bg-[linear-gradient(225deg,rgba(5,10,18,0.94),rgba(0,210,255,0.2),rgba(155,50,255,0.24))] text-white/92 shadow-[0_6px_16px_rgba(0,0,0,0.3),0_0_14px_rgba(0,210,255,0.1)] backdrop-blur-md transition duration-200 hover:border-cyan-300/55 hover:text-cyan-100 hover:shadow-[0_8px_20px_rgba(0,0,0,0.34),0_0_18px_rgba(0,210,255,0.18)]"
         >
           <span className="pointer-events-none absolute inset-0 rounded-bl-lg bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_45%)] opacity-80" />
