@@ -50,7 +50,7 @@ const Leaderboard = () => {
   const kultProfileQ = useQuery({
     queryKey: ["kult", "player", "fullProfile"],
     queryFn: () => playerApi.getFullProfile(),
-    enabled: activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" && isAuthenticated,
+    enabled: activeMode === "KULT_POINTS" && isAuthenticated,
     staleTime: 60_000,
     retry: false,
   });
@@ -77,8 +77,8 @@ const Leaderboard = () => {
     return current;
   }, [kultRows, kultTableRows, walletAddress]);
   const kultProfile = kultProfileQ.data;
-  const kultSidebarRank = activeKultTab === "MY RANK" ? kultProfile?.rank ?? undefined : kultUserRow?.rank;
-  const kultSidebarPoints = activeKultTab === "MY RANK" ? kultProfile?.totalScore ?? 0 : Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
+  const kultSidebarRank = kultProfile?.rank ?? kultUserRow?.rank;
+  const kultSidebarPoints = kultProfile?.totalScore ?? Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
   const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });

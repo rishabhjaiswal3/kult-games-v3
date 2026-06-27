@@ -30,13 +30,11 @@ export function LeaderboardSidebar({
   userElo,
   pointLabel = "PTS",
   title = "Your Rank",
-  // NOTE: the stats below are placeholder defaults so the card renders fully —
-  // override with real values once the backend exposes them.
-  totalPlayers = 14902,
-  weeklyDelta = 4,
-  pointsToday = 128,
-  pointsWeek = 540,
-  streak = 4,
+  totalPlayers,
+  weeklyDelta,
+  pointsToday,
+  pointsWeek,
+  streak,
   aboutTitle = "About Reputation.",
   aboutText = "Your score reflects contribution across KULT games, league and arena, updated live from verified activity. No token conversion, cash value, or guaranteed reward is implied.",
 }: LeaderboardSidebarProps) {

@@ -11,6 +11,7 @@ import {
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  clearUserLoginIntent,
   consumePendingLoginModalRequest,
   markUserLoginIntent,
   subscribeOpenLoginModal,
@@ -111,7 +112,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   };
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { authenticated, ready, linkWallet } = usePrivy();
+  const { authenticated, ready, linkWallet, logout: privyLogout } = usePrivy();
 
   const { sendCode, loginWithCode } = useLoginWithEmail({
     onComplete: () => {
@@ -431,6 +432,21 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           ? "Completing wallet verification with Kult…"
                           : "If a wallet prompt appears, approve it to verify with SIWE."}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearUserLoginIntent();
+                          setFinishingSignIn(false);
+                          setRecoveryMode(false);
+                          setAuthError("");
+                          if (authenticated && !isAuthenticated) {
+                            void privyLogout();
+                          }
+                        }}
+                        className="mt-1 text-xs text-muted-foreground/50 underline-offset-2 transition-colors hover:text-muted-foreground hover:underline"
+                      >
+                        ← Use a different method
+                      </button>
                     </motion.div>
                   ) : !otpSent ? (
                     <div className="space-y-4">
