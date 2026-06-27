@@ -718,7 +718,6 @@ const MyAgentsPage = () => {
                           onClick={() => setConfirmRetireId(agent.id)}
                           className="flex items-center justify-center rounded border border-white/8 bg-[#0a0f1b]/60 p-2 text-white/30 transition hover:border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-400"
                           aria-label={`Retire ${agent.name}`}
-                          title="Retire agent"
                         >
                           <Skull className="h-3.5 w-3.5" />
                         </button>

@@ -1743,7 +1743,6 @@ function ArenaLandingFooter() {
                     rel="noopener noreferrer"
                     className="group flex h-12 w-12 items-center justify-center rounded-full border border-[#6645ff]/48 bg-black/20 text-[#a790ff] transition hover:-translate-y-0.5 hover:border-[#9d86ff] hover:bg-[#140f35] hover:text-white hover:shadow-[0_0_24px_rgba(112,73,255,0.32)]"
                     aria-label={s.label}
-                    title={s.label}
                   >
                     <span className="transition-transform group-hover:scale-110">{s.icon}</span>
                   </a>

@@ -86,11 +86,312 @@
       radial-gradient(ellipse at 50% 80%, hsl(278 88% 62% / 0.06), transparent 50%),
       linear-gradient(180deg, hsl(268 35% 8%), hsl(268 32% 6%));
     background-attachment: fixed;
+
+    /* ── Privy UI theming ─────────────────────────────────────────────────
+       Override Privy's design tokens so wallet pickers, sign-message prompts,
+       and send-transaction dialogs match the Kult dark purple / cyan theme. */
+
+    /* Backgrounds */
+    --privy-color-background:   hsl(220 50% 5%);     /* darkest — modal overlay */
+    --privy-color-background-2: hsl(265 45% 10%);    /* card / panel bg */
+    --privy-color-background-3: hsl(220 30% 14%);    /* input / secondary panel */
+
+    /* Foreground (text) */
+    --privy-color-foreground:   hsl(210 20% 93%);    /* primary text */
+    --privy-color-foreground-2: hsl(210 15% 58%);    /* secondary / placeholder */
+    --privy-color-foreground-3: hsl(210 12% 35%);    /* tertiary / disabled label */
+    --privy-color-foreground-4: hsl(210 10% 22%);    /* dividers / subtle lines */
+    --privy-color-foreground-accent: hsl(278 88% 78%); /* highlighted accent text */
+
+    /* Accent — Kult primary purple hsl(278 88% 58%) ≈ #9835f5 */
+    --privy-color-accent:         hsl(278 88% 58%);
+    --privy-color-accent-light:   hsl(278 88% 70%);
+    --privy-color-accent-lightest:hsl(278 80% 85%);
+    --privy-color-accent-dark:    hsl(278 88% 42%);
+    --privy-color-accent-darkest: hsl(278 88% 26%);
+
+    /* Status */
+    --privy-color-success:      hsl(152 78% 52%);    /* neon-green */
+    --privy-color-error:        hsl(0 84% 60%);
+    --privy-color-error-light:  hsl(0 84% 60% / 0.15);
+
+    /* Border radius — matches site --radius: 0.75rem pattern */
+    --privy-border-radius-sm:   8px;
+    --privy-border-radius-md:   14px;
+    --privy-border-radius-lg:   20px;
+    --privy-border-radius-full: 9999px;
   }
 
   button {
     border-radius: 0;
   }
+}
+
+/* ─── Privy modal: sizing + Kult card theme ──────────────────────────────
+   Privy renders HeadlessUI Dialog into DOM with these stable IDs:
+     #privy-dialog           → outer dialog (role="dialog")
+     #privy-dialog-backdrop  → full-screen overlay
+     #privy-modal-content    → content div with inline height (must override)
+   The card itself is the first div inside the centering wrapper:
+     #privy-dialog > div:last-child > div  */
+
+/* Backdrop: match LoginModal backdrop style */
+#privy-dialog-backdrop {
+  background: radial-gradient(ellipse at 50% 40%, hsl(270 82% 15% / 0.35), hsl(220 50% 4% / 0.85)) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Card: 90 vw wide, capped at 420 px, max 80 vh tall.
+   overflow: hidden — the card itself does NOT scroll;
+   only the message content box inside scrolls. */
+#privy-dialog > div:last-child > div {
+  width: 90vw !important;
+  max-width: 420px !important;
+  max-height: 80vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 24px !important;
+  background: linear-gradient(160deg, hsl(265 48% 12% / 0.98), hsl(220 45% 7% / 0.98)) !important;
+  border: 1px solid hsl(270 80% 60% / 0.2) !important;
+  box-shadow:
+    0 30px 80px hsl(220 50% 2% / 0.5),
+    0 0 0 1px hsl(270 80% 60% / 0.08),
+    0 0 60px hsl(270 82% 58% / 0.08),
+    inset 0 1px 0 hsl(278 100% 82% / 0.08) !important;
+  position: relative !important;
+}
+
+/* Top accent line — mirrors LoginModal */
+#privy-dialog > div:last-child > div::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 10% !important;
+  right: 10% !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, hsl(270 80% 65% / 0.6), hsl(195 100% 65% / 0.4), transparent) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* Override Privy's inline height (useElementHeight writes height: Xpx inline) */
+#privy-modal-content {
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+/* ── Sign-message modal only ────────────────────────────────────────────
+   Identified by .lucide-square-pen (the pen/edit SVG) which is unique
+   to Privy's sign-message screen. Other Privy screens (wallet picker,
+   send-transaction, etc.) use different icons and are NOT affected.
+
+   DOM path inside #privy-modal-content:
+     div > .endhEK > .cJxKiR > .cQlWNU [flex column]
+       ├── nth-last-child(3): header (icon + title)  → fixed
+       ├── nth-last-child(2): SIWE message box       → scrollable
+       └── #privy-content-footer-container            → fixed         */
+
+/* Propagate flex-column + min-height:0 down through the 3 wrapper divs */
+#privy-modal-content:has(.lucide-square-pen),
+#privy-modal-content:has(.lucide-square-pen) > div,
+#privy-modal-content:has(.lucide-square-pen) > div > div,
+#privy-modal-content:has(.lucide-square-pen) > div > div > div {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* The flex column that owns header + SIWE content + footer */
+#privy-modal-content:has(.lucide-square-pen) div:has(> #privy-content-footer-container) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Header row — never shrinks */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(3) {
+  flex-shrink: 0 !important;
+}
+
+/* SIWE message content box — scrolls here, nowhere else */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2) {
+  flex-shrink: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  max-height: 200px !important;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(278 88% 58% / 0.3) transparent;
+}
+
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2)::-webkit-scrollbar {
+  width: 4px;
+}
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2)::-webkit-scrollbar-thumb {
+  background: hsl(278 88% 58% / 0.35);
+  border-radius: 9999px;
+}
+
+/* Footer row — never shrinks */
+#privy-modal-content:has(.lucide-square-pen) #privy-content-footer-container {
+  flex-shrink: 0 !important;
+  margin-top: 8px !important;
+}
+
+@media (max-width: 480px) {
+  #privy-dialog > div:last-child > div {
+    max-height: 85vh !important;
+    border-radius: 20px !important;
+  }
+  #privy-modal-content:has(.lucide-square-pen)
+    div:has(> #privy-content-footer-container) > *:nth-last-child(2) {
+    max-height: 150px !important;
+  }
+}
+
+/* ── Privy modal: Kult beautification ──────────────────────────────────
+   All cosmetic rules are scoped to the sign-message screen via
+   #privy-modal-content:has(.lucide-square-pen).
+   Stable target IDs from the DOM:
+     #privy-content-footer-container  → footer / CTA button
+     #protected-by-privy              → "Protected by Privy" link     */
+
+/* Stronger outer purple ambient glow (box-shadow ignores overflow:hidden) */
+#privy-dialog > div:last-child > div {
+  box-shadow:
+    0 32px 80px hsl(220 50% 2% / 0.65),
+    0 0 0 1px hsl(270 80% 60% / 0.14),
+    0 0 55px hsl(270 82% 58% / 0.18),
+    0 0 130px hsl(270 82% 58% / 0.1),
+    inset 0 1px 0 hsl(278 100% 82% / 0.1) !important;
+}
+
+/* Transparent intermediate wrappers so the card gradient shows cleanly */
+#privy-modal-content:has(.lucide-square-pen) > div,
+#privy-modal-content:has(.lucide-square-pen) > div > div,
+#privy-modal-content:has(.lucide-square-pen) > div > div > div,
+#privy-modal-content:has(.lucide-square-pen) div:has(> #privy-content-footer-container),
+#privy-content-footer-container {
+  background: transparent !important;
+}
+
+/* Icon circle — purple glow ring */
+#privy-modal-content:has(.lucide-square-pen) div:has(> .lucide-square-pen) {
+  background: radial-gradient(circle, hsl(278 88% 58% / 0.18), hsl(265 60% 12% / 0.55)) !important;
+  border: 1px solid hsl(278 88% 65% / 0.4) !important;
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 0 5px hsl(278 88% 58% / 0.07),
+    0 0 24px hsl(278 82% 60% / 0.32),
+    inset 0 1px 0 hsl(278 100% 82% / 0.15) !important;
+}
+
+/* Pen icon → Kult purple with soft glow */
+#privy-modal-content:has(.lucide-square-pen) .lucide-square-pen {
+  stroke: hsl(278 88% 75%) !important;
+  filter: drop-shadow(0 0 5px hsl(278 82% 70% / 0.55)) !important;
+}
+
+/* "Sign message" heading */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(3) h3 {
+  color: hsl(210 20% 96%) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  text-shadow: 0 0 18px hsl(270 80% 65% / 0.25) !important;
+}
+
+/* Subtitle */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(3) p {
+  color: hsl(210 14% 56%) !important;
+  font-size: 0.85rem !important;
+}
+
+/* Intermediate wrappers inside the scrollable area — transparent */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2) > div,
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2) > div > div {
+  background: transparent !important;
+}
+
+/* SIWE message text box → glass-dark input look (mirrors LoginModal email input) */
+#privy-modal-content:has(.lucide-square-pen)
+  div:has(> #privy-content-footer-container) > *:nth-last-child(2) > div > div > div {
+  background: hsl(220 45% 8% / 0.65) !important;
+  border: 1px solid hsl(210 25% 20% / 0.65) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 2px 4px hsl(220 50% 4% / 0.35) !important;
+  padding: 14px 16px !important;
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  font-size: 0.775rem !important;
+  line-height: 1.75 !important;
+  color: hsl(210 18% 70%) !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+/* "Sign and continue" button → site btn-eye purple gradient */
+#privy-content-footer-container button {
+  background: linear-gradient(135deg, hsl(265 90% 28%) 0%, hsl(270 82% 50%) 55%, hsl(278 100% 66%) 100%) !important;
+  border: 1px solid hsl(278 100% 78% / 0.28) !important;
+  border-radius: 14px !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  box-shadow:
+    inset 0 1px 0 hsl(210 20% 100% / 0.14),
+    inset 0 -1px 0 hsl(265 90% 16% / 0.4),
+    0 0 18px hsl(270 82% 58% / 0.22),
+    0 4px 20px hsl(270 82% 20% / 0.3) !important;
+  transition: filter 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#privy-content-footer-container button:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+  box-shadow:
+    inset 0 1px 0 hsl(210 20% 100% / 0.18),
+    inset 0 -1px 0 hsl(265 90% 16% / 0.4),
+    0 0 30px hsl(270 82% 58% / 0.4),
+    0 4px 26px hsl(270 82% 20% / 0.44) !important;
+}
+
+/* Close (×) button → dark-glass style matching LoginModal card buttons */
+button[aria-label="close modal"] {
+  background: hsl(220 45% 10% / 0.5) !important;
+  border: 1px solid hsl(210 25% 20% / 0.5) !important;
+  border-radius: 12px !important;
+  color: hsl(210 15% 50%) !important;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s !important;
+}
+
+button[aria-label="close modal"]:hover {
+  background: hsl(265 45% 15% / 0.65) !important;
+  border-color: hsl(270 80% 60% / 0.38) !important;
+  color: hsl(210 20% 93%) !important;
+  box-shadow: 0 0 10px hsl(270 82% 58% / 0.12) !important;
+}
+
+/* "Protected by Privy" → subtle, fades in on hover */
+#protected-by-privy {
+  opacity: 0.28 !important;
+  filter: grayscale(0.5) !important;
+  transition: opacity 0.25s, filter 0.25s !important;
+}
+
+#protected-by-privy:hover {
+  opacity: 0.6 !important;
+  filter: grayscale(0) !important;
 }
 
 @media (max-width: 767px) {

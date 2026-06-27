@@ -15,7 +15,10 @@ export function buildPrivyConfig(): PrivyClientConfig {
   const zeroGChain = buildAppChain();
   return {
     appearance: {
-      theme: "dark",
+      // Dark base matching site bg hsl(220 50% 6%) ≈ #070d1a
+      theme: "#070d1a",
+      // Kult primary purple hsl(278 88% 58%) ≈ #9835f5
+      accentColor: "#9835f5",
       walletChainType: "ethereum-only",
       showWalletLoginFirst: true,
       walletList: [...PRIVY_WALLET_LIST],

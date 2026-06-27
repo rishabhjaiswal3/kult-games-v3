@@ -85,7 +85,6 @@ export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy
         </span>
         <span
           className="absolute right-2 top-2 z-[2] max-w-[42%] truncate rounded border border-cyan-300/30 bg-cyan-950/75 px-1.5 py-px text-right font-tech text-[7px] font-black uppercase tracking-wide text-cyan-200 shadow-[0_0_10px_rgba(103,232,249,0.12)] backdrop-blur-sm transition duration-300 group-hover:border-cyan-200/50 group-hover:bg-cyan-900/85 group-hover:text-white"
-          title={gameBadgeLabel}
         >
           {gameBadgeLabel}
         </span>
@@ -96,7 +95,6 @@ export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy
           type="button"
           onClick={handleCardClick}
           className="line-clamp-1 text-left text-xs font-semibold leading-tight text-white transition group-hover:text-[#d6acff]"
-          title={item.name}
         >
           {item.name}
         </button>
