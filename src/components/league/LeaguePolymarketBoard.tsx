@@ -653,8 +653,8 @@ function MatchCard({ match }: { match: Match }) {
           <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Will {match.home.name} win?</p></div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20" <span>YES signal</span><span>{match.home.price}¢</span></button>
-          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20" <span>NO signal</span><span>{100 - match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>YES signal</span><span>{match.home.price}¢</span></button>
+          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>NO signal</span><span>{100 - match.home.price}¢</span></button>
         </div>
       </div>
 
