@@ -90,7 +90,6 @@ function TableRow({
             <img
               src={getRankFromElo(player.eloRating).image}
               alt={getRankFromElo(player.eloRating).name}
-              title={getRankFromElo(player.eloRating).name}
               className="mx-auto h-7 w-7 object-contain"
             />
           ) : null}

@@ -321,7 +321,6 @@ function PostPreviewText({ platform, payload, customText }: {
         type="button"
         onClick={() => void handleCopy()}
         className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md text-white/30 transition hover:bg-white/5 hover:text-white"
-        title="Copy post text"
       >
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
