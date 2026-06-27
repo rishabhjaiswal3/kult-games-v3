@@ -474,7 +474,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           Supremacy
         </span>
       </h2>
-      <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5">
+      <p className="mt-4 max-w-md text-sm leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5">
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -512,7 +512,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.28),rgba(154,53,255,0.24),rgba(4,8,15,0.78))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.36),rgba(168,85,247,0.3),rgba(4,8,15,0.82))]`}
+        className={`${actionButtonBase} ${actionButtonSize} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
@@ -525,7 +525,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
       <a
         href="#my-battles"
         data-tour="ai-arena-my-battle"
-        className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.22),rgba(4,8,15,0.78))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.3),rgba(4,8,15,0.82))]`}
+        className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.42),rgba(4,8,15,0.92))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.52),rgba(4,8,15,0.94))]`}
       >
         <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
         <span>MY BATTLE</span>
@@ -534,7 +534,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
       <Link
         to="/league"
         data-tour="ai-arena-enter-league"
-        className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.2),rgba(154,53,255,0.16),rgba(4,8,15,0.78))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.28),rgba(154,53,255,0.22),rgba(4,8,15,0.82))] hover:text-white`}
+        className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white`}
       >
         <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
         <span>ENTER LEAGUE</span>
@@ -1115,13 +1115,13 @@ function RankProgressionTimeline() {
                 >
                   {rank.shortName}
                 </div>
-                <div className="text-[8px] sm:text-[9px] text-white/35 font-mono leading-tight">
+                <div className="text-[8px] sm:text-[9px] text-white/65 font-mono leading-tight">
                   {rank.minElo === 0 ? "0" : rank.minElo >= 1000 ? `${(rank.minElo / 1000).toFixed(0)}K` : rank.minElo}
                   {rank.maxElo != null
                     ? ` – ${rank.maxElo >= 1000 ? `${(rank.maxElo / 1000).toFixed(0)}K` : rank.maxElo}`
                     : "+"}
                 </div>
-                <div className="text-[7px] sm:text-[8px] text-white/20 font-tech uppercase tracking-wider">
+                <div className="text-[7px] sm:text-[8px] text-white/45 font-tech uppercase tracking-wider">
                   ELO
                 </div>
               </div>
