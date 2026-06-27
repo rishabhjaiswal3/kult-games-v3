@@ -1140,7 +1140,7 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
         code: o.code,
         history: synthSeries(o.yes),
       }))
-    : event!.outcomesDetail.slice(0, 5).map((o, i) => ({
+    : (event?.outcomesDetail ?? []).slice(0, 5).map((o, i) => ({
         key: o.tokenId ?? o.label,
         label: o.label,
         yes: o.yes,
@@ -1701,7 +1701,7 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
           </tr>
         </thead>
         <tbody>
-          {group.standings.map((row) => {
+          {(group.standings ?? []).map((row) => {
             const flag = flagFor(row.team);
             const advancing = row.position <= 2;
             return (
