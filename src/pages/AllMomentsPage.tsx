@@ -47,13 +47,6 @@ import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import momentWarzone from "@/assets/moment-warzone.png";
 import momentRobowars from "@/assets/moment-robowars.png";
 import momentFeatured from "@/assets/moment-featured.png";
-import agentNexus from "@/assets/agent-nexus.jpg";
-import agentAegis from "@/assets/agent-aegis.jpg";
-import agentLumen from "@/assets/agent-lumen.jpg";
-import agentShadow from "@/assets/agent-shadow.jpg";
-import agentRageborn from "@/assets/agent-rageborn.jpg";
-
-
 type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
 type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
 
@@ -113,13 +106,6 @@ type MomentCard = {
   contentType: "image" | "video";
   mediaUrl: string | undefined;
   raw: Moment;
-};
-
-type CreatorRow = {
-  rank: number;
-  name: string;
-  avatar: string;
-  viewsLabel: string;
 };
 
 const PAGE_SIZE = 9;
@@ -388,21 +374,6 @@ function sortMomentCards(cards: MomentCard[], selectedBestOf: string, creatorCou
   });
 }
 
-function buildCreatorRows(cards: MomentCard[]): CreatorRow[] {
-  const map = new Map<string, { name: string; avatar: string; totalViews: number; totalLikes: number; totalMoments: number }>();
-  for (const card of cards) {
-    const cur = map.get(card.creator) ?? { name: card.creator, avatar: card.creatorAvatar, totalViews: 0, totalLikes: 0, totalMoments: 0 };
-    cur.totalViews += card.viewCount;
-    cur.totalLikes += card.likeCount;
-    cur.totalMoments += 1;
-    map.set(card.creator, cur);
-  }
-  return [...map.values()]
-    .sort((a, b) => b.totalLikes - a.totalLikes || b.totalViews - a.totalViews)
-    .slice(0, 4)
-    .map((c, i) => ({ rank: i + 1, name: c.name, avatar: c.avatar, viewsLabel: c.totalViews > 0 ? compactMetric(c.totalViews) : `${c.totalMoments} clips` }));
-}
-
 function pickFeaturedMoment(cards: MomentCard[]) {
   if (cards.length === 0) return null;
   return [...cards].sort((a, b) => (b.raw.aiRankScore ?? 0) - (a.raw.aiRankScore ?? 0) || b.likeCount - a.likeCount)[0]!;
@@ -466,7 +437,7 @@ function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; 
           <h3 onClick={() => onOpen(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">{item.title}</h3>
           <div className="mt-1 flex items-center justify-between"><div className="flex items-center gap-1.5 text-[11px] text-white/50"><span>by {item.creator}</span><Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" /></div><div className="flex items-center gap-1.5 text-[10px] text-white/40"><ClanIconBadge type={item.clanIconType} /><span className="max-w-[90px] truncate">{item.clanName}</span></div></div>
         </div>
-        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Eye className="h-4 w-4 text-white/30" />{item.views}</span><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2"><div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div><button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
+        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2"><div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div><button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
       </div>
     </article>
   );
@@ -754,7 +725,11 @@ export function AllMomentsPage() {
   const showViewMore =
     !isBrowseAll && activeTab === "DISCOVER" && !discoverQuery.isLoading && filteredMoments.length > 0;
 
-  const topCreators = useMemo(() => buildCreatorRows(discoverCards), [discoverCards]);
+  const topCreatorsQuery = useQuery({
+    queryKey: [MOMENTS_QUERY_KEY_ROOT, "top-creators"],
+    queryFn: () => momentsApi.getTopCreators(10),
+    staleTime: 5 * 60_000,
+  });
 
   const canLoadMore = isBrowseAll && activeTab === "DISCOVER" && Boolean(discoverQuery.hasNextPage);
   const isLoadingMore = isBrowseAll && activeTab === "DISCOVER" && discoverQuery.isFetchingNextPage;
@@ -1007,7 +982,6 @@ export function AllMomentsPage() {
                       </div>
                       <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45">
                         <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1"><Eye className="h-4 w-4 text-white/30" />{item.views}</span>
                           <span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1123,58 +1097,39 @@ export function AllMomentsPage() {
               </button>
             </div>
 
-            {/* Top sharers */}
-            <section className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP SHARERS</h3>
-              {[
-                { wallet: "0xC27A…7541", plays: "612 plays", avatar: agentNexus },
-                { wallet: "0x41AC…F3D7", plays: "438 plays", avatar: agentAegis },
-                { wallet: "0xE9BB…9E10", plays: "252 plays", avatar: agentLumen },
-                { wallet: "0x4AF2…32B9", plays: "196 plays", avatar: agentShadow },
-                { wallet: "0x5E95…568E", plays: "144 plays", avatar: agentRageborn },
-              ].slice(0, 4).map((sharer, index) => (
-                <div key={sharer.wallet} className="flex items-center justify-between py-0.5 text-xs font-semibold">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="w-3 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
-                    <span className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-                      <img src={sharer.avatar} alt="" className="h-full w-full object-cover" />
-                    </span>
-                    <div className="flex min-w-0 items-center gap-1 text-white/90">
-                      <span className="truncate">{sharer.wallet}</span>
-                      <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
-                    </div>
-                  </div>
-                  <div className="ml-3 flex shrink-0 items-center gap-1 text-[10px] text-white/55">
-                    <Eye className="h-3.5 w-3.5 text-white/30" />
-                    <span>{sharer.plays}</span>
-                  </div>
-                </div>
-              ))}
-            </section>
-
             {/* Top creators */}
             <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP CREATORS</h3>
               <div className="space-y-3 text-xs font-semibold">
-                {topCreators.length === 0 ? (
-                  <div className="rounded border border-white/8 bg-white/[0.02] px-3 py-4 text-center text-white/45">
-                    Creator stats appear as soon as the live feed returns moments.
+                {topCreatorsQuery.isLoading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex animate-pulse items-center gap-3 py-0.5">
+                        <div className="h-3 w-3 rounded bg-white/10" />
+                        <div className="h-7 w-7 rounded-full bg-white/10" />
+                        <div className="h-3 flex-1 rounded bg-white/10" />
+                      </div>
+                    ))}
                   </div>
-                ) : topCreators.map((creator) => (
-                  <div key={`${creator.rank}-${creator.name}`} className="flex items-center justify-between py-0.5">
-                    <div className="flex items-center gap-3">
-                      <span className="w-3 text-center font-tech text-[10px] font-black text-white/45">{creator.rank}</span>
-                      <div className="h-7 w-7 overflow-hidden rounded-full border border-white/10 bg-white/5">
-                        <img src={creator.avatar} alt={creator.name} className="h-full w-full object-cover" />
+                ) : (topCreatorsQuery.data ?? []).length === 0 ? (
+                  <div className="rounded border border-white/8 bg-white/[0.02] px-3 py-4 text-center text-white/45">
+                    Creator stats appear as soon as moments are registered.
+                  </div>
+                ) : (topCreatorsQuery.data ?? []).map((creator, index) => (
+                  <div key={creator.walletAddress} className="flex items-center justify-between py-0.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="w-3 shrink-0 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
+                      <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+                        <img src={seededAvatar(creator.walletAddress)} alt="" className="h-full w-full object-cover" />
                       </div>
-                      <div className="flex items-center gap-1 text-white/90">
-                        <span>{creator.name}</span>
-                        <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
+                      <div className="flex min-w-0 items-center gap-1 text-white/90">
+                        <span className="truncate">{shortWallet(creator.walletAddress)}</span>
+                        <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-white/55">
-                      <Eye className="h-3.5 w-3.5 text-white/30" /><span>{creator.viewsLabel}</span>
-                    </div>
+                    <span className="ml-3 shrink-0 font-tech text-[10px] text-white/55">
+                      {creator.momentCount} {creator.momentCount === 1 ? "moment" : "moments"}
+                    </span>
                   </div>
                 ))}
               </div>

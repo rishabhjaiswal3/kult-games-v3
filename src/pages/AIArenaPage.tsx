@@ -51,7 +51,7 @@ import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
 import leagueBackground from "@/assets/league_background.mp4";
 import heroTrio from "@/assets/hero-trio.png";
-import warzoneVideo from "@/assets/IMG_9260.MOV";
+import warzoneVideo from "@/assets/IMG_9260.mp4";
 import battleStep3 from "@/assets/step3.mp4";
 import battleStep5 from "@/assets/step5.mp4";
 import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
@@ -578,7 +578,7 @@ function Hero() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           className="h-full w-full object-cover object-right"
         >
           <source src={heroVideo} type="video/mp4" />
@@ -594,7 +594,7 @@ function Hero() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           className="absolute inset-0 h-full w-full object-cover object-top"
         >
           <source src={heroVideo} type="video/mp4" />
@@ -766,7 +766,7 @@ function FeaturesBlock() {
             <p className="mt-2 text-sm leading-relaxed text-white/65">Your agent acts from the traits and strategy you train, learns from battle results, and remains yours as it grows through the Arena.</p>
           </div>
         </div>
-        <div className="card-glass h-full rounded-xl p-3 text-center sm:p-4 lg:text-left">
+        {/* <div className="card-glass h-full rounded-xl p-3 text-center sm:p-4 lg:text-left">
           <div className="text-[10px] tracking-[0.3em] font-tech text-muted-foreground">
             $ARENA TOKEN
           </div>
@@ -799,7 +799,7 @@ function FeaturesBlock() {
           >
             VIEW TOKEN
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   );
@@ -957,7 +957,7 @@ function WhereAgentsCompete() {
                 autoPlay
                 loop
                 muted
-                preload="metadata"
+                preload="none"
                 playsInline
                 className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
@@ -1003,7 +1003,7 @@ function WhereAgentsCompete() {
             autoPlay
             loop
             muted
-            preload="metadata"
+            preload="none"
             playsInline
             className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
@@ -1757,7 +1757,7 @@ function ArenaLandingFooter() {
                 autoPlay
                 loop
                 muted
-                preload="metadata"
+                preload="none"
                 playsInline
                 className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
               />
