@@ -50,7 +50,7 @@ const Leaderboard = () => {
   const kultProfileQ = useQuery({
     queryKey: ["kult", "player", "fullProfile"],
     queryFn: () => playerApi.getFullProfile(),
-    enabled: activeMode === "KULT_POINTS" && isAuthenticated,
+    enabled: isAuthenticated,
     staleTime: 60_000,
     retry: false,
   });
@@ -77,8 +77,8 @@ const Leaderboard = () => {
     return current;
   }, [kultRows, kultTableRows, walletAddress]);
   const kultProfile = kultProfileQ.data;
-  const kultSidebarRank = kultProfile?.rank ?? kultUserRow?.rank;
-  const kultSidebarPoints = kultProfile?.totalScore ?? Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
+  const kultSidebarRank = kultProfile?.kultPointsRank ?? kultProfile?.rank ?? kultUserRow?.rank;
+  const kultSidebarPoints = kultProfile?.kultPoints ?? kultProfile?.totalScore ?? Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
   const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });
@@ -94,7 +94,7 @@ const Leaderboard = () => {
   const rankQ = useQuery({
     queryKey: ["aiArenaGateway", "leaderboard", "myRank", firstAgent?.id],
     queryFn: () => aiArenaGatewayApi.getLeaderboardRankForAgent(firstAgent!.id, "global"),
-    enabled: activeMode === "AI_ARENA" && isAuthenticated && !!firstAgent?.id,
+    enabled: isAuthenticated && !!firstAgent?.id,
     staleTime: 60_000,
     retry: false,
   });
@@ -326,14 +326,18 @@ const Leaderboard = () => {
                 <div className="grid gap-3 sm:grid-cols-3">
                   {[
                     {
-                      label: "GLOBAL RANK",
+                      label: "KP RANK",
                       value: kultProfileQ.isLoading
                         ? "Loading..."
-                        : kultProfile?.rank != null ? `#${kultProfile.rank.toLocaleString()}` : "UNRANKED",
+                        : (kultProfile?.kultPointsRank ?? kultProfile?.rank) != null
+                          ? `#${(kultProfile?.kultPointsRank ?? kultProfile?.rank)!.toLocaleString()}`
+                          : "UNRANKED",
                     },
                     {
-                      label: "TOTAL KP",
-                      value: kultProfileQ.isLoading ? "Loading..." : (kultProfile?.totalScore ?? 0).toLocaleString(),
+                      label: "KULT POINTS",
+                      value: kultProfileQ.isLoading
+                        ? "Loading..."
+                        : (kultProfile?.kultPoints ?? kultProfile?.totalScore ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 }),
                     },
                     {
                       label: "GAMES RANKED",
@@ -371,13 +375,6 @@ const Leaderboard = () => {
                   showPerformanceColumns={false}
                   showLeagueColumn={false}
                 />
-
-                <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
-                  <Info className="h-4 w-4 shrink-0 text-blue-400" />
-                  <span>
-                    This tab uses the existing KULT backend leaderboard as the temporary KULT Points source until the dedicated KP ledger is implemented.
-                  </span>
-                </div>
               </>
             ) : activeArenaTab === "MY RANK" && !isAuthenticated ? (
               <div className="arena-panel border border-white/8 px-6 py-14 text-center">
