@@ -110,7 +110,7 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
               <Link
                 to={startLink.href}
                 className="footer-enter-cta mt-4 mx-auto sm:mx-0"
-                style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+                style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "13px" }}
               >
                 <span className="select-none leading-none" aria-hidden>⚽</span>
                 <span>{startLink.label}</span>

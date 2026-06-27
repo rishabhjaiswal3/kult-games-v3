@@ -984,7 +984,7 @@ function WhereAgentsCompete() {
             </span>
 
             <div className="relative z-10 flex h-full flex-col justify-end p-4">
-              <h4 className="font-tech text-2xl font-black uppercase leading-tight text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-0.5 group-hover:text-[#f0d7ff] sm:text-3xl">
+              <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-0.5 group-hover:text-[#f0d7ff] sm:text-lg">
                 {game.title}
               </h4>
               <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">{game.body}</p>
@@ -1021,7 +1021,7 @@ function WhereAgentsCompete() {
           </span>
 
           <div className="relative z-10 flex h-full flex-col justify-end">
-            <h4 className="font-tech text-2xl font-black uppercase leading-tight text-white drop-shadow-lg sm:text-3xl">Prediction AI</h4>
+            <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg sm:text-lg">Prediction AI</h4>
             <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">
               Forecast live events alongside your AI agent, Debate, Predict and Build forecasting reputation.
             </p>

@@ -424,7 +424,7 @@ export function HomePage() {
             type="button"
             onClick={() => navigate("/ai-arena")}
             className="footer-arena-cta footer-arena-cta--compact group mx-auto sm:mx-0"
-            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "13px" }}
           >
             <span className="footer-arena-cta__shine" aria-hidden />
             <span className="footer-arena-cta__scan" aria-hidden />
