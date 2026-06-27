@@ -396,7 +396,7 @@ function ArenaQuickLinks() {
           <Link
             key={link.path}
             to={link.path}
-            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] p-4 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] lg:p-3 xl:p-4"
+            className="arena-panel group relative flex items-center justify-between overflow-hidden border-[var(--quick-link-border)] bg-[linear-gradient(110deg,var(--quick-link-bg),rgba(4,8,15,0.97)_48%)] px-4 py-1.5 shadow-[0_0_20px_var(--quick-link-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] lg:px-3 lg:py-1 xl:px-4 xl:py-1.5"
             style={
               {
                 "--quick-link-color": link.color,
@@ -410,10 +410,10 @@ function ArenaQuickLinks() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <div className="flex items-center gap-3">
               <div
-                className="relative z-10 grid h-10 w-10 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)] lg:h-9 lg:w-9 xl:h-10 xl:w-10"
+                className="relative z-10 grid h-8 w-8 place-items-center rounded-md border border-[var(--quick-link-border)] bg-[var(--quick-link-bg)] shadow-[0_0_14px_var(--quick-link-shadow)] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)] lg:h-8 lg:w-8 xl:h-8 xl:w-8"
                 style={{ color: link.color }}
               >
-                <link.icon className="h-5 w-5" />
+                <link.icon className="h-4 w-4" />
               </div>
               <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-[var(--quick-link-color)] transition duration-300 group-hover:brightness-125 lg:text-xs xl:text-sm">
                 {link.label}
