@@ -7,8 +7,7 @@ import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { AccessProvider, useAccess } from "@/contexts/AccessContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { useState, useCallback, useEffect, Suspense } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { hasUserLoginIntent, getUserLoginMethod } from "@/lib/loginModalBus";
+import { hasUserLoginIntent, getUserLoginMethod, requestOpenLoginModal } from "@/lib/loginModalBus";
 import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { RouteChunkErrorBoundary } from "@/components/RouteChunkErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -42,32 +41,14 @@ import { AccessRoute } from "@/components/AccessRoute";
 import { TourProvider } from "@/tour/TourProvider";
 
 function OAuthRedirectLoader() {
-  const { isAuthenticated } = useAuth();
-  const [show, setShow] = useState(
-    () => hasUserLoginIntent() && getUserLoginMethod() === "google",
-  );
-
   useEffect(() => {
-    if (!show) return;
-    const timer = window.setTimeout(() => setShow(false), 30_000);
-    return () => window.clearTimeout(timer);
-  }, [show]);
+    if (!hasUserLoginIntent() || getUserLoginMethod() !== "google") return;
+    // Returning from Google OAuth — open the login modal in finishing/loading state immediately.
+    // AuthContext SIWE runs in the background; LoginModal handles the spinner, timeout, and recovery.
+    requestOpenLoginModal({ mode: "finishing" });
+  }, []); // Runs once on mount
 
-  if (!show || isAuthenticated) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-[99] flex flex-col items-center justify-center"
-      style={{
-        background:
-          "radial-gradient(ellipse at 50% 40%, hsl(270 82% 15% / 0.4), hsl(220 50% 4% / 0.98) 70%)",
-      }}
-    >
-      <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#9a35ff]/30 border-t-[#9a35ff]" />
-      <p className="mt-4 font-tech text-sm text-white/60">Completing Google sign-in…</p>
-      <p className="mt-1 font-tech text-[11px] text-white/30">This should only take a moment</p>
-    </div>
-  );
+  return null;
 }
 
 const SPLASH_SEEN_KEY = "kult_splash_seen";
