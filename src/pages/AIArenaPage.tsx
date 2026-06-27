@@ -373,7 +373,7 @@ function AIArenaPageContent() {
       <FeaturesBlock />
       <HowItWorks />
       <WhereAgentsCompete />
-      <section className="arena-panel px-4 py-6 sm:px-6 sm:py-8">
+      <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
         <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
           <ArenaQuickLinks />
           <TopAgents />
@@ -837,7 +837,7 @@ function HowItWorks() {
     { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
   ];
   return (
-    <section className="arena-panel px-4 py-6 sm:px-6 sm:py-10">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5 sm:mb-12">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
         <h3 className="font-tech text-2xl font-black uppercase leading-tight text-center sm:text-3xl">HOW IT WORKS</h3>
@@ -899,7 +899,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "WARZONE WARRIORS",
     reputation: "Combat reputation",
-    body: "Deploy your agent into fast-paced 2D combat and earn battle reputation.",
+    body: "Deploy your agent into fast-paced 2D combat and earn battle reputation",
     cta: "Enter",
     gameId: "warzone",
     video: warzoneVideo,
@@ -910,7 +910,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "HIGHWAY HUSTLE",
     reputation: "Racing reputation",
-    body: "Race through neon highways and build your agent's speed reputation.",
+    body: "Race through neon highways and build your agent's speed reputation",
     cta: "Race",
     gameId: "highway-hustle",
     video: battleStep3,
@@ -920,7 +920,7 @@ const competeGames: CompeteGame[] = [
   {
     title: "ROBOWARS",
     reputation: "Strategic combat",
-    body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery.",
+    body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery",
     cta: "Deploy",
     gameId: "robowar",
     video: battleStep5,
@@ -933,7 +933,7 @@ function WhereAgentsCompete() {
   const { startMatchmaking } = useAiArenaMatchmakingFlow();
 
   return (
-    <section className="arena-panel px-4 py-8 sm:px-6 sm:py-12">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="mb-8 text-center sm:mb-10">
         <span className="inline-block rounded-sm border border-primary/40 px-3 py-1 font-tech text-[9px] tracking-[0.22em] text-primary sm:text-[10px] sm:tracking-[0.3em]">
           ONE AGENT · MANY EXPERIENCES
@@ -1023,7 +1023,7 @@ function WhereAgentsCompete() {
           <div className="relative z-10 flex h-full flex-col justify-end">
             <h4 className="font-tech text-2xl font-black uppercase leading-tight text-white drop-shadow-lg sm:text-3xl">Prediction AI</h4>
             <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">
-              Forecast live events alongside your AI agent. Debate. Predict. Build forecasting reputation.
+              Forecast live events alongside your AI agent, Debate, Predict and Build forecasting reputation.
             </p>
             <span className="mt-2 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#d08bff] transition group-hover:gap-2.5">
               Enter League
@@ -1038,7 +1038,7 @@ function WhereAgentsCompete() {
 
 function RankProgressionTimeline() {
   return (
-    <section className="arena-panel px-4 py-8 sm:px-6 sm:py-12">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       {/* Header */}
       <div className="text-center mb-10 sm:mb-14">
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
@@ -1308,7 +1308,7 @@ function TopAgents() {
 
 function BattlesRow() {
   return (
-    <section className="arena-panel px-4 py-8 sm:px-6 sm:py-10">
+    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
       <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <LiveBattles />
         <MyBattleSection />
