@@ -375,13 +375,6 @@ const Leaderboard = () => {
                   showPerformanceColumns={false}
                   showLeagueColumn={false}
                 />
-
-                <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
-                  <Info className="h-4 w-4 shrink-0 text-blue-400" />
-                  <span>
-                    This tab uses the existing KULT backend leaderboard as the temporary KULT Points source until the dedicated KP ledger is implemented.
-                  </span>
-                </div>
               </>
             ) : activeArenaTab === "MY RANK" && !isAuthenticated ? (
               <div className="arena-panel border border-white/8 px-6 py-14 text-center">
