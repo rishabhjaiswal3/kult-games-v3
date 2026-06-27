@@ -1,5 +1,7 @@
+import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Bookmark, Heart, Loader2, MessageCircle } from "lucide-react";
+import { Bookmark, Download, Heart, Loader2, MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import type { Moment } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -94,6 +96,17 @@ function EngagementChip({
   );
 }
 
+function deriveFilename(moment: Moment): string {
+  const url = (moment.assetZgUrl ?? moment.assetUrl ?? "").split("?")[0];
+  const ext = url.match(/\.(mp4|webm|mov|m4v|ogv|png|jpe?g|gif|webp|avif)$/i)?.[0] ?? "";
+  const slug = (moment.title || `moment-${moment._id}`)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  return `${slug}${ext}`;
+}
+
 export function MomentEngagementBar({
   moment,
   bookmarked,
@@ -105,6 +118,41 @@ export function MomentEngagementBar({
   const likeCount = moment.numLikes > 0 ? moment.numLikes.toLocaleString() : "—";
   const commentCount = moment.numComments > 0 ? moment.numComments.toLocaleString() : "—";
   const hasLikes = moment.numLikes > 0;
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    const url = moment.assetZgUrl ?? moment.assetUrl;
+    if (!url) { toast.error("No asset available to download"); return; }
+    setIsDownloading(true);
+    const filename = deriveFilename(moment);
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) throw new Error("fetch failed");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+      toast.success("Download started");
+    } catch {
+      // CORS fallback — opens in new tab so browser handles download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast.info("Opening in new tab — use Save As to download");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(180deg,rgba(10,15,27,0.92),rgba(4,8,15,0.88))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -136,6 +184,15 @@ export function MomentEngagementBar({
             onClick={onBookmarkToggle}
             active={bookmarked}
             accent="amber"
+            iconOnly
+          />
+          <EngagementChip
+            icon={Download}
+            label="Download moment"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            loading={isDownloading}
+            accent="cyan"
             iconOnly
           />
         </div>
