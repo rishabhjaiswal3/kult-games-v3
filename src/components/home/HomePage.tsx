@@ -13,7 +13,6 @@ import {
   Package,
   Radio,
   Sparkles,
-  Store,
   Swords,
   TrendingUp,
   Zap,
@@ -88,7 +87,7 @@ export function HomePage() {
   const visibleStatTiles = [
     { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Joystick, color: "#11a7ff", path: "/games", feature: "games" },
     { label: "AI Arena", value: "Live", icon: BrainCircuit, color: "#a855ff", path: "/ai-arena", feature: "ai_arena" },
-    { label: "Marketplace", value: "Open", icon: Store, color: "#ffc42e", path: "/inventory", feature: "full_browser" },
+    { label: "Dashboard", value: "Open", icon: Box, color: "#ffc42e", path: "/dashboard", feature: "ai_arena" },
     { label: "Battles", value: "24/7", icon: Swords, color: "#00f080", path: "/battles", feature: "ai_arena" },
   ].filter((stat) => canUse(stat.feature as AccessFeature));
   const visibleQuickLinks = quickLinks.filter((link) => canUse(link.feature));
@@ -125,7 +124,7 @@ export function HomePage() {
       return;
     }
 
-    navigate("/dashboard");
+    navigate("/ai-arena");
   };
 
   return (
@@ -143,27 +142,24 @@ export function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
-        <div className="relative z-10 flex min-h-[430px] flex-col justify-start gap-8 p-5 sm:min-h-[520px] sm:p-8 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-          <div className="flex flex-wrap items-center gap-3 text-[9px] font-tech uppercase tracking-[0.2em] text-white/50">
-            <span className="flex items-center gap-1.5">
-              Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain" />
+        <div className="relative z-10 flex min-h-[430px] flex-col justify-start gap-8 p-5 pt-12 sm:min-h-[520px] sm:p-8 sm:pt-16 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
+          <div className="flex flex-nowrap items-center gap-2 whitespace-nowrap text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 sm:gap-3">
+            <span className="flex shrink-0 items-center gap-1.5">
+              Presented by <img src={kultLogo} alt="Kult" className="h-4 w-auto object-contain" />
             </span>
-            <span className="flex items-center gap-1.5">
-              Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain" />
+            <span className="flex shrink-0 items-center gap-1.5">
+              Powered by <img src={zeroGLogo} alt="0G" className="h-4 w-auto object-contain" />
             </span>
           </div>
           <div className="max-w-2xl space-y-4">
-            <span className="inline-flex rounded border border-[#9f2dff]/50 bg-[#5b1499]/35 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#d773ff]">
-              Kult Games
-            </span>
-            <h1 className="max-w-2xl font-tech text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl font-tech text-4xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
               The Operating
               <br />
               layer for
               <br />
               intelligent
               <br />
-              gaming.
+              gaming
             </h1>
             <p className="max-w-lg text-sm leading-relaxed text-white/75">
               One browser for games, agents, rivalries,
@@ -175,7 +171,7 @@ export function HomePage() {
                 <button
                   type="button"
                   onClick={handleExploreGames}
-                  className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+                  className="btn-primary inline-flex items-center gap-2 rounded-md px-6 py-2.5 font-tech text-xs font-bold uppercase tracking-wider"
                 >
                   Explore games
                   <ArrowUpRight className="h-4 w-4" />
@@ -185,9 +181,10 @@ export function HomePage() {
                 <button
                   type="button"
                   onClick={handlePrimaryCta}
-                  className="inline-flex items-center gap-2 rounded-md border border-purple-300/45 bg-purple-500/[0.12] px-6 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-purple-100 shadow-[0_0_14px_rgba(154,53,255,0.12)] transition hover:border-purple-200/75 hover:bg-purple-500/[0.18] hover:text-white hover:shadow-[0_0_20px_rgba(154,53,255,0.22)]"
+                  className="inline-flex items-center gap-2 rounded-md border border-purple-300/60 bg-gradient-to-r from-purple-500/30 to-fuchsia-500/25 px-6 py-2.5 font-tech text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(154,53,255,0.35)] transition hover:border-purple-200/90 hover:from-purple-500/45 hover:to-fuchsia-500/40 hover:text-white hover:shadow-[0_0_32px_rgba(154,53,255,0.55)]"
                 >
-                  {isAuthenticated ? "Open dashboard" : "Connect wallet"}
+                  {isAuthenticated ? "Enter AI Arena" : "Connect wallet"}
+                  <ArrowUpRight className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -195,24 +192,24 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
+      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-3 sm:px-5 sm:py-3.5">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_50%,rgba(0,137,255,0.14),transparent_35%),radial-gradient(circle_at_10%_20%,rgba(154,53,255,0.14),transparent_32%)]" />
         <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] md:items-center">
           <div>
             <div className="font-tech text-[10px] font-bold uppercase tracking-[0.26em] text-[#bd6cff]">Your KULT ID</div>
             <h2 className="mt-2 max-w-xl font-tech text-lg font-semibold leading-snug text-white sm:text-xl">
-              One identity for your entire game world.
+              One identity for your entire game world
             </h2>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/75">
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/58">
               Infinite Games, Intelligent Agents, Capture moment, predict the future.
             </p>
           </div>
           {canViewAiArena ? (
-            <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 p-3 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
+            <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 px-3 py-2.5 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
               <div className="min-w-0">
                 <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
-                <div className="mt-1 text-sm font-semibold text-white group-hover:text-[#66d5ff]">One profile across Kult</div>
+                <div className="mt-1 font-tech text-lg font-semibold leading-snug text-white group-hover:text-[#66d5ff] sm:text-xl">One profile across Kult</div>
                 <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
               </div>
             </Link>
@@ -220,11 +217,11 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="arena-panel overflow-hidden border-white/8 bg-[#03070d]/95 p-5 sm:p-6">
+      <section className="arena-panel overflow-hidden border-white/8 bg-[#03070d]/95 px-5 py-3.5 sm:px-6 sm:py-4">
         <div className="font-tech text-[10px] font-bold uppercase tracking-[0.28em] text-[#bd6cff]">Ecosystem loop</div>
-        <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <h2 className="shrink-0 font-tech text-lg font-black uppercase leading-[1.25] text-white sm:text-xl">
-              Everything you do keeps building.
+              Everything you do keeps building
           </h2>
           <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-nowrap md:items-center md:justify-end">
             {["Play", "Create", "Compete", "Build", "Persist"].map((step, index) => (
@@ -243,17 +240,17 @@ export function HomePage() {
             <Link
               key={stat.label}
               to={stat.path}
-              className="home-stat-tile relative z-10 flex items-center gap-5 p-5 sm:p-6"
+              className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
               style={{ "--stat-color": stat.color } as CSSProperties}
             >
               <div
-                className="home-stat-icon grid h-14 w-14 place-items-center rounded-lg"
+                className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg"
               >
-                <stat.icon className="h-7 w-7" />
+                <stat.icon className="h-5 w-5" />
               </div>
               <div>
                 <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
-                <div className="mt-2 text-2xl font-semibold text-white sm:text-3xl">{stat.value}</div>
+                <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">{stat.value}</div>
               </div>
             </Link>
           ))}
@@ -304,7 +301,7 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => navigate("/games")}
-                className="inline-flex w-fit items-center gap-2 rounded-md border border-[#9b32ff]/60 bg-[#230b35]/75 px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-white transition hover:border-[#c084fc] hover:bg-[#35104f]"
+                className="inline-flex w-fit items-center gap-2 rounded-md border border-[#9b32ff]/60 bg-[#230b35]/75 px-5 py-2 font-tech text-xs font-bold uppercase tracking-wider text-white transition hover:border-[#c084fc] hover:bg-[#35104f]"
               >
                 Browse games
                 <ArrowUpRight className="h-4 w-4" />
@@ -319,9 +316,9 @@ export function HomePage() {
       {canViewMoments ? <HomeMomentsSection /> : null}
 
       {canViewGames ? (
-        <div className="space-y-3">
+        <section className="arena-panel space-y-3 border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Featured games</h2>
+            <h2 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Featured games</h2>
             <Link
               to="/games"
               className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
@@ -366,7 +363,7 @@ export function HomePage() {
                         <p className="truncate text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">
                           {getGameName(game.name)}
                         </p>
-                        <p className="mt-1 line-clamp-1 text-[10px] text-white/40">
+                        <p className="mt-1 line-clamp-1 text-xs text-white/65">
                           {getGameDescription(game.description) || game.category}
                         </p>
                       </div>
@@ -374,12 +371,12 @@ export function HomePage() {
                   );
                 })}
           </div>
-        </div>
+        </section>
       ) : null}
 
       {visibleQuickLinks.length > 0 ? (
-        <div>
-          <h2 className="mb-3 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Jump in</h2>
+        <section className="arena-panel border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
+          <h2 className="mb-3 font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Jump in</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {visibleQuickLinks.map((link) => (
               <Link
@@ -409,7 +406,7 @@ export function HomePage() {
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       ) : null}
 
       {canViewAiArena ? (
@@ -419,15 +416,15 @@ export function HomePage() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-tech text-sm font-bold uppercase text-white">Ready for the arena?</h3>
-              <p className="text-xs text-white/45">Train agents, earn rewards, and compete globally.</p>
+              <h3 className="font-tech text-xl font-black uppercase leading-tight text-white sm:text-2xl">Ready for the arena?</h3>
+              <p className="text-sm leading-relaxed text-white/75">Train agents, earn rewards, and compete globally.</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => navigate("/ai-arena")}
-            className="footer-arena-cta footer-arena-cta--compact group"
-            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "11px" }}
+            className="footer-arena-cta footer-arena-cta--compact group mx-auto sm:mx-0"
+            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "13px" }}
           >
             <span className="footer-arena-cta__shine" aria-hidden />
             <span className="footer-arena-cta__scan" aria-hidden />
@@ -464,7 +461,7 @@ function HomeAIArenaSection() {
               AI Arena
             </div>
             <h2 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
-              Train intelligence. Rule the arena.
+              Train intelligence Rule the arena
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/58">
               Create agents that remember fights, learn tactics, trigger rivalries, and battle while the whole ecosystem watches.
@@ -487,7 +484,7 @@ function HomeAIArenaSection() {
 
           <Link
             to="/ai-arena"
-            className="btn-primary inline-flex w-fit items-center gap-2 rounded-md px-5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider"
+            className="btn-primary inline-flex w-fit items-center gap-2 rounded-md px-5 py-2 font-tech text-xs font-bold uppercase tracking-wider"
           >
             Enter AI Arena
             <ArrowUpRight className="h-4 w-4" />
@@ -621,14 +618,14 @@ function HomeLiveLeaguesSection() {
               <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.85)]" />
               Live leagues
             </div>
-            <h2 className="mt-1 flex items-center gap-2 font-tech text-xl font-black uppercase text-white sm:text-2xl">
-              <span className="select-none text-lg sm:text-xl" aria-hidden>⚽</span>
-              Season is live.
+            <h2 className="mt-1 flex items-center gap-2 font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
+              <span className="select-none text-xl sm:text-2xl" aria-hidden>⚽</span>
+              Season is live
             </h2>
           </div>
           <div className="hidden text-center lg:block">
-            <div className="font-tech text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffc42e]">Make your first pick.</div>
-            <div className="mt-1 font-tech text-[9px] uppercase tracking-[0.14em] text-white/45">Back the winner. Build your record.</div>
+            <div className="text-sm leading-relaxed text-[#ffc42e]">Make your first pick</div>
+            <div className="mt-1 text-sm leading-relaxed text-white/58">Back the winner Build your record</div>
           </div>
           <Link to="/league" className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#ffc42e] hover:text-[#ffd66b]">View all leagues →</Link>
         </div>
@@ -746,11 +743,11 @@ function HomeMomentsSection() {
   const moments = data?.moments?.slice(0, 4) ?? [];
 
   return (
-    <section className="space-y-3">
+    <section className="arena-panel space-y-3 border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">Moments</h2>
-          <p className="mt-1 text-xs text-white/42">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
+          <h2 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Moments</h2>
+          <p className="mt-1 text-sm leading-relaxed text-white/58">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
         </div>
         <Link
           to="/moments"
