@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { subscribeOpenLoginModal, markUserLoginIntent } from "@/lib/loginModalBus";
+
+const LoginModal = lazyWithRetry(() => import("@/components/LoginModal"));
 
 export function LoginModalHost() {
   const { isAuthenticated } = useAuth();
@@ -29,5 +31,9 @@ export function LoginModalHost() {
 
   useEffect(() => subscribeOpenLoginModal(() => setLoginOpen(true)), []);
 
-  return <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />;
+  return (
+    <Suspense fallback={null}>
+      {loginOpen ? <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} /> : null}
+    </Suspense>
+  );
 }

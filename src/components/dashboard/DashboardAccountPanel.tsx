@@ -1,19 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
+import { playerTitlesApi } from "@/api/playerTitlesApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { TITLE_CONFIG } from "@/components/titles/PlayerTitleModal";
 import type { FullPlayerProfile } from "@/types/api";
 
 type DashboardAccountPanelProps = {
   profile: FullPlayerProfile;
+  hasAgents: boolean;
 };
 
-export function DashboardAccountPanel({ profile }: DashboardAccountPanelProps) {
+export function DashboardAccountPanel({ profile, hasAgents }: DashboardAccountPanelProps) {
   const queryClient = useQueryClient();
-  const { refetchProfile } = useAuth();
+  const { refetchProfile, isAuthenticated, walletAddress } = useAuth();
   const [nameDraft, setNameDraft] = useState(profile.player.name ?? "");
+
+  const { data: titlesData } = useQuery({
+    queryKey: ["player-titles", walletAddress],
+    queryFn: () => playerTitlesApi.getTitles(walletAddress!),
+    enabled: isAuthenticated && Boolean(walletAddress),
+    staleTime: 5 * 60_000,
+  });
+  const titles = titlesData?.titles ?? [];
 
   useEffect(() => {
     setNameDraft(profile.player.name ?? "");
@@ -83,6 +94,38 @@ export function DashboardAccountPanel({ profile }: DashboardAccountPanelProps) {
           <p className="font-tech font-bold text-white">{profile.cached ? "Cached" : "Live"}</p>
         </div>
       </div>
+
+      {hasAgents && titles.length > 0 && (
+        <div className="space-y-2 pt-1">
+          {titles.map((title) => {
+            const cfg = TITLE_CONFIG[title.type];
+            if (!cfg) return null;
+            return (
+              <div key={title.type} className={`relative overflow-hidden rounded-lg border ${cfg.border}`}>
+                <div
+                  className="absolute inset-x-0 top-0 h-px"
+                  style={{
+                    background: title.type === "GOLDEN_FOUNDER"
+                      ? "linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent)"
+                      : "linear-gradient(90deg, transparent, rgba(168,85,247,0.6), transparent)",
+                  }}
+                />
+                <div className="flex items-center gap-3 p-2.5">
+                  <div className={`h-16 w-16 shrink-0 overflow-hidden rounded-md border ${cfg.border}`}>
+                    <img src={cfg.img} alt={cfg.label} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`font-tech text-[11px] font-black tracking-wide ${cfg.accentColor}`}>{cfg.label}</p>
+                    <p className="mt-0.5 font-tech text-[9px] text-white/35">
+                      Since {new Date(title.grantedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

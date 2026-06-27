@@ -392,4 +392,12 @@ export const momentsApi = {
     });
     return normalizeMomentsFeed(unwrapApiData(data), page, perPage);
   },
+
+  getTopCreators: async (limit = 10): Promise<Array<{ walletAddress: string; momentCount: number }>> => {
+    const { data } = await apiClient.get<ApiEnvelope<{ creators: Array<{ walletAddress: string; momentCount: number }> }>>("/moments/top-creators", {
+      params: { limit },
+    });
+    const payload = unwrapApiData(data);
+    return Array.isArray(payload?.creators) ? payload.creators : [];
+  },
 };

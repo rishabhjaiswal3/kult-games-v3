@@ -61,7 +61,7 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           className="absolute inset-0 h-full w-full object-cover opacity-30"
         >
           <source src="/videos/loader.mp4" type="video/mp4" />

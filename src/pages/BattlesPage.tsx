@@ -344,7 +344,7 @@ function GameModeCard({ mode, onStartMatchmaking }: { mode: GameMode; onStartMat
       className="arena-panel group relative h-[260px] overflow-hidden text-left transition hover:-translate-y-1 hover:border-cyan-300/40 hover:shadow-[0_18px_46px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
     >
       {mode.video ? (
-        <video src={mode.video} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
+        <video src={mode.video} autoPlay loop muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
       ) : (
         <img src={mode.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
       )}
@@ -397,7 +397,7 @@ function BattleCard({ battle }: { battle: (typeof activeBattles)[number] }) {
     <article className="arena-panel flex h-full flex-col overflow-hidden">
       <div className="relative h-[118px] shrink-0">
         {battle.video ? (
-          <video src={battle.video} autoPlay loop muted playsInline className="h-full w-full object-cover opacity-75" />
+          <video src={battle.video} autoPlay loop muted playsInline preload="metadata" className="h-full w-full object-cover opacity-75" />
         ) : (
           <img src={battle.image} alt="" className="h-full w-full object-cover opacity-75" />
         )}

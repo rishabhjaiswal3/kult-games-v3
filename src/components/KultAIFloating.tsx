@@ -89,6 +89,7 @@ const KultAIFloating = () => {
               autoPlay
               muted
               loop
+              preload="metadata"
               playsInline
               aria-hidden="true"
             />

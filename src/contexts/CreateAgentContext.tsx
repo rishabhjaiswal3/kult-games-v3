@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
+import { PlayerTitleModal } from "@/components/titles/PlayerTitleModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { ARENA_AGENTS_LIST_QUERY_KEY } from "@/hooks/useArenaAgentsList";
@@ -16,9 +17,22 @@ import { MY_ARENA_AGENTS_QUERY_KEY, upsertMyArenaAgentCache } from "@/hooks/useM
 import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
+import { playerTitlesApi, type PlayerTitle } from "@/api/playerTitlesApi";
 import { toast } from "sonner";
 
 type AgentCreatedListener = (agent: AiArenaAgent) => void | Promise<void>;
+
+function titleShownKey(wallet: string) {
+  return `kult_title_shown_${wallet.toLowerCase()}`;
+}
+
+function hasTitleModalBeenShown(wallet: string) {
+  try { return localStorage.getItem(titleShownKey(wallet)) === "1"; } catch { return false; }
+}
+
+function markTitleModalShown(wallet: string) {
+  try { localStorage.setItem(titleShownKey(wallet), "1"); } catch { /* blocked */ }
+}
 
 type OpenCreateAgentOptions = {
   archetype?: AiArenaArchetype;
@@ -36,6 +50,8 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
   const { player, walletAddress } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [pendingArchetype, setPendingArchetype] = useState<AiArenaArchetype | undefined>();
+  const [titleModalTitles, setTitleModalTitles] = useState<PlayerTitle[]>([]);
+  const [titleModalOpen, setTitleModalOpen] = useState(false);
   const listenersRef = useRef(new Set<AgentCreatedListener>());
 
   const openCreateAgent = useCallback((opts?: OpenCreateAgentOptions) => {
@@ -78,8 +94,18 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
           }
         })
       );
+      // Only on first-ever agent creation per wallet — skip if modal was already shown
+      if (walletAddress && !hasTitleModalBeenShown(walletAddress)) {
+        playerTitlesApi.getTitles(walletAddress).then((res) => {
+          if (res.hasTitles && res.titles.length > 0) {
+            markTitleModalShown(walletAddress);
+            setTitleModalTitles(res.titles);
+            setTitleModalOpen(true);
+          }
+        }).catch(() => {/* ignore — title check is non-critical */});
+      }
     },
-    [invalidateAfterCreate, queryClient]
+    [invalidateAfterCreate, queryClient, walletAddress]
   );
 
   const value = useMemo(
@@ -102,6 +128,11 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
         defaultName={defaultName}
         defaultArchetype={pendingArchetype}
         onCreated={(agent) => void handleCreated(agent)}
+      />
+      <PlayerTitleModal
+        open={titleModalOpen}
+        titles={titleModalTitles}
+        onClose={() => setTitleModalOpen(false)}
       />
     </CreateAgentContext.Provider>
   );

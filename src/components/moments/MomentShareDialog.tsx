@@ -89,13 +89,11 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#25d366",
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url];
-      if (p.mediaUrl) parts.push(p.mediaUrl);
+      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     },
     buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.url];
-      if (p.mediaUrl) parts.push(p.mediaUrl);
+      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
       return parts.filter(Boolean).join("\n");
     },
   },
@@ -189,8 +187,7 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
         text: `${templateText}\n${platformPayload.url}`,
       })}`;
     case "whatsapp": {
-      const parts = [templateText, platformPayload.url];
-      if (platformPayload.mediaUrl) parts.push(platformPayload.mediaUrl);
+      const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
       return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
     }
     case "reddit": {
@@ -430,11 +427,17 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
         {/* ── Scrollable body ── */}
         <div className="min-h-0 flex-1 overflow-y-auto space-y-4 px-5 py-4 [scrollbar-width:thin]">
 
-          {/* Copy link — preview URL so pasted links show title, description & image */}
-          <div className="space-y-1.5">
+          {/* Share link — prominent, top of dialog */}
+          <div className="rounded-xl border border-[#9a35ff]/30 bg-[#9a35ff]/8 p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#9a35ff]" />
+              <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#c084fc]">
+                Shareable link — use this, not the address bar
+              </p>
+            </div>
             <CopyLinkBar url={payload.previewUrl} />
-            <p className="font-tech text-[9px] uppercase tracking-wider text-white/30">
-              Opens the moment in-app · social platforms load title, description &amp; image from this link
+            <p className="font-tech text-[9px] text-white/35">
+              This link embeds the moment image automatically on Twitter, Telegram, WhatsApp, Discord &amp; Reddit.
             </p>
           </div>
 

@@ -24,7 +24,7 @@ import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AccessFeature } from "@/lib/accessControl";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
-import heroVideo from "@/assets/homebkg.MOV";
+import heroVideo from "@/assets/homebkg.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import agentNexus from "@/assets/hybrid.mp4";
@@ -33,7 +33,7 @@ import agentAegis from "@/assets/tactician.mp4";
 import agentVoid from "@/assets/support.mp4";
 import agentRage from "@/assets/berserker.mp4";
 import agentLumen from "@/assets/assassin.gif";
-const trailerVideo = new URL("../../assets/Trailer.MOV", import.meta.url).href;
+const trailerVideo = new URL("../../assets/Trailer.mp4", import.meta.url).href;
 
 const quickLinks = [
   { label: "Games", path: "/games", icon: Gamepad2, color: "#0089ff", feature: "games" },
@@ -138,7 +138,7 @@ export function HomePage() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           className="absolute inset-0 h-full w-full object-cover object-[88%_center] sm:object-[72%_center] scale-[1.15] sm:scale-100 opacity-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
@@ -270,7 +270,7 @@ export function HomePage() {
               autoPlay
               controls
               muted
-              preload="auto"
+              preload="metadata"
               playsInline
               className="aspect-video h-full w-full bg-black object-cover"
             />
@@ -508,6 +508,7 @@ function HomeAIArenaSection() {
                 loop
                 muted
                 playsInline
+                preload="none"
                 className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
               />
             ) : (
@@ -566,7 +567,7 @@ function FixtureAgentPortrait({ src, color, name, sub }: { src: string; color: s
         className="relative h-14 w-14 overflow-hidden rounded-2xl border-2 sm:h-16 sm:w-16"
         style={{ borderColor: color, boxShadow: `0 0 22px ${color}66` }}
       >
-        <video src={src} autoPlay loop muted playsInline className="h-full w-full object-cover" />
+        <video src={src} autoPlay loop muted playsInline preload="none" className="h-full w-full object-cover" />
         <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 55%, ${color}33)` }} />
       </div>
       <div className="text-center">
