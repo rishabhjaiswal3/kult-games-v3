@@ -43,10 +43,8 @@ import { TourProvider } from "@/tour/TourProvider";
 function OAuthRedirectLoader() {
   useEffect(() => {
     if (!hasUserLoginIntent() || getUserLoginMethod() !== "google") return;
-    // Returning from Google OAuth — open the login modal in finishing/loading state immediately.
-    // AuthContext SIWE runs in the background; LoginModal handles the spinner, timeout, and recovery.
     requestOpenLoginModal({ mode: "finishing" });
-  }, []); // Runs once on mount
+  }, []);
 
   return null;
 }

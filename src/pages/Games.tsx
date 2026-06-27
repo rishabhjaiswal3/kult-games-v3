@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -238,7 +238,7 @@ const Games = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
-            Play Today. Build Forever.
+            Play Today Build Forever
           </h1>
           <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
             Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
@@ -251,20 +251,24 @@ const Games = () => {
         </Link>
       </div>
 
-      <div className="arena-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="games-stats">
+      <div className="arena-panel home-stats-panel home-stats-panel--static grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="games-stats">
         {[
           { label: "TOTAL GAMES", value: String(allGames.length), icon: Gamepad2, color: "#0089ff" },
           { label: "VISIBLE", value: String(filtered.length), icon: Layers, color: "#b338ff" },
           { label: "INSTANT PLAY", value: String(instantPlayCount), icon: Zap, color: "#00f080" },
           { label: "DOWNLOADABLE", value: String(downloadableCount), icon: Download, color: "#ffc000" },
         ].map((stat) => (
-          <div key={stat.label} className="flex items-center gap-4 p-4">
-            <div className="grid h-11 w-11 place-items-center rounded-md bg-white/[0.04]">
-              <stat.icon className="h-6 w-6" style={{ color: stat.color }} />
+          <div
+            key={stat.label}
+            className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+            style={{ "--stat-color": stat.color } as CSSProperties}
+          >
+            <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
+              <stat.icon className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-tech text-[9px] text-white/48">{stat.label}</div>
-              <div className="mt-1 text-2xl font-semibold text-white">{stat.value}</div>
+              <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+              <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">{stat.value}</div>
             </div>
           </div>
         ))}

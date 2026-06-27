@@ -1100,7 +1100,7 @@ export function AllMomentsPage() {
             {/* Top creators */}
             <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
               <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">TOP CREATORS</h3>
-              <div className="space-y-3 text-xs font-semibold">
+              <div className="space-y-2 text-xs font-semibold">
                 {topCreatorsQuery.isLoading ? (
                   <div className="space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (

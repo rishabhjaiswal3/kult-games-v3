@@ -1547,6 +1547,13 @@ button[aria-label="close modal"]:hover {
     pointer-events: none;
   }
 
+  /* Variant without the moving light (orbit + sweep) */
+  .home-stats-panel--static::before,
+  .home-stats-panel--static::after {
+    content: none;
+    animation: none;
+  }
+
   .home-stat-tile {
     min-width: 0;
     color: inherit;

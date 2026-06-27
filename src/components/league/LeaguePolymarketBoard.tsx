@@ -1400,29 +1400,48 @@ function OutcomeLinesChart({ lines }: { lines: { color: string; series: number[]
 
 // ── View switcher (the three attractive buttons) ────────────────────────────
 function BoardViewTabs({ view, onChange, marketCount, newsCount }: { view: BoardView; onChange: (v: BoardView) => void; marketCount: number; newsCount: number }) {
-  const tabs: { id: BoardView; label: string; desc: string; Icon: typeof Activity; meta: string }[] = [
-    { id: "market", label: "Live Market", desc: "Markets, odds & live prices", Icon: BarChart3, meta: "Live" },
-    { id: "pulse", label: "Match Pulse", desc: "Upcoming matches & football news", Icon: Radio, meta: `${marketCount} fixtures` },
-    { id: "analysis", label: "Analysis", desc: "Agent reads, news & trending movers", Icon: Brain, meta: `${newsCount} signals` },
+  const tabs: { id: BoardView; label: string; Icon: typeof Activity; meta: string; color: string }[] = [
+    { id: "market", label: "Live Market", Icon: BarChart3, meta: "Live", color: "#2E5CFF" },
+    { id: "pulse", label: "Match Pulse", Icon: Radio, meta: `${marketCount} fixtures`, color: "#22c55e" },
+    { id: "analysis", label: "Analysis", Icon: Brain, meta: `${newsCount} signals`, color: "#a855f7" },
   ];
+  const activeIndex = Math.max(0, tabs.findIndex((t) => t.id === view));
+  const activeColor = tabs[activeIndex].color;
 
   return (
-    <div className="relative flex items-stretch gap-1 overflow-hidden rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
-      {tabs.map(({ id, label, desc, Icon, meta }) => {
+    <div className="relative flex items-stretch rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
+      {/* Sliding highlight pill — adopts the active tab's accent color */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-1 left-1 rounded-lg transition-all duration-300 ease-out"
+        style={{
+          width: "calc((100% - 0.5rem) / 3)",
+          transform: `translateX(calc(${activeIndex} * 100%))`,
+          background: `linear-gradient(125deg, ${activeColor}40, ${activeColor}12)`,
+          boxShadow: `inset 0 0 0 1px ${activeColor}80, 0 4px 16px ${activeColor}38`,
+        }}
+      />
+      {tabs.map(({ id, label, Icon, meta, color }) => {
         const active = view === id;
         return (
           <button
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-2.5 py-2.5 transition ${active ? "bg-[linear-gradient(120deg,rgba(46,92,255,0.22),rgba(0,200,83,0.08))] text-white shadow-[inset_0_0_0_1px_rgba(46,92,255,0.45)]" : "text-white/55 hover:bg-white/[0.04] hover:text-white"}`}
+            aria-pressed={active}
+            className={`group relative z-10 flex flex-1 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 transition ${active ? "text-white" : "text-white/55 hover:text-white"}`}
           >
-            <Icon className={`h-4 w-4 shrink-0 transition ${active ? "text-[#9ab1ff]" : "text-white/45 group-hover:text-white/80"}`} />
+            <Icon
+              className="h-4 w-4 shrink-0 transition text-white/45 group-hover:text-white/80"
+              style={active ? { color } : undefined}
+            />
             <span className="truncate font-tech text-[12px] font-bold tracking-tight sm:text-[13px]">{label}</span>
-            <span className={`hidden shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider sm:inline-flex ${active ? "bg-emerald-400/15 text-emerald-300" : "bg-white/[0.06] text-white/40"}`}>
-              {active ? <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" /> : null}{meta}
+            <span
+              className={`hidden shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider sm:inline-flex ${active ? "" : "bg-white/[0.06] text-white/40"}`}
+              style={active ? { backgroundColor: `${color}26`, color } : undefined}
+            >
+              {active ? <span className="h-1 w-1 animate-pulse rounded-full" style={{ backgroundColor: color }} /> : null}{meta}
             </span>
-            {active ? <span className="pointer-events-none absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-gradient-to-r from-transparent via-[#2E5CFF] to-transparent" /> : null}
           </button>
         );
       })}
