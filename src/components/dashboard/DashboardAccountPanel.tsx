@@ -10,9 +10,10 @@ import type { FullPlayerProfile } from "@/types/api";
 
 type DashboardAccountPanelProps = {
   profile: FullPlayerProfile;
+  hasAgents: boolean;
 };
 
-export function DashboardAccountPanel({ profile }: DashboardAccountPanelProps) {
+export function DashboardAccountPanel({ profile, hasAgents }: DashboardAccountPanelProps) {
   const queryClient = useQueryClient();
   const { refetchProfile, isAuthenticated, walletAddress } = useAuth();
   const [nameDraft, setNameDraft] = useState(profile.player.name ?? "");
@@ -94,7 +95,7 @@ export function DashboardAccountPanel({ profile }: DashboardAccountPanelProps) {
         </div>
       </div>
 
-      {titles.length > 0 && (
+      {hasAgents && titles.length > 0 && (
         <div className="space-y-2 pt-1">
           {titles.map((title) => {
             const cfg = TITLE_CONFIG[title.type];
