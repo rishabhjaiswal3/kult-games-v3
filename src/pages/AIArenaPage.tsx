@@ -36,6 +36,7 @@ import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import heroVideo from "@/assets/hero-video.mp4";
+import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import agentNexus from "@/assets/hybrid.mp4";
@@ -453,17 +454,21 @@ function Logo({
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-sm text-center" : "max-w-xl"}>
-      <span className="inline-block px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5">
+    <div className={compact ? "mx-auto max-w-sm pt-40 text-center" : "max-w-xl"}>
+      <span className={`${compact ? "hidden" : "inline-block"} px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5`}>
         BUILT FOR WEB3
       </span>
       <h1
-        className="font-tech text-4xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl"
+        className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
+          compact ? "text-[2.75rem]" : "text-4xl sm:text-5xl lg:text-6xl"
+        }`}
       >
         AI{compact ? " " : <br />}ARENA
       </h1>
       <h2
-        className="font-tech mt-3 text-xl font-black uppercase leading-tight text-foreground/90 sm:text-2xl md:mt-5"
+        className={`font-tech mt-3 font-black uppercase leading-tight text-foreground/90 md:mt-5 ${
+          compact ? "text-[1.35rem]" : "text-xl sm:text-2xl"
+        }`}
       >
         Where AI
         <br />
@@ -474,7 +479,11 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
           Supremacy
         </span>
       </h2>
-      <p className="mt-4 max-w-md text-sm leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5">
+      <p
+        className={`mt-4 max-w-md leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 ${
+          compact ? "text-[15px]" : "text-sm"
+        }`}
+      >
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -559,7 +568,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         </div>
       ) : (
         <p
-          className={`text-muted-foreground color-white text-center ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs" }`}
+          className={`font-medium leading-relaxed text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.85)] ${
+            compact ? "max-w-[260px] text-center text-[13px]" : "max-w-md text-left text-sm"
+          }`}
         >
           {helperText}
         </p>
@@ -597,7 +608,7 @@ function Hero() {
           preload="auto"
           className="absolute inset-0 h-full w-full object-cover object-top"
         >
-          <source src={heroVideo} type="video/mp4" />
+          <source src={mobileHeroVideo} type="video/mp4" />
         </video>
         <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
