@@ -28,7 +28,7 @@ export function InventoryStatsRail({
   return (
     <div
       className={cn(
-        "arena-panel grid w-full grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-md sm:grid-cols-4 lg:min-w-0 lg:flex-1",
+        "arena-panel grid w-full grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-md xl:grid-cols-4 lg:min-w-0 lg:flex-1",
         className
       )}
     >
