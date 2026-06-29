@@ -77,10 +77,6 @@ function AgentAutonomousToggle({ agent }: { agent: AiArenaAgent }) {
         old ? { ...old, autonomousMode: res.autonomousMode } : old
       );
       qc.invalidateQueries({ queryKey: ["myArenaAgents"] });
-        res.autonomousMode
-          ? `${agent.name} is now autonomous — auto-queuing and training enabled`
-          : `${agent.name} autonomous mode disabled`
-      );
     },
     onError: () => {},
   });
