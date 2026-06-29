@@ -26,7 +26,6 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
 import { momentsApi } from "@/api/momentsApi";
 import {
   isMomentsCreateQueryOpen,
@@ -757,7 +756,7 @@ export function AllMomentsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"] });
     },
-    onError: () => toast.error("Could not update bookmark"),
+    onError: () => {},
   });
 
   const handleBookmarkToggle = useCallback((id: string) => {

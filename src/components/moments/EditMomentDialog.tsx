@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Loader2, Pencil, X as XIcon } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import {
@@ -76,17 +75,14 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
         assetMetadata: selectedMode ? { mode: selectedMode.toLowerCase() } : undefined,
       }),
     onSuccess: async (updated) => {
-      toast.success("Moment updated");
       await onUpdated?.(updated);
       onOpenChange(false);
     },
     onError: (error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status;
       if (status === 403 || status === 404) {
-        toast.error("You can only edit your own moments");
         return;
       }
-      toast.error(error instanceof Error ? error.message : "Failed to update moment");
     },
   });
 
@@ -95,7 +91,6 @@ export function EditMomentDialog({ open, onOpenChange, moment, onUpdated }: Edit
 
   const handleSubmit = () => {
     if (trimmedTitle.length < TITLE_MIN_LENGTH) {
-      toast.error(`Title must be at least ${TITLE_MIN_LENGTH} characters`);
       return;
     }
     updateMutation.mutate();

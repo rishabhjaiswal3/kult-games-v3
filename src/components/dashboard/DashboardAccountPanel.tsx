@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { playerTitlesApi } from "@/api/playerTitlesApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,12 +32,11 @@ export function DashboardAccountPanel({ profile, hasAgents }: DashboardAccountPa
   const saveName = useMutation({
     mutationFn: (name: string) => playerApi.updateName(name),
     onSuccess: async (name) => {
-      toast.success("Display name updated");
       setNameDraft(name);
       await queryClient.invalidateQueries({ queryKey: ["player", "full-profile"] });
       await refetchProfile();
     },
-    onError: () => toast.error("Could not update name"),
+    onError: () => {},
   });
 
   return (
