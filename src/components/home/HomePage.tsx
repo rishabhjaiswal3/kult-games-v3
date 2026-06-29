@@ -169,12 +169,12 @@ export function HomePage() {
               <br />
               and live battles that never stop.
             </p>
-            <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-3">
+            <div className="flex flex-nowrap gap-1.5 sm:flex-wrap sm:gap-3">
               {canViewGames ? (
                 <button
                   type="button"
                   onClick={handleExploreGames}
-                  className="btn-primary inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wide sm:flex-none sm:gap-2 sm:px-6 sm:text-xs sm:tracking-wider"
+                  className="btn-primary inline-flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wide sm:min-h-0 sm:flex-none sm:gap-2 sm:px-6 sm:py-2.5 sm:text-xs sm:tracking-wider"
                 >
                   Explore games
                   <ArrowUpRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
@@ -184,7 +184,7 @@ export function HomePage() {
                 <button
                   type="button"
                   onClick={handlePrimaryCta}
-                  className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md border border-purple-300/60 bg-gradient-to-r from-purple-500/30 to-fuchsia-500/25 px-2.5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_0_22px_rgba(154,53,255,0.35)] transition hover:border-purple-200/90 hover:from-purple-500/45 hover:to-fuchsia-500/40 hover:text-white hover:shadow-[0_0_32px_rgba(154,53,255,0.55)] sm:flex-none sm:gap-2 sm:px-6 sm:text-xs sm:tracking-wider"
+                  className="inline-flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-md border border-purple-300/60 bg-gradient-to-r from-purple-500/30 to-fuchsia-500/25 px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wide text-white shadow-[0_0_18px_rgba(154,53,255,0.28)] transition hover:border-purple-200/90 hover:from-purple-500/45 hover:to-fuchsia-500/40 hover:text-white hover:shadow-[0_0_32px_rgba(154,53,255,0.55)] sm:min-h-0 sm:flex-none sm:gap-2 sm:px-6 sm:py-2.5 sm:text-xs sm:tracking-wider"
                 >
                   {isAuthenticated ? "Enter AI Arena" : "Connect wallet"}
                   <ArrowUpRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
@@ -222,11 +222,11 @@ export function HomePage() {
 
       <section className="arena-panel overflow-hidden border-white/8 bg-[#03070d]/95 px-5 py-3.5 sm:px-6 sm:py-4">
         <div className="font-tech text-[10px] font-bold uppercase tracking-[0.28em] text-[#bd6cff]">Ecosystem loop</div>
-        <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mt-2 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <h2 className="shrink-0 font-tech text-lg font-black uppercase leading-[1.25] text-white sm:text-xl">
               Everything you do keeps building
           </h2>
-          <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-nowrap md:items-center md:justify-end">
+          <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
             {["Play", "Create", "Compete", "Build", "Persist"].map((step, index) => (
               <div key={step} className="flex min-w-0 items-center justify-center gap-2 md:shrink-0">
                 <span className="rounded-md border border-[#b766ff]/35 bg-[#7c3aed]/[0.07] px-2.5 py-1.5 text-[#f1e6ff] shadow-[inset_0_0_20px_rgba(196,126,255,0.08),0_0_14px_rgba(154,53,255,0.12)] [text-shadow:0_0_10px_rgba(222,184,255,0.7)]">{step}</span>
@@ -478,9 +478,9 @@ function HomeAIArenaSection() {
               ["72", "Rivalries"],
               ["9", "Tournaments"],
             ].map(([value, label]) => (
-              <div key={label} className="rounded-md border border-white/8 bg-white/[0.035] p-3">
+              <div key={label} className="min-w-0 rounded-md border border-white/8 bg-white/[0.035] p-3">
                 <div className="font-tech text-xl font-bold text-white">{value}</div>
-                <div className="mt-1 font-tech text-[9px] uppercase tracking-wider text-white/42">{label}</div>
+                <div className="mt-1 break-words font-tech text-[8px] uppercase tracking-normal text-white/42 sm:text-[7px] md:text-[8px] lg:text-[9px] lg:tracking-wider">{label}</div>
               </div>
             ))}
           </div>
@@ -509,14 +509,14 @@ function HomeAIArenaSection() {
                 muted
                 playsInline
                 preload="none"
-                className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
+                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             ) : (
               <img
                 key={activeAgent.name}
                 src={activeAgent.img}
                 alt={activeAgent.name}
-                className="absolute inset-0 h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.025]"
+                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/12 to-transparent" />
