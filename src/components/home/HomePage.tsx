@@ -138,21 +138,21 @@ export function HomePage() {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover object-[88%_center] sm:object-[72%_center] scale-[1.15] sm:scale-100 opacity-100 saturate-125 contrast-110"
+          className="absolute inset-0 h-full w-full object-cover object-[88%_center] sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
         <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-12 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-          <div className="absolute left-5 right-5 top-5 flex flex-nowrap items-center gap-2 whitespace-nowrap text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 sm:static sm:gap-3">
-            <span className="flex shrink-0 items-center gap-1.5">
-              Presented by <img src={kultLogo} alt="Kult" className="h-4 w-auto object-contain" />
+          <div className="absolute left-5 right-5 top-5 flex flex-nowrap items-center gap-1.5 whitespace-nowrap text-[9px] font-tech uppercase tracking-[0.16em] text-white/50 sm:static sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
+            <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+              Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
-            <span className="flex shrink-0 items-center gap-1.5">
-              Powered by <img src={zeroGLogo} alt="0G" className="h-4 w-auto object-contain" />
+            <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+              Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
           <div className="max-w-2xl space-y-4">
-            <h1 className="max-w-2xl font-tech text-[2rem] font-black uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl font-tech text-[1.8rem] font-black uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
               The Operating
               <br />
               layer for

@@ -67,61 +67,72 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(278_100%_70%/0.12),transparent_34%),linear-gradient(180deg,rgba(7,10,22,0.92),rgba(2,5,12,0.98))]" />
 
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="grid gap-10 py-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-[1.15fr_0.7fr_0.7fr_1fr] lg:gap-8 lg:py-12">
-          <div className="mx-auto max-w-[290px] sm:mx-0">
-            <div className="flex items-center justify-center gap-3 sm:justify-start">
-              <img src={kultLogo} alt="Kult Games" className="h-10 w-auto max-w-[145px] object-contain" />
-              <span className="h-8 w-px bg-white/15" />
-              <img src={zeroGLogo} alt="0G" className="h-8 w-auto max-w-[72px] object-contain" />
+        <div className="grid gap-6 py-7 text-center sm:grid-cols-2 sm:gap-10 sm:py-10 sm:text-left lg:grid-cols-[1.15fr_0.7fr_0.7fr_1fr] lg:gap-8 lg:py-12">
+          <div className="mx-auto max-w-[310px] sm:mx-0 sm:max-w-[290px]">
+            <div className="flex items-center justify-center gap-2.5 sm:justify-start sm:gap-3">
+              <img src={kultLogo} alt="Kult Games" className="h-8 w-auto max-w-[124px] object-contain sm:h-10 sm:max-w-[145px]" />
+              <span className="h-7 w-px bg-white/15 sm:h-8" />
+              <img src={zeroGLogo} alt="0G" className="h-7 w-auto max-w-[62px] object-contain sm:h-8 sm:max-w-[72px]" />
             </div>
             {isArena ? (
               <>
-                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">The Operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/55">Autonomous agents. Persistent identities. Connected worlds.</p>
+                <h2 className="mt-4 font-tech text-[11px] font-black uppercase leading-relaxed tracking-[0.14em] text-white/90 sm:mt-6 sm:text-[13px] sm:tracking-[0.18em]">The Operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
+                <p className="mt-2 text-xs leading-relaxed text-white/55 sm:mt-3 sm:text-sm">Autonomous agents. Persistent identities. Connected worlds.</p>
               </>
             ) : (
               <>
-                <h2 className="mt-6 font-tech text-[13px] font-black uppercase leading-relaxed tracking-[0.18em] text-white/90">One browser for <span className="text-[#c084fc]">every game world.</span></h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/55">Play games. Predict markets. Command AI agents. Own every move.</p>
+                <h2 className="mt-4 font-tech text-[11px] font-black uppercase leading-relaxed tracking-[0.14em] text-white/90 sm:mt-6 sm:text-[13px] sm:tracking-[0.18em]">One browser for <span className="text-[#c084fc]">every game world.</span></h2>
+                <p className="mt-2 text-xs leading-relaxed text-white/55 sm:mt-3 sm:text-sm">Play games. Predict markets. Command AI agents. Own every move.</p>
               </>
             )}
           </div>
 
           <nav aria-label="Footer navigation">
-            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Explore</p>
-            <div className="mt-4 space-y-3">
+            <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Explore</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:block sm:space-y-3">
               {footerLinks.map((link) => {
                 const Icon = link.icon;
-                return <Link key={link.href} to={link.href} className="flex items-center justify-center gap-2 text-sm text-white/60 transition hover:text-white sm:justify-start"><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
+                return <Link key={link.href} to={link.href} className="flex items-center justify-center gap-1.5 rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm"><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
               })}
             </div>
           </nav>
 
           <div>
-            <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Community</p>
-            <div className="mt-4 space-y-3">
-              {socials.map((social) => <a key={social.key} href={social.href} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 text-sm text-white/60 transition hover:text-white sm:justify-start"><span className="text-[#a855f7]">{social.icon}</span>{social.label}</a>)}
+            <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Community</p>
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4 sm:block sm:space-y-3">
+              {socials.map((social) => (
+                <a
+                  key={social.key}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="flex min-h-10 items-center justify-center rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:min-h-0 sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm"
+                >
+                  <span className="text-[#a855f7]">{social.icon}</span>
+                  <span className="sr-only sm:not-sr-only">{social.label}</span>
+                </a>
+              ))}
             </div>
           </div>
 
           {showStartLink ? (
             <div className="mx-auto w-full max-w-[320px] sm:mx-0">
-              <p className="font-tech text-[11px] font-bold uppercase tracking-[0.28em] text-[#c084fc]">Start playing</p>
+              <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Start playing</p>
               <Link
                 to={startLink.href}
-                className="footer-enter-cta mt-4 mx-auto sm:mx-0"
-                style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "13px" }}
+                className="footer-enter-cta mt-3 mx-auto min-h-10 w-[min(220px,100%)] gap-2 text-xs sm:mx-0 sm:mt-4 sm:min-h-12 sm:w-full sm:gap-2.5"
               >
                 <span className="select-none leading-none" aria-hidden>⚽</span>
                 <span>{startLink.label}</span>
                 <ArrowUpRight aria-hidden />
               </Link>
-              <p className="mt-3 text-xs leading-relaxed text-white/35">Make your picks, follow the action, and climb the League.</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-white/35 sm:mt-3 sm:text-xs">Make your picks, follow the action, and climb the League.</p>
             </div>
           ) : null}
         </div>
 
-        <div className="group/legal flex flex-col items-center justify-between gap-3 border-t border-white/10 py-5 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row">
+        <div className="group/legal flex flex-col items-center justify-between gap-2 border-t border-white/10 py-4 transition duration-300 hover:border-[#7d5cff]/30 sm:flex-row sm:gap-3 sm:py-5">
           <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px] text-white/42 font-mono">
             <span className="transition group-hover/legal:text-white/68">© 2026</span>
             <img src={kultLogo} alt="Kult Games" className="h-3.5 w-auto object-contain opacity-60 transition group-hover/legal:opacity-100" />
