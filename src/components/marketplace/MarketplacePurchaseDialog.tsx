@@ -399,10 +399,6 @@ export function MarketplacePurchaseDialog({
                         txHash,
                       });
 
-                        txHash
-                          ? `Purchase completed: ${txHash.slice(0, 10)}...`
-                          : "Purchase completed (order created)"
-                      );
                       onClose();
                     } catch (error) {
                     } finally {
