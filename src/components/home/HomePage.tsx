@@ -212,7 +212,7 @@ export function HomePage() {
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
               <div className="min-w-0">
                 <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
-                <div className="mt-1 font-tech text-lg font-semibold leading-snug text-white group-hover:text-[#66d5ff] sm:text-xl">One profile across Kult</div>
+                <div className="mt-1 font-tech text-lg font-semibold leading-snug text-[#66d5ff] group-hover:text-[#66d5ff] sm:text-xl sm:text-white">One profile across Kult</div>
                 <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
               </div>
             </Link>

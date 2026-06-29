@@ -272,15 +272,15 @@ const Leaderboard = () => {
 
               {/* League filter — only on GLOBAL tab */}
               {activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" ? (
-                <div className="flex items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                   <span className="font-tech text-[10px] uppercase tracking-widest text-white/35">League</span>
-                  <div className="relative">
+                  <div className="relative min-w-0 flex-1 sm:flex-none">
                     <select
                       value={selectedLeagueTier ?? ""}
                       onChange={(e) =>
                         handleLeagueChange(e.target.value === "" ? null : Number(e.target.value))
                       }
-                      className="peer appearance-none cursor-pointer rounded-lg border border-white/12 bg-[#04080f] py-2 pl-3 pr-8 font-tech text-[11px] uppercase tracking-wider text-white/80 transition hover:border-[#9a35ff]/40 hover:text-white focus:outline-none focus:border-[#9a35ff]/60 focus:ring-1 focus:ring-[#9a35ff]/40"
+                      className="peer w-full appearance-none cursor-pointer rounded-lg border border-white/12 bg-[#04080f] py-2 pl-3 pr-8 font-tech text-[11px] uppercase tracking-wider text-white/80 transition hover:border-[#9a35ff]/40 hover:text-white focus:outline-none focus:border-[#9a35ff]/60 focus:ring-1 focus:ring-[#9a35ff]/40 sm:w-auto"
                       style={
                         selectedLeagueInfo
                           ? { borderColor: `${selectedLeagueInfo.color}55`, color: selectedLeagueInfo.color }
@@ -299,10 +299,10 @@ const Leaderboard = () => {
 
                   {/* Selected league badge */}
                   {selectedLeagueInfo ? (
-                    <div className="flex items-center gap-1.5 rounded border border-white/10 bg-white/[0.02] px-2 py-1">
+                    <div className="flex min-w-[96px] items-center justify-center gap-1 rounded border border-white/10 bg-white/[0.02] px-1.5 py-1 sm:min-w-0 sm:justify-start sm:gap-1.5 sm:px-2">
                       <img src={selectedLeagueInfo.image} alt="" className="h-5 w-5 object-contain" />
                       <span
-                        className="font-tech text-[10px] uppercase tracking-wider"
+                        className="whitespace-nowrap font-tech text-[9px] uppercase tracking-wide sm:text-[10px] sm:tracking-wider"
                         style={{ color: selectedLeagueInfo.color }}
                       >
                         {totalEntries} agent{totalEntries !== 1 ? "s" : ""}
