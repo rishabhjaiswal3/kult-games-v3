@@ -39,6 +39,8 @@ import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
+import baseLogo from "@/assets/Base Logo.png";
+import solanaLogo from "@/assets/solana-sol-logo.png";
 import agentNexus from "@/assets/hybrid.mp4";
 import agentShadow from "@/assets/defender.mp4";
 import agentAegis from "@/assets/tactician.mp4";
@@ -154,9 +156,48 @@ function KultLogo({ className = "h-4 w-auto" }: { className?: string }) {
   );
 }
 
-function ChainLogo({ name, className = "h-3.5 w-auto" }: { name: string; className?: string }) {
-  if (name.toLowerCase() === "0g" || name.toLowerCase() === "og") {
-    return <ZeroGLogo className={className} />;
+function BaseLogo({ className = "h-4 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src={baseLogo}
+      alt="Base"
+      loading="lazy"
+      className={`inline-block object-contain ${className}`}
+    />
+  );
+}
+
+function SolanaLogo({ className = "h-4 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src={solanaLogo}
+      alt="Solana"
+      loading="lazy"
+      className={`inline-block object-contain ${className}`}
+    />
+  );
+}
+
+function ChainLogo({
+  name,
+  className = "h-3.5 w-auto",
+  useLogosForChains = false,
+}: {
+  name: string;
+  className?: string;
+  useLogosForChains?: boolean;
+}) {
+  const lower = name.toLowerCase();
+  if (useLogosForChains) {
+    if (lower === "0g" || lower === "og" || lower === "zerog") {
+      return <ZeroGLogo className={className} />;
+    }
+    if (lower === "base") {
+      return <BaseLogo className={className} />;
+    }
+    if (lower === "solana") {
+      return <SolanaLogo className={className} />;
+    }
   }
 
   return <span>{name}</span>;
@@ -1650,7 +1691,7 @@ function PartnersBlock() {
                 className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2 py-1.5 font-tech text-[10px] text-white/80 sm:px-2.5 sm:text-[11px] lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
-                <ChainLogo name={p} className="h-2.5 w-auto sm:h-3 xl:h-3.5" />
+                <ChainLogo name={p} className="h-2.5 w-auto sm:h-3 xl:h-3.5" useLogosForChains={true} />
               </div>
             ))}
           </div>
