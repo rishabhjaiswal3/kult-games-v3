@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { encodeFunctionData } from "viem";
 import { Hexagon, Loader2, RefreshCcw, ShoppingCart, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -176,19 +175,15 @@ export function MarketplacePurchaseDialog({
 
   const handleSwitchNetwork = async () => {
     if (!privyReady) {
-      toast.error("Wallet system still loading");
       return;
     }
     if (!privyAuthenticated || !activeWallet?.address) {
-      toast.error("Connect wallet first");
       return;
     }
 
     try {
       await ensurePurchaseNetwork();
-      toast.success(`${purchaseChainLabel} ready for ${selectedPaymentToken} purchase.`);
     } catch (error) {
-      toast.error(getFriendlyPurchaseError(error));
     }
   };
 
@@ -335,20 +330,16 @@ export function MarketplacePurchaseDialog({
                     if (!selectedItem || !activeWallet?.address) return;
                     if (!canConfirmPurchase) {
                       if (!privyReady) {
-                        toast.error("Wallet system still loading");
                         return;
                       }
                       if (!privyAuthenticated) {
-                        toast.error("Connect wallet first");
                         return;
                       }
-                      toast.error("Missing contract/token configuration for selected payment token");
                       return;
                     }
                     try {
                       if (needsNetworkPreparation) {
                         await ensurePurchaseNetwork();
-                        toast.success(`${purchaseChainLabel} ready. Review once and confirm purchase.`);
                         return;
                       }
 
@@ -408,14 +399,12 @@ export function MarketplacePurchaseDialog({
                         txHash,
                       });
 
-                      toast.success(
                         txHash
                           ? `Purchase completed: ${txHash.slice(0, 10)}...`
                           : "Purchase completed (order created)"
                       );
                       onClose();
                     } catch (error) {
-                      toast.error(getFriendlyPurchaseError(error));
                     } finally {
                       onPurchasingChange(false);
                     }

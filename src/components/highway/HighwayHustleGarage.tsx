@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Car, Check, Gift, Loader2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
 import { equipVehicle, getGarageState } from "@/api/highwayHustleApi";
 import { InventoryAssetImage } from "@/components/inventory/InventoryAssetImage";
 import { carIndexFromId } from "@/constants/highwayHustleCars";
@@ -41,10 +40,8 @@ export function HighwayHustleGarage({
     },
     onSuccess: (carId) => {
       void queryClient.invalidateQueries({ queryKey: ["highway-hustle", "garage", walletAddress] });
-      toast.success(`${carId.toUpperCase()} equipped — ready for your next run.`);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to equip vehicle");
     },
   });
 

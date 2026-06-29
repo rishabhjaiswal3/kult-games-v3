@@ -1,5 +1,4 @@
 import { Copy, Wallet } from "lucide-react";
-import { toast } from "sonner";
 import type { FullPlayerProfile } from "@/types/api";
 import { initialsFromName, shortWallet } from "@/components/dashboard/profileAvatars";
 
@@ -31,7 +30,6 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
   const copyWallet = () => {
     if (!walletAddress) return;
     void navigator.clipboard.writeText(walletAddress);
-    toast.success("Wallet copied");
   };
 
   return (

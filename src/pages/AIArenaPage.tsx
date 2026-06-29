@@ -20,7 +20,6 @@ import {
   Trophy,
   Video,
 } from "lucide-react";
-import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
@@ -280,12 +279,10 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
   const leaveQueueMut = useMutation({
     mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
     onSuccess: async () => {
-      toast.success("Left matchmaking queue");
       setStatusModalAgent(null);
       await queueQ.refetch();
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Could not leave queue");
     },
   });
 
@@ -339,7 +336,6 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     setTrackedBattleId(payload.battleId);
     if (announcedBattleIdRef.current !== payload.battleId) {
       announcedBattleIdRef.current = payload.battleId;
-      toast.success(`Match found! Entering arena…`);
       setStatusModalAgent(null);
 
       const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;

@@ -3,7 +3,6 @@ import {
   Copy, Database, Loader2, Shield, Swords, TrendingUp,
   Zap, Brain, Activity, ExternalLink, Trophy, Clock, MessageSquare,
 } from "lucide-react";
-import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { Dialog } from "@/components/ui/dialog";
@@ -44,7 +43,6 @@ function shortHash(hash: string) {
 
 async function copyText(label: string, value: string) {
   await navigator.clipboard.writeText(value);
-  toast.success(`${label} copied`);
 }
 
 function TraitBar({ label, value }: { label: string; value: number }) {

@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
 import { Check, Copy, ExternalLink, Share2, X } from "lucide-react";
-import { toast } from "sonner";
 import type { Moment } from "@/types/api";
 import {
   buildMomentSharePayload,
@@ -236,10 +235,8 @@ function CopyLinkBar({ url }: { url: string }) {
     try {
       await copyText(url);
       setCopied(true);
-      toast.success("Link copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy");
     }
   };
   return (
@@ -320,10 +317,8 @@ function PostPreviewText({ platform, payload, customText }: {
     try {
       await copyText(postText);
       setCopied(true);
-      toast.success("Copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy");
     }
   };
   return (
@@ -365,9 +360,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
       const text = selectedTemplate?.text ?? platform.buildPostText(payload);
       try {
         await copyText(text);
-        toast.success("Link copied — paste it in TikTok to share.");
       } catch {
-        toast.error("Could not copy");
       }
       window.open(platform.buildUrl(payload), "_blank", "noopener,noreferrer");
       return;

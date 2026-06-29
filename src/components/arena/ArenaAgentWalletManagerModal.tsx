@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDownToLine, ArrowUpToLine, Copy, ExternalLink, Loader2, ShieldCheck, WalletCards } from "lucide-react";
-import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaTokenAmount } from "@/components/arena/ArenaTokenAmount";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -194,9 +193,7 @@ export function ArenaAgentWalletManagerModal({
   const copyText = async (label: string, value: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied`);
     } catch {
-      toast.error("Could not copy");
     }
   };
 
@@ -218,10 +215,8 @@ export function ArenaAgentWalletManagerModal({
       await invalidateAgentWalletQueries(currentAgentId);
       await Promise.resolve(onWalletUpdated?.(currentAgentId));
       setFundAmount("");
-      toast.success("Agent wallet deposit recorded.");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not record the deposit.");
     },
   });
 
@@ -246,10 +241,8 @@ export function ArenaAgentWalletManagerModal({
       setWithdrawAmount("");
       setWithdrawDestination("");
       const withdrawalId = response?.result?.withdrawalId;
-      toast.success(withdrawalId ? `Withdrawal queued (${withdrawalId.slice(0, 8)}…)` : "Withdrawal queued");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not queue the withdrawal.");
     },
   });
 

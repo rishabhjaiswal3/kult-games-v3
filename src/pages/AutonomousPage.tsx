@@ -19,7 +19,6 @@ import {
   Shield,
   Brain,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
@@ -78,13 +77,12 @@ function AgentAutonomousToggle({ agent }: { agent: AiArenaAgent }) {
         old ? { ...old, autonomousMode: res.autonomousMode } : old
       );
       qc.invalidateQueries({ queryKey: ["myArenaAgents"] });
-      toast.success(
         res.autonomousMode
           ? `${agent.name} is now autonomous — auto-queuing and training enabled`
           : `${agent.name} autonomous mode disabled`
       );
     },
-    onError: () => toast.error("Could not update autonomous mode"),
+    onError: () => {},
   });
 
   const isOn = configQ.data?.autonomousMode ?? false;

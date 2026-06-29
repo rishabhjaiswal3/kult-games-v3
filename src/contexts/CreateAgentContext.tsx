@@ -18,7 +18,6 @@ import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { playerTitlesApi, type PlayerTitle } from "@/api/playerTitlesApi";
-import { toast } from "sonner";
 
 type AgentCreatedListener = (agent: AiArenaAgent) => void | Promise<void>;
 
@@ -56,7 +55,6 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
 
   const openCreateAgent = useCallback((opts?: OpenCreateAgentOptions) => {
     if (!walletAddress) {
-      toast.error("Connect a wallet first.");
       return;
     }
     setPendingArchetype(opts?.archetype);

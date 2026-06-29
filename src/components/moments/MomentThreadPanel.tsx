@@ -10,7 +10,6 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import {
@@ -271,28 +270,28 @@ export default function MomentThreadPanel({ moment }: { moment: Moment }) {
 
   const createCommentMutation = useMutation({
     mutationFn: (content: string) => commentsApi.create(momentId, content.trim()),
-    onSuccess: async () => { setDraft(""); await invalidate(); toast.success("Comment posted"); },
-    onError: (e) => toast.error("Comment could not be posted", { description: e instanceof Error ? e.message : undefined }),
+    onSuccess: async () => { setDraft(""); await invalidate() },
+    onError: () => {},
   });
 
   const createReplyMutation = useMutation({
     mutationFn: ({ commentId, content }: { commentId: string; content: string }) =>
       commentsApi.createReply(commentId, content.trim()),
-    onSuccess: async () => { await invalidate(); toast.success("Reply posted"); },
-    onError: (e) => toast.error("Reply could not be posted", { description: e instanceof Error ? e.message : undefined }),
+    onSuccess: async () => { await invalidate() },
+    onError: () => {},
   });
 
   const updateCommentMutation = useMutation({
     mutationFn: ({ commentId, content }: { commentId: string; content: string }) =>
       commentsApi.update(commentId, content.trim()),
-    onSuccess: async () => { await invalidate(); toast.success("Comment updated"); },
-    onError: (e) => toast.error("Comment could not be updated", { description: e instanceof Error ? e.message : undefined }),
+    onSuccess: async () => { await invalidate() },
+    onError: () => {},
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: string) => commentsApi.remove(commentId),
-    onSuccess: async () => { await invalidate(); toast.success("Comment deleted"); },
-    onError: (e) => toast.error("Comment could not be deleted", { description: e instanceof Error ? e.message : undefined }),
+    onSuccess: async () => { await invalidate() },
+    onError: () => {},
   });
 
   const compactNum = (n: number) => new Intl.NumberFormat("en", { notation: "compact" }).format(n);

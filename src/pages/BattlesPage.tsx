@@ -17,7 +17,6 @@ import {
   Trophy,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
@@ -1156,7 +1155,6 @@ const BattlesPage = () => {
       const battleId = result.match.battleId;
       setSelectedBattleId(battleId);
       setBattleLookupInput(battleId);
-      toast.success("Battle starting — watch the live state below.");
       // Open status modal for the joiner's agent so they see the faceoff too.
       // The matchmaking-service writes a match:found Redis key for both agents;
       // the modal's polling will pick it up and transition to "Match found".
@@ -1167,7 +1165,6 @@ const BattlesPage = () => {
       await invalidateBattleOps();
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not join that arena lobby.");
     },
     onSettled: () => {
       setJoiningLobbyId(null);
@@ -1180,11 +1177,9 @@ const BattlesPage = () => {
       setLeavingAgentId(agentId);
     },
     onSuccess: async () => {
-      toast.success("Agent removed from the queue.");
       await invalidateBattleOps();
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not leave matchmaking.");
     },
     onSettled: () => {
       setLeavingAgentId(null);
@@ -1207,10 +1202,8 @@ const BattlesPage = () => {
       const battleId = result.battle.id;
       setSelectedBattleId(battleId);
       setBattleLookupInput(battleId);
-      toast.success("Battle created successfully.");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not create battle.");
     },
   });
 
@@ -1221,19 +1214,16 @@ const BattlesPage = () => {
       return aiArenaGatewayApi.disputeBattle(selectedBattleId, { reason: disputeReason.trim() });
     },
     onSuccess: async () => {
-      toast.success("Battle dispute submitted.");
       setDisputeReason("");
       await queryClient.invalidateQueries({ queryKey: ["aiArenaGateway", "battlePageBattle", selectedBattleId], exact: false });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not submit dispute.");
     },
   });
 
   const handleLookupBattle = () => {
     const nextId = battleLookupInput.trim();
     if (!nextId) {
-      toast.error("Paste a battle ID to inspect it.");
       return;
     }
     setSelectedBattleId(nextId);

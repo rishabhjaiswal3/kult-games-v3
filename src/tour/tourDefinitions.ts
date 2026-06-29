@@ -19,15 +19,15 @@ function step(selector: string, title: string, description: string, side: Side =
 
 const shellSteps = [
   step("[data-tour='sidebar-brand']", "Kult + 0G", "This is your entry point into Kult Games, AI Arena agents, moments, league boards, rewards, and rankings.", "right"),
-  step("[data-tour='sidebar-nav']", "Main navigation", "Use the sidebar to move between every major product area. Each section has its own page tour.", "right"),
+  step("[data-tour='sidebar-nav']", "YOUR KULT JOURNEY", "Explore every part of the KULT ecosystem. From games and AI Arena to the League and your achievements, everything is just one click away.", "right"),
 ];
 
 function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
   if (pathname === "/") {
     return [
-      step("[data-tour='home-hero']", "Home hub", "Start here for the main Kult Games experience, featured flows, AI Arena entry points, and player actions."),
-      step("[data-tour='home-quick-links']", "Quick snapshot", "Use these cards to understand the current product surface and jump into the most important actions."),
-      step("[data-tour='topbar-connect']", isAuthenticated ? "Account controls" : "Connect first", isAuthenticated ? "Open your account controls, notifications, and wallet actions from the top bar." : "Connect with wallet, Google, or email OTP to unlock personalized pages and actions.", "left"),
+      step("[data-tour='home-hero']", "Everything starts here.", "Discover games, train AI agents, enter the League, and track your progress all from one place."),
+      step("[data-tour='home-quick-links']", "START EXPLORING", "These cards highlight what’s happening now, making it easy to jump straight into the experiences that interest you most."),
+      step("[data-tour='topbar-connect']", isAuthenticated ? "YOUR COMMAND CENTER" : "Connect first", isAuthenticated ? "Access your wallet, profile, notifications, and settings to manage your journey across every KULT experience." : "Connect with wallet, Google, or email OTP to unlock personalized pages and actions.", "left"),
     ];
   }
 
@@ -235,6 +235,6 @@ export function getWebsiteTourSteps(context: TourContext): DriveStep[] {
   return [
     ...shellSteps,
     ...routeSteps(context),
-    step("[data-tour='tour-start']", "Replay this page tour", "Use this button whenever you want to restart the walkthrough for the current page.", "left"),
+    step("[data-tour='tour-start']", "✅ Tour Complete", `You're ready to experience KULT.<br><br>• Play Games<br>• Train AI Agents<br>• Join the League<br>• Build Your Reputation`, "left"),
   ];
 }
