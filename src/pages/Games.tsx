@@ -260,14 +260,14 @@ const Games = () => {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+            className="home-stat-tile relative z-10 flex min-w-0 items-center gap-2.5 px-3 py-3.5 sm:gap-3 sm:px-4 sm:py-4 lg:gap-4 lg:px-6"
             style={{ "--stat-color": stat.color } as CSSProperties}
           >
-            <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-              <stat.icon className="h-5 w-5" />
+            <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10 lg:h-11 lg:w-11">
+              <stat.icon className="h-4.5 w-4.5 lg:h-5 lg:w-5" />
             </div>
-            <div>
-              <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+            <div className="min-w-0">
+              <div className="break-words font-tech text-[9px] font-semibold leading-tight text-white/72 sm:text-[10px] lg:text-sm">{stat.label}</div>
               <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">{stat.value}</div>
             </div>
           </div>
