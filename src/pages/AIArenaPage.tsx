@@ -36,6 +36,7 @@ import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import heroVideo from "@/assets/hero-video.mp4";
+import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import agentNexus from "@/assets/hybrid.mp4";
@@ -367,7 +368,7 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
 function AIArenaPageContent() {
   return (
-    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full space-y-6 px-4 py-5 sm:px-6 lg:px-8 max-w-full">
+    <div className="ai-arena-page min-h-full text-foreground bg-background min-w-0 mx-auto w-full space-y-6 px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
       <FeaturesBlock />
@@ -437,44 +438,51 @@ function Logo({
   return (
     <div className="flex min-w-0 flex-col leading-none">
       <span className={`font-display ${size} text-gradient glow-text`}>AI ARENA</span>
-      <span
-        className={`flex-wrap items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.3em] text-muted-foreground font-tech mt-1 ${hideAttributionOnMobile ? "hidden md:flex" : "flex"}`}
+      <div
+        className={`mt-1 flex-nowrap items-center gap-3 md:flex-col md:items-start md:gap-0 ${hideAttributionOnMobile ? "hidden md:flex" : "flex"}`}
       >
-        PRESENTED BY <KultLogo className="h-3.5 w-auto" />
-      </span>
-      <span
-        className={`flex-wrap items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.3em] text-muted-foreground font-tech mt-1 ${hideAttributionOnMobile ? "hidden md:flex" : "flex"}`}
-      >
-        POWERED BY <ZeroGLogo className="h-3.5 w-auto" />
-      </span>
+        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-muted-foreground font-tech sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
+          PRESENTED BY <KultLogo className="h-3.5 w-auto shrink-0" />
+        </span>
+        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-muted-foreground font-tech md:mt-1 sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
+          POWERED BY <ZeroGLogo className="h-3.5 w-auto shrink-0" />
+        </span>
+      </div>
     </div>
   );
 }
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-sm text-center" : "max-w-xl"}>
-      <span className="inline-block px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5">
+    <div className={compact ? "mx-auto max-w-sm pt-80 text-center" : "max-w-xl md:max-w-sm xl:max-w-xl"}>
+      <span className={`${compact ? "hidden" : "inline-block"} px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:hidden md:mb-5 xl:inline-block`}>
         BUILT FOR WEB3
       </span>
       <h1
-        className="font-tech text-4xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl"
+        className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
+          compact ? "text-[2.45rem] max-[380px]:text-[2.05rem]" : "text-4xl sm:text-5xl md:text-3xl lg:text-4xl xl:text-6xl"
+        }`}
       >
-        AI{compact ? " " : <br />}ARENA
+        AI ARENA
       </h1>
       <h2
-        className="font-tech mt-3 text-xl font-black uppercase leading-tight text-foreground/90 sm:text-2xl md:mt-5"
+        className={`font-tech font-black uppercase text-foreground/90 ${
+          compact ? "mt-1.5 text-[1.2rem] leading-[1.05] max-[380px]:text-[1rem]" : "mt-3 leading-tight text-xl sm:text-2xl md:mt-2 md:text-lg lg:text-xl xl:mt-5 xl:text-2xl"
+        }`}
       >
-        Where AI
-        <br />
+        Where AI{compact ? " " : <br />}
         Agents Battle
         <br />
-        For {" "}
+        For{" "}
         <span className="underline decoration-accent decoration-4 underline-offset-4">
           Supremacy
         </span>
       </h2>
-      <p className="mt-4 max-w-md text-sm leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5">
+      <p
+        className={`max-w-md text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
+          compact ? "mt-2 text-[13px] leading-snug max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
+        }`}
+      >
         Collect, train, and battle unique AI Agents.
         <br />
         Own your journey. Rule the Arena.
@@ -482,8 +490,8 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <div
         className={
           compact
-            ? "mt-6 mx-auto flex w-full max-w-[268px] flex-col items-center gap-2.5  p-3 "
-            : "mt-8 flex w-[256px] flex-col items-start gap-2.5 p-3 "
+            ? "mt-3 mx-auto flex w-full max-w-[350px] flex-col items-center gap-1.5 px-3 py-2 max-[380px]:max-w-[310px] max-[380px]:gap-1 max-[380px]:px-2"
+            : "mt-4 flex w-[224px] flex-col items-start gap-2"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -501,12 +509,12 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     startMatchmaking,
     openQueuedMatchStatus,
   } = useAiArenaMatchmakingFlow();
-  const actionButtonSize = "h-11 w-full px-4 text-[10px] tracking-[0.16em] gap-2";
+  const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.16em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
   const actionButtonBase =
-    "min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60";
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center ${compact ? "justify-center" : "justify-start text-left"} transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
 
   return (
-    <>
+    <div className="contents">
       <button
         type="button"
         onClick={() => startMatchmaking()}
@@ -519,26 +527,28 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         ) : (
           <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
-        <span className="leading-tight text-center whitespace-nowrap">{buttonLabel}</span>
+        <span className={`leading-tight whitespace-nowrap ${compact ? "text-center" : "text-left"}`}>{buttonLabel}</span>
       </button>
 
-      <a
-        href="#my-battles"
-        data-tour="ai-arena-my-battle"
-        className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.42),rgba(4,8,15,0.92))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.52),rgba(4,8,15,0.94))]`}
-      >
-        <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
-        <span>MY BATTLE</span>
-      </a>
+      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+        <a
+          href="#my-battles"
+          data-tour="ai-arena-my-battle"
+          className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.42),rgba(4,8,15,0.92))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.52),rgba(4,8,15,0.94))]`}
+        >
+          <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
+          <span>MY BATTLE</span>
+        </a>
 
-      <Link
-        to="/league"
-        data-tour="ai-arena-enter-league"
-        className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white`}
-      >
-        <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
-        <span>ENTER LEAGUE</span>
-      </Link>
+        <Link
+          to="/league"
+          data-tour="ai-arena-enter-league"
+          className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white`}
+        >
+          <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
+          <span>ENTER LEAGUE</span>
+        </Link>
+      </div>
 
       {queuedAgent ? (
         <div
@@ -559,18 +569,23 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         </div>
       ) : (
         <p
-          className={`text-muted-foreground color-white text-center ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs" }`}
+          className={`font-medium leading-relaxed text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.85)] ${
+            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "max-w-md text-left text-sm"
+          }`}
         >
           {helperText}
         </p>
       )}
-    </>
+    </div>
   );
 }
 
 function Hero() {
   return (
-    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]" data-tour="ai-arena-hero">
+    <section
+      className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
+      data-tour="ai-arena-hero"
+    >
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden
@@ -579,7 +594,7 @@ function Hero() {
           muted
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-right"
+          className="h-full w-full object-contain object-center xl:object-cover xl:object-right"
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
@@ -597,23 +612,23 @@ function Hero() {
           preload="auto"
           className="absolute inset-0 h-full w-full object-cover object-top"
         >
-          <source src={heroVideo} type="video/mp4" />
+          <source src={mobileHeroVideo} type="video/mp4" />
         </video>
         <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
-            <span className="flex items-center gap-1.5">
-              Presented by <KultLogo className="h-4 w-auto" />
+          <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white/50 min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
+            <span className="flex shrink-0 items-center gap-1">
+              Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
             </span>
-            <span className="flex items-center gap-1.5">
-              Powered by <ZeroGLogo className="h-4 w-auto" />
+            <span className="flex shrink-0 items-center gap-1">
+              Powered by <ZeroGLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
             </span>
           </div>
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+      <div className="relative mx-auto hidden px-6 pt-8 pb-32 md:absolute md:inset-0 md:flex md:min-h-0 md:flex-col md:justify-end md:pb-6 xl:relative xl:min-h-[680px] xl:justify-center xl:pb-32">
+        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 xl:mb-8">
           <span className="flex items-center gap-1.5">
             Presented by <KultLogo className="h-4 w-auto" />
           </span>
@@ -637,31 +652,40 @@ function StatsBar() {
     <section className="relative z-10">
       <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
         <div
-          className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+          className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
           style={{ "--stat-color": "#00f080" } as CSSProperties}
         >
-          <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
+          <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] sm:h-2.5 sm:w-2.5 md:h-2 md:w-2 xl:h-2.5 xl:w-2.5" />
           </div>
           <div className="min-w-0">
-            <div className="font-tech text-xs font-semibold text-primary sm:text-sm">Beta Live</div>
-            <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold text-white">
-              Powered by <ZeroGLogo className="h-4 w-auto" />
+            <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
+              Beta Live
+            </div>
+            <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
+              <span className="block md:inline">Powered</span>
+              <span className="flex items-center gap-1.5 md:inline-flex md:pl-1">
+                by <ZeroGLogo className="h-3.5 w-auto shrink-0 sm:h-4 md:h-3 xl:h-4" />
+              </span>
             </div>
           </div>
         </div>
         {stats.map((s) => (
           <div
             key={s.label}
-            className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+            className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
             style={{ "--stat-color": s.color } as CSSProperties}
           >
-            <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-              <s.icon className="h-5 w-5" />
+            <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
+              <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5 md:h-4 md:w-4 xl:h-5 xl:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="font-tech text-xs font-semibold text-primary sm:text-sm">{s.label}</div>
-              <div className="mt-0.5 truncate text-base font-semibold text-white">{s.detail}</div>
+              <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
+                {s.label}
+              </div>
+              <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
+                {s.detail}
+              </div>
             </div>
           </div>
         ))}
@@ -1592,31 +1616,31 @@ function PartnersBlock() {
   const partners = ["0G", "Base", "Solana"];
   return (
     <section>
-      <div className="card-glass relative overflow-hidden rounded-xl border-white/8 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.24)] sm:p-5 lg:p-4 xl:p-5">
+      <div className="card-glass relative overflow-hidden rounded-lg border-white/8 p-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)] sm:rounded-xl sm:p-5 sm:shadow-[0_16px_42px_rgba(0,0,0,0.24)] lg:p-4 xl:p-5">
         <div className="absolute inset-0 grid-bg opacity-15" />
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent/45 to-transparent" />
-        <div className="relative grid items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(130px,0.7fr)_minmax(260px,1.2fr)_minmax(220px,0.9fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto]">
-          <div className="flex items-center justify-center gap-2.5 md:justify-start">
-            <div className="font-tech text-[9px] tracking-[0.28em] text-muted-foreground lg:text-[8px] lg:tracking-[0.22em] xl:text-[9px] xl:tracking-[0.28em]">
+        <div className="relative grid items-center gap-3 sm:gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(130px,0.7fr)_minmax(260px,1.2fr)_minmax(220px,0.9fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <div className="flex items-center justify-center gap-2 md:justify-start lg:gap-2.5">
+            <div className="font-tech text-[8px] tracking-[0.24em] text-muted-foreground sm:text-[9px] sm:tracking-[0.28em] lg:text-[8px] lg:tracking-[0.22em] xl:text-[9px] xl:tracking-[0.28em]">
               POWERED BY
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/12 p-1.5 lg:h-7 lg:w-7 xl:h-8 xl:w-8">
-              <ZeroGLogo className="h-4.5 w-auto lg:h-3.5 xl:h-4.5" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-primary/20 bg-primary/12 p-1.5 sm:h-8 sm:w-8 lg:h-7 lg:w-7 xl:h-8 xl:w-8">
+              <ZeroGLogo className="h-3.5 w-auto sm:h-4.5 lg:h-3.5 xl:h-4.5" />
             </div>
           </div>
-          <div className="text-center font-display text-xl leading-tight md:text-2xl lg:text-lg lg:leading-snug xl:text-2xl xl:leading-tight">
+          <div className="text-center font-display text-[1.05rem] leading-tight sm:text-xl md:text-2xl lg:text-lg lg:leading-snug xl:text-2xl xl:leading-tight">
             BUILDING THE FUTURE
             <br />
             OF AI GAMING <span className="text-accent">TOGETHER</span>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 md:justify-end lg:gap-1.5 xl:gap-2">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 md:justify-end lg:gap-1.5 xl:gap-2">
             {partners.map((p) => (
               <div
                 key={p}
-                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2.5 py-1.5 font-tech text-[11px] text-white/80 lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2 py-1.5 font-tech text-[10px] text-white/80 sm:px-2.5 sm:text-[11px] lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
-                <ChainLogo name={p} className="h-3 w-auto xl:h-3.5" />
+                <ChainLogo name={p} className="h-2.5 w-auto sm:h-3 xl:h-3.5" />
               </div>
             ))}
           </div>
