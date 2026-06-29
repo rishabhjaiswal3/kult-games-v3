@@ -13,6 +13,7 @@ import { LeagueTopAgentsPanel } from "@/components/league/LeagueTopAgentsPanel";
 import { LeagueUpcomingCarousel } from "@/components/league/LeagueUpcomingCarousel";
 import { LeagueWinRatePanel } from "@/components/league/LeagueWinRatePanel";
 import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
+import { LeagueTrashTalkPanel } from "@/components/league/LeagueTrashTalkPanel";
 import { FlagCircle } from "@/components/league/FlagHex";
 import { PolymarketLogo } from "@/components/league/PolymarketLogo";
 
@@ -48,6 +49,10 @@ function KultLeagueBoard() {
 
         <div className="min-w-0 w-full lg:col-span-12" data-tour="league-moments">
           <LeagueMomentsTicker />
+        </div>
+
+        <div className="min-w-0 w-full lg:col-span-12" data-tour="league-trash-talk">
+          <LeagueTrashTalkPanel />
         </div>
 
         <div className="min-w-0 w-full lg:col-span-12" data-tour="league-upcoming">
