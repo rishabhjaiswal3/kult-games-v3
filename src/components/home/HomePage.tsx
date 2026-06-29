@@ -151,17 +151,20 @@ export function HomePage() {
               Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
-          <div className="max-w-2xl space-y-4">
-            <h1 className="max-w-2xl font-tech text-[1.8rem] font-black uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <div className="max-w-2xl space-y-2.5 sm:space-y-4">
+            <h1 className="max-w-2xl font-tech text-[1.56rem] font-black uppercase leading-[1.05] tracking-tight text-white min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl">
               The Operating
               <br />
-              layer for
-              <br />
-              intelligent
-              <br />
-              gaming
+              Layer for
+              <br className="sm:hidden" />
+              <span className="whitespace-nowrap sm:hidden">Intelligent Gaming</span>
+              <span className="hidden sm:inline">
+                Intelligent
+                <br />
+                Gaming
+              </span>
             </h1>
-            <p className="max-w-lg text-sm leading-relaxed text-white/75">
+            <p className="max-w-lg text-sm leading-snug text-white/75 sm:leading-relaxed">
               One browser for games, agents, rivalries,
               <br />
               and live battles that never stop.
