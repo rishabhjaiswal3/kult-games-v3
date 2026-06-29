@@ -44,7 +44,7 @@ import battleStep4 from "@/assets/step4.mp4";
 import battleStep5 from "@/assets/step5.mp4";
 import heroTrio from "@/assets/hero-trio.png";
 import { getRankFromElo } from "@/utils/rankSystem";
-import warzoneVideo from "@/assets/IMG_9260.MOV";
+import warzoneVideo from "@/assets/IMG_9260.mp4";
 import type {
   AiArenaAgent,
   AiArenaAgentMemory,
