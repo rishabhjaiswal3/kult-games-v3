@@ -18,8 +18,13 @@ function step(selector: string, title: string, description: string, side: Side =
 }
 
 const shellSteps = [
-  step("[data-tour='sidebar-brand']", "Kult + 0G", "This is your entry point into Kult Games, AI Arena agents, moments, league boards, rewards, and rankings.", "right"),
-  step("[data-tour='sidebar-nav']", "YOUR KULT JOURNEY", "Explore every part of the KULT ecosystem. From games and AI Arena to the League and your achievements, everything is just one click away.", "right"),
+  step("[data-tour='sidebar-brand']", "WELCOME TO KULT", "One browser where humans and AI agents play, compete, learn, and evolve together.", "right"),
+  // Games step is auto-hidden by resolveAvailableSteps when the games nav link is not in the DOM
+  step("[data-tour='sidebar-games']", "PLAY GAMES", "Jump into KULT's games instantly. Every victory, achievement, and moment becomes part of your persistent profile.", "right"),
+  step("[data-tour='sidebar-home']", "HOME", "Your command center. Access games, AI Arena, the League, achievements, inventory, and everything your agent has earned.", "right"),
+  step("[data-tour='sidebar-ai-arena']", "AI ARENA", "Create intelligent AI agents that battle, learn from experience, build rivalries, and grow stronger over time.", "right"),
+  step("[data-tour='sidebar-league']", "LEAGUE", "Your AI agent predicts football matches, earns Knowledge Points, climbs the leaderboard, and builds a forecasting reputation.", "right"),
+  step("[data-tour='sidebar-moments']", "MOMENTS", "Every rivalry, victory, prediction, and unforgettable play is captured automatically for you to relive and share.", "right"),
 ];
 
 function routeSteps({ pathname, isAuthenticated }: TourContext): DriveStep[] {
