@@ -722,50 +722,60 @@ function FeaturesBlock() {
     },
   ];
   return (
-    <section className="arena-panel p-4 text-center shadow-[0_0_36px_rgba(154,53,255,0.06)] sm:p-6 lg:text-left">
-      <div className="grid items-stretch gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)]">
-        <div className="h-full">
-          <span className="text-[10px] tracking-[0.24em] sm:tracking-[0.3em] font-tech text-accent">
+    <section className="arena-panel p-4 text-center shadow-[0_0_36px_rgba(154,53,255,0.06)] sm:p-5 md:text-left">
+      <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-5 lg:gap-6">
+        <div>
+          <span className="font-tech text-[10px] tracking-[0.24em] text-accent sm:tracking-[0.3em]">
             BUILT DIFFERENT
           </span>
-          <h3 className="font-tech mt-3 text-2xl font-black uppercase leading-tight sm:text-3xl">
+          <h3 className="font-tech mt-2 text-xl font-black uppercase leading-tight md:text-2xl lg:text-3xl">
             THE NEXT ERA
             <br />
             OF <span className="text-gradient">AI GAMING</span>
           </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground mt-4">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             AI Arena is the ultimate battleground for AI Agents across Web3. Powered by{" "}
             <ZeroGLogo className="mx-1 h-4 w-auto align-[-0.2em]" />, owned by you.
           </p>
-          <Link to="/" className="btn-primary mt-6 mx-auto lg:mx-0 px-5 py-2.5 rounded-md font-tech text-xs tracking-[0.2em] inline-flex items-center gap-2 w-max lg:px-3 lg:py-2 lg:text-[10px] lg:tracking-[0.12em] lg:gap-1.5 xl:px-5 xl:py-2.5 xl:text-xs xl:tracking-[0.2em] xl:gap-2">
-            LEARN MORE <ArrowUpRight className="w-4 h-4 lg:h-3.5 lg:w-3.5 xl:h-4 xl:w-4" />
+          <div className="mt-3 hidden space-y-2 min-[1200px]:block">
+            <div className="flex items-start gap-2 text-sm text-white/60">
+              <span className="mt-0.5 shrink-0 text-[#9a35ff]">▸</span>
+              Your agent evolves through every battle — strategy, traits, and record stay on-chain.
+            </div>
+            <div className="flex items-start gap-2 text-sm text-white/60">
+              <span className="mt-0.5 shrink-0 text-[#9a35ff]">▸</span>
+              Compete in seasons, earn rewards, own your reputation.
+            </div>
+          </div>
+          <Link to="/" className="btn-primary mt-4 mx-auto md:mx-0 inline-flex items-center gap-2 rounded-md px-5 py-2.5 font-tech text-xs tracking-[0.2em] w-max">
+            LEARN MORE <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="h-full">
-          <div className="mb-3 text-center lg:text-left">
+        <div>
+          <div className="mb-3 text-center md:text-left">
             <span className="font-tech text-[11px] uppercase tracking-[0.26em] text-primary">Start here</span>
             <p className="mt-1 text-sm leading-relaxed text-white/80">Three steps to get your agent into the Arena.</p>
           </div>
-          <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {features.map((f) => {
             const content = (
               <>
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 mx-auto md:mx-0"
+                className="w-9 h-9 rounded-lg flex items-center justify-center mb-2.5 mx-auto md:mx-0"
                 style={{
                   background: `oklch(from ${f.c} l c h / 0.15)`,
                   border: `1px solid oklch(from ${f.c} l c h / 0.4)`,
                 }}
               >
-                <f.icon className="w-5 h-5" style={{ color: `oklch(from ${f.c} l c h)` }} />
+                <f.icon className="w-4 h-4" style={{ color: `oklch(from ${f.c} l c h)` }} />
               </div>
               <h4
-                className="font-tech text-base font-black uppercase leading-tight tracking-wider mb-2 flex flex-wrap items-center justify-center md:justify-start gap-2 sm:text-lg"
+                className="font-tech text-sm font-black uppercase leading-tight tracking-wider mb-1.5 flex flex-wrap items-center justify-center md:justify-start gap-1.5"
                 style={{ color: `oklch(from ${f.c} l c h)` }}
               >
                 {f.title}
               </h4>
-              <p className="text-sm font-medium leading-relaxed text-white/75">{f.desc}</p>
+              <p className="text-xs font-medium leading-relaxed text-white/75 sm:text-sm">{f.desc}</p>
               </>
             );
 
@@ -774,21 +784,21 @@ function FeaturesBlock() {
                 key={f.title}
                 to={f.path}
                 data-tour={f.title === "CREATE AGENT" ? "ai-arena-create-agent" : undefined}
-                className="card-glass group rounded-xl p-3 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] md:text-left"
+                className="card-glass group rounded-xl p-2.5 text-center transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_0_28px_rgba(154,53,255,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff] md:p-3 md:text-left"
               >
                 {content}
               </Link>
             ) : (
               <div
                 key={f.title}
-                className="card-glass rounded-xl p-3 text-center transition md:text-left"
+                className="card-glass rounded-xl p-2.5 text-center transition md:p-3 md:text-left"
               >
                 {content}
               </div>
             );
           })}
           </div>
-          <div className="mt-3 rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_12%_0%,rgba(154,53,255,0.14),transparent_46%),rgba(4,8,15,0.88)] px-4 py-3 text-center lg:text-left">
+          <div className="mt-3 rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_12%_0%,rgba(154,53,255,0.14),transparent_46%),rgba(4,8,15,0.88)] px-4 py-3 text-center md:text-left">
             <p className="font-tech text-[11px] font-bold uppercase tracking-[0.26em] text-primary">Why AI agents?</p>
             <p className="mt-2 text-sm leading-relaxed text-white/65">Your agent acts from the traits and strategy you train, learns from battle results, and remains yours as it grows through the Arena.</p>
           </div>
