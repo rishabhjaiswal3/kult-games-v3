@@ -368,7 +368,7 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
 function AIArenaPageContent() {
   return (
-    <div className="min-h-full text-foreground bg-background min-w-0 mx-auto w-full space-y-6 px-4 py-5 sm:px-6 lg:px-8 max-w-full">
+    <div className="ai-arena-page min-h-full text-foreground bg-background min-w-0 mx-auto w-full space-y-6 px-4 py-5 sm:px-6 lg:px-8 max-w-full">
       <Hero />
       <StatsBar />
       <FeaturesBlock />
@@ -454,20 +454,20 @@ function Logo({
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-sm pt-40 text-center" : "max-w-xl"}>
-      <span className={`${compact ? "hidden" : "inline-block"} px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:mb-5`}>
+    <div className={compact ? "mx-auto max-w-sm pt-40 text-center" : "max-w-xl md:max-w-sm xl:max-w-xl"}>
+      <span className={`${compact ? "hidden" : "inline-block"} px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:hidden md:mb-5 xl:inline-block`}>
         BUILT FOR WEB3
       </span>
       <h1
         className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
-          compact ? "text-[2.75rem]" : "text-4xl sm:text-5xl lg:text-6xl"
+          compact ? "text-[2.75rem]" : "text-4xl sm:text-5xl md:text-3xl lg:text-4xl xl:text-6xl"
         }`}
       >
-        AI{compact ? " " : <br />}ARENA
+        AI ARENA
       </h1>
       <h2
-        className={`font-tech mt-3 font-black uppercase leading-tight text-foreground/90 md:mt-5 ${
-          compact ? "text-[1.35rem]" : "text-xl sm:text-2xl"
+        className={`font-tech mt-3 font-black uppercase leading-tight text-foreground/90 md:mt-2 xl:mt-5 ${
+          compact ? "text-[1.35rem]" : "text-xl sm:text-2xl md:text-lg lg:text-xl xl:text-2xl"
         }`}
       >
         Where AI
@@ -480,8 +480,8 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         </span>
       </h2>
       <p
-        className={`mt-4 max-w-md leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 ${
-          compact ? "text-[15px]" : "text-sm"
+        className={`mt-4 max-w-md leading-relaxed text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
+          compact ? "text-[15px]" : "text-sm md:text-[11px] lg:text-xs xl:text-sm"
         }`}
       >
         Collect, train, and battle unique AI Agents.
@@ -492,7 +492,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         className={
           compact
             ? "mt-6 mx-auto flex w-full max-w-[268px] flex-col items-center gap-2.5  p-3 "
-            : "mt-8 flex w-[256px] flex-col items-start gap-2.5 p-3 "
+            : "mt-4 flex w-[224px] flex-col items-start gap-2"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -510,9 +510,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     startMatchmaking,
     openQueuedMatchStatus,
   } = useAiArenaMatchmakingFlow();
-  const actionButtonSize = "h-11 w-full px-4 text-[10px] tracking-[0.16em] gap-2";
+  const actionButtonSize = `w-full ${compact ? "h-11 px-4 text-[10px] tracking-[0.16em] gap-2" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
   const actionButtonBase =
-    "min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60";
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center ${compact ? "justify-center" : "justify-start text-left"} transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
 
   return (
     <>
@@ -528,7 +528,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         ) : (
           <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
-        <span className="leading-tight text-center whitespace-nowrap">{buttonLabel}</span>
+        <span className={`leading-tight whitespace-nowrap ${compact ? "text-center" : "text-left"}`}>{buttonLabel}</span>
       </button>
 
       <a
@@ -581,7 +581,10 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
 function Hero() {
   return (
-    <section className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f] min-h-[500px]" data-tour="ai-arena-hero">
+    <section
+      className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
+      data-tour="ai-arena-hero"
+    >
       <div className="absolute inset-0 hidden md:block">
         <video
           aria-hidden
@@ -590,7 +593,7 @@ function Hero() {
           muted
           playsInline
           preload="auto"
-          className="h-full w-full object-cover object-right"
+          className="h-full w-full object-contain object-center xl:object-cover xl:object-right"
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
@@ -623,8 +626,8 @@ function Hero() {
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative mx-auto hidden md:flex md:flex-col px-6 pt-8 pb-32 min-h-[680px] justify-center">
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 mb-8">
+      <div className="relative mx-auto hidden px-6 pt-8 pb-32 md:absolute md:inset-0 md:flex md:min-h-0 md:flex-col md:justify-end md:pb-6 xl:relative xl:min-h-[680px] xl:justify-center xl:pb-32">
+        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 xl:mb-8">
           <span className="flex items-center gap-1.5">
             Presented by <KultLogo className="h-4 w-auto" />
           </span>
@@ -648,31 +651,40 @@ function StatsBar() {
     <section className="relative z-10">
       <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
         <div
-          className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+          className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
           style={{ "--stat-color": "#00f080" } as CSSProperties}
         >
-          <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
+          <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] sm:h-2.5 sm:w-2.5 md:h-2 md:w-2 xl:h-2.5 xl:w-2.5" />
           </div>
           <div className="min-w-0">
-            <div className="font-tech text-xs font-semibold text-primary sm:text-sm">Beta Live</div>
-            <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold text-white">
-              Powered by <ZeroGLogo className="h-4 w-auto" />
+            <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
+              Beta Live
+            </div>
+            <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
+              <span className="block md:inline">Powered</span>
+              <span className="flex items-center gap-1.5 md:inline-flex md:pl-1">
+                by <ZeroGLogo className="h-3.5 w-auto shrink-0 sm:h-4 md:h-3 xl:h-4" />
+              </span>
             </div>
           </div>
         </div>
         {stats.map((s) => (
           <div
             key={s.label}
-            className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+            className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
             style={{ "--stat-color": s.color } as CSSProperties}
           >
-            <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-              <s.icon className="h-5 w-5" />
+            <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
+              <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5 md:h-4 md:w-4 xl:h-5 xl:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="font-tech text-xs font-semibold text-primary sm:text-sm">{s.label}</div>
-              <div className="mt-0.5 truncate text-base font-semibold text-white">{s.detail}</div>
+              <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
+                {s.label}
+              </div>
+              <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
+                {s.detail}
+              </div>
             </div>
           </div>
         ))}
