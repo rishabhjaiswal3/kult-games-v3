@@ -54,7 +54,9 @@ function normalizeHashtag(value: string) {
 }
 
 function resolveHostBase(): string {
-  return APP_ORIGIN || resolveShareBaseUrl();
+  // Prefer the configured backend URL so share/preview links point to the backend
+  // (which serves OG HTML), not the frontend (which is a static SPA with no OG handler).
+  return resolveShareBaseUrl() || APP_ORIGIN;
 }
 
 export function buildMomentShareOgImageUrl(momentId: string): string {
