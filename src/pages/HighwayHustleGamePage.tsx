@@ -1164,12 +1164,15 @@ export default function HighwayHustleGamePage() {
         return;
       }
 
+      // diagnoseBuildFiles already confirmed CORS is OK — a stall here is R2
+      // rate-limiting on the pub- dev URL, not a real CORS block. Give 90s and
+      // show a soft retry rather than the misleading CORS error UI.
       const stuckTimer = setTimeout(() => {
         if (!unityInstanceRef.current) {
-          console.error("[HH] Unity stuck at 0% — CORS issue on R2.");
-          setUnityLoadError('cors');
+          console.warn("[HH] Unity stuck at 0% — R2 rate-limit stall, not CORS.");
+          setUnityLoadError('slow');
         }
-      }, 18_000);
+      }, 90_000);
 
       try {
         const instance = await (window as any).createUnityInstance(
@@ -1649,15 +1652,20 @@ export default function HighwayHustleGamePage() {
 
               {unityLoadError && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#030710]/95 p-6">
-                  <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(239,68,68,0.15)]">
+                  <div className={`w-full max-w-md rounded-2xl border bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)] ${unityLoadError === 'slow' ? 'border-yellow-500/30' : 'border-red-500/30'}`}>
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">⚠️</span>
-                      <span className="font-display text-base font-bold text-red-400 uppercase tracking-wider">
-                        {unityLoadError === 'cors' ? 'CORS Blocked' : 'Files Not Found'}
+                      <span className="text-xl">{unityLoadError === 'slow' ? '⏳' : '⚠️'}</span>
+                      <span className={`font-display text-base font-bold uppercase tracking-wider ${unityLoadError === 'slow' ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {unityLoadError === 'slow' ? 'Loading Slow' : unityLoadError === 'cors' ? 'CORS Blocked' : 'Files Not Found'}
                       </span>
                     </div>
 
-                    {unityLoadError === 'cors' ? (
+                    {unityLoadError === 'slow' ? (
+                      <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
+                        The game is taking too long to start — the server may be under load.
+                        Click Retry to try again (usually loads on the 2nd or 3rd attempt).
+                      </p>
+                    ) : unityLoadError === 'cors' ? (
                       <>
                         <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
                           The game build files exist on R2 but the browser is blocking cross-origin
@@ -1683,9 +1691,8 @@ export default function HighwayHustleGamePage() {
                     ) : (
                       <>
                         <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-3">
-                          Build files not reachable. Check that{" "}
-                          <code className="font-mono text-[10px] text-primary/80">VITE_HIGHWAY_HUSTLE_BUILD_URL</code>{" "}
-                          points to the correct R2 folder and the bucket is public.
+                          Build files not reachable. Check that the build URL points to the correct
+                          R2 folder and the bucket is public.
                         </p>
                         <p className="font-mono text-[10px] text-white/30 break-all">
                           Looking for: {UNITY_BASE_URL}/HighwayHustle.data
