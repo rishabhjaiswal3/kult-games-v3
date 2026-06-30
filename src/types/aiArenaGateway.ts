@@ -108,7 +108,7 @@ export interface AiArenaAchievementsResponse {
 
 export interface AiArenaCreateAgentRequest {
   name: string;
-  clan: "ZEROG" | "BASE" | "SOLANA";
+  clan: "ZEROG" | "BASE" | "SOLANA" | "OKX";
   archetype: "BERSERKER" | "TACTICIAN" | "DEFENDER" | "ASSASSIN" | "SUPPORT" | "HYBRID";
   backstory: string;
 }

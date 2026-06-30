@@ -1,5 +1,5 @@
 import { Hexagon, Trophy } from "lucide-react";
-import { ClanIcon } from "./ClanIcon";
+import { ClanIcon, OkxWordmark } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
 import { getRankFromElo } from "@/utils/rankSystem";
 
@@ -95,7 +95,11 @@ function PodiumCard({
         </div>
         <div className="mt-1 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
           <ClanIcon type={player.clanIconType} className="h-3 w-3" />
-          <span>{player.clanName}</span>
+          {player.clanIconType === "okx" ? (
+            <OkxWordmark className="h-2.5" />
+          ) : (
+            <span>{player.clanName}</span>
+          )}
         </div>
       </div>
 

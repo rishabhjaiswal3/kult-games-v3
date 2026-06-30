@@ -146,13 +146,19 @@ export function CreateAiArenaAgentModal({
 
           <div className="space-y-2">
             <Label className="arena-label">Clan</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {AI_ARENA_CLAN_OPTIONS.map((c) => (
                 <button
                   key={c.value}
                   type="button"
                   onClick={() => setClan(c.value)}
-                  className={cn("arena-chip", clan === c.value && "arena-chip-active-cyan")}
+                  className={cn(
+                    "arena-chip",
+                    clan === c.value &&
+                      (c.value === "OKX"
+                        ? "border-[#e0a528] bg-gradient-to-br from-[#f7d774]/20 via-[#e0a528]/15 to-[#9a6b12]/10 text-[#f7d774] shadow-[0_0_10px_rgba(224,165,40,0.4)]"
+                        : "arena-chip-active-cyan"),
+                  )}
                 >
                   <div className="font-display text-[11px] font-bold">{c.label}</div>
                   <div className="text-[9px] opacity-80">{c.hint}</div>

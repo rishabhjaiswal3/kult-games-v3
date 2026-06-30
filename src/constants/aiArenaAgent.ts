@@ -3,6 +3,7 @@ export const AI_ARENA_CLAN_OPTIONS = [
   { value: "ZEROG" as const, label: "ZeroG", hint: "OG native" },
   { value: "BASE" as const, label: "Base", hint: "Base" },
   { value: "SOLANA" as const, label: "Solana", hint: "Solana" },
+  { value: "OKX" as const, label: "OKX", hint: "OKX" },
 ];
 
 export const AI_ARENA_ARCHETYPE_OPTIONS = [

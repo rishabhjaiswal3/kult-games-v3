@@ -53,10 +53,11 @@ const STAGE_ORDER = [
   "LEGENDARY",
 ] as const;
 
-function clanTypeFromAgent(agent: AiArenaAgent): "zerog" | "solana" | "base" {
+function clanTypeFromAgent(agent: AiArenaAgent): "zerog" | "solana" | "base" | "okx" {
   const clan = agent.clan?.toUpperCase();
   if (clan === "SOLANA") return "solana";
   if (clan === "BASE") return "base";
+  if (clan === "OKX") return "okx";
   return "zerog";
 }
 
@@ -64,6 +65,7 @@ function clanLabel(clan?: string) {
   const normalized = clan?.trim().toUpperCase();
   if (normalized === "SOLANA") return "Solana";
   if (normalized === "BASE") return "Base";
+  if (normalized === "OKX") return "OKX";
   if (normalized === "ZEROG" || normalized === "0G") return "ZeroG";
   return clan?.trim() || "AI Arena";
 }

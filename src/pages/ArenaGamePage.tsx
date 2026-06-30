@@ -126,6 +126,7 @@ function clanColor(clan?: string): string {
   if (c === "ZEROG") return "#00e68a";
   if (c === "BASE") return "#0052ff";
   if (c === "SOLANA") return "#9945ff";
+  if (c === "OKX") return "#e0a528";
   return "#8b6dff";
 }
 

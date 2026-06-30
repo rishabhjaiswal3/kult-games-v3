@@ -11,7 +11,6 @@ const platformLinks = [
   { label: "Moments", href: "/moments", icon: Video, feature: "moments" },
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy, feature: "league" },
   { label: "League", href: "/league", icon: Trophy, feature: "league" },
-  { label: "Home", href: "/", icon: Gamepad2, feature: null },
 ];
 
 const socials = [

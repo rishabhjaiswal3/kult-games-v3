@@ -64,7 +64,7 @@ export function DashboardTopbar() {
               data-tour="tour-start"
               aria-label="Start website tour"
               aria-busy={isRunning}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-2.5 font-tech text-[13px] font-black uppercase tracking-[0.12em] text-cyan-100/90 transition hover:border-cyan-200/40 hover:bg-cyan-300/12 hover:text-white min-[430px]:px-3"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/[0.07] px-2.5 font-tech text-[11px] font-bold uppercase tracking-[0.12em] text-cyan-100/90 transition hover:border-cyan-200/40 hover:bg-cyan-300/12 hover:text-white min-[430px]:px-3"
             >
               {isRunning ? <Sparkles className="h-3.5 w-3.5" /> : <HelpCircle className="h-3.5 w-3.5" />}
               <span className="hidden min-[430px]:inline">{isRunning ? "Touring" : "Tour"}</span>
@@ -98,7 +98,7 @@ export function DashboardTopbar() {
                   type="button"
                   onClick={handleConnectWallet}
                   data-tour="topbar-connect"
-                  className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-red-400/18 bg-red-500/[0.06] px-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-red-300/85 transition-all hover:border-red-300/38 hover:bg-red-500/12 hover:text-red-200 min-[430px]:px-3"
+                  className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-red-400/18 bg-red-500/[0.06] px-2.5 font-tech text-[11px] font-bold uppercase tracking-[0.12em] text-red-300/85 transition-all hover:border-red-300/38 hover:bg-red-500/12 hover:text-red-200 min-[430px]:px-3"
                 >
                   <LogOut className="h-3.5 w-3.5 min-[430px]:hidden" />
                   <span className="hidden min-[430px]:inline">Disconnect</span>
@@ -109,7 +109,7 @@ export function DashboardTopbar() {
                 type="button"
                 onClick={handleConnectWallet}
                 data-tour="topbar-connect"
-                className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-[#9a35ff]/55 bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] px-2.5 font-tech text-[9px] font-black uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:border-[#c084fc]/70 hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110 min-[430px]:px-4"
+                className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-[#9a35ff]/55 bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] px-2.5 font-tech text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:border-[#c084fc]/70 hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110 min-[430px]:px-4"
               >
                 <LogIn className="h-3.5 w-3.5 min-[430px]:hidden" />
                 <span className="hidden min-[430px]:inline">Connect wallet</span>

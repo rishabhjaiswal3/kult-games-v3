@@ -163,13 +163,13 @@ export function HomePage() {
             </span>
           </div>
           <div className="max-w-2xl space-y-2.5 sm:space-y-4">
-            <h1 className="max-w-2xl font-tech text-[1.56rem] font-black uppercase leading-[1.05] tracking-tight text-white min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl font-tech text-[1.56rem] font-black uppercase leading-[1.05] tracking-tight text-white min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl">
               The Operating
               <br />
-              Layer for
-              <br className="sm:hidden" />
-              <span className="whitespace-nowrap sm:hidden">Intelligent Gaming</span>
-              <span className="hidden sm:inline">
+              Layer for{" "}
+              <br className="xl:hidden" />
+              <span className="whitespace-nowrap xl:hidden">Intelligent Gaming</span>
+              <span className="hidden xl:inline">
                 Intelligent
                 <br />
                 Gaming
@@ -214,9 +214,14 @@ export function HomePage() {
             <h2 className="mt-2 max-w-xl font-tech text-lg font-semibold leading-snug text-white sm:text-xl">
               One identity for your entire game world
             </h2>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/58">
-              Infinite Games, Intelligent Agents, Capture moment, predict the future.
-            </p>
+            <ul className="mt-1.5 grid max-w-xl grid-cols-2 gap-x-3 gap-y-1 text-sm leading-relaxed text-white/58 sm:flex sm:flex-wrap sm:items-center">
+              {["Infinite Games", "Intelligent Agents", "Capture moment", "Predict the future"].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <span className="h-1 w-1 shrink-0 rounded-full bg-[#bd6cff]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
           {canViewAiArena ? (
             <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 px-3 py-2.5 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
@@ -392,19 +397,19 @@ export function HomePage() {
         <section className="arena-panel border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
           <h2 className="mb-3 font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Jump in</h2>
           <div
-            className="grid gap-3"
-            style={{
-              gridTemplateColumns:
-                visibleQuickLinks.length <= 4
-                  ? `repeat(${visibleQuickLinks.length}, minmax(0, 1fr))`
-                  : "repeat(3, minmax(0, 1fr))",
-            }}
+            className={`grid grid-cols-1 gap-2 sm:gap-3 ${
+              visibleQuickLinks.length <= 4
+                ? { 1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[
+                    visibleQuickLinks.length
+                  ]
+                : "sm:grid-cols-3"
+            }`}
           >
             {visibleQuickLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)]"
+                className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 px-4 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] sm:p-4"
                 style={
                   {
                     "--quick-link-color": link.color,
@@ -413,18 +418,18 @@ export function HomePage() {
                 }
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <div
-                    className="relative z-10 grid h-10 w-10 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
+                    className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
                     style={{ color: link.color }}
                   >
                     <link.icon className="h-5 w-5" />
                   </div>
-                  <span className="relative z-10 font-tech text-sm font-bold uppercase tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
+                  <span className="relative z-10 break-words font-tech text-sm font-bold uppercase leading-tight tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
                     {link.label}
                   </span>
                 </div>
-                <ArrowUpRight className="relative z-10 h-4 w-4 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
+                <ArrowUpRight className="relative z-10 h-4 w-4 shrink-0 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
               </Link>
             ))}
           </div>
@@ -438,7 +443,7 @@ export function HomePage() {
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-tech text-xl font-black uppercase leading-tight text-white sm:text-2xl">Ready for the arena?</h3>
+              <h3 className="whitespace-nowrap font-tech text-lg font-black uppercase leading-tight text-white sm:text-2xl">Ready for the arena ?</h3>
               <p className="text-sm leading-relaxed text-white/75">Train agents, earn rewards, and compete globally.</p>
             </div>
           </div>
