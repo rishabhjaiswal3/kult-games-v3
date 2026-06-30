@@ -15,6 +15,7 @@ import {
   Sparkles,
   Swords,
   TrendingUp,
+  Video,
   Zap,
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
@@ -85,12 +86,15 @@ export function HomePage() {
   });
 
   const featuredGames = gamesData?.games?.slice(0, 6) ?? [];
-  const visibleStatTiles = [
+  const baseStatTiles = [
     { label: "Live games", value: String(gamesData?.games?.length ?? "—"), icon: Joystick, color: "#11a7ff", path: "/games", feature: "games" },
     { label: "AI Arena", value: "Live", icon: BrainCircuit, color: "#a855ff", path: "/ai-arena", feature: "ai_arena" },
     { label: "Dashboard", value: "Open", icon: Box, color: "#ffc42e", path: "/dashboard", feature: "ai_arena" },
     { label: "Battles", value: "24/7", icon: Swords, color: "#00f080", path: "/battles", feature: "ai_arena" },
   ].filter((stat) => canUse(stat.feature as AccessFeature));
+  const momentsTile = { label: "Moments", value: "Watch", icon: Video, color: "#ff5ca8", path: "/moments", feature: "moments" as AccessFeature };
+  const visibleStatTiles =
+    baseStatTiles.length === 3 && canViewMoments ? [...baseStatTiles, momentsTile] : baseStatTiles;
   const visibleQuickLinks = quickLinks.filter((link) => canUse(link.feature));
 
   useEffect(() => {
@@ -168,8 +172,8 @@ export function HomePage() {
               <br />
               Layer for{" "}
               <br className="xl:hidden" />
-              <span className="whitespace-nowrap xl:hidden">Intelligent Gaming</span>
-              <span className="hidden xl:inline">
+              <span className="text-gradient-arena tracking-wide xl:hidden">Intelligent Gaming</span>
+              <span className="hidden xl:inline text-gradient-arena tracking-wide">
                 Intelligent
                 <br />
                 Gaming
@@ -215,7 +219,7 @@ export function HomePage() {
               One identity for your entire game world
             </h2>
             <ul className="mt-1.5 grid max-w-xl grid-cols-2 gap-x-3 gap-y-1 text-sm leading-relaxed text-white/58 sm:flex sm:flex-wrap sm:items-center">
-              {["Infinite Games", "Intelligent Agents", "Capture moment", "Predict the future"].map((item) => (
+              {["Infinite Games", "Intelligent Agents", "Capture moments", "Predict the future"].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span className="h-1 w-1 shrink-0 rounded-full bg-[#bd6cff]" />
                   <span>{item}</span>
@@ -257,13 +261,26 @@ export function HomePage() {
       </section>
 
       {visibleStatTiles.length > 0 ? (
-        <div className="arena-panel home-stats-panel grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] divide-x divide-white/8 overflow-hidden" data-tour="home-quick-links">
+        <div
+          className={`arena-panel home-stats-panel grid overflow-hidden ${
+            visibleStatTiles.length === 3
+              ? "grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))] sm:divide-x sm:divide-white/8"
+              : "grid-cols-[repeat(auto-fit,minmax(160px,1fr))] divide-x divide-white/8"
+          }`}
+          data-tour="home-quick-links"
+        >
           {visibleStatTiles.map((stat, index) => (
             <Link
               key={stat.label}
               to={stat.path}
               className={`home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4 ${
-                visibleStatTiles.length === 3 && index === 2 ? "hidden sm:flex" : ""
+                visibleStatTiles.length === 3
+                  ? index === 1
+                    ? "border-l border-white/8 sm:border-l-0"
+                    : index === 2
+                      ? "col-span-2 border-t border-white/8 sm:col-span-1 sm:border-t-0"
+                      : ""
+                  : ""
               }`}
               style={{ "--stat-color": stat.color } as CSSProperties}
             >
@@ -493,7 +510,7 @@ function HomeAIArenaSection() {
               AI Arena
             </div>
             <h2 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
-              Train intelligence Rule the arena
+              Train <span className="text-gradient-arena tracking-wide">intelligence</span> Rule the arena
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/58">
               Create agents that remember fights, learn tactics, trigger rivalries, and battle while the whole ecosystem watches.

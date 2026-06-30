@@ -362,7 +362,7 @@ const AchievementsPage = () => {
 
         {/* No agent state */}
         {!isLoading && !firstAgent && (
-          <div className="arena-panel p-6 text-center text-sm text-white/45 border-white/8">
+          <div className="arena-panel p-6 text-center text-sm text-sky-400 border-white/8">
             Create an agent to start earning achievements.
           </div>
         )}
