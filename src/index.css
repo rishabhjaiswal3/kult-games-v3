@@ -2057,7 +2057,11 @@ button[aria-label="close modal"]:hover {
   }
 
   .home-page [data-tour="home-hero"] video {
-    object-fit: contain;
+    left: 50%;
+    width: 112%;
+    max-width: none;
+    transform: translateX(-50%);
+    object-fit: cover;
     object-position: center;
   }
 
