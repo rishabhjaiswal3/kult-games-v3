@@ -1,5 +1,33 @@
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
+import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
+import baseLogo from "@/assets/Base Logo.png";
+import solanaLogo from "@/assets/solana-sol-logo.png";
+import okxWordmark from "@/assets/OKX_id7gsDJl-c_1.svg";
+
+/**
+ * Golden OKX wordmark — the black "OKX" logo SVG recolored to the clan's gold
+ * gradient via CSS mask. Used in place of the plain "OKX" clan-name text.
+ */
+export function OkxWordmark({ className = "h-3.5" }: { className?: string }) {
+  return (
+    <span
+      role="img"
+      aria-label="OKX"
+      className={`${className} inline-block aspect-[157/44] bg-gradient-to-br from-[#f7d774] via-[#e0a528] to-[#9a6b12]`}
+      style={{
+        WebkitMaskImage: `url(${okxWordmark})`,
+        maskImage: `url(${okxWordmark})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
+    />
+  );
+}
 
 export function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; className?: string }) {
   if (type === "zerog") {
@@ -8,19 +36,14 @@ export function ClanIcon({ type, className = "h-3.5 w-3.5" }: { type: string; cl
   if (type === "kult") {
     return <img src={kultLogo} alt="" className={`${className} object-contain`} />;
   }
+  if (type === "okx") {
+    return <img src={okxLogo} alt="OKX" className={`${className} rounded-full object-contain`} />;
+  }
   if (type === "solana") {
-    return (
-      <svg className={`${className} text-teal-400`} viewBox="0 0 397 311" fill="currentColor">
-        <path d="M64.6 237.9c-2.4-2.4-5.7-3.8-9.1-3.8H3.8c-3.1 0-4.6 3.8-2.4 6l63 63c2.4 2.4 5.7 3.8 9.1 3.8h51.7c3.1 0 4.6-3.8 2.4-6l-63-63z" />
-      </svg>
-    );
+    return <img src={solanaLogo} alt="Solana" className={`${className} rounded-full object-contain`} />;
   }
   if (type === "base") {
-    return (
-      <span className={`${className} inline-flex items-center justify-center rounded-full bg-blue-500/20 text-blue-400 text-[9px] font-bold`}>
-        B
-      </span>
-    );
+    return <img src={baseLogo} alt="Base" className={`${className} rounded-full object-contain`} />;
   }
   if (type === "rebel") {
     return (

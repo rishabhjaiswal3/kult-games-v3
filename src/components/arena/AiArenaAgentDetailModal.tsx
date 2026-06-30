@@ -17,10 +17,11 @@ import { ClanIcon } from "@/components/arena/ClanIcon";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function clanType(agent: AiArenaAgent): "zerog" | "solana" | "base" {
+function clanType(agent: AiArenaAgent): "zerog" | "solana" | "base" | "okx" {
   const c = agent.clan?.toUpperCase();
   if (c === "SOLANA") return "solana";
   if (c === "BASE") return "base";
+  if (c === "OKX") return "okx";
   return "zerog";
 }
 
@@ -28,6 +29,7 @@ function clanLabel(clan?: string) {
   const n = clan?.trim().toUpperCase();
   if (n === "SOLANA") return "Solana";
   if (n === "BASE") return "Base";
+  if (n === "OKX") return "OKX";
   if (n === "ZEROG" || n === "0G") return "ZeroG";
   return clan?.trim() || "AI Arena";
 }

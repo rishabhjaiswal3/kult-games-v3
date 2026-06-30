@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Info } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
 import { leaderboardApi } from "@/api/leaderboardApi";
 import { playerApi } from "@/api/playerApi";
 import { LeaderboardPodium } from "@/components/leaderboard/LeaderboardPodium";
@@ -82,7 +83,21 @@ const Leaderboard = () => {
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
   const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });
-  const allEntries = enrichedQ.data?.entries ?? [];
+  // TEMP DEMO: hardcoded OKX clan entry so the golden OKX card/row is visible even
+  // while the gateway 500s on the OKX ClanType enum. Remove when backend is fixed.
+  const DEMO_OKX_ENTRY: AiArenaLeaderboardEntry = {
+    rank: 1,
+    agentId: "okx-demo-agent",
+    score: 1842,
+    eloRating: 1842,
+    name: "OKX Vanguard",
+    clan: "OKX",
+    archetype: "BERSERKER",
+    wins: 27,
+    losses: 5,
+    draws: 0,
+  };
+  const allEntries = [DEMO_OKX_ENTRY, ...(enrichedQ.data?.entries ?? [])];
 
   // ── Current user's agents ───────────────────────────────────────────────────
   const myAgentsQ = useMyArenaAgents(1, 50);
@@ -139,7 +154,7 @@ const Leaderboard = () => {
       : null;
 
   // Table rows: page 1 skips top 3 (shown in podium), later pages show all
-  const tableRows = arenaPage === 1 ? displayPlayers.filter((p) => p.rank > 3) : displayPlayers;
+  const tableRows = arenaPage === 1 && top3 ? displayPlayers.filter((p) => p.rank > 3) : displayPlayers;
 
   // Pinned user row if the user's agent appears on a different page
   const userRow = useMemo(() => {
@@ -527,7 +542,7 @@ const Leaderboard = () => {
                   userRow={userRow}
                   page={arenaPage}
                   totalPages={totalPages}
-                  isLoading={enrichedQ.isLoading}
+                  isLoading={enrichedQ.isLoading && tableRows.length === 0}
                   onPageChange={setArenaPage}
                 />
 

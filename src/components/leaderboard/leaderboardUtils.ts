@@ -64,12 +64,13 @@ export function entryToDisplayPlayer(entry: LeaderboardEntry, opts?: { isYou?: b
   };
 }
 
-/** Maps an actual AI Arena clan string (ZEROG | BASE | SOLANA) to ClanIcon type. */
+/** Maps an actual AI Arena clan string (ZEROG | BASE | SOLANA | OKX) to ClanIcon type. */
 function clanFromArenaClean(clan?: string | null): { name: string; type: string } {
   const c = (clan ?? "").toUpperCase();
   if (c === "ZEROG") return { name: "ZeroG", type: "zerog" };
   if (c === "BASE")  return { name: "Base",  type: "base"  };
   if (c === "SOLANA") return { name: "Solana", type: "solana" };
+  if (c === "OKX") return { name: "OKX", type: "okx" };
   return { name: "ZeroG", type: "zerog" };
 }
 

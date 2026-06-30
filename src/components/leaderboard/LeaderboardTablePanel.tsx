@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Hexagon } from "lucide-react";
-import { ClanIcon } from "./ClanIcon";
+import { ClanIcon, OkxWordmark } from "./ClanIcon";
 import type { DisplayPlayer } from "./leaderboardUtils";
 import { Button } from "@/components/ui/button";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
@@ -69,7 +69,11 @@ function TableRow({
       <td className="px-5 py-4">
         <div className="flex items-center gap-1.5 text-white/70">
           <ClanIcon type={player.clanIconType} className="h-3.5 w-3.5" />
-          <span className={highlighted ? "font-semibold text-white/90" : ""}>{player.clanName}</span>
+          {player.clanIconType === "okx" ? (
+            <OkxWordmark className="h-2.5" />
+          ) : (
+            <span className={highlighted ? "font-semibold text-white/90" : ""}>{player.clanName}</span>
+          )}
         </div>
       </td>
       {showPerformanceColumns ? (
