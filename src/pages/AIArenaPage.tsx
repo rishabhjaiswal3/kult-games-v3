@@ -1660,7 +1660,11 @@ function LiveBattles() {
 }
 
 function PartnersBlock() {
-  const partners = ["0G", "Base", "Solana"];
+  const partners = [
+    { key: "0G", label: "ZeroG" },
+    { key: "Base", label: "Base" },
+    { key: "Solana", label: "Solana" },
+  ];
   return (
     <section>
       <div className="card-glass relative overflow-hidden rounded-lg border-white/8 p-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)] sm:rounded-xl sm:p-5 sm:shadow-[0_16px_42px_rgba(0,0,0,0.24)] lg:p-4 xl:p-5">
@@ -1683,11 +1687,12 @@ function PartnersBlock() {
           <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 md:justify-end lg:gap-1.5 xl:gap-2">
             {partners.map((p) => (
               <div
-                key={p}
+                key={p.key}
                 className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2 py-1.5 font-tech text-[10px] text-white/80 sm:px-2.5 sm:text-[11px] lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
-                <ChainLogo name={p} className="h-2.5 w-auto sm:h-3 xl:h-3.5" useLogosForChains={true} />
+                <ChainLogo name={p.key} className="h-2.5 w-auto sm:h-3 xl:h-3.5" useLogosForChains={true} />
+                <span>{p.label}</span>
               </div>
             ))}
           </div>
