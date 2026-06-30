@@ -6,15 +6,16 @@ import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxWordmark from "@/assets/OKX_id7gsDJl-c_1.svg";
 
 /**
- * Golden OKX wordmark — the black "OKX" logo SVG recolored to the clan's gold
- * gradient via CSS mask. Used in place of the plain "OKX" clan-name text.
+ * OKX wordmark in its original brand color (white, for dark backgrounds).
+ * The black "OKX" logo SVG is recolored via CSS mask. Used in place of the
+ * plain "OKX" clan-name text.
  */
 export function OkxWordmark({ className = "h-3.5" }: { className?: string }) {
   return (
     <span
       role="img"
       aria-label="OKX"
-      className={`${className} inline-block aspect-[157/44] bg-gradient-to-br from-[#f7d774] via-[#e0a528] to-[#9a6b12]`}
+      className={`${className} inline-block aspect-[157/44] bg-white`}
       style={{
         WebkitMaskImage: `url(${okxWordmark})`,
         maskImage: `url(${okxWordmark})`,
