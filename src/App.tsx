@@ -30,6 +30,7 @@ const MomentDetailPage = lazyWithRetry(() => import("./pages/MomentDetailPage"))
 const AccessLoginPage = lazyWithRetry(() => import("./pages/AccessLoginPage"));
 const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
+const HighwayHustleGamePage = lazyWithRetry(() => import("./pages/HighwayHustleGamePage"));
 const LoadingScreen = lazyWithRetry(() => import("./components/LoadingScreen"));
 import { LoginModalHost } from "@/components/LoginModalHost";
 const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating"));
@@ -170,6 +171,8 @@ function BrowserApp() {
                   <Route path="/arena/game/:battleId" element={<AccessRoute><ArenaGamePage /></AccessRoute>} />
                   {/* Robowar simulation page — red theme, no Unity, 120s sim */}
                   <Route path="/arena/robowar/:battleId" element={<AccessRoute><RobowarGamePage /></AccessRoute>} />
+                  {/* Highway Hustle — AI duel race page */}
+                  <Route path="/arena/highway-hustle/:battleId" element={<AccessRoute><HighwayHustleGamePage /></AccessRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 </Suspense>
