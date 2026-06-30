@@ -1716,9 +1716,14 @@ const BattlesPage = () => {
         onLeave={(agentId) => leaveQueueMut.mutate(agentId)}
         onMatchFound={({ battleId, agent, opponent, mode }) => {
           setStatusModalOpen(false);
-          navigate(
-            `/arena/game/${battleId}?myAgentId=${encodeURIComponent(agent.id)}&opponentId=${encodeURIComponent(opponent.id)}&mode=${encodeURIComponent(mode)}`
-          );
+          const base = `myAgentId=${encodeURIComponent(agent.id)}&opponentId=${encodeURIComponent(opponent.id)}&mode=${encodeURIComponent(mode)}`;
+          if (startModalGameId === "robowar") {
+            navigate(`/arena/robowar/${battleId}?${base}`);
+          } else if (startModalGameId === "highway-hustle") {
+            navigate(`/arena/highway-hustle/${battleId}?${base}`);
+          } else {
+            navigate(`/arena/game/${battleId}?${base}`);
+          }
         }}
       />
     </ArenaPageLayout>
