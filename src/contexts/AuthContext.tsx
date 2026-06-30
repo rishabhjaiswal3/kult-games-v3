@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { playerApi } from "@/api/playerApi";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { useAccess } from "@/contexts/AccessContext";
@@ -253,9 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     requestOpenLoginModal({ mode: "finishing" });
     if (walletPreference === "embedded") {
-      toast.info("Finishing sign-in with your Privy wallet…", { duration: 8_000 });
     } else {
-      toast.info("Approve the wallet signature to finish signing in.", { duration: 12_000 });
     }
 
     const run = withTimeout(
@@ -329,7 +326,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : "Could not finish sign-in. Please try again.";
 
         requestOpenLoginModal({ mode: "recover", message });
-        toast.error(message);
       })
       .finally(() => {
         clearUserLoginIntent();

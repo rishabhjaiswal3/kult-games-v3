@@ -24,6 +24,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { AccessFeature } from "@/lib/accessControl";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import heroVideo from "@/assets/homebkg.mp4";
+import mobileHeroVideo from "@/assets/mobile_home_video.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import agentNexus from "@/assets/hybrid.mp4";
@@ -131,6 +132,16 @@ export function HomePage() {
     <div className="home-page space-y-6 pb-10">
       <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <video
+          src={mobileHeroVideo}
+          aria-hidden
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover sm:hidden"
+        />
+        <video
           src={heroVideo}
           aria-hidden
           autoPlay
@@ -138,7 +149,7 @@ export function HomePage() {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover object-[88%_center] sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
+          className="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
@@ -238,7 +249,7 @@ export function HomePage() {
       </section>
 
       {visibleStatTiles.length > 0 ? (
-        <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="home-quick-links">
+        <div className="arena-panel home-stats-panel grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] divide-x divide-white/8 overflow-hidden" data-tour="home-quick-links">
           {visibleStatTiles.map((stat) => (
             <Link
               key={stat.label}
@@ -380,7 +391,15 @@ export function HomePage() {
       {visibleQuickLinks.length > 0 ? (
         <section className="arena-panel border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
           <h2 className="mb-3 font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Jump in</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className="grid gap-3"
+            style={{
+              gridTemplateColumns:
+                visibleQuickLinks.length <= 4
+                  ? `repeat(${visibleQuickLinks.length}, minmax(0, 1fr))`
+                  : "repeat(3, minmax(0, 1fr))",
+            }}
+          >
             {visibleQuickLinks.map((link) => (
               <Link
                 key={link.path}

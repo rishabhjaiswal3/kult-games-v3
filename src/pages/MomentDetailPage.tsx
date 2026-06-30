@@ -14,7 +14,6 @@ import {
   Trash2,
   Pencil,
 } from "lucide-react";
-import { toast } from "sonner";
 import { momentsApi } from "@/api/momentsApi";
 import { MOMENTS_QUERY_KEY_ROOT } from "@/constants/moments";
 import { useAuth } from "@/contexts/AuthContext";
@@ -188,13 +187,11 @@ export function MomentDetailPage() {
     mutationFn: () => momentsApi.like(id!),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "detail", id] });
-      toast.success("Moment liked");
     },
     onError: (e: unknown) => {
       const status = (e as { response?: { status?: number } })?.response?.status;
-      if (status === 409) { toast.info("Already liked"); return; }
+      if (status === 409) { return }
       if (status === 401) { requestOpenLoginModal(); return; }
-      toast.error("Could not like moment");
     },
   });
 
@@ -218,12 +215,10 @@ export function MomentDetailPage() {
     onSuccess: (data) => {
       queryClient.setQueryData([MOMENTS_QUERY_KEY_ROOT, "bookmark-status", id], data);
       void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT, "bookmarks"] });
-      toast.success(data.bookmarked ? "Bookmarked" : "Bookmark removed");
     },
     onError: (e: unknown) => {
       const status = (e as { response?: { status?: number } })?.response?.status;
       if (status === 401) { requestOpenLoginModal(); return; }
-      toast.error("Could not update bookmark");
     },
   });
 
@@ -242,17 +237,14 @@ export function MomentDetailPage() {
     mutationFn: () => momentsApi.remove(id!),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] });
-      toast.success("Moment deleted");
       navigate("/moments");
     },
     onError: (e: unknown) => {
       const status = (e as { response?: { status?: number } })?.response?.status;
       if (status === 401) { requestOpenLoginModal(); return; }
       if (status === 403 || status === 404) {
-        toast.error("You can only delete your own moments");
         return;
       }
-      toast.error("Could not delete moment");
     },
   });
 

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, Award, Clock, Eye, Hexagon, Loader2, Plus, Search, Sparkles, TrendingUp, X, Zap } from "lucide-react";
-import { toast } from "sonner";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
@@ -263,11 +262,9 @@ const TrainingPage = () => {
       });
     },
     onSuccess: async (result) => {
-      toast.success(`Training queued: ${jobTypeLabel(result.job.type)}`);
       await invalidateTrainingQueries();
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Could not queue training");
     },
   });
 
@@ -283,23 +280,19 @@ const TrainingPage = () => {
       });
     },
     onSuccess: async (result) => {
-      toast.success(`Quick training queued: ${jobTypeLabel(result.job.type)}`);
       inspectJob(result.job.id);
       await invalidateTrainingQueries();
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Could not start quick training");
     },
   });
 
   const cancelMut = useMutation({
     mutationFn: async (jobId: string) => aiArenaGatewayApi.cancelTrainingJob(jobId),
     onSuccess: async () => {
-      toast.success("Training job cancelled");
       await invalidateTrainingQueries();
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Could not cancel training job");
     },
   });
 
@@ -601,7 +594,6 @@ const TrainingPage = () => {
                   onClick={() => {
                     const nextId = jobLookupInput.trim();
                     if (!nextId) {
-                      toast.error("Paste a training job ID to inspect.");
                       return;
                     }
                     setSelectedJobId(nextId);

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { ImagePlus, Loader2, Trash2, Video as VideoIcon, X as XIcon } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import {
@@ -152,7 +151,6 @@ export function CreateMomentDialog({
             : error instanceof Error
               ? error.message
               : "Could not load battle trash talk";
-        toast.error(message);
       })
       .finally(() => {
         if (!cancelled) setIsPrefilling(false);
@@ -176,7 +174,6 @@ export function CreateMomentDialog({
           setTags(draft.tags);
           setSelectedGame(draft.relatedGameSlugs[0] ?? null);
           setAwaitingCommentary(false);
-          toast.success("AI commentary loaded");
         })
         .catch(() => undefined);
     };
@@ -202,12 +199,10 @@ export function CreateMomentDialog({
       });
     },
     onSuccess: async (response) => {
-      toast.success("Moment published");
       await onCreated?.(response);
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to publish moment");
     },
   });
 
@@ -218,17 +213,14 @@ export function CreateMomentDialog({
     if (!file) return;
 
     if (!isAcceptedMimeType(file)) {
-      toast.error("Unsupported file type. Use JPG, PNG, GIF, WebP, MP4, WebM, or MOV.");
       return;
     }
     if (file.size > MOMENT_MEDIA_LIMITS.maxFileSizeBytes) {
-      toast.error(`File is too large (limit ${formatBytes(MOMENT_MEDIA_LIMITS.maxFileSizeBytes)}).`);
       return;
     }
 
     const previewKind = detectPreviewKind(file);
     if (!previewKind) {
-      toast.error("Could not detect media type for this file.");
       return;
     }
 
@@ -237,16 +229,13 @@ export function CreateMomentDialog({
       const { file: optimizedFile, wasCompressed, originalSizeBytes } = await compressMomentMediaFile(file);
 
       if (optimizedFile.size > MOMENT_IMAGE_COMPRESS.hardMaxBytes && previewKind === "image") {
-        toast.error(`Image is still too large after optimization (${formatBytes(optimizedFile.size)}). Max is 500 KB.`);
         return;
       }
       if (optimizedFile.size > MOMENT_MEDIA_LIMITS.maxFileSizeBytes) {
-        toast.error(`File is still too large after optimization (${formatBytes(optimizedFile.size)}).`);
         return;
       }
 
       if (wasCompressed && optimizedFile.size < originalSizeBytes) {
-        toast.success(`Optimized ${formatBytes(originalSizeBytes)} → ${formatBytes(optimizedFile.size)}`);
       }
 
       setAsset({
@@ -255,7 +244,6 @@ export function CreateMomentDialog({
         previewUrl: URL.createObjectURL(optimizedFile),
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not optimize media");
     } finally {
       setIsCompressing(false);
     }
@@ -291,15 +279,12 @@ export function CreateMomentDialog({
 
   const handleSubmit = () => {
     if (!isAuthenticated) {
-      toast.error("Connect your wallet to publish a moment.");
       return;
     }
     if (!asset) {
-      toast.error("Pick an image or video first");
       return;
     }
     if (trimmedTitle.length < TITLE_MIN_LENGTH) {
-      toast.error(`Title must be at least ${TITLE_MIN_LENGTH} characters`);
       return;
     }
     createMomentMutation.mutate();

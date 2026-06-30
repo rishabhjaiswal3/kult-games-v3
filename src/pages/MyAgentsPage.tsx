@@ -21,7 +21,6 @@ import {
   UserRound,
   WalletCards,
 } from "lucide-react";
-import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
@@ -330,12 +329,10 @@ const MyAgentsPage = () => {
   const retireMutation = useMutation({
     mutationFn: (agentId: string) => aiArenaGatewayApi.retireAgent(agentId),
     onSuccess: () => {
-      toast.success("Agent retired successfully");
       setConfirmRetireId(null);
       void queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
     },
     onError: () => {
-      toast.error("Failed to retire agent. Try again.");
       setConfirmRetireId(null);
     },
   });

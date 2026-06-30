@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Bookmark, Download, Heart, Loader2, MessageCircle } from "lucide-react";
-import { toast } from "sonner";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import type { Moment } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -121,7 +120,7 @@ export function MomentEngagementBar({
 
   const handleDownload = async () => {
     const url = moment.assetZgUrl ?? moment.assetUrl;
-    if (!url) { toast.error("No asset available to download"); return; }
+    if (!url) { return }
     setIsDownloading(true);
     const filename = deriveFilename(moment);
     try {
@@ -136,7 +135,6 @@ export function MomentEngagementBar({
       a.click();
       a.remove();
       URL.revokeObjectURL(objectUrl);
-      toast.success("Download started");
     } catch {
       // CORS fallback — opens in new tab so browser handles download
       const a = document.createElement("a");
@@ -147,7 +145,6 @@ export function MomentEngagementBar({
       document.body.appendChild(a);
       a.click();
       a.remove();
-      toast.info("Opening in new tab — use Save As to download");
     } finally {
       setIsDownloading(false);
     }

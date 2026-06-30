@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
   AI_ARENA_ARCHETYPE_OPTIONS,
@@ -73,16 +72,13 @@ export function CreateAiArenaAgentModal({
 
   const handleSubmit = async () => {
     if (!walletAddress) {
-      toast.error("Connect a wallet first.");
       return;
     }
     const trimmed = name.trim();
     if (trimmed.length < 2) {
-      toast.error("Name must be at least 2 characters.");
       return;
     }
     if (backstory.trim().length < 8) {
-      toast.error("Backstory should be at least 8 characters.");
       return;
     }
     setSubmitting(true);
@@ -93,11 +89,9 @@ export function CreateAiArenaAgentModal({
         archetype,
         backstory: backstory.trim(),
       });
-      toast.success("AI Arena agent created");
       await onCreated?.(agent);
       onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create agent");
     } finally {
       setSubmitting(false);
     }

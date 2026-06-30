@@ -1,6 +1,5 @@
 import { Loader2, Swords } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import axios from "axios";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -74,7 +73,6 @@ export function ArenaStartMatchmakingModal({
 
   const handleSubmit = async () => {
     if (!agentId) {
-      toast.error("Select an agent to queue.");
       return;
     }
     const elo = Number.parseInt(eloRange, 10);
@@ -87,12 +85,10 @@ export function ArenaStartMatchmakingModal({
         eloRange: Number.isFinite(elo) ? elo : 200,
         paymentTxHash: mode === "WAGER" && paymentTxHash.trim() ? paymentTxHash.trim() : undefined,
       });
-      toast.success("Your agent is listed — waiting for a challenger.");
       try { sessionStorage.setItem("arena_queued_game_id", gameId); } catch { /* ignore */ }
       await onQueued?.(agentId, gameId);
       onOpenChange(false);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Could not start matchmaking"));
     } finally {
       setSubmitting(false);
     }

@@ -230,7 +230,7 @@ const Leaderboard = () => {
         <div className="min-w-0 space-y-5">
           <div className="flex flex-col justify-between gap-4 border-b border-white/8 pb-3 sm:flex-row sm:items-center" data-tour="leaderboard-tabs-filters">
             <div className="flex gap-6 font-tech text-[12px] font-bold uppercase tracking-wider">
-              {(["GLOBAL", "MY RANK"] as LeaderboardTab[]).map((tab) => (
+              {(["GLOBAL", ...(isAuthenticated ? ["MY RANK"] : [])] as LeaderboardTab[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"

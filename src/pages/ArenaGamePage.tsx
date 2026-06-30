@@ -36,7 +36,6 @@ import {
   Zap,
   MessageSquare,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
@@ -1366,7 +1365,6 @@ export default function ArenaGamePage() {
   const unityShowBanner = (msg: string, type: 'error' | 'warning' | string) => {
     console.log(`[Unity ${type}]`, msg);
     if (type === 'error') {
-      toast.error(`Unity: ${msg}`, { duration: 8000 });
     } else if (type === 'warning') {
       console.warn('[Unity warning]', msg);
     }
@@ -1409,7 +1407,6 @@ export default function ArenaGamePage() {
 
       if (typeof (window as any).createUnityInstance !== 'function') {
         console.error("[Arena] createUnityInstance not found after loader script");
-        toast.error("Game loader failed. Please refresh.");
         unityLoadingRef.current = false;
         return;
       }
@@ -1485,14 +1482,12 @@ export default function ArenaGamePage() {
       } catch (err) {
         clearTimeout(stuckTimer);
         console.error("[Arena] createUnityInstance failed:", err);
-        toast.error("Failed to load game. Please refresh.");
         unityLoadingRef.current = false;
       }
     };
 
     script.onerror = () => {
       console.error("[Arena] Failed to load loader from:", script.src);
-      toast.error("Game assets unavailable. Check your connection.");
       unityLoadingRef.current = false;
     };
 
