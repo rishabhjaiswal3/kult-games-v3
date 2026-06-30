@@ -244,9 +244,12 @@ export function HomePage() {
           </h2>
           <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
             {["Play", "Create", "Compete", "Build", "Persist"].map((step, index) => (
-              <div key={step} className="flex min-w-0 items-center justify-center gap-2 md:shrink-0">
-                <span className="rounded-md border border-[#b766ff]/35 bg-[#7c3aed]/[0.07] px-2.5 py-1.5 text-[#f1e6ff] shadow-[inset_0_0_20px_rgba(196,126,255,0.08),0_0_14px_rgba(154,53,255,0.12)] [text-shadow:0_0_10px_rgba(222,184,255,0.7)]">{step}</span>
-                {index < 4 ? <ArrowRight className={`h-3 w-3 shrink-0 text-[#a747ff] ${index === 2 ? "hidden md:block" : ""}`} aria-hidden /> : null}
+              <div key={step} className="flex items-center gap-2 md:shrink-0">
+                <span className="flex-1 rounded-md border border-[#b766ff]/35 bg-[#7c3aed]/[0.07] px-2.5 py-1.5 text-center text-[#f1e6ff] shadow-[inset_0_0_20px_rgba(196,126,255,0.08),0_0_14px_rgba(154,53,255,0.12)] [text-shadow:0_0_10px_rgba(222,184,255,0.7)] md:flex-none md:text-left">{step}</span>
+                <ArrowRight
+                  className={`h-3 w-3 shrink-0 text-[#a747ff] ${index === 4 ? "invisible md:hidden" : index === 2 ? "invisible md:visible" : ""}`}
+                  aria-hidden
+                />
               </div>
             ))}
           </div>
@@ -255,11 +258,13 @@ export function HomePage() {
 
       {visibleStatTiles.length > 0 ? (
         <div className="arena-panel home-stats-panel grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] divide-x divide-white/8 overflow-hidden" data-tour="home-quick-links">
-          {visibleStatTiles.map((stat) => (
+          {visibleStatTiles.map((stat, index) => (
             <Link
               key={stat.label}
               to={stat.path}
-              className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+              className={`home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4 ${
+                visibleStatTiles.length === 3 && index === 2 ? "hidden sm:flex" : ""
+              }`}
               style={{ "--stat-color": stat.color } as CSSProperties}
             >
               <div

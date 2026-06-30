@@ -89,9 +89,10 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
           <nav aria-label="Footer navigation">
             <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Explore</p>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:block sm:space-y-3">
-              {footerLinks.map((link) => {
+              {footerLinks.map((link, index) => {
                 const Icon = link.icon;
-                return <Link key={link.href} to={link.href} className="flex items-center justify-center gap-1.5 rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm"><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
+                const isLoneLast = footerLinks.length % 2 === 1 && index === footerLinks.length - 1;
+                return <Link key={link.href} to={link.href} className={`flex items-center justify-center gap-1.5 rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm ${isLoneLast ? "max-sm:col-span-2 max-sm:w-1/2 max-sm:justify-self-center" : ""}`}><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
               })}
             </div>
           </nav>
