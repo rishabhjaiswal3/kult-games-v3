@@ -5,7 +5,12 @@ describe("buildMomentShareUrl", () => {
     vi.stubGlobal("window", { location: { origin: "https://kult-browser-rust-l2lwg.ondigitalocean.app" } });
     vi.stubEnv("VITE_API_URL", "https://kult-browser-rust-l2lwg.ondigitalocean.app");
 
-    const { buildMomentShareUrl, buildMomentSharePayload, buildMomentShareOgImageUrl } = await import("./momentShare");
+    const {
+      buildMomentShareUrl,
+      buildMomentSharePayload,
+      buildMomentShareOgImageUrl,
+      buildMomentPublicPreviewUrl,
+    } = await import("./momentShare");
     const momentId = "IZugAtUEl7LHQTbWzjpMG";
 
     expect(buildMomentShareUrl(momentId)).toBe(
@@ -27,8 +32,17 @@ describe("buildMomentShareUrl", () => {
     expect(payload.url).toBe(
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/${momentId}`,
     );
+    expect(payload.momentUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/${momentId}`,
+    );
     expect(payload.previewUrl).toBe(
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}`,
+    );
+    expect(payload.publicPreviewUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/share/moments/${momentId}`,
+    );
+    expect(buildMomentPublicPreviewUrl(momentId)).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/share/moments/${momentId}`,
     );
     expect(buildMomentShareOgImageUrl(momentId)).toBe(
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,

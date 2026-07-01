@@ -35,6 +35,32 @@ type SharePlatform = {
 type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
+function appendShareQuery(url: string, params: Record<string, string | undefined>): string {
+  try {
+    const nextUrl = new URL(url);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) nextUrl.searchParams.set(key, value);
+    });
+    return nextUrl.toString();
+  } catch {
+    return url;
+  }
+}
+
+function resolveFacebookPreviewUrl(payload: SharePayload): string {
+  return appendShareQuery(payload.momentUrl || payload.url, {
+    platform: "facebook",
+    v: payload.cacheKey,
+  });
+}
+
+function resolveTwitterPreviewUrl(payload: SharePayload): string {
+  return appendShareQuery(payload.momentUrl || payload.url, {
+    platform: "x",
+    v: payload.cacheKey,
+  });
+}
+
 // ── Platforms ─────────────────────────────────────────────────────────────────
 // Public share links use `/moments/:id`. Social crawlers receive OG HTML (with the
 // moment image URL from storage) via the production server or /api/share fallback.
@@ -50,12 +76,13 @@ const PLATFORMS: SharePlatform[] = [
       const text = [p.title, p.teaser].filter(Boolean).join("\n");
       const params = new URLSearchParams();
       if (text) params.set("text", text);
-      if (p.url) params.set("url", p.url);
+      const previewUrl = resolveTwitterPreviewUrl(p);
+      if (previewUrl) params.set("url", previewUrl);
       if (p.hashtags.length > 0) params.set("hashtags", p.hashtags.join(","));
       return `https://twitter.com/intent/tweet?${params}`;
     },
     buildPostText: (p) => {
-      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url]
+      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), resolveTwitterPreviewUrl(p)]
         .filter(Boolean)
         .join("\n\n");
     },
@@ -66,8 +93,8 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
-    buildUrl: (p) => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: p.url })}`,
-    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
+    buildUrl: (p) => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(p) })}`,
+    buildPostText: (p) => [p.title, p.teaser, resolveFacebookPreviewUrl(p)].filter(Boolean).join("\n\n"),
   },
   {
     id: "reddit",
@@ -187,7 +214,8 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
     case "twitter": {
       const params = new URLSearchParams();
       if (templateText) params.set("text", templateText);
-      if (platformPayload.url) params.set("url", platformPayload.url);
+      const previewUrl = resolveTwitterPreviewUrl(platformPayload);
+      if (previewUrl) params.set("url", previewUrl);
       return `https://twitter.com/intent/tweet?${params}`;
     }
     case "whatsapp": {
@@ -204,7 +232,7 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
       )}`;
     }
     case "facebook": {
-      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: platformPayload.url })}`;
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(platformPayload) })}`;
     }
     case "pinterest": {
       const params = new URLSearchParams({ url: platformPayload.url, description: templateText });

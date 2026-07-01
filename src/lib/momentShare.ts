@@ -7,6 +7,15 @@ import {
 const APP_ORIGIN =
   typeof window !== "undefined" ? window.location.origin.replace(/\/+$/, "") : "";
 
+function looksLikeLocalOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".local");
+  } catch {
+    return false;
+  }
+}
+
 function resolveShareBaseUrl(): string {
   const explicit = (import.meta.env.VITE_SHARE_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "");
   if (explicit) return explicit;
@@ -27,16 +36,27 @@ const SHARE_PREVIEW_PATH = (() => {
   return "/api/share";
 })();
 
+const SHARE_PUBLIC_PREVIEW_PATH = (() => {
+  const configured = (import.meta.env.VITE_SHARE_PUBLIC_PREVIEW_PATH as string | undefined)?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return "/share";
+})();
+
 export type SharePayload = {
+  /** Canonical public moment page. */
+  momentUrl: string;
   /** Human-friendly moment page (opens SPA when production-server is deployed). */
   url: string;
   /** Crawlable preview page — always has OG tags + JPEG image on /api/share. */
   previewUrl: string;
+  /** Public crawler-facing preview route on the app host, e.g. /share/moments/:id. */
+  publicPreviewUrl: string;
   title: string;
   teaser: string;
   hashtags: string[];
   /** Direct image URL for Pinterest `media` param. */
   mediaUrl?: string;
+  cacheKey: string;
   relatedGames: string[];
 };
 
@@ -54,8 +74,7 @@ function normalizeHashtag(value: string) {
 }
 
 function resolveHostBase(): string {
-  // Prefer the configured backend URL so share/preview links point to the backend
-  // (which serves OG HTML), not the frontend (which is a static SPA with no OG handler).
+  if (APP_ORIGIN && !looksLikeLocalOrigin(APP_ORIGIN)) return APP_ORIGIN;
   return resolveShareBaseUrl() || APP_ORIGIN;
 }
 
@@ -82,14 +101,38 @@ export function buildMomentShareUrl(momentId: string): string {
   return `${resolveHostBase()}/moments/${momentId}`;
 }
 
-function buildPreviewUrlOnHost(hostBase: string, momentId: string): string {
+function buildPreviewUrlOnHost(hostBase: string, momentId: string, previewPath: string): string {
   const base = hostBase.replace(/\/+$/, "");
-  const path = SHARE_PREVIEW_PATH.startsWith("/") ? SHARE_PREVIEW_PATH : `/${SHARE_PREVIEW_PATH}`;
+  const path = previewPath.startsWith("/") ? previewPath : `/${previewPath}`;
   return `${base}${path}/moments/${momentId}`;
 }
 
 export function buildMomentSharePreviewUrl(momentId: string): string {
-  return buildPreviewUrlOnHost(resolveHostBase(), momentId);
+  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PREVIEW_PATH);
+}
+
+export function buildMomentPublicPreviewUrl(momentId: string): string {
+  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PUBLIC_PREVIEW_PATH);
+}
+
+function buildMomentShareCacheKey(moment: Moment): string {
+  const meta = moment.assetMetadata as Record<string, unknown> | undefined;
+  const ogImageUrl = typeof meta?.ogImageUrl === "string" ? meta.ogImageUrl : "";
+  const thumbnailUrl = typeof meta?.thumbnailUrl === "string" ? meta.thumbnailUrl : "";
+  const source = [
+    moment.updatedAt,
+    moment.createdAt,
+    moment.assetZgHash,
+    moment.assetZgUrl,
+    moment.assetUrl,
+    ogImageUrl,
+    thumbnailUrl,
+    moment.title,
+  ]
+    .filter(Boolean)
+    .join("|");
+
+  return encodeURIComponent(source || moment.momentId);
 }
 
 export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "teaser">): string {
@@ -118,8 +161,9 @@ export function buildMomentSharePayload(moment: Moment): SharePayload {
   const title = moment.title.trim() || "Check out this Kult moment";
   const description = moment.description?.trim() || moment.aiCaption?.trim() || "";
   const teaser = description ? truncateText(description, 120) : "";
-  const url = buildMomentShareUrl(moment.momentId);
+  const momentUrl = buildMomentShareUrl(moment.momentId);
   const previewUrl = buildMomentSharePreviewUrl(moment.momentId);
+  const publicPreviewUrl = buildMomentPublicPreviewUrl(moment.momentId);
   const hashtags = (moment.tags ?? [])
     .map(normalizeHashtag)
     .filter(Boolean)
@@ -127,12 +171,15 @@ export function buildMomentSharePayload(moment: Moment): SharePayload {
   const game = moment.relatedGames?.[0] ?? "Kult";
 
   return {
-    url,
+    momentUrl,
+    url: momentUrl,
     previewUrl,
+    publicPreviewUrl,
     title,
     teaser,
     hashtags: ["KultGames", "KultMoments", game.replace(/[\s-]+/g, ""), ...hashtags].filter(Boolean),
     mediaUrl: resolveShareMediaUrl(moment),
+    cacheKey: buildMomentShareCacheKey(moment),
     relatedGames: moment.relatedGames ?? [],
   };
 }
