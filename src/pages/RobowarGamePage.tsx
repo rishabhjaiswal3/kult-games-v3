@@ -1102,7 +1102,7 @@ export default function RobowarGamePage() {
   // ── Unity loading ─────────────────────────────────────────────────────────
 
   const diagnoseBuildFiles = async (buildUrl: string): Promise<'ok' | 'cors' | 'not-found'> => {
-    const testUrl = `${buildUrl}/Robowar.data`;
+    const testUrl = `${buildUrl}/HighwayHustle.data`;
     try {
       const res = await fetch(testUrl, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
       if (res.ok || res.status === 206) return 'ok';
@@ -1145,7 +1145,7 @@ export default function RobowarGamePage() {
     const buildUrl = `${UNITY_BASE_URL}/Arena2`;
 
     const script = document.createElement("script");
-    script.src   = `${buildUrl}/Robowar.loader.js`;
+    script.src   = `${buildUrl}/HighwayHustle.loader.js`;
 
     script.onload = async () => {
       if (!canvasRef.current) return;
@@ -1180,12 +1180,12 @@ export default function RobowarGamePage() {
           canvasRef.current,
           {
             arguments: [],
-            dataUrl:            `${buildUrl}/Robowar.data`,
-            frameworkUrl:       `${buildUrl}/Robowar.framework.js`,
-            codeUrl:            `${buildUrl}/Robowar.wasm`,
+            dataUrl:            `${buildUrl}/HighwayHustle.data`,
+            frameworkUrl:       `${buildUrl}/HighwayHustle.framework.js`,
+            codeUrl:            `${buildUrl}/HighwayHustle.wasm`,
             streamingAssetsUrl: "StreamingAssets",
             companyName:        "Kult Games",
-            productName:        "Robowar",
+            productName:        "HighwayHustle",
             productVersion:     "1.0",
             matchWebGLToCanvasSize: false,
             devicePixelRatio:   1,
