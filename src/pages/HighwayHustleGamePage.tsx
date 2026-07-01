@@ -314,7 +314,7 @@ function PreMatchOverlay({
             />
           </div>
 
-          {/* Centre VS + countdown */}
+          {/* Centre VS */}
           <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
             <div
               className="font-display text-5xl font-black"
@@ -325,17 +325,6 @@ function PreMatchOverlay({
               }}
             >
               VS
-            </div>
-            <div
-              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
-              style={{
-                border: `3px solid ${ACCENT}`,
-                color: ACCENT,
-                background: "rgba(5,8,15,0.9)",
-                boxShadow: `0 0 30px ${ACCENT}80, inset 0 0 20px ${ACCENT}20`,
-              }}
-            >
-              {countdown}
             </div>
           </div>
 
