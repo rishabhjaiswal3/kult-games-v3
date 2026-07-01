@@ -233,7 +233,7 @@ function PreMatchOverlay({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex flex-col overflow-hidden"
+      className="absolute inset-0 z-50 flex flex-col overflow-hidden"
       style={{ background: "#03070f" }}
     >
       {/* Neon highway background grid */}
@@ -1354,22 +1354,26 @@ export default function HighwayHustleGamePage() {
       })();
 
       // 3. 0G Compute commentary
+      const winnerAgent = detail.winnerId === myAgentId ? myAgent : opponent;
+      const loserAgent  = detail.loserId  === myAgentId ? myAgent : opponent;
+
       let commentary = "";
       try {
         const commentaryRes = await aiArenaGatewayApi.generateBattleCommentary({
           battleId:        bid,
           winnerName:      detail.winnerName,
-          winnerArchetype: "",
-          winnerClan:      "",
-          winnerElo:       0,
+          winnerArchetype: winnerAgent?.archetype ?? "",
+          winnerClan:      winnerAgent?.clan      ?? "",
+          winnerElo:       winnerAgent?.eloRating ?? 0,
           winnerHpPercent: 100,
           loserName:       detail.loserName,
-          loserArchetype:  "",
-          loserClan:       "",
-          loserElo:        0,
+          loserArchetype:  loserAgent?.archetype  ?? "",
+          loserClan:       loserAgent?.clan       ?? "",
+          loserElo:        loserAgent?.eloRating  ?? 0,
           loserHpPercent:  0,
           durationSeconds: 0,
-          endReason:       "crash",
+          endReason:       "highway-hustle-crash",
+          gameName:        "Highway Hustle",
           playerStats: {
             [detail.winnerId]: { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.winnerDistance },
             [detail.loserId]:  { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.loserDistance },
@@ -1656,7 +1660,7 @@ export default function HighwayHustleGamePage() {
                 />
               )}
 
-              {showPreMatch && (
+              {showPreMatch && !battleResult && (
                 <PreMatchOverlay
                   myAgent={myAgent}
                   opponent={opponent}
