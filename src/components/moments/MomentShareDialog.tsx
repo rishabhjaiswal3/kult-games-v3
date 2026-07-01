@@ -35,30 +35,12 @@ type SharePlatform = {
 type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
-function appendShareQuery(url: string, params: Record<string, string | undefined>): string {
-  try {
-    const nextUrl = new URL(url);
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) nextUrl.searchParams.set(key, value);
-    });
-    return nextUrl.toString();
-  } catch {
-    return url;
-  }
-}
-
 function resolveFacebookPreviewUrl(payload: SharePayload): string {
-  return appendShareQuery(payload.momentUrl || payload.url, {
-    platform: "facebook",
-    v: payload.cacheKey,
-  });
+  return payload.momentUrl || payload.url;
 }
 
 function resolveTwitterPreviewUrl(payload: SharePayload): string {
-  return appendShareQuery(payload.momentUrl || payload.url, {
-    platform: "x",
-    v: payload.cacheKey,
-  });
+  return payload.momentUrl || payload.url;
 }
 
 // ── Platforms ─────────────────────────────────────────────────────────────────

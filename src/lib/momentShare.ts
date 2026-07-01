@@ -132,7 +132,7 @@ function buildMomentShareCacheKey(moment: Moment): string {
     .filter(Boolean)
     .join("|");
 
-  return encodeURIComponent(source || moment.momentId);
+  return source || moment.momentId;
 }
 
 export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "teaser">): string {
