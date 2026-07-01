@@ -25,6 +25,7 @@ import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import Footer from "@/components/Footer";
 import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
+import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
@@ -230,6 +231,7 @@ type AiArenaMatchmakingContextValue = {
   startButtonDisabled: boolean;
   startMatchmaking: (gameId?: AiArenaGameId) => void;
   openQueuedMatchStatus: () => void;
+  openJoinBattle: () => void;
 };
 
 const AiArenaMatchmakingContext = createContext<AiArenaMatchmakingContextValue | null>(null);
@@ -259,6 +261,7 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
   const { setActiveBattleId } = useArenaLiveMatch();
   const myAgentsQ = useMyArenaAgents(1, 50);
   const [startModalOpen, setStartModalOpen] = useState(false);
+  const [joinBattleOpen, setJoinBattleOpen] = useState(false);
   const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
   const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
@@ -339,6 +342,20 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     setStartModalOpen(true);
   }, [agents.length, isAuthenticated, login, navigate]);
 
+  const openJoinBattle = useCallback(() => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    if (agents.length === 0) {
+      navigate("/my-agents");
+      return;
+    }
+
+    setJoinBattleOpen(true);
+  }, [agents.length, isAuthenticated, login, navigate]);
+
   const handleMatchFound = (payload: {
     agent: AiArenaAgent;
     opponent: AiArenaAgent;
@@ -385,8 +402,9 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       startButtonDisabled,
       startMatchmaking,
       openQueuedMatchStatus: () => queuedAgent && setStatusModalAgent(queuedAgent),
+      openJoinBattle,
     }),
-    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking],
+    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking, openJoinBattle],
   );
 
   return (
@@ -404,6 +422,13 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
           if (queued) setStatusModalAgent(queued);
           await queueQ.refetch();
         }}
+      />
+
+      <ArenaJoinBattleModal
+        open={joinBattleOpen}
+        onOpenChange={setJoinBattleOpen}
+        agents={agents}
+        onJoined={(agent) => setStatusModalAgent(agent)}
       />
 
       <ArenaMatchStatusModal
@@ -545,7 +570,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         className={
           compact
             ? "mt-3 mx-auto flex w-full max-w-[350px] flex-col items-center gap-1.5 px-3 py-2 max-[380px]:max-w-[310px] max-[380px]:gap-1 max-[380px]:px-2"
-            : "mt-4 flex w-[224px] flex-col items-start gap-2"
+            : "mt-4 grid w-full max-w-[280px] grid-cols-2 items-start gap-2 xl:flex xl:w-[224px] xl:flex-col"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -562,10 +587,11 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     startButtonDisabled,
     startMatchmaking,
     openQueuedMatchStatus,
+    openJoinBattle,
   } = useAiArenaMatchmakingFlow();
   const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.16em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center ${compact ? "justify-center" : "justify-start text-left"} transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
 
   return (
     <div className="contents">
@@ -574,14 +600,23 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
         ) : (
           <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
-        <span className={`leading-tight whitespace-nowrap ${compact ? "text-center" : "text-left"}`}>{buttonLabel}</span>
+        <span className="leading-tight whitespace-nowrap text-center">{buttonLabel}</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={openJoinBattle}
+        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
+      >
+        <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+        <span>JOIN BATTLE</span>
       </button>
 
       <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
@@ -606,7 +641,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
       {queuedAgent ? (
         <div
-          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs"}`}
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "col-span-2 max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
             {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
@@ -624,7 +659,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
       ) : (
         <p
           className={`font-medium leading-relaxed text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.85)] ${
-            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "max-w-md text-left text-sm"
+            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "col-span-2 max-w-md text-left text-sm xl:col-span-1"
           }`}
         >
           {helperText}
