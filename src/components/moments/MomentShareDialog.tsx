@@ -47,17 +47,15 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      // Use the clean /moments/:id URL in tweet text so the card preview loads
-      // from the OG handler; separate previewUrl is used when building the card.
-      const tweetUrl = p.url.includes("/api/share/") ? p.url.replace(/\/api\/share/, "") : p.url;
-      const text = [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), tweetUrl]
-        .filter(Boolean)
-        .join("\n");
-      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
+      const text = [p.title, p.teaser].filter(Boolean).join("\n");
+      const params = new URLSearchParams();
+      if (text) params.set("text", text);
+      if (p.url) params.set("url", p.url);
+      if (p.hashtags.length > 0) params.set("hashtags", p.hashtags.join(","));
+      return `https://twitter.com/intent/tweet?${params}`;
     },
     buildPostText: (p) => {
-      const tweetUrl = p.url.includes("/api/share/") ? p.url.replace(/\/api\/share/, "") : p.url;
-      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), tweetUrl]
+      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url]
         .filter(Boolean)
         .join("\n\n");
     },
@@ -68,12 +66,7 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
-    buildUrl: (p) => {
-      const quote = [p.title, p.teaser].filter(Boolean).join(" — ");
-      const params = new URLSearchParams({ u: p.url });
-      if (quote) params.set("quote", quote);
-      return `https://www.facebook.com/sharer/sharer.php?${params}`;
-    },
+    buildUrl: (p) => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: p.url })}`,
     buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
   },
   {
@@ -192,12 +185,10 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
   const platformPayload = withPlatformShareUrl(payload);
   switch (platform.id) {
     case "twitter": {
-      const tweetUrl = platformPayload.url.includes("/api/share/")
-        ? platformPayload.url.replace(/\/api\/share/, "")
-        : platformPayload.url;
-      return `https://twitter.com/intent/tweet?${new URLSearchParams({
-        text: `${templateText}\n${tweetUrl}`,
-      })}`;
+      const params = new URLSearchParams();
+      if (templateText) params.set("text", templateText);
+      if (platformPayload.url) params.set("url", platformPayload.url);
+      return `https://twitter.com/intent/tweet?${params}`;
     }
     case "whatsapp": {
       const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
@@ -213,9 +204,7 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
       )}`;
     }
     case "facebook": {
-      const params = new URLSearchParams({ u: platformPayload.url });
-      if (templateText) params.set("quote", templateText);
-      return `https://www.facebook.com/sharer/sharer.php?${params}`;
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: platformPayload.url })}`;
     }
     case "pinterest": {
       const params = new URLSearchParams({ url: platformPayload.url, description: templateText });

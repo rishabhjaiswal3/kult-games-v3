@@ -19,6 +19,7 @@ import { MOMENTS_QUERY_KEY_ROOT } from "@/constants/moments";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
+import { MomentGameBadge, deriveMomentGameLabel } from "@/components/moments/MomentGameBadge";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
 import { EditMomentDialog } from "@/components/moments/EditMomentDialog";
 import { isMomentOwner } from "@/lib/momentOwnership";
@@ -41,16 +42,6 @@ function isMomentVideo(moment: Moment): boolean {
 
 function getMomentAssetUrl(moment: Moment): string | undefined {
   return moment.assetZgUrl ?? moment.assetUrl;
-}
-
-function deriveGameLabel(moment: Moment): string {
-  const hay = [...moment.relatedGames, ...moment.tags, moment.title].join(" ").toLowerCase();
-  if (hay.includes("robo")) return "ROBOWARS";
-  if (hay.includes("highway")) return "HIGHWAY HUSTLE";
-  if (hay.includes("warzone")) return "WARZONE WARRIORS";
-  if (hay.includes("ai-arena") || hay.includes("aiarena")) return "ARENA HIGHLIGHTS";
-  const game = moment.relatedGames[0];
-  return game ? game.replace(/[_-]/g, " ").toUpperCase() : "ARENA HIGHLIGHTS";
 }
 
 function deriveThumbnail(moment: Moment): string {
@@ -79,13 +70,6 @@ function formatDate(value?: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-}
-
-// ── Game badge ────────────────────────────────────────────────────────────────
-function GameBadge({ game }: { game: string }) {
-  if (game === "ROBOWARS") return <span className="rounded border border-sky-500/35 bg-sky-950/80 px-2 py-0.5 font-tech text-[9px] font-black uppercase tracking-wide text-sky-400">{game}</span>;
-  if (game === "HIGHWAY HUSTLE") return <span className="rounded border border-amber-500/35 bg-amber-950/80 px-2 py-0.5 font-tech text-[9px] font-black uppercase tracking-wide text-amber-300">{game}</span>;
-  return <span className="rounded border border-purple-500/35 bg-purple-950/80 px-2 py-0.5 font-tech text-[9px] font-black uppercase tracking-wide text-[#d6acff]">{game}</span>;
 }
 
 // ── Media player ──────────────────────────────────────────────────────────────
@@ -348,7 +332,7 @@ export function MomentDetailPage() {
                     {contentType === "video" ? <Video className="h-2.5 w-2.5" /> : <ImageIcon className="h-2.5 w-2.5" />}
                     <span>{contentType === "video" ? "VID" : "IMG"}</span>
                   </div>
-                  <GameBadge game={gameLabel} />
+                  <MomentGameBadge moment={moment} />
                 </div>
               </div>
 
@@ -393,6 +377,8 @@ export function MomentDetailPage() {
                 onLike={handleLike}
                 onComments={scrollToComments}
                 isLiking={likeMutation.isPending}
+                isAuthenticated={isAuthenticated}
+                onRequireAuth={requestOpenLoginModal}
               />
             </div>
 
@@ -438,7 +424,7 @@ export function MomentDetailPage() {
                 </div>
                 <div className="flex items-center justify-between py-2.5">
                   <span className="text-white/55">Game</span>
-                  <GameBadge game={gameLabel} />
+                  <MomentGameBadge moment={moment} />
                 </div>
                 <div className="flex items-center justify-between py-2.5">
                   <span className="text-white/55">Likes</span>
