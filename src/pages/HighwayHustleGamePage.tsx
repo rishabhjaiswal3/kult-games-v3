@@ -209,125 +209,161 @@ function AgentLoadingCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pre-match overlay (kept for parity — arenaMultiplayerStart won't fire in HH)
+// Pre-match overlay — auto-shown when Unity finishes loading, 4-second countdown
 // ─────────────────────────────────────────────────────────────────────────────
 
-const MAP_META: Record<string, { bg: string; name: string; accentColor: string }> = {
-  "1": { bg: "/Warzone/Desert_Storm.png",      name: "Desert Storm",      accentColor: "#f59e0b" },
-  "2": { bg: "/Warzone/Research_Facility.png", name: "Research Facility", accentColor: "#06b6d4" },
-  "3": { bg: "/Warzone/Mystical_Forest.png",   name: "Mystical Forest",   accentColor: "#10b981" },
-};
+const PRE_MATCH_DURATION = 4;
 
 function PreMatchOverlay({
-  mapId,
-  myAgentName,
-  opponentName,
+  myAgent,
+  opponent,
+  mode,
   countdown,
 }: {
-  mapId: string;
-  myAgentName: string;
-  opponentName: string;
+  myAgent: AiArenaAgent | null;
+  opponent: AiArenaAgent | null;
+  mode: string;
   countdown: number;
 }) {
-  const meta    = MAP_META[mapId] ?? MAP_META["1"];
-  const maxSecs = mapId === "1" ? 10 : mapId === "2" ? 15 : 17;
-  const pct     = Math.max(0, (countdown / maxSecs) * 100);
+  const pct        = (countdown / PRE_MATCH_DURATION) * 100;
+  const myColor    = myAgent  ? clanColor(myAgent.clan)  : "#ffc000";
+  const oppColor   = opponent ? clanColor(opponent.clan) : "#06b6d4";
+  const myPortrait   = myAgent  ? getArenaAgentPortrait(myAgent)  : null;
+  const oppPortrait  = opponent ? getArenaAgentPortrait(opponent) : null;
 
   return (
     <div
       className="absolute inset-0 z-40 flex flex-col overflow-hidden"
-      style={{ background: "#05080f" }}
+      style={{ background: "#03070f" }}
     >
-      <img
-        src={meta.bg}
-        alt={meta.name}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity: 0.9 }}
-        draggable={false}
+      {/* Neon highway background grid */}
+      <div
+        className="absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,192,0,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,192,0,0.6) 1px,transparent 1px)",
+          backgroundSize: "48px 48px",
+          transform: "perspective(600px) rotateX(30deg) scale(2)",
+          transformOrigin: "50% 100%",
+        }}
       />
-      <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
+      {/* Glow streaks */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-x-0 top-0 h-px opacity-60" style={{ background: "linear-gradient(90deg,transparent,#ffc000,transparent)" }} />
+        <div className="absolute inset-x-0 bottom-0 h-px opacity-40" style={{ background: "linear-gradient(90deg,transparent,#8b5cf6,transparent)" }} />
+        <div className="absolute left-0 inset-y-0 w-64 opacity-20" style={{ background: `linear-gradient(to right, ${myColor}30, transparent)` }} />
+        <div className="absolute right-0 inset-y-0 w-64 opacity-20" style={{ background: `linear-gradient(to left, ${oppColor}30, transparent)` }} />
+      </div>
 
-      <div className="relative z-10 flex h-full flex-col">
-        <div
-          className="flex items-center justify-between px-6 py-3 shrink-0"
-          style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${meta.accentColor}` }}
-        >
-          <span className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold" style={{ color: meta.accentColor }}>
-            ⚡ Highway Hustle · Race
+      {/* Top bar */}
+      <div
+        className="relative z-10 flex items-center justify-between px-5 py-3 shrink-0"
+        style={{ background: "rgba(3,7,15,0.92)", borderBottom: "1px solid rgba(255,192,0,0.25)" }}
+      >
+        <div className="flex items-center gap-2">
+          <Car className="h-3.5 w-3.5 text-yellow-400" />
+          <span className="font-tech text-[10px] uppercase tracking-[0.3em] font-bold text-yellow-400">
+            Highway Hustle
           </span>
-          <div className="font-display text-base font-black text-white tracking-widest uppercase">
-            {meta.name}
+        </div>
+        <span className="font-display text-sm font-black text-white tracking-widest uppercase">
+          Neon Highway
+        </span>
+        <span className="font-tech text-[10px] uppercase tracking-widest font-bold text-yellow-400/70">
+          {mode}
+        </span>
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 flex flex-1 min-h-0 items-center">
+
+        {/* Left agent */}
+        <div className="flex flex-col items-center gap-3 flex-1 px-4 py-6">
+          <div
+            className="relative w-[110px] h-[140px] sm:w-[140px] sm:h-[175px] rounded-2xl overflow-hidden border"
+            style={{ borderColor: `${myColor}50`, boxShadow: `0 0 40px ${myColor}30` }}
+          >
+            {myPortrait ? (
+              myPortrait.endsWith(".mp4")
+                ? <video src={myPortrait} autoPlay loop muted playsInline className="h-full w-full object-cover object-top" />
+                : <img src={myPortrait} alt={myAgent?.name} className="h-full w-full object-cover object-top" />
+            ) : (
+              <div className="h-full w-full animate-pulse bg-white/5" />
+            )}
+            <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-8" style={{ background: `linear-gradient(to top, ${myColor}cc, transparent)` }}>
+              <div className="font-display text-sm font-black text-white truncate leading-tight">{myAgent?.name ?? "Agent A"}</div>
+              <div className="font-tech text-[9px] uppercase tracking-wider text-white/70">{myAgent?.archetype ?? "—"}</div>
+            </div>
           </div>
-          <div className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: meta.accentColor }}>
-            Race Starting
+          <div className="text-center">
+            <div className="font-tech text-lg font-bold" style={{ color: myColor }}>{myAgent?.eloRating?.toLocaleString() ?? "—"}</div>
+            <div className="font-tech text-[9px] text-white/30 uppercase tracking-wider">ELO</div>
           </div>
         </div>
 
-        <div className="flex flex-1 min-h-0 items-stretch">
-          <div className="flex flex-col items-center justify-end gap-0 flex-1" style={{ background: `linear-gradient(to right, rgba(5,8,15,0.7) 0%, transparent 100%)` }}>
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {myAgentName || "Agent A"}
-              </div>
-            </div>
+        {/* Centre VS + countdown */}
+        <div className="flex flex-col items-center gap-4 shrink-0 px-2">
+          <div
+            className="font-display text-4xl sm:text-5xl font-black"
+            style={{ color: "#fff", textShadow: "0 0 40px #ffc000, 0 0 80px #ffc00050", WebkitTextStroke: "1.5px #ffc000" }}
+          >
+            VS
           </div>
 
-          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
-            <div
-              className="font-display text-5xl font-black"
-              style={{
-                color: "#fff",
-                textShadow: `0 0 40px ${meta.accentColor}, 0 0 80px ${meta.accentColor}80`,
-                WebkitTextStroke: `2px ${meta.accentColor}`,
-              }}
-            >
-              VS
-            </div>
-            <div
-              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
-              style={{
-                border: `3px solid ${meta.accentColor}`,
-                color: meta.accentColor,
-                background: "rgba(5,8,15,0.9)",
-                boxShadow: `0 0 30px ${meta.accentColor}80, inset 0 0 20px ${meta.accentColor}20`,
-              }}
-            >
-              {countdown}
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-end gap-0 flex-1" style={{ background: `linear-gradient(to left, rgba(5,8,15,0.7) 0%, transparent 100%)` }}>
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {opponentName || "Agent B"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
-          style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
-            🚗 <span className="text-white font-bold">Endless highway</span> race ·
-            Crash first and you <span className="font-bold" style={{ color: meta.accentColor }}>lose</span> ·
-            Winner earns <span className="text-white font-bold">ARENA rewards</span>
-          </p>
-          <div className="w-full max-w-sm">
-            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-              <div
-                className="h-full rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${meta.accentColor}, #8b6dff)` }}
+          {/* Countdown ring */}
+          <div className="relative flex items-center justify-center">
+            <svg width="72" height="72" className="-rotate-90">
+              <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
+              <circle
+                cx="36" cy="36" r="30" fill="none"
+                stroke="#ffc000" strokeWidth="4"
+                strokeDasharray={`${2 * Math.PI * 30}`}
+                strokeDashoffset={`${2 * Math.PI * 30 * (1 - pct / 100)}`}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s linear", filter: "drop-shadow(0 0 6px #ffc000)" }}
               />
+            </svg>
+            <div className="absolute font-display text-2xl font-black text-white">{countdown}</div>
+          </div>
+
+          <span className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/40">Race starts</span>
+        </div>
+
+        {/* Right agent */}
+        <div className="flex flex-col items-center gap-3 flex-1 px-4 py-6">
+          <div
+            className="relative w-[110px] h-[140px] sm:w-[140px] sm:h-[175px] rounded-2xl overflow-hidden border"
+            style={{ borderColor: `${oppColor}50`, boxShadow: `0 0 40px ${oppColor}30` }}
+          >
+            {oppPortrait ? (
+              oppPortrait.endsWith(".mp4")
+                ? <video src={oppPortrait} autoPlay loop muted playsInline className="h-full w-full object-cover object-top -scale-x-100" />
+                : <img src={oppPortrait} alt={opponent?.name} className="h-full w-full object-cover object-top -scale-x-100" />
+            ) : (
+              <div className="h-full w-full animate-pulse bg-white/5" />
+            )}
+            <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-8" style={{ background: `linear-gradient(to top, ${oppColor}cc, transparent)` }}>
+              <div className="font-display text-sm font-black text-white truncate leading-tight">{opponent?.name ?? "Agent B"}</div>
+              <div className="font-tech text-[9px] uppercase tracking-wider text-white/70">{opponent?.archetype ?? "—"}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ background: meta.accentColor }} />
-            <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
-              Syncing with 0G Network...
-            </span>
+          <div className="text-center">
+            <div className="font-tech text-lg font-bold" style={{ color: oppColor }}>{opponent?.eloRating?.toLocaleString() ?? "—"}</div>
+            <div className="font-tech text-[9px] text-white/30 uppercase tracking-wider">ELO</div>
           </div>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div
+        className="relative z-10 shrink-0 flex items-center justify-center gap-6 px-6 py-3"
+        style={{ background: "rgba(3,7,15,0.92)", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <span className="font-mono text-[10px] text-white/40">🏁 Survive the highway · Crash first = <span className="text-red-400">lose</span></span>
+        <span className="font-mono text-[10px] text-white/20">·</span>
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">0G Network</span>
         </div>
       </div>
     </div>
@@ -1038,13 +1074,9 @@ export default function HighwayHustleGamePage() {
   const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
-  // Pre-match overlay (kept for parity — won't fire in HH but harmless)
-  const [preMatchData, setPreMatchData] = useState<{
-    mapId: string;
-    myAgentName: string;
-    opponentName: string;
-  } | null>(null);
-  const [preMatchCountdown, setPreMatchCountdown] = useState(0);
+  // Pre-match overlay — auto-shown when Unity finishes loading
+  const [showPreMatch, setShowPreMatch] = useState(false);
+  const [preMatchCountdown, setPreMatchCountdown] = useState(PRE_MATCH_DURATION);
 
   const canvasRef        = useRef<HTMLCanvasElement>(null);
   const unityInstanceRef = useRef<any>(null);
@@ -1398,40 +1430,23 @@ export default function HighwayHustleGamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Pre-match overlay (kept for parity) ──────────────────────────────────
+  // ── Pre-match overlay — triggers automatically when Unity finishes loading ──
   useEffect(() => {
-    const MAP_DURATIONS: Record<string, number> = { "1": 10, "2": 15, "3": 17 };
-
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as {
-        mapId?: string;
-        myAgentName?: string;
-        opponentName?: string;
-      };
-      const mapId    = (detail?.mapId ?? "1").charAt(0);
-      const duration = MAP_DURATIONS[mapId] ?? 10;
-      setPreMatchData({
-        mapId,
-        myAgentName:  detail?.myAgentName  ?? "",
-        opponentName: detail?.opponentName ?? "",
-      });
-      setPreMatchCountdown(duration);
-    };
-
-    window.addEventListener("arenaMultiplayerStart", handler);
-    return () => window.removeEventListener("arenaMultiplayerStart", handler);
-  }, []);
+    if (!unityLoaded) return;
+    setPreMatchCountdown(PRE_MATCH_DURATION);
+    setShowPreMatch(true);
+  }, [unityLoaded]);
 
   useEffect(() => {
-    if (preMatchCountdown <= 0 || !preMatchData) return;
+    if (!showPreMatch || preMatchCountdown <= 0) return;
     const t = setTimeout(() => {
       setPreMatchCountdown((c) => {
-        if (c <= 1) { setPreMatchData(null); return 0; }
+        if (c <= 1) { setShowPreMatch(false); return 0; }
         return c - 1;
       });
     }, 1000);
     return () => clearTimeout(t);
-  }, [preMatchCountdown, preMatchData]);
+  }, [showPreMatch, preMatchCountdown]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -1641,11 +1656,11 @@ export default function HighwayHustleGamePage() {
                 />
               )}
 
-              {preMatchData && unityLoaded && (
+              {showPreMatch && (
                 <PreMatchOverlay
-                  mapId={preMatchData.mapId}
-                  myAgentName={preMatchData.myAgentName}
-                  opponentName={preMatchData.opponentName}
+                  myAgent={myAgent}
+                  opponent={opponent}
+                  mode={mode}
                   countdown={preMatchCountdown}
                 />
               )}
