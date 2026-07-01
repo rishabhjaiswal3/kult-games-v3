@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Activity, Award, Clock, Eye, Hexagon, Loader2, Plus, Search, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
@@ -17,6 +19,20 @@ import type { AiArenaAgent, AiArenaTrainingEligibilityResponse, AiArenaTrainingJ
 
 type TrainingJobWithAgent = AiArenaTrainingJob & {
   agent?: AiArenaAgent;
+};
+
+type X402PaymentError = {
+  message: string;
+  payment: {
+    version: string;
+    action: string;
+    amount: number;
+    currency: string;
+    network: string;
+    payTo: string;
+    instructions: string[];
+    requirements_url?: string;
+  };
 };
 
 function jobTypeLabel(type?: string | null) {
@@ -139,6 +155,8 @@ const TrainingPage = () => {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [jobLookupInput, setJobLookupInput] = useState("");
+  const [paymentError, setPaymentError] = useState<X402PaymentError | null>(null);
+  const [walletOpen, setWalletOpen] = useState(false);
 
   useEffect(() => {
     setSelectedAgentId((current) => {
@@ -265,6 +283,9 @@ const TrainingPage = () => {
       await invalidateTrainingQueries();
     },
     onError: (err) => {
+      if (axios.isAxiosError(err) && err.response?.status === 402) {
+        setPaymentError(err.response.data as X402PaymentError);
+      }
     },
   });
 
@@ -284,6 +305,9 @@ const TrainingPage = () => {
       await invalidateTrainingQueries();
     },
     onError: (err) => {
+      if (axios.isAxiosError(err) && err.response?.status === 402) {
+        setPaymentError(err.response.data as X402PaymentError);
+      }
     },
   });
 
@@ -307,6 +331,23 @@ const TrainingPage = () => {
 
   return (
     <ArenaPageLayout>
+      {paymentError && (
+        <PaymentRequiredModal
+          error={paymentError}
+          onClose={() => setPaymentError(null)}
+          onFundWallet={() => {
+            setPaymentError(null);
+            setWalletOpen(true);
+          }}
+        />
+      )}
+      <ArenaAgentWalletManagerModal
+        open={walletOpen}
+        onOpenChange={setWalletOpen}
+        agents={agents}
+        agentsLoading={myAgentsQ.isLoading}
+        initialAgentId={selectedAgentId}
+      />
       <div data-tour="training-header">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">TRAINING CENTER</h1>
         <p className="mt-1 text-[11px] font-medium text-white/55">
@@ -774,6 +815,89 @@ function fallbackAgentForTraining(agentId: string): AiArenaAgent {
     wins: 0,
     losses: 0,
   };
+}
+
+function PaymentRequiredModal({
+  error,
+  onClose,
+  onFundWallet,
+}: {
+  error: X402PaymentError;
+  onClose: () => void;
+  onFundWallet: () => void;
+}) {
+  const { payment } = error;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-amber-500/30 bg-[#04080f] shadow-[0_0_60px_-10px_oklch(0.75_0.18_80/0.4)] p-6 space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-white/30 hover:text-white transition"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10">
+            <Zap className="h-5 w-5 text-amber-400" />
+          </div>
+          <div>
+            <p className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">
+              Payment Required
+            </p>
+            <h2 className="mt-0.5 font-tech text-base font-bold text-white">
+              Training costs {payment.amount} ${payment.currency}
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-white/60">
+              To queue this training run, your agent wallet needs a balance of{" "}
+              <span className="font-bold text-amber-300">{payment.amount} ${payment.currency}</span>.
+              Fund your wallet and try again.
+            </p>
+          </div>
+        </div>
+
+        {payment.instructions && payment.instructions.length > 0 && (
+          <div className="space-y-2">
+            <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-white/35">Instructions</p>
+            <ol className="space-y-2">
+              {payment.instructions.map((step, i) => (
+                <li key={i} className="flex gap-3 text-xs text-white/65 leading-relaxed">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 font-tech text-[9px] font-bold text-purple-400">
+                    {i + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onFundWallet}
+            className="flex-1 rounded-xl border border-amber-500/40 bg-amber-500/10 py-2.5 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300 transition hover:border-amber-400 hover:bg-amber-500/20"
+          >
+            Fund Wallet
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/55 transition hover:border-white/20 hover:text-white"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default TrainingPage;
