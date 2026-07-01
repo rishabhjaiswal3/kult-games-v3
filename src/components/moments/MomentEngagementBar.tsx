@@ -224,9 +224,6 @@ export function MomentEngagementBar({
                 Connect wallet
               </button>
             ) : null}
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
-              <MomentShareDialog moment={moment} triggerVariant="icon" />
-            </div>
           </div>
         </div>
       )}
