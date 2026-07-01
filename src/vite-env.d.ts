@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_SHARE_BASE_URL?: string;
   /** OG preview path — default `/api/share` when frontend proxies API. */
   readonly VITE_SHARE_PREVIEW_PATH?: string;
+  /** Public crawler-facing preview path — default `/share`. */
+  readonly VITE_SHARE_PUBLIC_PREVIEW_PATH?: string;
 }
 
 interface ImportMeta {

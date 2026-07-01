@@ -456,6 +456,8 @@ export interface AiArenaBattleCommentaryRequest {
   loserHpPercent:  number;
   durationSeconds: number;
   endReason:       string;
+  /** Game name hint — backend uses this to set commentary context. */
+  gameName?:       string;
   /** When set, backend returns commentary from that fighter's perspective. */
   perspective?:    'WINNER' | 'LOSER';
   playerStats?:    Record<string, AgentMatchStats>;

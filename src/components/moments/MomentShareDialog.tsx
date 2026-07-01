@@ -35,6 +35,14 @@ type SharePlatform = {
 type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
+function resolveFacebookPreviewUrl(payload: SharePayload): string {
+  return payload.momentUrl || payload.url;
+}
+
+function resolveTwitterPreviewUrl(payload: SharePayload): string {
+  return payload.momentUrl || payload.url;
+}
+
 // ── Platforms ─────────────────────────────────────────────────────────────────
 // Public share links use `/moments/:id`. Social crawlers receive OG HTML (with the
 // moment image URL from storage) via the production server or /api/share fallback.
@@ -47,17 +55,15 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      // Use the clean /moments/:id URL in tweet text so the card preview loads
-      // from the OG handler; separate previewUrl is used when building the card.
-      const tweetUrl = p.url.includes("/api/share/") ? p.url.replace(/\/api\/share/, "") : p.url;
-      const text = [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), tweetUrl]
+      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
+      const text = [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
         .filter(Boolean)
-        .join("\n");
+        .join("\n\n");
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
     buildPostText: (p) => {
-      const tweetUrl = p.url.includes("/api/share/") ? p.url.replace(/\/api\/share/, "") : p.url;
-      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), tweetUrl]
+      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
+      return [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
         .filter(Boolean)
         .join("\n\n");
     },
@@ -68,13 +74,8 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
-    buildUrl: (p) => {
-      const quote = [p.title, p.teaser].filter(Boolean).join(" — ");
-      const params = new URLSearchParams({ u: p.url });
-      if (quote) params.set("quote", quote);
-      return `https://www.facebook.com/sharer/sharer.php?${params}`;
-    },
-    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
+    buildUrl: (p) => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(p) })}`,
+    buildPostText: (p) => [p.title, p.teaser, resolveFacebookPreviewUrl(p)].filter(Boolean).join("\n\n"),
   },
   {
     id: "reddit",
@@ -130,7 +131,7 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#010101",
     copyOnly: true,
     buildUrl: () => "https://www.tiktok.com",
-    buildPostText: (p) => `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.url}`,
+    buildPostText: (p) => [p.title, p.hashtags.map((h) => `#${h}`).join(" "), p.url].filter(Boolean).join("\n\n"),
   },
 ];
 
@@ -140,23 +141,23 @@ const GAME_TEMPLATES: GameTemplateGroup[] = [
   {
     gameSlug: "ai-arena", gameName: "AI Arena",
     templates: [
-      { id: "ai-1", label: "99% wrong", text: "Everyone said my agent wouldn't win. 99% were wrong. 👁️\n#KultGames #AIArena" },
-      { id: "ai-2", label: "Top 1%",    text: "Top 1% agent worldwide. The proof is right here. 🏆\n#KultGames #AIArena" },
-      { id: "ai-3", label: "Not today", text: "Every AI in the lobby said I wasn't winning. Every one of them was wrong.\n#KultMoments" },
+      { id: "ai-1", label: "99% wrong", text: "Everyone said my agent wouldn't win. 99% were wrong. 👁️\n\n#KultGames #AIArena" },
+      { id: "ai-2", label: "Top 1%",    text: "Top 1% agent worldwide. The proof is right here. 🏆\n\n#KultGames #AIArena" },
+      { id: "ai-3", label: "Not today", text: "Every AI in the lobby said I wasn't winning. Every one of them was wrong.\n\n#KultMoments" },
     ],
   },
   {
     gameSlug: "robowars", gameName: "Robowars",
     templates: [
-      { id: "rw-1", label: "Dominant",   text: "No contest. My agent ran through the whole lobby.\n#Robowars #KultGames" },
-      { id: "rw-2", label: "Clutch",     text: "Down to the last second. This is why I play.\n#Robowars #KultMoments" },
+      { id: "rw-1", label: "Dominant",   text: "No contest. My agent ran through the whole lobby.\n\n#Robowars #KultGames" },
+      { id: "rw-2", label: "Clutch",     text: "Down to the last second. This is why I play.\n\n#Robowars #KultMoments" },
     ],
   },
   {
     gameSlug: "kult-royale", gameName: "Warzone",
     templates: [
-      { id: "ww-1", label: "Last alive", text: "Last one standing. That's all that matters.\n#WarzoneWarriors #KultGames" },
-      { id: "ww-2", label: "Squad wipe", text: "Full squad wipe in under 90 seconds.\n#WarzoneWarriors #KultMoments" },
+      { id: "ww-1", label: "Last alive", text: "Last one standing. That's all that matters.\n\n#WarzoneWarriors #KultGames" },
+      { id: "ww-2", label: "Squad wipe", text: "Full squad wipe in under 90 seconds.\n\n#WarzoneWarriors #KultMoments" },
     ],
   },
 ];
@@ -192,12 +193,9 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
   const platformPayload = withPlatformShareUrl(payload);
   switch (platform.id) {
     case "twitter": {
-      const tweetUrl = platformPayload.url.includes("/api/share/")
-        ? platformPayload.url.replace(/\/api\/share/, "")
-        : platformPayload.url;
-      return `https://twitter.com/intent/tweet?${new URLSearchParams({
-        text: `${templateText}\n${tweetUrl}`,
-      })}`;
+      const previewUrl = resolveTwitterPreviewUrl(platformPayload);
+      const text = [templateText, previewUrl].filter(Boolean).join("\n\n");
+      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     }
     case "whatsapp": {
       const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
@@ -213,9 +211,7 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
       )}`;
     }
     case "facebook": {
-      const params = new URLSearchParams({ u: platformPayload.url });
-      if (templateText) params.set("quote", templateText);
-      return `https://www.facebook.com/sharer/sharer.php?${params}`;
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(platformPayload) })}`;
     }
     case "pinterest": {
       const params = new URLSearchParams({ url: platformPayload.url, description: templateText });
@@ -310,7 +306,7 @@ function PostPreviewText({ platform, payload, customText }: {
 }) {
   const platformPayload = withPlatformShareUrl(payload);
   const postText = customText
-    ? [customText, platformPayload.url].filter(Boolean).join("\n")
+    ? [customText, platformPayload.url].filter(Boolean).join("\n\n")
     : platform.buildPostText(platformPayload);
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {

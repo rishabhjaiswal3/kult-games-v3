@@ -1,15 +1,14 @@
 /**
- * ArenaGamePage — Full-screen AI Arena battle experience.
+ * HighwayHustleGamePage — Full-screen Highway Hustle AI duel battle experience.
  *
- * Unity WebGL is loaded *directly* in this React component (ZeroDash pattern):
- *   • Dynamic <script> injection of WarzoneV4.loader.js from R2
- *   • window.createUnityInstance() called with R2 absolute file URLs
- *   • React loading screen (agent cards, rain, progress bar) shown while Unity loads
- *   • battleId sent via SendMessage('GameManager','SetBattleId', battleId) after load
- *   • unityInstance.Quit() called on unmount
+ * Mirrors the ArenaGamePage pattern for Warzone but wired to Highway Hustle:
+ *   • localStorage key: "hrDuelPayload"  (HR_SessionBootstrap reads this)
+ *   • Unity event:      "hrDuelEnd"       (HR_DuelBridge fires this)
+ *   • Result payload:   { battleId, winnerId, winnerName, winnerDistance,
+ *                         loserId, loserName, loserDistance }
  *
- * Set VITE_UNITY_BUILD_URL to the R2 base path (no trailing slash, no /index.html):
- *   e.g. https://pub-xxxx.r2.dev/v4/WarzoneV4
+ * Set VITE_HIGHWAY_HUSTLE_BUILD_URL to the R2 base path (no trailing slash):
+ *   e.g. https://pub-xxxx.r2.dev/v1/HighwayHustle
  */
 
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -19,10 +18,8 @@ import {
   useEffect,
   useRef,
   useCallback,
-  useMemo,
   type KeyboardEvent,
 } from "react";
-// Note: useCallback kept for addSystem / addResult helpers below
 import {
   Swords,
   Trophy,
@@ -35,6 +32,7 @@ import {
   Shield,
   Zap,
   MessageSquare,
+  Car,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -52,8 +50,7 @@ import type {
 // Config
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Base R2 path — no trailing slash, no /index.html.
- *  e.g. https://pub-2c48e58780b648b7a2a77316f7b0aa2c.r2.dev/v4/WarzoneV4 */
+/** Base R2 path — no trailing slash. Same var as Warzone; file names differ. */
 const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,32 +59,15 @@ const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
 
 type GamePhase = "live" | "ended";
 
-/** Shape of the CustomEvent fired by Unity when the match ends. */
-type UnityBattleResult = {
+/** Shape of the CustomEvent fired by HR_DuelBridge when the race ends. */
+type HRDuelResult = {
   battleId: string;
-  myAgentWon: boolean;
   winnerId: string;
   winnerName: string;
-  winnerArchetype: string;
-  winnerClan: string;
-  winnerElo: number;
-  winnerHpPercent: number; // 0-100
+  winnerDistance: number;
   loserId: string;
   loserName: string;
-  loserArchetype: string;
-  loserClan: string;
-  loserElo: number;
-  loserHpPercent: number; // 0-100
-  durationSeconds: number;
-  endReason: string; // "death" | "timeout"
-  /** Per-agent action stats keyed by agentId. Forwarded to POST /v1/battles/:id/end. */
-  playerStats?: Record<string, {
-    jumps: number;
-    shotsAttempted: number;
-    shotsConnected: number;
-    timesHit: number;
-    distanceCovered: number;
-  }>;
+  loserDistance: number;
 };
 
 type ChatMsg =
@@ -229,148 +209,147 @@ function AgentLoadingCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pre-match overlay
+// Pre-match overlay — auto-shown when Unity finishes loading, 4-second countdown
 // ─────────────────────────────────────────────────────────────────────────────
 
-const MAP_META: Record<string, { bg: string; name: string; accentColor: string }> = {
-  "1": { bg: "/Warzone/Desert_Storm.png",      name: "Desert Storm",      accentColor: "#f59e0b" },
-  "2": { bg: "/Warzone/Research_Facility.png", name: "Research Facility", accentColor: "#06b6d4" },
-  "3": { bg: "/Warzone/Mystical_Forest.png",   name: "Mystical Forest",   accentColor: "#10b981" },
-};
+const PRE_MATCH_DURATION = 10;
+const ACCENT = "#ffc000";
+const HH_CARS = [
+  "/HighwayHustle/car1.png",
+  "/HighwayHustle/car2.png",
+  "/HighwayHustle/car3.png",
+  "/HighwayHustle/car4.png",
+  "/HighwayHustle/car5.png",
+  "/HighwayHustle/car6.png",
+];
 
 function PreMatchOverlay({
-  mapId,
-  myAgentName,
-  opponentName,
+  myAgent,
+  opponent,
+  mode,
   countdown,
 }: {
-  mapId: string;
-  myAgentName: string;
-  opponentName: string;
+  myAgent: AiArenaAgent | null;
+  opponent: AiArenaAgent | null;
+  mode: string;
   countdown: number;
 }) {
-  const meta     = MAP_META[mapId] ?? MAP_META["1"];
-  const maxSecs  = mapId === "1" ? 10 : mapId === "2" ? 15 : 17;
-  const pct      = Math.max(0, (countdown / maxSecs) * 100);
+  const pct = Math.max(0, (countdown / PRE_MATCH_DURATION) * 100);
+
+  // Pick two different random cars, stable for this render
+  const [carA, carB] = (() => {
+    const idx = Math.floor(Math.random() * HH_CARS.length);
+    const idx2 = (idx + 1 + Math.floor(Math.random() * (HH_CARS.length - 1))) % HH_CARS.length;
+    return [HH_CARS[idx], HH_CARS[idx2]];
+  })();
 
   return (
     <div
-      className="absolute inset-0 z-40 flex flex-col overflow-hidden"
+      className="absolute inset-0 z-50 flex flex-col overflow-hidden"
       style={{ background: "#05080f" }}
     >
-      {/* ── Full-bleed map image — bright, clearly visible ── */}
+      {/* ── Full-bleed background image ── */}
       <img
-        src={meta.bg}
-        alt={meta.name}
+        src="/HighwayHustle/bg.png"
+        alt="Highway"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.9 }}
         draggable={false}
       />
 
-      {/* ── Single solid dark overlay — just enough contrast for text ── */}
+      {/* ── Dark tint for contrast ── */}
       <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════
           Content — 3-row layout: header / fighters / footer
-      ══════════════════════════════════════════════════════════════════ */}
+      ══════════════════════════════════════════════════════════════ */}
       <div className="relative z-10 flex h-full flex-col">
 
-        {/* ── ROW 1: header strip ─────────────────────────────────────── */}
+        {/* ── ROW 1: header strip ─────────────────────────────────── */}
         <div
           className="flex items-center justify-between px-6 py-3 shrink-0"
-          style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${meta.accentColor}` }}
+          style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${ACCENT}` }}
         >
-          <div className="flex items-center gap-3">
-            <span
-              className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold"
-              style={{ color: meta.accentColor }}
-            >
-              ⚡ Arena · Ranked
+          <div className="flex items-center gap-2">
+            <Car className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold" style={{ color: ACCENT }}>
+              Highway Hustle · {mode}
             </span>
           </div>
           <div className="font-display text-base font-black text-white tracking-widest uppercase">
-            {meta.name}
+            Neon Highway
           </div>
-          <div
-            className="font-tech text-[10px] uppercase tracking-widest font-bold"
-            style={{ color: meta.accentColor }}
-          >
-            Match Starting
+          <div className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>
+            Race Starting
           </div>
         </div>
 
-        {/* ── ROW 2: fighters — takes all remaining space ─────────────── */}
+        {/* ── ROW 2: fighters ─────────────────────────────────────── */}
         <div className="flex flex-1 min-h-0 items-stretch">
 
           {/* Left fighter panel */}
           <div
             className="flex flex-col items-center justify-end gap-0 flex-1"
-            style={{ background: `linear-gradient(to right, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
+            style={{ background: "linear-gradient(to right, rgba(5,8,15,0.75) 0%, transparent 100%)" }}
           >
-            {/* Agent name above */}
             <div className="text-center mb-2 px-4">
               <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {myAgentName || "Agent A"}
+                {myAgent?.name ?? "Agent A"}
               </div>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
-                <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {myAgent?.archetype ?? "DRIVER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {myAgent?.eloRating ? `${myAgent.eloRating} ELO` : ""}
+                </span>
               </div>
             </div>
-            {/* Character */}
             <img
-              src="/Warzone/Character1-A.png"
-              alt="Fighter A"
+              src={carA}
+              alt="Car A"
               className="object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
           </div>
 
-          {/* Centre VS column */}
+          {/* Centre VS */}
           <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
             <div
               className="font-display text-5xl font-black"
               style={{
                 color: "#fff",
-                textShadow: `0 0 40px ${meta.accentColor}, 0 0 80px ${meta.accentColor}80`,
-                WebkitTextStroke: `2px ${meta.accentColor}`,
+                textShadow: `0 0 40px ${ACCENT}, 0 0 80px ${ACCENT}80`,
+                WebkitTextStroke: `2px ${ACCENT}`,
               }}
             >
               VS
-            </div>
-            {/* Countdown ring */}
-            <div
-              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
-              style={{
-                border: `3px solid ${meta.accentColor}`,
-                color: meta.accentColor,
-                background: "rgba(5,8,15,0.9)",
-                boxShadow: `0 0 30px ${meta.accentColor}80, inset 0 0 20px ${meta.accentColor}20`,
-              }}
-            >
-              {countdown}
             </div>
           </div>
 
           {/* Right fighter panel */}
           <div
             className="flex flex-col items-center justify-end gap-0 flex-1"
-            style={{ background: `linear-gradient(to left, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
+            style={{ background: "linear-gradient(to left, rgba(5,8,15,0.75) 0%, transparent 100%)" }}
           >
             <div className="text-center mb-2 px-4">
               <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {opponentName || "Agent B"}
+                {opponent?.name ?? "Agent B"}
               </div>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
-                <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {opponent?.archetype ?? "DRIVER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {opponent?.eloRating ? `${opponent.eloRating} ELO` : ""}
+                </span>
               </div>
             </div>
             <img
-              src="/Warzone/Character1-B.png"
-              alt="Fighter B"
-              className="object-contain object-bottom drop-shadow-2xl"
+              src={carB}
+              alt="Car B"
+              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
@@ -378,37 +357,27 @@ function PreMatchOverlay({
 
         </div>
 
-        {/* ── ROW 3: footer — rules + sync bar ────────────────────────── */}
+        {/* ── ROW 3: footer ───────────────────────────────────────── */}
         <div
           className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
           style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
-          {/* Rules */}
           <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
-            ⏱ <span className="text-white font-bold">90 second</span> match ·
-            Kill the opponent to win early ·
-            Your agent can <span className="font-bold" style={{ color: meta.accentColor }}>shoot</span>,{" "}
-            <span className="font-bold" style={{ color: meta.accentColor }}>jump</span> &amp;{" "}
-            <span className="font-bold" style={{ color: meta.accentColor }}>hide</span> based on trained behaviour ·
+            🏁 <span className="text-white font-bold">Endless highway</span> race ·
+            Crash into traffic and you <span className="font-bold" style={{ color: ACCENT }}>lose</span> ·
+            Your agent drives based on <span className="font-bold" style={{ color: ACCENT }}>trained behaviour</span> ·
             Winner earns <span className="text-white font-bold">ARENA rewards</span>
           </p>
-
-          {/* Progress bar */}
           <div className="w-full max-w-sm">
             <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
               <div
                 className="h-full rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${meta.accentColor}, #8b6dff)` }}
+                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${ACCENT}, #8b6dff)` }}
               />
             </div>
           </div>
-
-          {/* Sync text */}
           <div className="flex items-center gap-2">
-            <span
-              className="inline-block h-2 w-2 rounded-full animate-pulse"
-              style={{ background: meta.accentColor }}
-            />
+            <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ background: ACCENT }} />
             <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
               Syncing with 0G Network...
             </span>
@@ -432,12 +401,11 @@ function UnityLoadingScreen({
   opponent: AiArenaAgent | null;
   mode: string;
 }) {
-  const myColor = myAgent ? clanColor(myAgent.clan) : "#8b6dff";
+  const myColor  = myAgent  ? clanColor(myAgent.clan)  : "#8b6dff";
   const oppColor = opponent ? clanColor(opponent.clan) : "#06b6d4";
 
   return (
     <div className="absolute inset-0 z-20 overflow-hidden">
-      {/* ── Background video ── */}
       <video
         src="/videos/SC_2-3.mp4"
         autoPlay
@@ -447,33 +415,24 @@ function UnityLoadingScreen({
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.55 }}
       />
-
-      {/* ── Dark + blur overlay (sits between video and cards) ── */}
       <div
         className="absolute inset-0"
         style={{ background: "linear-gradient(to bottom, rgba(3,7,16,0.55) 0%, rgba(3,7,16,0.45) 50%, rgba(3,7,16,0.75) 100%)", backdropFilter: "blur(2px)" }}
       />
 
-      {/* ── Content ── */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
-
-        {/* Title */}
         <div className="text-center">
           <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
-            ⚡ &nbsp;AI Battle&nbsp; ⚡
+            🚗 &nbsp;Highway Hustle&nbsp; 🏁
           </div>
           <div className="font-display text-3xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)] sm:text-4xl">
             AI ARENA
           </div>
         </div>
 
-        {/* Agent cards + VS */}
         <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
-
-          {/* My agent */}
           <AgentLoadingCard agent={myAgent} side="left" />
 
-          {/* VS center — single column, perfectly centred */}
           <div className="flex flex-col items-center gap-2 shrink-0">
             <div
               className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
@@ -490,14 +449,12 @@ function UnityLoadingScreen({
             </span>
           </div>
 
-          {/* Opponent */}
           <AgentLoadingCard agent={opponent} side="right" />
         </div>
 
-        {/* Progress bar */}
         <div className="w-[420px] max-w-[90vw]">
           <div className="flex justify-between font-tech text-[10px] text-white/40 mb-2 uppercase tracking-wider">
-            <span>{progress < 100 ? "Loading Arena…" : "Launching…"}</span>
+            <span>{progress < 100 ? "Loading Race…" : "Launching…"}</span>
             <span className="font-mono">{progress}%</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
@@ -513,7 +470,7 @@ function UnityLoadingScreen({
           <p className="text-center font-mono text-[9px] text-white/25 mt-2">
             {progress === 0
               ? "Connecting to 0G network…"
-              : `Loading game assets — ${progress}%`}
+              : `Loading race assets — ${progress}%`}
           </p>
         </div>
       </div>
@@ -522,10 +479,9 @@ function UnityLoadingScreen({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Existing sub-components (unchanged)
+// Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Single agent card inside the top banner */
 function AgentCard({
   agent,
   side,
@@ -556,19 +512,10 @@ function AgentCard({
   const inner = (
     <>
       <div className="relative shrink-0">
-        <div
-          className="absolute -inset-1.5 rounded-xl blur-md opacity-50"
-          style={{ background: `${color}40` }}
-        />
-        <ArenaAgentThumbnail
-          agent={agent}
-          className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15"
-        />
+        <div className="absolute -inset-1.5 rounded-xl blur-md opacity-50" style={{ background: `${color}40` }} />
+        <ArenaAgentThumbnail agent={agent} className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15" />
         {isWinner && (
-          <Crown
-            className="absolute -top-2 -right-2 h-4 w-4 drop-shadow-lg"
-            style={{ color: "#fbbf24" }}
-          />
+          <Crown className="absolute -top-2 -right-2 h-4 w-4 drop-shadow-lg" style={{ color: "#fbbf24" }} />
         )}
       </div>
 
@@ -579,30 +526,16 @@ function AgentCard({
         <div className="text-[10px] font-mono uppercase tracking-wider text-white/45 mt-0.5">
           {agent.archetype}
         </div>
-        <div
-          className="flex items-center gap-2 mt-1.5"
-          style={{ justifyContent: isRight ? "flex-end" : "flex-start" }}
-        >
-          <span
-            className="font-tech text-sm font-bold"
-            style={{ color }}
-          >
+        <div className="flex items-center gap-2 mt-1.5" style={{ justifyContent: isRight ? "flex-end" : "flex-start" }}>
+          <span className="font-tech text-sm font-bold" style={{ color }}>
             {agent.eloRating.toLocaleString()}
           </span>
           <span className="text-[9px] text-white/30 font-tech">ELO</span>
           {rankInfo && (
-            <img
-              src={rankInfo.image}
-              alt={rankInfo.name}
-              title={rankInfo.name}
-              className="h-5 w-5 object-contain"
-            />
+            <img src={rankInfo.image} alt={rankInfo.name} title={rankInfo.name} className="h-5 w-5 object-contain" />
           )}
         </div>
-        <div
-          className="flex items-center gap-2 mt-0.5"
-          style={{ justifyContent: isRight ? "flex-end" : "flex-start" }}
-        >
+        <div className="flex items-center gap-2 mt-0.5" style={{ justifyContent: isRight ? "flex-end" : "flex-start" }}>
           <span className="text-[9px] text-white/30 font-tech">{agent.wins}W</span>
           <span className="text-[9px] text-white/20">·</span>
           <span className="text-[9px] text-white/30 font-tech">{agent.losses}L</span>
@@ -622,7 +555,6 @@ function AgentCard({
   );
 }
 
-/** Top banner: both agents + VS center */
 function AgentBanner({
   myAgent,
   opponent,
@@ -637,8 +569,8 @@ function AgentBanner({
   mode: string;
 }) {
   const result = battle?.result;
-  const myId = myAgent?.id;
-  const myWon = result?.winnerId === myId;
+  const myId   = myAgent?.id;
+  const myWon  = result?.winnerId === myId;
   const oppWon =
     result?.loserId !== myId && result?.winnerId !== myId
       ? null
@@ -672,12 +604,8 @@ function AgentBanner({
               <Swords className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
           </div>
-          <span className="font-display text-base sm:text-xl font-black mt-1 text-gradient">
-            VS
-          </span>
-          <span className="font-tech text-[8px] uppercase tracking-widest text-white/30 mt-0.5">
-            {mode}
-          </span>
+          <span className="font-display text-base sm:text-xl font-black mt-1 text-gradient">VS</span>
+          <span className="font-tech text-[8px] uppercase tracking-widest text-white/30 mt-0.5">{mode}</span>
         </div>
 
         <AgentCard
@@ -691,7 +619,6 @@ function AgentBanner({
   );
 }
 
-/** Result card shown in the chat panel after battle ends */
 function ResultCard({
   result,
   battle,
@@ -721,12 +648,10 @@ function ResultCard({
       : null;
   const iWon = result.winnerId === myAgentId;
 
-  const zgLink = battle.id
-    ? `https://storagescan.0g.ai/tx/${battle.id}`
-    : null;
+  const zgLink = battle.id ? `https://storagescan.0g.ai/tx/${battle.id}` : null;
 
   const winnerColor = winner ? clanColor(winner.clan) : "#fbbf24";
-  const loserColor = loser ? clanColor(loser.clan) : "#6b7280";
+  const loserColor  = loser  ? clanColor(loser.clan)  : "#6b7280";
 
   return (
     <div className="mx-2 my-1 overflow-hidden rounded-xl border border-white/10 bg-[#0d1020] shadow-[0_0_32px_rgba(0,0,0,0.6)]">
@@ -737,32 +662,19 @@ function ResultCard({
           borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        <Trophy
-          className="h-3.5 w-3.5 shrink-0"
-          style={{ color: winnerColor }}
-        />
-        <span
-          className="font-tech text-[10px] uppercase tracking-widest font-bold"
-          style={{ color: winnerColor }}
-        >
+        <Trophy className="h-3.5 w-3.5 shrink-0" style={{ color: winnerColor }} />
+        <span className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: winnerColor }}>
           {iWon ? "VICTORY" : "DEFEAT"}
         </span>
-        <span className="ml-auto font-mono text-[9px] text-white/25">
-          {shortId(battle.id)}
-        </span>
+        <span className="ml-auto font-mono text-[9px] text-white/25">{shortId(battle.id)}</span>
       </div>
 
       <div className="px-3 py-3 space-y-2">
         {winner && (
           <div className="flex items-center gap-2">
             <Crown className="h-3 w-3 shrink-0 text-yellow-400" />
-            <span className="font-tech text-[10px] text-white/40 uppercase">
-              Winner
-            </span>
-            <span
-              className="font-tech text-[11px] font-bold ml-auto truncate max-w-[100px]"
-              style={{ color: winnerColor }}
-            >
+            <span className="font-tech text-[10px] text-white/40 uppercase">Winner</span>
+            <span className="font-tech text-[11px] font-bold ml-auto truncate max-w-[100px]" style={{ color: winnerColor }}>
               {winner.name}
             </span>
             {result.eloChange?.[winner.id] != null && (
@@ -776,13 +688,8 @@ function ResultCard({
         {loser && (
           <div className="flex items-center gap-2">
             <Shield className="h-3 w-3 shrink-0 text-white/25" />
-            <span className="font-tech text-[10px] text-white/40 uppercase">
-              Loser
-            </span>
-            <span
-              className="font-tech text-[11px] font-bold ml-auto truncate max-w-[100px]"
-              style={{ color: loserColor }}
-            >
+            <span className="font-tech text-[10px] text-white/40 uppercase">Loser</span>
+            <span className="font-tech text-[11px] font-bold ml-auto truncate max-w-[100px]" style={{ color: loserColor }}>
               {loser.name}
             </span>
             {result.eloChange?.[loser.id] != null && (
@@ -796,31 +703,19 @@ function ResultCard({
         <div className="flex items-center gap-3 pt-1.5 border-t border-white/6">
           {result.rounds != null && (
             <div className="text-center">
-              <div className="font-display text-sm font-bold text-white/80">
-                {result.rounds}
-              </div>
-              <div className="font-tech text-[8px] uppercase text-white/30">
-                Rounds
-              </div>
+              <div className="font-display text-sm font-bold text-white/80">{result.rounds}</div>
+              <div className="font-tech text-[8px] uppercase text-white/30">Rounds</div>
             </div>
           )}
           {Array.isArray(result.log) && (
             <div className="text-center">
-              <div className="font-display text-sm font-bold text-white/80">
-                {result.log.length}
-              </div>
-              <div className="font-tech text-[8px] uppercase text-white/30">
-                Actions
-              </div>
+              <div className="font-display text-sm font-bold text-white/80">{result.log.length}</div>
+              <div className="font-tech text-[8px] uppercase text-white/30">Actions</div>
             </div>
           )}
           <div className="text-center">
-            <div className="font-display text-sm font-bold text-white/80">
-              {battle.status}
-            </div>
-            <div className="font-tech text-[8px] uppercase text-white/30">
-              Status
-            </div>
+            <div className="font-display text-sm font-bold text-white/80">{battle.status}</div>
+            <div className="font-tech text-[8px] uppercase text-white/30">Status</div>
           </div>
         </div>
       </div>
@@ -837,9 +732,7 @@ function ResultCard({
             View on 0G
           </a>
         ) : (
-          <span className="text-[9px] font-mono text-white/20">
-            Stored on 0G
-          </span>
+          <span className="text-[9px] font-mono text-white/20">Stored on 0G</span>
         )}
         <button
           type="button"
@@ -860,7 +753,6 @@ function ResultCard({
   );
 }
 
-/** Individual chat message row */
 function ChatBubble({
   msg,
   onShareMoment,
@@ -868,10 +760,7 @@ function ChatBubble({
   msg: ChatMsg;
   onShareMoment?: () => void;
 }) {
-  const time = msg.ts.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const time = msg.ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   if (msg.kind === "result") {
     return (
@@ -891,9 +780,7 @@ function ChatBubble({
   if (msg.kind === "system") {
     return (
       <div className="px-3 py-1">
-        <span className="text-[10px] text-white/30 italic font-mono">
-          {msg.text}
-        </span>
+        <span className="text-[10px] text-white/30 italic font-mono">{msg.text}</span>
       </div>
     );
   }
@@ -901,24 +788,16 @@ function ChatBubble({
   return (
     <div className="px-3 py-1 hover:bg-white/[0.025] transition">
       <div className="flex items-baseline gap-1.5 flex-wrap">
-        <span
-          className="font-tech text-[10px] font-bold shrink-0"
-          style={{ color: msg.color }}
-        >
+        <span className="font-tech text-[10px] font-bold shrink-0" style={{ color: msg.color }}>
           {msg.agentName}
         </span>
-        <span className="font-mono text-[8px] text-white/20 shrink-0">
-          {time}
-        </span>
+        <span className="font-mono text-[8px] text-white/20 shrink-0">{time}</span>
       </div>
-      <p className="text-[11px] text-white/75 leading-snug mt-0.5 break-words">
-        {msg.text}
-      </p>
+      <p className="text-[11px] text-white/75 leading-snug mt-0.5 break-words">{msg.text}</p>
     </div>
   );
 }
 
-/** Right-side live chat panel */
 function GameChatPanel({
   messages,
   chatInput,
@@ -949,14 +828,10 @@ function GameChatPanel({
     <div className="flex h-[460px] w-full shrink-0 flex-col border-t border-white/8 bg-[#04080f]/90 md:h-auto md:w-[300px] md:border-l md:border-t-0 lg:w-[320px]">
       <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2.5">
         <MessageSquare className="h-3.5 w-3.5 text-primary/70" />
-        <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">
-          LIVE CHAT
-        </span>
+        <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">LIVE CHAT</span>
         <div className="ml-auto flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-mono text-[9px] text-white/30">
-            {observerCount} watching
-          </span>
+          <span className="font-mono text-[9px] text-white/30">{observerCount} watching</span>
         </div>
       </div>
 
@@ -974,9 +849,7 @@ function GameChatPanel({
             value={chatInput}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={handleKey}
-            placeholder={
-              myAgent ? `Chat as ${myAgent.name}…` : "Send a message…"
-            }
+            placeholder={myAgent ? `Chat as ${myAgent.name}…` : "Send a message…"}
             maxLength={200}
             className="flex-1 min-w-0 bg-transparent text-[11px] text-white/80 placeholder:text-white/25 outline-none"
           />
@@ -998,28 +871,26 @@ function GameChatPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Battle Result Overlay — shown when Unity fires arenaBattleEnd
+// Battle Result Overlay — shown when Unity fires hrDuelEnd
+// Distance-based layout (no HP bars)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function BattleResultOverlay({
   result,
+  myAgentId,
   commentary,
   storageHashes,
   onHome,
   onShareMoment,
 }: {
-  result: UnityBattleResult;
+  result: HRDuelResult;
+  myAgentId: string | null;
   commentary?: string | null;
   storageHashes?: string[];
   onHome: () => void;
   onShareMoment?: () => void;
 }) {
-  const winnerColor = clanColor(result.winnerClan);
-  const loserColor  = clanColor(result.loserClan);
-
-  const durationMin = Math.floor(result.durationSeconds / 60);
-  const durationSec = result.durationSeconds % 60;
-  const durationStr = `${String(durationMin).padStart(2, "0")}:${String(durationSec).padStart(2, "0")}`;
+  const myAgentWon = result.winnerId === myAgentId;
 
   return (
     <div
@@ -1034,17 +905,16 @@ function BattleResultOverlay({
         <div
           className="relative px-8 pt-8 pb-5 text-center overflow-hidden"
           style={{
-            background: result.myAgentWon
-              ? `linear-gradient(135deg, ${winnerColor}20 0%, transparent 60%)`
+            background: myAgentWon
+              ? "linear-gradient(135deg, rgba(251,191,36,0.15) 0%, transparent 60%)"
               : "linear-gradient(135deg, rgba(239,68,68,0.10) 0%, transparent 60%)",
           }}
         >
-          {/* top accent line */}
           <div
             className="absolute inset-x-0 top-0 h-px"
             style={{
-              background: result.myAgentWon
-                ? `linear-gradient(90deg, transparent, ${winnerColor}, transparent)`
+              background: myAgentWon
+                ? "linear-gradient(90deg, transparent, #fbbf24, transparent)"
                 : "linear-gradient(90deg, transparent, #ef4444, transparent)",
             }}
           />
@@ -1052,25 +922,24 @@ function BattleResultOverlay({
           <div
             className="font-display text-5xl font-black tracking-[0.08em]"
             style={{
-              color: result.myAgentWon ? winnerColor : "#ef4444",
-              textShadow: `0 0 40px ${result.myAgentWon ? winnerColor : "#ef4444"}88`,
+              color: myAgentWon ? "#fbbf24" : "#ef4444",
+              textShadow: `0 0 40px ${myAgentWon ? "#fbbf24" : "#ef4444"}88`,
             }}
           >
-            {result.myAgentWon ? "VICTORY" : "DEFEAT"}
+            {myAgentWon ? "WINNER!" : "CRASHED"}
           </div>
 
           <div className="flex items-center justify-center gap-3 mt-3">
             <span
               className="rounded-full border px-3 py-0.5 font-tech text-[9px] uppercase tracking-widest"
               style={{
-                borderColor: result.myAgentWon ? `${winnerColor}50` : "rgba(239,68,68,0.4)",
-                color: result.myAgentWon ? winnerColor : "#f87171",
-                background: result.myAgentWon ? `${winnerColor}12` : "rgba(239,68,68,0.08)",
+                borderColor: myAgentWon ? "rgba(251,191,36,0.4)" : "rgba(239,68,68,0.4)",
+                color: myAgentWon ? "#fbbf24" : "#f87171",
+                background: myAgentWon ? "rgba(251,191,36,0.08)" : "rgba(239,68,68,0.08)",
               }}
             >
-              {result.endReason === "timeout" ? "⏱ Timeout" : "💀 KO"}
+              🚗 Highway Duel
             </span>
-            <span className="font-mono text-[10px] text-white/25">{durationStr}</span>
           </div>
         </div>
 
@@ -1079,44 +948,20 @@ function BattleResultOverlay({
           {/* Winner */}
           <div
             className="rounded-2xl border p-4"
-            style={{ borderColor: `${winnerColor}35`, background: `${winnerColor}09` }}
+            style={{ borderColor: "rgba(251,191,36,0.35)", background: "rgba(251,191,36,0.06)" }}
           >
             <div className="flex items-center gap-1.5 mb-3">
               <Crown className="h-3 w-3 text-yellow-400 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
-                Winner
-              </span>
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">Winner</span>
             </div>
-            <div
-              className="font-display text-sm font-bold leading-tight truncate"
-              style={{ color: winnerColor }}
-            >
+            <div className="font-display text-sm font-bold leading-tight truncate text-yellow-300">
               {result.winnerName}
             </div>
-            <div className="font-tech text-[9px] text-white/35 uppercase tracking-wider mt-0.5">
-              {result.winnerArchetype}
-            </div>
-            {result.winnerClan && (
-              <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-1"
-                style={{ color: winnerColor }}
-              >
-                {result.winnerClan}
-              </div>
-            )}
             <div className="mt-3 space-y-1.5">
-              <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/30">HP</span>
-                <span style={{ color: winnerColor }}>{result.winnerHpPercent}%</span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${result.winnerHpPercent}%`, background: winnerColor }}
-                />
-              </div>
-              <div className="font-mono text-[9px] text-white/25 text-right">
-                {result.winnerElo.toLocaleString()} ELO
+              <div className="flex items-center gap-1.5 font-mono text-[9px]">
+                <Car className="h-3 w-3 text-yellow-400/60 shrink-0" />
+                <span className="text-white/30">Distance</span>
+                <span className="ml-auto font-bold text-yellow-400">{result.winnerDistance.toLocaleString()} m</span>
               </div>
             </div>
           </div>
@@ -1128,37 +973,16 @@ function BattleResultOverlay({
           >
             <div className="flex items-center gap-1.5 mb-3">
               <Shield className="h-3 w-3 text-white/20 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
-                Loser
-              </span>
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">Crashed</span>
             </div>
             <div className="font-display text-sm font-bold leading-tight truncate text-white/45">
               {result.loserName}
             </div>
-            <div className="font-tech text-[9px] text-white/25 uppercase tracking-wider mt-0.5">
-              {result.loserArchetype}
-            </div>
-            {result.loserClan && (
-              <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-1"
-                style={{ color: `${loserColor}60` }}
-              >
-                {result.loserClan}
-              </div>
-            )}
             <div className="mt-3 space-y-1.5">
-              <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/30">HP</span>
-                <span className="text-white/30">{result.loserHpPercent}%</span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
-                <div
-                  className="h-full rounded-full bg-white/20"
-                  style={{ width: `${result.loserHpPercent}%` }}
-                />
-              </div>
-              <div className="font-mono text-[9px] text-white/25 text-right">
-                {result.loserElo.toLocaleString()} ELO
+              <div className="flex items-center gap-1.5 font-mono text-[9px]">
+                <Car className="h-3 w-3 text-white/20 shrink-0" />
+                <span className="text-white/30">Distance</span>
+                <span className="ml-auto text-white/30">{result.loserDistance.toLocaleString()} m</span>
               </div>
             </div>
           </div>
@@ -1195,7 +1019,6 @@ function BattleResultOverlay({
           </div>
         )}
 
-        {/* ── Loading commentary indicator (while waiting for 0G Compute) ── */}
         {!commentary && (
           <div className="mx-6 mb-3 flex items-center gap-2">
             <Loader2 className="h-3 w-3 animate-spin text-white/15 shrink-0" />
@@ -1221,7 +1044,6 @@ function BattleResultOverlay({
             Share with Kult Moments
           </button>
 
-          {/* Home Page */}
           <button
             type="button"
             onClick={onHome}
@@ -1240,21 +1062,21 @@ function BattleResultOverlay({
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function ArenaGamePage() {
+export default function HighwayHustleGamePage() {
   const { battleId } = useParams<{ battleId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const myAgentId = searchParams.get("myAgentId");
+  const myAgentId      = searchParams.get("myAgentId");
   const opponentIdParam = searchParams.get("opponentId");
-  const mode = searchParams.get("mode") ?? "RANKED";
+  const mode           = searchParams.get("mode") ?? "RANKED";
 
   // ── State ────────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
       id: uid(),
       kind: "system",
-      text: "Arena lobby opened. Loading battle…",
+      text: "Arena lobby opened. Loading race…",
       ts: new Date(),
     },
   ]);
@@ -1262,40 +1084,32 @@ export default function ArenaGamePage() {
   const [gamePhase, setGamePhase] = useState<GamePhase>("live");
   const [observerCount] = useState(() => Math.floor(Math.random() * 80) + 12);
 
-  // Unity loading state
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [unityLoaded, setUnityLoaded] = useState(false);
   const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
 
-  // Battle result — populated when Unity fires arenaBattleEnd CustomEvent
-  const [battleResult, setBattleResult] = useState<UnityBattleResult | null>(null);
-  // 0G Compute commentary — generated after battle ends
+  // Battle result — populated when Unity fires hrDuelEnd CustomEvent
+  const [battleResult, setBattleResult] = useState<HRDuelResult | null>(null);
   const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
-  // 0G Storage root hashes from memory-service
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
-  // Pre-match overlay — shown when Unity fires arenaMultiplayerStart
-  const [preMatchData, setPreMatchData] = useState<{
-    mapId: string;
-    myAgentName: string;
-    opponentName: string;
-  } | null>(null);
-  const [preMatchCountdown, setPreMatchCountdown] = useState(0);
+  // Pre-match overlay — auto-shown when Unity finishes loading
+  const [showPreMatch, setShowPreMatch] = useState(false);
+  const [preMatchCountdown, setPreMatchCountdown] = useState(PRE_MATCH_DURATION);
 
-  // Refs
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef        = useRef<HTMLCanvasElement>(null);
   const unityInstanceRef = useRef<any>(null);
-  const unityLoadingRef = useRef(false); // guard against double-load
-  const prevStatusRef = useRef<string | null>(null);
-  const resultPostedRef = useRef(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const unityLoadingRef  = useRef(false);
+  const prevStatusRef    = useRef<string | null>(null);
+  const resultPostedRef  = useRef(false);
+  const chatEndRef       = useRef<HTMLDivElement>(null);
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
   const battleQ = useQuery({
-    queryKey: ["arenaGame", "battle", battleId],
-    queryFn: () => aiArenaGatewayApi.getBattle(battleId!),
-    enabled: !!battleId,
+    queryKey: ["hhGame", "battle", battleId],
+    queryFn:  () => aiArenaGatewayApi.getBattle(battleId!),
+    enabled:  !!battleId,
     refetchInterval: (q) => {
       const s = q.state.data?.battle?.status;
       if (!s || s === "PENDING" || s === "INITIALIZING" || s === "IN_PROGRESS")
@@ -1307,9 +1121,9 @@ export default function ArenaGamePage() {
   });
 
   const myAgentQ = useQuery({
-    queryKey: ["arenaGame", "myAgent", myAgentId],
-    queryFn: () => aiArenaGatewayApi.getAgentById(myAgentId!),
-    enabled: !!myAgentId,
+    queryKey: ["hhGame", "myAgent", myAgentId],
+    queryFn:  () => aiArenaGatewayApi.getAgentById(myAgentId!),
+    enabled:  !!myAgentId,
     staleTime: 60_000,
     retry: 1,
   });
@@ -1320,38 +1134,27 @@ export default function ArenaGamePage() {
     opponentIdParam ?? battle?.agentIds?.find((id) => id !== myAgentId) ?? null;
 
   const opponentQ = useQuery({
-    queryKey: ["arenaGame", "opponent", resolvedOpponentId],
-    queryFn: () => aiArenaGatewayApi.getAgentById(resolvedOpponentId!),
-    enabled: !!resolvedOpponentId,
+    queryKey: ["hhGame", "opponent", resolvedOpponentId],
+    queryFn:  () => aiArenaGatewayApi.getAgentById(resolvedOpponentId!),
+    enabled:  !!resolvedOpponentId,
     staleTime: 60_000,
     retry: 1,
   });
 
-  const myAgent = myAgentQ.data ?? null;
+  const myAgent  = myAgentQ.data ?? null;
   const opponent = opponentQ.data ?? null;
 
   // ── Unity loading ─────────────────────────────────────────────────────────
 
-  /**
-   * Diagnose R2 CORS setup before handing off to Unity.
-   *
-   * Returns:
-   *   'ok'          – CORS headers present, files accessible
-   *   'cors'        – file exists but no CORS headers (R2 bucket not configured)
-   *   'not-found'   – file not reachable at all (wrong URL / private bucket)
-   */
   const diagnoseBuildFiles = async (buildUrl: string): Promise<'ok' | 'cors' | 'not-found'> => {
-    const testUrl = `${buildUrl}/WarzoneV4.data`;
+    const testUrl = `${buildUrl}/HighwayHustle.data`;
     try {
-      // First try with strict CORS — what Unity will actually do
       const res = await fetch(testUrl, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
       if (res.ok || res.status === 206) return 'ok';
       return 'not-found';
     } catch (_corsErr) {
-      // CORS blocked — confirm the file actually exists with no-cors (opaque response)
       try {
         await fetch(testUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
-        // Got here = file exists but R2 didn't send Access-Control-Allow-Origin
         return 'cors';
       } catch (_netErr) {
         return 'not-found';
@@ -1359,73 +1162,54 @@ export default function ArenaGamePage() {
     }
   };
 
-  /**
-   * Banner function passed to Unity — surfaces Unity-internal warnings/errors
-   * as console logs and toast notifications.
-   */
   const unityShowBanner = (msg: string, type: 'error' | 'warning' | string) => {
-    console.log(`[Unity ${type}]`, msg);
-    if (type === 'error') {
-    } else if (type === 'warning') {
-      console.warn('[Unity warning]', msg);
-    }
+    console.log(`[HH ${type}]`, msg);
+    if (type === 'warning') console.warn('[HH warning]', msg);
   };
 
-  // Load Unity once both agents are resolved (so we can write full data to localStorage)
   useEffect(() => {
     if (!battleId || !UNITY_BASE_URL) return;
-    if (myAgentQ.isLoading || opponentQ.isLoading) return;   // wait for agent data
+    if (myAgentQ.isLoading || opponentQ.isLoading) return;
     if (unityLoadingRef.current || !canvasRef.current) return;
 
     unityLoadingRef.current = true;
 
-    // ── Store all battle/agent data in localStorage so Unity can read it ──
-    // (same pattern ZeroDash uses for JWT: localStorage → SendMessage after load)
-    const arenaPayload = {
+    // Write duel payload for HR_SessionBootstrap
+    const hrPayload = {
       battleId,
-      myAgentId:         myAgentId ?? '',
-      myAgentName:       myAgent?.name ?? '',
-      myAgentArchetype:  myAgent?.archetype ?? '',
-      myAgentElo:        myAgent?.eloRating ?? 1000,
-      myAgentClan:       myAgent?.clan ?? '',
-      opponentId:        resolvedOpponentId ?? '',
-      opponentName:      opponent?.name ?? '',
-      opponentArchetype: opponent?.archetype ?? '',
-      opponentElo:       opponent?.eloRating ?? 1000,
-      opponentClan:      opponent?.clan ?? '',
+      carAId:   myAgentId             ?? '',
+      carAName: myAgent?.name          ?? '',
+      carAElo:  myAgent?.eloRating     ?? 1000,
+      carBId:   resolvedOpponentId     ?? '',
+      carBName: opponent?.name         ?? '',
+      carBElo:  opponent?.eloRating    ?? 1000,
       mode,
     };
-    localStorage.setItem('arenaBattlePayload', JSON.stringify(arenaPayload));
+    localStorage.setItem('hrDuelPayload', JSON.stringify(hrPayload));
 
-    const buildUrl = `${UNITY_BASE_URL}/Arena1`;
+    const buildUrl = `${UNITY_BASE_URL}/Arena2`;
 
     const script = document.createElement("script");
-    script.src = `${buildUrl}/WarzoneV4.loader.js`;
+    script.src = `${buildUrl}/HighwayHustle.loader.js`;
 
     script.onload = async () => {
-      // Guard — loader might fire after unmount
       if (!canvasRef.current) return;
 
       if (typeof (window as any).createUnityInstance !== 'function') {
-        console.error("[Arena] createUnityInstance not found after loader script");
+        console.error("[HH] createUnityInstance not found after loader script");
         unityLoadingRef.current = false;
         return;
       }
 
-      // ── CORS preflight — diagnose R2 bucket BEFORE handing off to Unity ──
       const diagnosis = await diagnoseBuildFiles(buildUrl);
       if (diagnosis === 'cors') {
-        const msg =
-          "R2 CORS not configured. Fix: Cloudflare R2 dashboard → your bucket → " +
-          "Settings → CORS Policy → add rule: AllowedOrigins=[\"*\"], " +
-          "AllowedMethods=[\"GET\",\"HEAD\"], MaxAgeSeconds=86400";
-        console.error("[Arena]", msg);
+        console.error("[HH] R2 CORS not configured.");
         setUnityLoadError('cors');
         unityLoadingRef.current = false;
         return;
       }
       if (diagnosis === 'not-found') {
-        console.error("[Arena] Build files not reachable at:", buildUrl);
+        console.error("[HH] Build files not reachable at:", buildUrl);
         setUnityLoadError('not-found');
         unityLoadingRef.current = false;
         return;
@@ -1436,7 +1220,7 @@ export default function ArenaGamePage() {
       // show a soft retry rather than the misleading CORS error UI.
       const stuckTimer = setTimeout(() => {
         if (!unityInstanceRef.current) {
-          console.warn("[Arena] Unity stuck at 0% — R2 rate-limit stall, not CORS.");
+          console.warn("[HH] Unity stuck at 0% — R2 rate-limit stall, not CORS.");
           setUnityLoadError('slow');
         }
       }, 90_000);
@@ -1446,18 +1230,16 @@ export default function ArenaGamePage() {
           canvasRef.current,
           {
             arguments: [],
-            dataUrl:       `${buildUrl}/WarzoneV4.data`,
-            frameworkUrl:  `${buildUrl}/WarzoneV4.framework.js`,
-            codeUrl:       `${buildUrl}/WarzoneV4.wasm`,
+            dataUrl:          `${buildUrl}/HighwayHustle.data`,
+            frameworkUrl:     `${buildUrl}/HighwayHustle.framework.js`,
+            codeUrl:          `${buildUrl}/HighwayHustle.wasm`,
             streamingAssetsUrl: "StreamingAssets",
-            companyName:   "Kult Games",
-            productName:   "WarzoneV4",
-            productVersion: "1.0",
-            // ── Critical: prevents Unity from resizing the canvas
-            //    (omitting this causes the 0% stuck bug)
+            companyName:      "Kult Games",
+            productName:      "HighwayHustle",
+            productVersion:   "1.0",
             matchWebGLToCanvasSize: false,
             devicePixelRatio: 1,
-            showBanner: unityShowBanner,
+            showBanner:       unityShowBanner,
           },
           (progress: number) => {
             setLoadingProgress(Math.round(progress * 100));
@@ -1468,26 +1250,25 @@ export default function ArenaGamePage() {
         unityInstanceRef.current = instance;
         setUnityLoaded(true);
 
-        // Send battle data to Unity after 1500ms delay
-        // (same pattern as ZeroDash: give Unity time to finish internal boot)
+        // Send battleId after Unity boot
         setTimeout(() => {
           try {
             instance.SendMessage("GameManager", "SetBattleId", battleId ?? '');
-            console.log("[Arena] ✅ battleId sent to Unity");
+            console.log("[HH] ✅ battleId sent to Unity");
           } catch (err) {
-            console.warn("[Arena] SendMessage failed (Unity may not have GameManager):", err);
+            console.warn("[HH] SendMessage failed:", err);
           }
         }, 1500);
 
       } catch (err) {
         clearTimeout(stuckTimer);
-        console.error("[Arena] createUnityInstance failed:", err);
+        console.error("[HH] createUnityInstance failed:", err);
         unityLoadingRef.current = false;
       }
     };
 
     script.onerror = () => {
-      console.error("[Arena] Failed to load loader from:", script.src);
+      console.error("[HH] Failed to load loader from:", script.src);
       unityLoadingRef.current = false;
     };
 
@@ -1495,151 +1276,143 @@ export default function ArenaGamePage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battleId, myAgentQ.isLoading, opponentQ.isLoading]);
-  // ↑ intentionally omit myAgent/opponent — the guard ref means this only runs once,
-  //   but we read the latest values at execution time via the closure.
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (unityInstanceRef.current) {
         unityInstanceRef.current.Quit?.().catch(() => {});
         unityInstanceRef.current = null;
       }
-      localStorage.removeItem('arenaBattlePayload');
+      localStorage.removeItem('hrDuelPayload');
     };
   }, []);
 
-  // Listen for Unity's battle-end CustomEvent ("arenaBattleEnd")
-  // When received:
-  //   1. Show result popup immediately
-  //   2. POST /v1/battles/:id/end  (official result with playerStats)
-  //   3. POST /v1/inference/battle-commentary  (0G Compute AI commentator)
-  //   4. POST /v1/memory/:agentId/memory/episode  (store to 0G Storage for winner + loser)
+  // ── Listen for HR_DuelBridge hrDuelEnd event ──────────────────────────────
   useEffect(() => {
     const handler = async (e: Event) => {
-      const detail = (e as CustomEvent<UnityBattleResult>).detail;
+      const detail = (e as CustomEvent<HRDuelResult>).detail;
       if (!detail || typeof detail !== "object") return;
 
-      // 1. Show popup immediately — don't gate on API calls.
+      // 1. Show result overlay immediately
       setBattleResult(detail);
       setGamePhase("ended");
 
       const bid = detail.battleId;
       if (!bid) {
-        console.warn("[Arena] arenaBattleEnd — no battleId in payload, skipping API calls.");
+        console.warn("[HH] hrDuelEnd — no battleId in payload, skipping API calls.");
         return;
       }
 
-      // 2. Official result submission (ELO computed server-side, archived to 0G DA)
+      // 2. Official result submission
       try {
         await aiArenaGatewayApi.endBattle(bid, {
-          winnerId:    detail.winnerId,
-          loserId:     detail.loserId,
-          playerStats: detail.playerStats,
+          winnerId: detail.winnerId,
+          loserId:  detail.loserId,
+          playerStats: {
+            [detail.winnerId]: { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.winnerDistance },
+            [detail.loserId]:  { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.loserDistance },
+          },
         });
-        console.log("[Arena] ✅ endBattle submitted for:", bid);
+        console.log("[HH] ✅ endBattle submitted for:", bid);
       } catch (err) {
-        console.warn("[Arena] endBattle API failed (may already be ended):", err);
+        console.warn("[HH] endBattle API failed (may already be ended):", err);
       }
 
-      // ── Trait evolution + training (fire-and-forget, parallel) ──────────────
-      // These run async after the popup is visible. No await needed.
-      // Unity reads the updated traits on the NEXT match load via GET /v1/agents/:id.
-      const winnerStats = detail.playerStats?.[detail.winnerId];
-      const loserStats  = detail.playerStats?.[detail.loserId];
-
+      // ── Trait evolution (distance-based, fire-and-forget) ─────────────────
       void (async () => {
         try {
-          // Evolve winner traits
-          if (detail.winnerId && winnerStats) {
+          if (detail.winnerId) {
             await aiArenaGatewayApi.evolveAgentTraits(detail.winnerId, {
               outcome:         "WIN",
-              jumps:           winnerStats.jumps,
-              shotsAttempted:  winnerStats.shotsAttempted,
-              shotsConnected:  winnerStats.shotsConnected,
-              timesHit:        winnerStats.timesHit,
-              distanceCovered: winnerStats.distanceCovered,
-              durationSeconds: detail.durationSeconds,
+              jumps:           0,
+              shotsAttempted:  0,
+              shotsConnected:  0,
+              timesHit:        0,
+              distanceCovered: detail.winnerDistance,
+              durationSeconds: 0,
             });
-            console.log("[Arena] ✅ Winner traits evolved:", detail.winnerId);
+            console.log("[HH] ✅ Winner traits evolved:", detail.winnerId);
           }
-          // Evolve loser traits
-          if (detail.loserId && loserStats) {
+          if (detail.loserId) {
             await aiArenaGatewayApi.evolveAgentTraits(detail.loserId, {
               outcome:         "LOSS",
-              jumps:           loserStats.jumps,
-              shotsAttempted:  loserStats.shotsAttempted,
-              shotsConnected:  loserStats.shotsConnected,
-              timesHit:        loserStats.timesHit,
-              distanceCovered: loserStats.distanceCovered,
-              durationSeconds: detail.durationSeconds,
+              jumps:           0,
+              shotsAttempted:  0,
+              shotsConnected:  0,
+              timesHit:        0,
+              distanceCovered: detail.loserDistance,
+              durationSeconds: 0,
             });
-            console.log("[Arena] ✅ Loser traits evolved:", detail.loserId);
+            console.log("[HH] ✅ Loser traits evolved:", detail.loserId);
           }
         } catch (err) {
-          console.warn("[Arena] Trait evolution failed (non-fatal):", err);
+          console.warn("[HH] Trait evolution failed (non-fatal):", err);
         }
       })();
 
-      // Trigger LoRA training for both agents from this battle's data
+      // ── Training trigger (fire-and-forget) ───────────────────────────────
       void (async () => {
         try {
-          if (detail.winnerId && winnerStats) {
+          if (detail.winnerId) {
             await aiArenaGatewayApi.triggerTrainingFromBattle(detail.winnerId, {
-              ...winnerStats,
-              outcome:         "WIN",
-              durationSeconds: detail.durationSeconds,
+              jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0,
+              distanceCovered: detail.winnerDistance, outcome: "WIN", durationSeconds: 0,
             });
-            console.log("[Arena] ✅ Training job queued for winner:", detail.winnerId);
+            console.log("[HH] ✅ Training queued for winner:", detail.winnerId);
           }
-          if (detail.loserId && loserStats) {
+          if (detail.loserId) {
             await aiArenaGatewayApi.triggerTrainingFromBattle(detail.loserId, {
-              ...loserStats,
-              outcome:         "LOSS",
-              durationSeconds: detail.durationSeconds,
+              jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0,
+              distanceCovered: detail.loserDistance, outcome: "LOSS", durationSeconds: 0,
             });
-            console.log("[Arena] ✅ Training job queued for loser:", detail.loserId);
+            console.log("[HH] ✅ Training queued for loser:", detail.loserId);
           }
         } catch (err) {
-          console.warn("[Arena] Training trigger failed (non-fatal):", err);
+          console.warn("[HH] Training trigger failed (non-fatal):", err);
         }
       })();
 
-      // 3. 0G Compute commentary — ask the AI commentator for a paragraph
+      // 3. 0G Compute commentary
+      const winnerAgent = detail.winnerId === myAgentId ? myAgent : opponent;
+      const loserAgent  = detail.loserId  === myAgentId ? myAgent : opponent;
+
       let commentary = "";
       try {
         const commentaryRes = await aiArenaGatewayApi.generateBattleCommentary({
           battleId:        bid,
           winnerName:      detail.winnerName,
-          winnerArchetype: detail.winnerArchetype,
-          winnerClan:      detail.winnerClan,
-          winnerElo:       detail.winnerElo,
-          winnerHpPercent: detail.winnerHpPercent,
+          winnerArchetype: winnerAgent?.archetype ?? "",
+          winnerClan:      winnerAgent?.clan      ?? "",
+          winnerElo:       winnerAgent?.eloRating ?? 0,
+          winnerHpPercent: 100,
           loserName:       detail.loserName,
-          loserArchetype:  detail.loserArchetype,
-          loserClan:       detail.loserClan,
-          loserElo:        detail.loserElo,
-          loserHpPercent:  detail.loserHpPercent,
-          durationSeconds: detail.durationSeconds,
-          endReason:       detail.endReason,
-          playerStats:     detail.playerStats,
+          loserArchetype:  loserAgent?.archetype  ?? "",
+          loserClan:       loserAgent?.clan       ?? "",
+          loserElo:        loserAgent?.eloRating  ?? 0,
+          loserHpPercent:  0,
+          durationSeconds: 0,
+          endReason:       "highway-hustle-crash",
+          gameName:        "Highway Hustle",
+          playerStats: {
+            [detail.winnerId]: { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.winnerDistance },
+            [detail.loserId]:  { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: detail.loserDistance },
+          },
         });
         commentary = commentaryRes.commentary ?? "";
         if (commentary) {
           setBattleCommentary(commentary);
-          console.log("[Arena] ✅ 0G Compute commentary generated:", commentary.slice(0, 60), "…");
+          console.log("[HH] ✅ 0G commentary:", commentary.slice(0, 60), "…");
         }
       } catch (err) {
-        console.warn("[Arena] Commentary generation failed:", err);
+        console.warn("[HH] Commentary generation failed:", err);
       }
 
-      // 4. Store battle memory for winner + loser on 0G Storage via memory-service
+      // 4. Store battle memory on 0G Storage
       const memContent = commentary ||
-        `${detail.winnerName} defeated ${detail.loserName} in a ${detail.durationSeconds}s clash (${detail.endReason}).`;
+        `${detail.winnerName} survived ${detail.winnerDistance}m; ${detail.loserName} crashed at ${detail.loserDistance}m.`;
 
       const hashes: string[] = [];
 
-      // Winner memory
       if (detail.winnerId) {
         try {
           const winRes = await aiArenaGatewayApi.storeBattleMemory(detail.winnerId, {
@@ -1649,14 +1422,13 @@ export default function ArenaGamePage() {
           });
           if (winRes.snapshotRootHash) {
             hashes.push(winRes.snapshotRootHash);
-            console.log("[Arena] ✅ Winner memory stored, 0G hash:", winRes.snapshotRootHash);
+            console.log("[HH] ✅ Winner memory stored:", winRes.snapshotRootHash);
           }
         } catch (err) {
-          console.warn("[Arena] Winner memory storage failed:", err);
+          console.warn("[HH] Winner memory storage failed:", err);
         }
       }
 
-      // Loser memory
       if (detail.loserId) {
         try {
           const loseRes = await aiArenaGatewayApi.storeBattleMemory(detail.loserId, {
@@ -1666,56 +1438,38 @@ export default function ArenaGamePage() {
           });
           if (loseRes.snapshotRootHash) {
             hashes.push(loseRes.snapshotRootHash);
-            console.log("[Arena] ✅ Loser memory stored, 0G hash:", loseRes.snapshotRootHash);
+            console.log("[HH] ✅ Loser memory stored:", loseRes.snapshotRootHash);
           }
         } catch (err) {
-          console.warn("[Arena] Loser memory storage failed:", err);
+          console.warn("[HH] Loser memory storage failed:", err);
         }
       }
 
       if (hashes.length) setMemoryRootHashes(hashes);
     };
 
-    window.addEventListener("arenaBattleEnd", handler);
-    return () => window.removeEventListener("arenaBattleEnd", handler);
+    window.addEventListener("hrDuelEnd", handler);
+    return () => window.removeEventListener("hrDuelEnd", handler);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Pre-match overlay: listen for Unity's arenaMultiplayerStart event ─────
+  // ── Pre-match overlay — triggers automatically when Unity finishes loading ──
   useEffect(() => {
-    const MAP_DURATIONS: Record<string, number> = { "1": 10, "2": 15, "3": 17 };
+    if (!unityLoaded) return;
+    setPreMatchCountdown(PRE_MATCH_DURATION);
+    setShowPreMatch(true);
+  }, [unityLoaded]);
 
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as {
-        mapId?: string;
-        myAgentName?: string;
-        opponentName?: string;
-      };
-      const mapId = (detail?.mapId ?? "1").charAt(0);
-      const duration = MAP_DURATIONS[mapId] ?? 10;
-      setPreMatchData({
-        mapId,
-        myAgentName: detail?.myAgentName ?? "",
-        opponentName: detail?.opponentName ?? "",
-      });
-      setPreMatchCountdown(duration);
-    };
-
-    window.addEventListener("arenaMultiplayerStart", handler);
-    return () => window.removeEventListener("arenaMultiplayerStart", handler);
-  }, []);
-
-  // Countdown tick — each second, decrement; at 0, hide the overlay
   useEffect(() => {
-    if (preMatchCountdown <= 0 || !preMatchData) return;
+    if (!showPreMatch || preMatchCountdown <= 0) return;
     const t = setTimeout(() => {
       setPreMatchCountdown((c) => {
-        if (c <= 1) { setPreMatchData(null); return 0; }
+        if (c <= 1) { setShowPreMatch(false); return 0; }
         return c - 1;
       });
     }, 1000);
     return () => clearTimeout(t);
-  }, [preMatchCountdown, preMatchData]);
+  }, [showPreMatch, preMatchCountdown]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -1760,33 +1514,27 @@ export default function ArenaGamePage() {
     if (!status) return;
 
     if ((status === "PENDING" || status === "INITIALIZING") && prev === null) {
-      addSystem("⏳  Battle created — arena loading…");
+      addSystem("⏳  Battle created — race loading…");
     }
-
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS") {
-      addSystem("⚔️  Battle is LIVE! Agents are fighting.");
+      addSystem("🚗  Race is LIVE! Agents are driving.");
     }
-
     if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {
       resultPostedRef.current = true;
       setGamePhase("ended");
-      addSystem("🏁  Battle concluded. Final results below.");
+      addSystem("🏁  Race concluded. Final results below.");
       addResult(battle.result, battle);
     }
-
     if (status === "CANCELLED") {
       setGamePhase("ended");
       addSystem("❌  Battle was cancelled.");
     }
-
     if (status === "DISPUTED") {
       setGamePhase("ended");
       addSystem("⚠️  Battle result is disputed — under review.");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battle?.status]);
-
-  // ── Auto-scroll chat ──────────────────────────────────────────────────────
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1794,13 +1542,13 @@ export default function ArenaGamePage() {
 
   // ── Derived ───────────────────────────────────────────────────────────────
 
-  const isError = battleQ.isError;
+  const isError   = battleQ.isError;
   const isLoading = battleQ.isLoading && !battle;
 
   const isBattleComplete = Boolean(
     (battle?.status === "COMPLETED" && battle?.result) || battleResult,
   );
-  const canShareMoment = Boolean(battleId && myAgentId && isBattleComplete);
+  const canShareMoment    = Boolean(battleId && myAgentId && isBattleComplete);
   const shareMomentHandler = canShareMoment ? navigateToTrashTalkMoment : undefined;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1810,7 +1558,7 @@ export default function ArenaGamePage() {
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
 
-      {/* ── Top Nav ───────────────────────────────────────────────────────── */}
+      {/* ── Top Nav ─────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5" data-tour="arena-game-topbar">
         <button
           type="button"
@@ -1822,12 +1570,8 @@ export default function ArenaGamePage() {
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[9px] text-white/25 hidden sm:block">
-            BATTLE
-          </span>
-          <span className="font-mono text-[10px] text-white/50">
-            {shortId(battleId)}
-          </span>
+          <span className="font-mono text-[9px] text-white/25 hidden sm:block">BATTLE</span>
+          <span className="font-mono text-[10px] text-white/50">{shortId(battleId)}</span>
 
           {gamePhase === "live" && (
             <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
@@ -1843,9 +1587,7 @@ export default function ArenaGamePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">
-            {mode}
-          </span>
+          <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">{mode}</span>
           {canShareMoment ? (
             <button
               type="button"
@@ -1863,7 +1605,7 @@ export default function ArenaGamePage() {
         </div>
       </div>
 
-      {/* ── Agent VS Banner ───────────────────────────────────────────────── */}
+      {/* ── Agent VS Banner ─────────────────────────────────────────────── */}
       <div data-tour="arena-game-agents">
         <AgentBanner
           myAgent={myAgent}
@@ -1874,19 +1616,16 @@ export default function ArenaGamePage() {
         />
       </div>
 
-      {/* ── Main: Canvas + Chat ───────────────────────────────────────────── */}
+      {/* ── Main: Canvas + Chat ─────────────────────────────────────────── */}
       <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
 
         {/* Canvas area */}
         <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="arena-game-canvas">
 
-          {/* Error state — centred */}
           {isError && (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <div className="font-tech text-sm text-red-400/80 mb-2">
-                  Failed to load battle
-                </div>
+                <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
                 <button
                   onClick={() => battleQ.refetch()}
                   className="font-tech text-xs text-primary hover:text-primary/80 underline"
@@ -1897,15 +1636,14 @@ export default function ArenaGamePage() {
             </div>
           )}
 
-          {/* No build URL configured — centred */}
           {!isError && !UNITY_BASE_URL && (
             <div className="flex h-full items-center justify-center px-4">
               <div className="text-center">
                 <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
-                  Unity Build URL not configured
+                  Highway Hustle Build URL not configured
                 </p>
                 <p className="font-mono text-[9px] text-white/20 mt-1">
-                  Set VITE_UNITY_BUILD_URL in .env to load the game
+                  Set VITE_HIGHWAY_HUSTLE_BUILD_URL in .env to load the game
                 </p>
                 {myAgent && opponent && (
                   <div className="flex items-center justify-center gap-3 mt-4">
@@ -1922,11 +1660,8 @@ export default function ArenaGamePage() {
             </div>
           )}
 
-          {/* ── Unity canvas — fills entire game area ── */}
           {!isError && UNITY_BASE_URL && (
             <div className="absolute inset-0">
-              {/* Unity renders directly into this canvas; CSS fills the space,
-                  width/height attrs set the render resolution */}
               <canvas
                 ref={canvasRef}
                 id="unity-canvas"
@@ -1935,7 +1670,6 @@ export default function ArenaGamePage() {
                 style={{ width: "100%", height: "100%", display: "block", background: "#030710" }}
               />
 
-              {/* React loading screen (shown until Unity finishes loading) */}
               {!unityLoaded && !unityLoadError && (
                 <UnityLoadingScreen
                   progress={loadingProgress}
@@ -1945,18 +1679,15 @@ export default function ArenaGamePage() {
                 />
               )}
 
-              {/* Pre-match overlay — covers canvas while AI agents walk to centre.
-                  Game is NOT paused; this is purely a cosmetic React layer. */}
-              {preMatchData && unityLoaded && (
+              {showPreMatch && !battleResult && (
                 <PreMatchOverlay
-                  mapId={preMatchData.mapId}
-                  myAgentName={preMatchData.myAgentName}
-                  opponentName={preMatchData.opponentName}
+                  myAgent={myAgent}
+                  opponent={opponent}
+                  mode={mode}
                   countdown={preMatchCountdown}
                 />
               )}
 
-              {/* Load-error overlay — slow/CORS/missing files */}
               {unityLoadError && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#030710]/95 p-6">
                   <div className={`w-full max-w-md rounded-2xl border bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)] ${unityLoadError === 'slow' ? 'border-yellow-500/30' : 'border-red-500/30'}`}>
@@ -1998,12 +1729,11 @@ export default function ArenaGamePage() {
                     ) : (
                       <>
                         <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-3">
-                          Build files not reachable. Check that{" "}
-                          <code className="font-mono text-[10px] text-primary/80">VITE_UNITY_BUILD_URL</code>{" "}
-                          points to the correct R2 folder and the bucket is public.
+                          Build files not reachable. Check that the build URL points to the correct
+                          R2 folder and the bucket is public.
                         </p>
                         <p className="font-mono text-[10px] text-white/30 break-all">
-                          Looking for: {UNITY_BASE_URL}/Arena1/WarzoneV4.data
+                          Looking for: {UNITY_BASE_URL}/HighwayHustle.data
                         </p>
                       </>
                     )}
@@ -2023,10 +1753,11 @@ export default function ArenaGamePage() {
                 </div>
               )}
 
-              {/* ── Battle Result Overlay — replaces "GAME OVER" ── */}
+              {/* Battle Result Overlay */}
               {battleResult && (
                 <BattleResultOverlay
                   result={battleResult}
+                  myAgentId={myAgentId}
                   commentary={battleCommentary}
                   storageHashes={memoryRootHashes}
                   onHome={() => navigate(-1)}
@@ -2034,13 +1765,12 @@ export default function ArenaGamePage() {
                 />
               )}
 
-              {/* Bottom battle-ID hint */}
               {gamePhase === "live" && !unityLoadError && (
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
                   <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
-                      {unityLoaded ? `battle · ${shortId(battleId)}` : `loading · ${loadingProgress}%`}
+                      {unityLoaded ? `race · ${shortId(battleId)}` : `loading · ${loadingProgress}%`}
                     </span>
                   </div>
                 </div>
@@ -2062,11 +1792,11 @@ export default function ArenaGamePage() {
                 {
                   id: uid(),
                   kind: "player" as const,
-                  agentId: myAgentId ?? "observer",
+                  agentId:   myAgentId ?? "observer",
                   agentName: myAgent?.name ?? "Observer",
-                  color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
-                  text: chatInput.trim(),
-                  ts: new Date(),
+                  color:     myAgent ? clanColor(myAgent.clan) : "#8b6dff",
+                  text:      chatInput.trim(),
+                  ts:        new Date(),
                 },
               ]);
               setChatInput("");

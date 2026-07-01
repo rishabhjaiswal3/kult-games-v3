@@ -306,7 +306,22 @@ export const momentsApi = {
   },
 
   create: async (payload: CreateMomentRequest): Promise<CreateMomentResponse> => {
-    const { data } = await apiClient.post<ApiEnvelope<CreateMomentResponse>>("/moments/register", payload);
+    let enriched = payload;
+    if (payload.assetUrl && !payload.assetMetadata?.['fileType']) {
+      const ext = payload.assetUrl.split('?')[0]?.split('.').pop()?.toLowerCase();
+      const EXT_TO_MIME: Record<string, string> = {
+        jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+        webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp',
+        tiff: 'image/tiff', avif: 'image/avif', heic: 'image/heic', heif: 'image/heif',
+        mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+        m4v: 'video/mp4', ogv: 'video/ogg',
+      };
+      const fileType = ext ? EXT_TO_MIME[ext] : undefined;
+      if (fileType) {
+        enriched = { ...payload, assetMetadata: { ...(payload.assetMetadata ?? {}), fileType } };
+      }
+    }
+    const { data } = await apiClient.post<ApiEnvelope<CreateMomentResponse>>("/moments/register", enriched);
     return unwrapApiData(data);
   },
 

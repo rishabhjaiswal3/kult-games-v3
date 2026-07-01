@@ -421,7 +421,7 @@ function MediaTypeBadge({ contentType, size = "sm" }: { contentType: "image" | "
   );
 }
 
-function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void }) {
+function MomentFeedCard({ item, onOpen, onBookmarkToggle, isAuthenticated }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void; isAuthenticated: boolean }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
       <button type="button" onClick={() => onOpen(item)} className="group relative aspect-[16/8.7] cursor-pointer overflow-hidden bg-black/40 text-left">
@@ -436,7 +436,7 @@ function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; 
           <h3 onClick={() => onOpen(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">{item.title}</h3>
           <div className="mt-1 flex items-center justify-between"><div className="flex items-center gap-1.5 text-[11px] text-white/50"><span>by {item.creator}</span><Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" /></div><div className="flex items-center gap-1.5 text-[10px] text-white/40"><ClanIconBadge type={item.clanIconType} /><span className="max-w-[90px] truncate">{item.clanName}</span></div></div>
         </div>
-        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2"><div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div><button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
+        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2">{isAuthenticated && <div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div>}<button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
       </div>
     </article>
   );
@@ -984,12 +984,12 @@ export function AllMomentsPage() {
                           <span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div
+                          {isAuthenticated && <div
                             className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400"
                             onClick={(event) => event.stopPropagation()}
                           >
                             <MomentShareDialog moment={item.raw} triggerVariant="icon" />
-                          </div>
+                          </div>}
                           <button type="button" onClick={() => handleBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400">
                             <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
                           </button>
@@ -1139,7 +1139,7 @@ export function AllMomentsPage() {
         {!isBrowseAll && displayMoments.length > 6 ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {displayMoments.slice(6).map((item) => (
-              <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} />
+              <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} isAuthenticated={isAuthenticated} />
             ))}
           </div>
         ) : null}

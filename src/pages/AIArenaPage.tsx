@@ -348,6 +348,8 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
       if (gameId === "robowar") {
         navigate(`/arena/robowar/${payload.battleId}?${base}`);
+      } else if (gameId === "highway-hustle") {
+        navigate(`/arena/highway-hustle/${payload.battleId}?${base}`);
       } else {
         navigate(`/arena/game/${payload.battleId}?${base}`);
       }

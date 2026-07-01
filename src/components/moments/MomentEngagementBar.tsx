@@ -12,6 +12,8 @@ type MomentEngagementBarProps = {
   onLike: () => void;
   onComments: () => void;
   isLiking?: boolean;
+  isAuthenticated?: boolean;
+  onRequireAuth?: () => void;
 };
 
 type EngagementChipProps = {
@@ -112,6 +114,8 @@ export function MomentEngagementBar({
   onLike,
   onComments,
   isLiking = false,
+  isAuthenticated = false,
+  onRequireAuth,
 }: MomentEngagementBarProps) {
   const likeCount = moment.numLikes > 0 ? moment.numLikes.toLocaleString() : "—";
   const commentCount = moment.numComments > 0 ? moment.numComments.toLocaleString() : "—";
@@ -154,51 +158,75 @@ export function MomentEngagementBar({
     <div className="relative overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(180deg,rgba(10,15,27,0.92),rgba(4,8,15,0.88))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-400/25 to-transparent" />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <EngagementChip
-            icon={Heart}
-            label="Like moment"
-            count={likeCount}
-            onClick={onLike}
-            disabled={isLiking}
-            loading={isLiking}
-            active={hasLikes}
-            accent="rose"
-          />
-          <EngagementChip
-            icon={MessageCircle}
-            label="View comments"
-            count={commentCount}
-            onClick={onComments}
-            active={moment.numComments > 0}
-            accent="purple"
-          />
-          <EngagementChip
-            icon={Bookmark}
-            label={bookmarked ? "Remove bookmark" : "Bookmark moment"}
-            onClick={onBookmarkToggle}
-            active={bookmarked}
-            accent="amber"
-            iconOnly
-          />
-          <EngagementChip
-            icon={Download}
-            label="Download moment"
-            onClick={handleDownload}
-            disabled={isDownloading}
-            loading={isDownloading}
-            accent="cyan"
-            iconOnly
-          />
-        </div>
+      {isAuthenticated ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <EngagementChip
+              icon={Heart}
+              label="Like moment"
+              count={likeCount}
+              onClick={onLike}
+              disabled={isLiking}
+              loading={isLiking}
+              active={hasLikes}
+              accent="rose"
+            />
+            <EngagementChip
+              icon={MessageCircle}
+              label="View comments"
+              count={commentCount}
+              onClick={onComments}
+              active={moment.numComments > 0}
+              accent="purple"
+            />
+            <EngagementChip
+              icon={Bookmark}
+              label={bookmarked ? "Remove bookmark" : "Bookmark moment"}
+              onClick={onBookmarkToggle}
+              active={bookmarked}
+              accent="amber"
+              iconOnly
+            />
+            <EngagementChip
+              icon={Download}
+              label="Download moment"
+              onClick={handleDownload}
+              disabled={isDownloading}
+              loading={isDownloading}
+              accent="cyan"
+              iconOnly
+            />
+          </div>
 
-        <div className="ml-auto flex items-center gap-1.5">
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
-            <MomentShareDialog moment={moment} triggerVariant="icon" />
+          <div className="ml-auto flex items-center gap-1.5">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition hover:border-purple-500/35 hover:bg-purple-500/8">
+              <MomentShareDialog moment={moment} triggerVariant="icon" />
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-1">
+          <div className="min-w-0">
+            <div className="font-tech text-[10px] font-bold uppercase tracking-[0.22em] text-[#c084fc]">
+              Connect to engage
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-white/52">
+              Connect wallet to like, comment, bookmark, and download this moment.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {onRequireAuth ? (
+              <button
+                type="button"
+                onClick={onRequireAuth}
+                className="inline-flex items-center rounded-md border border-purple-300/60 bg-gradient-to-r from-[#7a22e8] to-[#9a35ff] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_4px_20px_rgba(139,37,255,0.45)] transition hover:-translate-y-0.5 hover:border-purple-200/85 hover:shadow-[0_6px_28px_rgba(154,53,255,0.55)]"
+              >
+                Connect wallet
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
