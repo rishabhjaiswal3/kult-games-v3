@@ -1,6 +1,7 @@
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
-import { ArrowUpRight, BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
+import football from "@/assets/football.png";
+import { BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAccess } from "@/contexts/AccessContext";
 import type { AccessFeature } from "@/lib/accessControl";
@@ -121,11 +122,10 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
               <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Start playing</p>
               <Link
                 to={startLink.href}
-                className="footer-enter-cta mt-3 mx-auto min-h-10 w-[min(220px,100%)] gap-2 text-xs sm:mx-0 sm:mt-4 sm:min-h-12 sm:w-full sm:gap-2.5"
+                className="footer-enter-cta mt-3 mx-auto w-[min(190px,100%)] sm:mx-0 sm:mt-4 sm:w-[245px]"
               >
-                <span className="select-none leading-none" aria-hidden>⚽</span>
-                <span>{startLink.label}</span>
-                <ArrowUpRight aria-hidden />
+                <img src={football} alt="" aria-hidden className="footer-enter-cta__ball" />
+                <span>{startLink.label} »</span>
               </Link>
               <p className="mt-2 text-[11px] leading-relaxed text-white/35 sm:mt-3 sm:text-xs">Make your picks, follow the action, and climb the League.</p>
             </div>
