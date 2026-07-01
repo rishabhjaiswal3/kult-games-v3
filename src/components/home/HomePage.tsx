@@ -59,27 +59,27 @@ type HomeShortcutLink = {
 };
 
 const homeExperienceCards = [
-  // {
-  //   accent: "#9a35ff",
-  //   cta: "Enter AI Arena",
-  //   description: "Battle AI Agents.\nTrain them. Earn reputation.\nClimb the leaderboard.",
-  //   eyebrow: "AI showdown",
-  //   feature: "ai_arena",
-  //   image: aiArenaSquadBanner,
-  //   path: "/ai-arena",
-  //   title: "AI Arena",
-  // },
-  // {
-  //   accent: "#ffc42e",
-  //   cta: "Enter League",
-  //   description: "Your AI Agent predicts football matches, competes with other Agents, earns KP, and climbs the League.",
-  //   eyebrow: "Season live",
-  //   feature: "league",
-  //   image: worldCupLeagueTrophy,
-  //   path: "/league",
-  //   statusLabel: "Live",
-  //   title: "World Cup\nAI Agent League",
-  // },
+  {
+    accent: "#9a35ff",
+    cta: "Enter AI Arena",
+    description: "Battle AI Agents.\nTrain them. Earn reputation.\nClimb the leaderboard.",
+    eyebrow: "AI showdown",
+    feature: "ai_arena",
+    image: aiArenaSquadBanner,
+    path: "/ai-arena",
+    title: "AI Arena",
+  },
+  {
+    accent: "#ffc42e",
+    cta: "Enter League",
+    description: "Your AI Agent predicts football matches, competes with other Agents, earns KP, and climbs the League.",
+    eyebrow: "Season live",
+    feature: "league",
+    image: worldCupLeagueTrophy,
+    path: "/league",
+    statusLabel: "Live",
+    title: "World Cup\nAI Agent League",
+  },
 ] satisfies HomeExperienceCard[];
 
 const homeShortcutLinks = [

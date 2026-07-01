@@ -55,16 +55,15 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      const text = [p.title, p.teaser].filter(Boolean).join("\n");
-      const params = new URLSearchParams();
-      if (text) params.set("text", text);
-      const previewUrl = resolveTwitterPreviewUrl(p);
-      if (previewUrl) params.set("url", previewUrl);
-      if (p.hashtags.length > 0) params.set("hashtags", p.hashtags.join(","));
-      return `https://twitter.com/intent/tweet?${params}`;
+      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
+      const text = [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
+        .filter(Boolean)
+        .join("\n\n");
+      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
     buildPostText: (p) => {
-      return [p.title, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), resolveTwitterPreviewUrl(p)]
+      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
+      return [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
         .filter(Boolean)
         .join("\n\n");
     },
@@ -132,7 +131,7 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#010101",
     copyOnly: true,
     buildUrl: () => "https://www.tiktok.com",
-    buildPostText: (p) => `${p.title}\n${p.hashtags.map((h) => `#${h}`).join(" ")}\n${p.url}`,
+    buildPostText: (p) => [p.title, p.hashtags.map((h) => `#${h}`).join(" "), p.url].filter(Boolean).join("\n\n"),
   },
 ];
 
@@ -142,23 +141,23 @@ const GAME_TEMPLATES: GameTemplateGroup[] = [
   {
     gameSlug: "ai-arena", gameName: "AI Arena",
     templates: [
-      { id: "ai-1", label: "99% wrong", text: "Everyone said my agent wouldn't win. 99% were wrong. 👁️\n#KultGames #AIArena" },
-      { id: "ai-2", label: "Top 1%",    text: "Top 1% agent worldwide. The proof is right here. 🏆\n#KultGames #AIArena" },
-      { id: "ai-3", label: "Not today", text: "Every AI in the lobby said I wasn't winning. Every one of them was wrong.\n#KultMoments" },
+      { id: "ai-1", label: "99% wrong", text: "Everyone said my agent wouldn't win. 99% were wrong. 👁️\n\n#KultGames #AIArena" },
+      { id: "ai-2", label: "Top 1%",    text: "Top 1% agent worldwide. The proof is right here. 🏆\n\n#KultGames #AIArena" },
+      { id: "ai-3", label: "Not today", text: "Every AI in the lobby said I wasn't winning. Every one of them was wrong.\n\n#KultMoments" },
     ],
   },
   {
     gameSlug: "robowars", gameName: "Robowars",
     templates: [
-      { id: "rw-1", label: "Dominant",   text: "No contest. My agent ran through the whole lobby.\n#Robowars #KultGames" },
-      { id: "rw-2", label: "Clutch",     text: "Down to the last second. This is why I play.\n#Robowars #KultMoments" },
+      { id: "rw-1", label: "Dominant",   text: "No contest. My agent ran through the whole lobby.\n\n#Robowars #KultGames" },
+      { id: "rw-2", label: "Clutch",     text: "Down to the last second. This is why I play.\n\n#Robowars #KultMoments" },
     ],
   },
   {
     gameSlug: "kult-royale", gameName: "Warzone",
     templates: [
-      { id: "ww-1", label: "Last alive", text: "Last one standing. That's all that matters.\n#WarzoneWarriors #KultGames" },
-      { id: "ww-2", label: "Squad wipe", text: "Full squad wipe in under 90 seconds.\n#WarzoneWarriors #KultMoments" },
+      { id: "ww-1", label: "Last alive", text: "Last one standing. That's all that matters.\n\n#WarzoneWarriors #KultGames" },
+      { id: "ww-2", label: "Squad wipe", text: "Full squad wipe in under 90 seconds.\n\n#WarzoneWarriors #KultMoments" },
     ],
   },
 ];
@@ -194,11 +193,9 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
   const platformPayload = withPlatformShareUrl(payload);
   switch (platform.id) {
     case "twitter": {
-      const params = new URLSearchParams();
-      if (templateText) params.set("text", templateText);
       const previewUrl = resolveTwitterPreviewUrl(platformPayload);
-      if (previewUrl) params.set("url", previewUrl);
-      return `https://twitter.com/intent/tweet?${params}`;
+      const text = [templateText, previewUrl].filter(Boolean).join("\n\n");
+      return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     }
     case "whatsapp": {
       const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
@@ -309,7 +306,7 @@ function PostPreviewText({ platform, payload, customText }: {
 }) {
   const platformPayload = withPlatformShareUrl(payload);
   const postText = customText
-    ? [customText, platformPayload.url].filter(Boolean).join("\n")
+    ? [customText, platformPayload.url].filter(Boolean).join("\n\n")
     : platform.buildPostText(platformPayload);
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
