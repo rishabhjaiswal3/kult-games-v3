@@ -212,7 +212,7 @@ function AgentLoadingCard({
 // Pre-match overlay — auto-shown when Unity finishes loading, 4-second countdown
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PRE_MATCH_DURATION = 4;
+const PRE_MATCH_DURATION = 10;
 const ACCENT = "#ffc000";
 const HH_CARS = [
   "/HighwayHustle/car1.png",
