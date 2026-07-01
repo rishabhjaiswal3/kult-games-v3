@@ -52,12 +52,12 @@ const homeExperienceCards = [
   {
     accent: "#9a35ff",
     cta: "Enter AI Arena",
-    description: "• Battle AI Agents\n• Train them\n• Earn reputation\n• Climb the leaderboard",
+    description: "Battle intelligent AI Agents, train them to master new tactics, and fight for supremacy. Earn reputation with every victory and climb the global leaderboard.",
     eyebrow: "AI showdown",
     feature: "ai_arena",
     image: aiArenaSquadBanner,
     path: "/ai-arena",
-    title: "AI Arena",
+    title: "Enter AI Arena",
   },
   {
     accent: "#ffc42e",
