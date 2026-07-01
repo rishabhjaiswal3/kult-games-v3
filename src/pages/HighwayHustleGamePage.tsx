@@ -213,6 +213,15 @@ function AgentLoadingCard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PRE_MATCH_DURATION = 4;
+const ACCENT = "#ffc000";
+const HH_CARS = [
+  "/HighwayHustle/car1.png",
+  "/HighwayHustle/car2.png",
+  "/HighwayHustle/car3.png",
+  "/HighwayHustle/car4.png",
+  "/HighwayHustle/car5.png",
+  "/HighwayHustle/car6.png",
+];
 
 function PreMatchOverlay({
   myAgent,
@@ -225,146 +234,167 @@ function PreMatchOverlay({
   mode: string;
   countdown: number;
 }) {
-  const pct        = (countdown / PRE_MATCH_DURATION) * 100;
-  const myColor    = myAgent  ? clanColor(myAgent.clan)  : "#ffc000";
-  const oppColor   = opponent ? clanColor(opponent.clan) : "#06b6d4";
-  const myPortrait   = myAgent  ? getArenaAgentPortrait(myAgent)  : null;
-  const oppPortrait  = opponent ? getArenaAgentPortrait(opponent) : null;
+  const pct = Math.max(0, (countdown / PRE_MATCH_DURATION) * 100);
+
+  // Pick two different random cars, stable for this render
+  const [carA, carB] = (() => {
+    const idx = Math.floor(Math.random() * HH_CARS.length);
+    const idx2 = (idx + 1 + Math.floor(Math.random() * (HH_CARS.length - 1))) % HH_CARS.length;
+    return [HH_CARS[idx], HH_CARS[idx2]];
+  })();
 
   return (
     <div
       className="absolute inset-0 z-50 flex flex-col overflow-hidden"
-      style={{ background: "#03070f" }}
+      style={{ background: "#05080f" }}
     >
-      {/* Neon highway background grid */}
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,192,0,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,192,0,0.6) 1px,transparent 1px)",
-          backgroundSize: "48px 48px",
-          transform: "perspective(600px) rotateX(30deg) scale(2)",
-          transformOrigin: "50% 100%",
-        }}
+      {/* ── Full-bleed background image ── */}
+      <img
+        src="/HighwayHustle/bg.png"
+        alt="Highway"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0.9 }}
+        draggable={false}
       />
-      {/* Glow streaks */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-x-0 top-0 h-px opacity-60" style={{ background: "linear-gradient(90deg,transparent,#ffc000,transparent)" }} />
-        <div className="absolute inset-x-0 bottom-0 h-px opacity-40" style={{ background: "linear-gradient(90deg,transparent,#8b5cf6,transparent)" }} />
-        <div className="absolute left-0 inset-y-0 w-64 opacity-20" style={{ background: `linear-gradient(to right, ${myColor}30, transparent)` }} />
-        <div className="absolute right-0 inset-y-0 w-64 opacity-20" style={{ background: `linear-gradient(to left, ${oppColor}30, transparent)` }} />
-      </div>
 
-      {/* Top bar */}
-      <div
-        className="relative z-10 flex items-center justify-between px-5 py-3 shrink-0"
-        style={{ background: "rgba(3,7,15,0.92)", borderBottom: "1px solid rgba(255,192,0,0.25)" }}
-      >
-        <div className="flex items-center gap-2">
-          <Car className="h-3.5 w-3.5 text-yellow-400" />
-          <span className="font-tech text-[10px] uppercase tracking-[0.3em] font-bold text-yellow-400">
-            Highway Hustle
-          </span>
+      {/* ── Dark tint for contrast ── */}
+      <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
+
+      {/* ══════════════════════════════════════════════════════════════
+          Content — 3-row layout: header / fighters / footer
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="relative z-10 flex h-full flex-col">
+
+        {/* ── ROW 1: header strip ─────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-6 py-3 shrink-0"
+          style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${ACCENT}` }}
+        >
+          <div className="flex items-center gap-2">
+            <Car className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold" style={{ color: ACCENT }}>
+              Highway Hustle · {mode}
+            </span>
+          </div>
+          <div className="font-display text-base font-black text-white tracking-widest uppercase">
+            Neon Highway
+          </div>
+          <div className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>
+            Race Starting
+          </div>
         </div>
-        <span className="font-display text-sm font-black text-white tracking-widest uppercase">
-          Neon Highway
-        </span>
-        <span className="font-tech text-[10px] uppercase tracking-widest font-bold text-yellow-400/70">
-          {mode}
-        </span>
-      </div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex flex-1 min-h-0 items-center">
+        {/* ── ROW 2: fighters ─────────────────────────────────────── */}
+        <div className="flex flex-1 min-h-0 items-stretch">
 
-        {/* Left agent */}
-        <div className="flex flex-col items-center gap-3 flex-1 px-4 py-6">
+          {/* Left fighter panel */}
           <div
-            className="relative w-[110px] h-[140px] sm:w-[140px] sm:h-[175px] rounded-2xl overflow-hidden border"
-            style={{ borderColor: `${myColor}50`, boxShadow: `0 0 40px ${myColor}30` }}
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: "linear-gradient(to right, rgba(5,8,15,0.75) 0%, transparent 100%)" }}
           >
-            {myPortrait ? (
-              myPortrait.endsWith(".mp4")
-                ? <video src={myPortrait} autoPlay loop muted playsInline className="h-full w-full object-cover object-top" />
-                : <img src={myPortrait} alt={myAgent?.name} className="h-full w-full object-cover object-top" />
-            ) : (
-              <div className="h-full w-full animate-pulse bg-white/5" />
-            )}
-            <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-8" style={{ background: `linear-gradient(to top, ${myColor}cc, transparent)` }}>
-              <div className="font-display text-sm font-black text-white truncate leading-tight">{myAgent?.name ?? "Agent A"}</div>
-              <div className="font-tech text-[9px] uppercase tracking-wider text-white/70">{myAgent?.archetype ?? "—"}</div>
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {myAgent?.name ?? "Agent A"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {myAgent?.archetype ?? "DRIVER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {myAgent?.eloRating ? `${myAgent.eloRating} ELO` : ""}
+                </span>
+              </div>
+            </div>
+            <img
+              src={carA}
+              alt="Car A"
+              className="object-contain object-bottom drop-shadow-2xl"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
+          </div>
+
+          {/* Centre VS + countdown */}
+          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
+            <div
+              className="font-display text-5xl font-black"
+              style={{
+                color: "#fff",
+                textShadow: `0 0 40px ${ACCENT}, 0 0 80px ${ACCENT}80`,
+                WebkitTextStroke: `2px ${ACCENT}`,
+              }}
+            >
+              VS
+            </div>
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
+              style={{
+                border: `3px solid ${ACCENT}`,
+                color: ACCENT,
+                background: "rgba(5,8,15,0.9)",
+                boxShadow: `0 0 30px ${ACCENT}80, inset 0 0 20px ${ACCENT}20`,
+              }}
+            >
+              {countdown}
             </div>
           </div>
-          <div className="text-center">
-            <div className="font-tech text-lg font-bold" style={{ color: myColor }}>{myAgent?.eloRating?.toLocaleString() ?? "—"}</div>
-            <div className="font-tech text-[9px] text-white/30 uppercase tracking-wider">ELO</div>
+
+          {/* Right fighter panel */}
+          <div
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: "linear-gradient(to left, rgba(5,8,15,0.75) 0%, transparent 100%)" }}
+          >
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {opponent?.name ?? "Agent B"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {opponent?.archetype ?? "DRIVER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {opponent?.eloRating ? `${opponent.eloRating} ELO` : ""}
+                </span>
+              </div>
+            </div>
+            <img
+              src={carB}
+              alt="Car B"
+              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
           </div>
+
         </div>
 
-        {/* Centre VS + countdown */}
-        <div className="flex flex-col items-center gap-4 shrink-0 px-2">
-          <div
-            className="font-display text-4xl sm:text-5xl font-black"
-            style={{ color: "#fff", textShadow: "0 0 40px #ffc000, 0 0 80px #ffc00050", WebkitTextStroke: "1.5px #ffc000" }}
-          >
-            VS
-          </div>
-
-          {/* Countdown ring */}
-          <div className="relative flex items-center justify-center">
-            <svg width="72" height="72" className="-rotate-90">
-              <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
-              <circle
-                cx="36" cy="36" r="30" fill="none"
-                stroke="#ffc000" strokeWidth="4"
-                strokeDasharray={`${2 * Math.PI * 30}`}
-                strokeDashoffset={`${2 * Math.PI * 30 * (1 - pct / 100)}`}
-                strokeLinecap="round"
-                style={{ transition: "stroke-dashoffset 1s linear", filter: "drop-shadow(0 0 6px #ffc000)" }}
+        {/* ── ROW 3: footer ───────────────────────────────────────── */}
+        <div
+          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
+          style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
+            🏁 <span className="text-white font-bold">Endless highway</span> race ·
+            Crash into traffic and you <span className="font-bold" style={{ color: ACCENT }}>lose</span> ·
+            Your agent drives based on <span className="font-bold" style={{ color: ACCENT }}>trained behaviour</span> ·
+            Winner earns <span className="text-white font-bold">ARENA rewards</span>
+          </p>
+          <div className="w-full max-w-sm">
+            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+              <div
+                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${ACCENT}, #8b6dff)` }}
               />
-            </svg>
-            <div className="absolute font-display text-2xl font-black text-white">{countdown}</div>
-          </div>
-
-          <span className="font-tech text-[9px] uppercase tracking-[0.3em] text-white/40">Race starts</span>
-        </div>
-
-        {/* Right agent */}
-        <div className="flex flex-col items-center gap-3 flex-1 px-4 py-6">
-          <div
-            className="relative w-[110px] h-[140px] sm:w-[140px] sm:h-[175px] rounded-2xl overflow-hidden border"
-            style={{ borderColor: `${oppColor}50`, boxShadow: `0 0 40px ${oppColor}30` }}
-          >
-            {oppPortrait ? (
-              oppPortrait.endsWith(".mp4")
-                ? <video src={oppPortrait} autoPlay loop muted playsInline className="h-full w-full object-cover object-top -scale-x-100" />
-                : <img src={oppPortrait} alt={opponent?.name} className="h-full w-full object-cover object-top -scale-x-100" />
-            ) : (
-              <div className="h-full w-full animate-pulse bg-white/5" />
-            )}
-            <div className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-8" style={{ background: `linear-gradient(to top, ${oppColor}cc, transparent)` }}>
-              <div className="font-display text-sm font-black text-white truncate leading-tight">{opponent?.name ?? "Agent B"}</div>
-              <div className="font-tech text-[9px] uppercase tracking-wider text-white/70">{opponent?.archetype ?? "—"}</div>
             </div>
           </div>
-          <div className="text-center">
-            <div className="font-tech text-lg font-bold" style={{ color: oppColor }}>{opponent?.eloRating?.toLocaleString() ?? "—"}</div>
-            <div className="font-tech text-[9px] text-white/30 uppercase tracking-wider">ELO</div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ background: ACCENT }} />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
+              Syncing with 0G Network...
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div
-        className="relative z-10 shrink-0 flex items-center justify-center gap-6 px-6 py-3"
-        style={{ background: "rgba(3,7,15,0.92)", borderTop: "1px solid rgba(255,255,255,0.06)" }}
-      >
-        <span className="font-mono text-[10px] text-white/40">🏁 Survive the highway · Crash first = <span className="text-red-400">lose</span></span>
-        <span className="font-mono text-[10px] text-white/20">·</span>
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse" />
-          <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">0G Network</span>
-        </div>
       </div>
     </div>
   );
