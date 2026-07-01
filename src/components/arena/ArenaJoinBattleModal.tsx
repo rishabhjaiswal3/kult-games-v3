@@ -97,13 +97,13 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
         <ArenaDialogBody className="relative space-y-4 px-4 py-5 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="grid grid-cols-2 gap-3 sm:flex sm:items-end">
-              <label className="space-y-1.5">
+              <label className="min-w-0 space-y-1.5 sm:min-w-[180px]">
                 <span className="arena-label text-emerald-100/62">Join with</span>
                 <select
                   value={challengeAgentId ?? ""}
                   onChange={(event) => setChallengeAgentId(event.target.value || null)}
                   disabled={!canJoin}
-                  className="arena-select min-w-[180px] border-emerald-200/12 bg-[#08111f]/90 text-white focus:border-emerald-200/45 focus:ring-emerald-200/20 disabled:opacity-50"
+                  className="arena-select w-full min-w-0 border-emerald-200/12 bg-[#08111f]/90 text-white focus:border-emerald-200/45 focus:ring-emerald-200/20 disabled:opacity-50"
                 >
                   {canJoin ? (
                     agents.map((agent) => (
@@ -116,12 +116,12 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
                   )}
                 </select>
               </label>
-              <label className="space-y-1.5">
+              <label className="min-w-0 space-y-1.5 sm:min-w-[140px]">
                 <span className="arena-label text-purple-100/62">Mode</span>
                 <select
                   value={mode}
                   onChange={(event) => setMode(event.target.value as AiArenaMatchMode)}
-                  className="arena-select min-w-[140px] border-purple-200/12 bg-[#0c1020]/90 text-white focus:border-purple-200/45 focus:ring-purple-200/20"
+                  className="arena-select w-full min-w-0 border-purple-200/12 bg-[#0c1020]/90 text-white focus:border-purple-200/45 focus:ring-purple-200/20"
                 >
                   {AI_ARENA_MATCH_MODES.map((matchMode) => (
                     <option key={matchMode.value} value={matchMode.value}>
