@@ -283,7 +283,7 @@ export function MomentDetailPage() {
   }
 
   const moment = momentQuery.data;
-  const gameLabel = deriveGameLabel(moment);
+  const gameLabel = deriveMomentGameLabel(moment);
   const isVideo = isMomentVideo(moment);
   const contentType = isVideo ? "video" : "image";
   const isOwner = isMomentOwner(walletAddress, moment);
