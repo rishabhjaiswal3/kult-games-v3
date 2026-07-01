@@ -8,13 +8,13 @@ import {
   Box,
   BrainCircuit,
   Crown,
-  Gamepad2,
   Joystick,
-  Package,
+  Medal,
   Radio,
   Sparkles,
   Swords,
   TrendingUp,
+  UserRound,
   Video,
   Zap,
 } from "lucide-react";
@@ -34,22 +34,60 @@ import agentAegis from "@/assets/tactician.mp4";
 import agentVoid from "@/assets/support.mp4";
 import agentRage from "@/assets/berserker.mp4";
 import agentLumen from "@/assets/assassin.gif";
+import aiArenaFaceoff from "@/assets/home/ai-arena-faceoff.png";
+import worldCupLeagueTrophy from "@/assets/home/world-cup-league-trophy.png";
 const trailerVideo = new URL("../../assets/Trailer.mp4", import.meta.url).href;
 
-const quickLinks = [
-  { label: "Games", path: "/games", icon: Gamepad2, color: "#0089ff", feature: "games" },
-  { label: "AI Arena", path: "/ai-arena", icon: Sparkles, color: "#9a35ff", feature: "ai_arena" },
-  { label: "Inventory", path: "/inventory", icon: Package, color: "#ffc000", feature: "full_browser" },
-  { label: "Dashboard", path: "/dashboard", icon: Box, color: "#00f080", feature: "ai_arena" },
-  { label: "Battles", path: "/battles", icon: Swords, color: "#b338ff", feature: "ai_arena" },
-  { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#f59e0b", feature: "league" },
-] satisfies Array<{
-  label: string;
+type HomeExperienceCard = {
+  accent: string;
+  cta: string;
+  description: string;
+  eyebrow: string;
+  feature: AccessFeature;
+  image: string;
   path: string;
-  icon: typeof Gamepad2;
+  statusLabel?: string;
+  title: string;
+};
+
+type HomeShortcutLink = {
+  label: string;
   color: string;
   feature: AccessFeature;
-}>;
+  icon: typeof Swords;
+  path: string;
+};
+
+const homeExperienceCards = [
+  {
+    accent: "#9a35ff",
+    cta: "Enter AI Arena",
+    description: "Battle AI Agents.\nTrain them. Earn reputation.\nClimb the leaderboard.",
+    eyebrow: "AI showdown",
+    feature: "ai_arena",
+    image: aiArenaFaceoff,
+    path: "/ai-arena",
+    title: "AI Arena",
+  },
+  {
+    accent: "#ffc42e",
+    cta: "Enter League",
+    description: "Your AI Agent predicts football matches, competes with other Agents, earns KP, and climbs the League.",
+    eyebrow: "Season live",
+    feature: "league",
+    image: worldCupLeagueTrophy,
+    path: "/league",
+    statusLabel: "Live",
+    title: "World Cup\nAI Agent League",
+  },
+] satisfies HomeExperienceCard[];
+
+const homeShortcutLinks = [
+  { label: "AI Arena", path: "/ai-arena", icon: Swords, color: "#d06aff", feature: "ai_arena" },
+  { label: "World Cup League", path: "/league", icon: Medal, color: "#8aa8ff", feature: "league" },
+  { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#ffc42e", feature: "league" },
+  { label: "My Profile", path: "/dashboard", icon: UserRound, color: "#93b4ff", feature: "ai_arena" },
+] satisfies HomeShortcutLink[];
 
 const homeArenaSignals = [
   "HYBRID defeated SUPPORT",
@@ -95,7 +133,8 @@ export function HomePage() {
   const momentsTile = { label: "Moments", value: "Watch", icon: Video, color: "#ff5ca8", path: "/moments", feature: "moments" as AccessFeature };
   const visibleStatTiles =
     baseStatTiles.length === 3 && canViewMoments ? [...baseStatTiles, momentsTile] : baseStatTiles;
-  const visibleQuickLinks = quickLinks.filter((link) => canUse(link.feature));
+  const visibleExperienceCards = homeExperienceCards.filter((card) => canUse(card.feature));
+  const visibleShortcutLinks = homeShortcutLinks.filter((link) => canUse(link.feature));
 
   useEffect(() => {
     const scroller = featuredScrollerRef.current;
@@ -415,49 +454,6 @@ export function HomePage() {
         </section>
       ) : null}
 
-      {visibleQuickLinks.length > 0 ? (
-        <section className="arena-panel border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
-          <h2 className="mb-3 font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Jump in</h2>
-          <div
-            className={`grid grid-cols-1 gap-2 sm:gap-3 ${
-              visibleQuickLinks.length <= 4
-                ? { 1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" }[
-                    visibleQuickLinks.length
-                  ]
-                : "sm:grid-cols-3"
-            }`}
-          >
-            {visibleQuickLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className="arena-panel group relative flex items-center justify-between overflow-hidden border-white/8 bg-[#04080f]/95 px-4 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--quick-link-color)] hover:shadow-[0_0_34px_var(--quick-link-glow)] sm:p-4"
-                style={
-                  {
-                    "--quick-link-color": link.color,
-                    "--quick-link-glow": `${link.color}33`,
-                  } as CSSProperties
-                }
-              >
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--quick-link-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="flex min-w-0 items-center gap-3">
-                  <div
-                    className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-md bg-white/[0.04] transition duration-300 group-hover:bg-[var(--quick-link-glow)] group-hover:shadow-[0_0_22px_var(--quick-link-glow)]"
-                    style={{ color: link.color }}
-                  >
-                    <link.icon className="h-5 w-5" />
-                  </div>
-                  <span className="relative z-10 break-words font-tech text-sm font-bold uppercase leading-tight tracking-wide text-white transition duration-300 group-hover:text-[var(--quick-link-color)]">
-                    {link.label}
-                  </span>
-                </div>
-                <ArrowUpRight className="relative z-10 h-4 w-4 shrink-0 text-white/30 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--quick-link-color)]" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       {canViewAiArena ? (
         <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
           <div className="flex items-center gap-3">
@@ -482,6 +478,192 @@ export function HomePage() {
           </button>
         </div>
       ) : null}
+
+      {/* {visibleExperienceCards.length > 0 || visibleShortcutLinks.length > 0 ? (
+        <HomeFeaturedExperiencesSection cards={visibleExperienceCards} shortcuts={visibleShortcutLinks} />
+      ) : null} */}
+    </div>
+  );
+}
+
+function HomeFeaturedExperiencesSection({
+  cards,
+  shortcuts,
+}: {
+  cards: HomeExperienceCard[];
+  shortcuts: HomeShortcutLink[];
+}) {
+  const shortcutGridClass =
+    shortcuts.length === 1
+      ? "sm:grid-cols-1"
+      : shortcuts.length === 2
+        ? "sm:grid-cols-2"
+        : shortcuts.length === 3
+          ? "sm:grid-cols-3"
+          : "sm:grid-cols-2 xl:grid-cols-4";
+
+  return (
+    <section className="arena-panel relative overflow-hidden border-white/8 bg-[#02050c]/95 p-3.5 sm:p-4 lg:p-5">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.16),transparent_28%),radial-gradient(circle_at_0%_100%,rgba(17,167,255,0.12),transparent_24%),radial-gradient(circle_at_100%_0%,rgba(255,196,0,0.12),transparent_24%)]" />
+      <div className="relative">
+        {cards.length > 0 ? (
+          <>
+            <SectionRibbon label="Featured experiences" accent="#bd6cff" />
+            <div className={`mt-3 grid gap-3 ${cards.length > 1 ? "xl:grid-cols-2" : ""}`}>
+              {cards.map((card) => {
+                const titleLines = card.title.split("\n");
+                const isGoldTheme = card.accent === "#ffc42e";
+                const eyebrowStyle = {
+                  backgroundColor: `${card.accent}18`,
+                  borderColor: `${card.accent}52`,
+                  boxShadow: `0 0 18px ${card.accent}1f`,
+                  color: card.accent,
+                } as CSSProperties;
+                const buttonStyle = {
+                  background: isGoldTheme
+                    ? "linear-gradient(135deg, rgba(190,120,16,0.95), rgba(255,196,46,0.95))"
+                    : "linear-gradient(135deg, #7a22e8, #9a35ff)",
+                  borderColor: isGoldTheme ? "rgba(255,211,106,0.72)" : "rgba(216,180,254,0.72)",
+                  boxShadow: isGoldTheme
+                    ? "0 4px 20px rgba(255,196,46,0.3)"
+                    : "0 4px 20px rgba(139,37,255,0.45)",
+                } as CSSProperties;
+
+                return (
+                  <Link
+                    key={card.path}
+                    to={card.path}
+                    className="group relative min-h-[320px] overflow-hidden rounded-[24px] border border-white/10 bg-[#050712] transition duration-300 hover:-translate-y-1 hover:border-[var(--feature-accent)] hover:shadow-[0_0_38px_var(--feature-glow),0_18px_48px_rgba(0,0,0,0.42)]"
+                    style={
+                      {
+                        "--feature-accent": card.accent,
+                        "--feature-glow": `${card.accent}38`,
+                      } as CSSProperties
+                    }
+                  >
+                    <img
+                      src={card.image}
+                      alt={card.title.replaceAll("\n", " ")}
+                      className="absolute inset-0 h-full w-full object-cover object-[68%_center] transition duration-700 group-hover:scale-105 group-hover:brightness-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#060914]/96 via-[#060914]/88 via-45% to-[#060914]/24" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_52%,var(--feature-glow),transparent_34%)] opacity-80" />
+                    <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent opacity-70" />
+                    <div className="relative z-10 flex h-full flex-col justify-between gap-6 p-5 sm:p-6">
+                      <div className="flex items-start justify-between gap-3">
+                        <span
+                          className="rounded-full border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.22em]"
+                          style={eyebrowStyle}
+                        >
+                          {card.eyebrow}
+                        </span>
+                        {card.statusLabel ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/45 bg-emerald-400/12 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
+                            {card.statusLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="max-w-[18rem]">
+                        <h2 className="font-tech text-[1.9rem] font-black uppercase leading-[0.98] tracking-tight text-white sm:text-[2.15rem]">
+                          {titleLines.map((line, index) => {
+                            const isAccentLine = titleLines.length === 1 || index === titleLines.length - 1;
+
+                            return (
+                              <span
+                                key={line}
+                                className="block"
+                                style={
+                                  isAccentLine
+                                    ? {
+                                        backgroundClip: "text",
+                                        backgroundImage: `linear-gradient(120deg, #ffffff 0%, ${card.accent} 88%)`,
+                                        color: "transparent",
+                                        WebkitBackgroundClip: "text",
+                                      }
+                                    : undefined
+                                }
+                              >
+                                {line}
+                              </span>
+                            );
+                          })}
+                        </h2>
+                        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/72 sm:text-[15px]">
+                          {card.description}
+                        </p>
+                      </div>
+                      <span
+                        className="inline-flex w-fit items-center gap-2 rounded-md border px-5 py-2 font-tech text-xs font-bold uppercase tracking-wider text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110"
+                        style={buttonStyle}
+                      >
+                        {card.cta}
+                        <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
+
+        {shortcuts.length > 0 ? (
+          <div className={cards.length > 0 ? "mt-4 sm:mt-5" : ""}>
+            {/* <SectionRibbon label="Jump in" /> */}
+            <div className={`mt-3 grid grid-cols-1 gap-2.5 ${shortcutGridClass}`}>
+              {shortcuts.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="group relative flex items-center justify-between overflow-hidden rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,rgba(9,14,25,0.92),rgba(4,8,15,0.92))] px-4 py-3 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--shortcut-color)] hover:shadow-[0_0_30px_var(--shortcut-glow)] sm:px-5 sm:py-4"
+                  style={
+                    {
+                      "--shortcut-color": link.color,
+                      "--shortcut-glow": `${link.color}2e`,
+                    } as CSSProperties
+                  }
+                >
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--shortcut-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                    <div
+                      className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[0.04] transition duration-300 group-hover:bg-[var(--shortcut-glow)] group-hover:shadow-[0_0_24px_var(--shortcut-glow)]"
+                      style={{ color: link.color }}
+                    >
+                      <link.icon className="h-5 w-5" />
+                    </div>
+                    <span className="relative z-10 min-w-0 font-tech text-sm font-black uppercase tracking-[0.08em] text-white transition duration-300 group-hover:text-[var(--shortcut-color)] sm:text-[1.05rem]">
+                      {link.label}
+                    </span>
+                  </div>
+                  <ArrowUpRight className="relative z-10 h-4 w-4 shrink-0 text-white/28 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--shortcut-color)]" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function SectionRibbon({ label, accent = "#cf7cff" }: { label: string; accent?: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className="h-2 w-2 rounded-full"
+        style={{ backgroundColor: accent, boxShadow: `0 0 12px ${accent}` }}
+      />
+      <span
+        className="font-tech text-[10px] font-bold uppercase tracking-[0.24em]"
+        style={{ color: accent }}
+      >
+        {label}
+      </span>
+      <span
+        className="h-px flex-1 bg-gradient-to-r to-transparent"
+        style={{ backgroundImage: `linear-gradient(90deg, ${accent}55, transparent)` }}
+      />
     </div>
   );
 }
