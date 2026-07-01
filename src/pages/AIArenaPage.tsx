@@ -40,6 +40,7 @@ import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import baseLogo from "@/assets/Base Logo.png";
 import solanaLogo from "@/assets/solana-sol-logo.png";
+import okxLogo from "@/assets/okx-icon.png";
 import agentNexus from "@/assets/hybrid.mp4";
 import agentShadow from "@/assets/defender.mp4";
 import agentAegis from "@/assets/tactician.mp4";
@@ -177,6 +178,17 @@ function SolanaLogo({ className = "h-4 w-auto" }: { className?: string }) {
   );
 }
 
+function OKXLogo({ className = "h-4 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src={okxLogo}
+      alt="OKX"
+      loading="lazy"
+      className={`inline-block object-contain ${className}`}
+    />
+  );
+}
+
 function ChainLogo({
   name,
   className = "h-3.5 w-auto",
@@ -196,6 +208,9 @@ function ChainLogo({
     }
     if (lower === "solana") {
       return <SolanaLogo className={className} />;
+    }
+    if (lower === "okx") {
+      return <OKXLogo className={className} />;
     }
   }
 
@@ -1666,6 +1681,7 @@ function PartnersBlock() {
     { key: "0G", label: "ZeroG" },
     { key: "Base", label: "Base" },
     { key: "Solana", label: "Solana" },
+    { key: "OKX", label: "OKX" },
   ];
   return (
     <section>
@@ -1692,8 +1708,15 @@ function PartnersBlock() {
                 key={p.key}
                 className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2 py-1.5 font-tech text-[10px] text-white/80 sm:px-2.5 sm:text-[11px] lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
-                <ChainLogo name={p.key} className="h-2.5 w-auto sm:h-3 xl:h-3.5" useLogosForChains={true} />
+                <ChainLogo
+                  name={p.key}
+                  className={
+                    p.key.toLowerCase() === "0g"
+                      ? "h-2.5 w-auto sm:h-3 xl:h-3.5"
+                      : "h-3.5 w-auto sm:h-4 xl:h-[18px]"
+                  }
+                  useLogosForChains={true}
+                />
                 <span>{p.label}</span>
               </div>
             ))}

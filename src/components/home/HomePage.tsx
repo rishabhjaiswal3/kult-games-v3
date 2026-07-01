@@ -7,14 +7,10 @@ import {
   ArrowUpRight,
   Box,
   BrainCircuit,
-  Crown,
   Joystick,
-  Medal,
   Radio,
   Sparkles,
   Swords,
-  TrendingUp,
-  UserRound,
   Video,
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
@@ -36,6 +32,7 @@ import agentRage from "@/assets/berserker.mp4";
 import agentLumen from "@/assets/assassin.gif";
 import aiArenaSquadBanner from "@/assets/home/ai-arena-squad-banner.png";
 import worldCupLeagueTrophy from "@/assets/home/world-cup-league-trophy.png";
+import homeLeagueBkg from "@/assets/home-league-bkg.png";
 const trailerVideo = new URL("../../assets/Trailer.mp4", import.meta.url).href;
 
 type HomeExperienceCard = {
@@ -50,19 +47,12 @@ type HomeExperienceCard = {
   title: string;
 };
 
-type HomeShortcutLink = {
-  label: string;
-  color: string;
-  feature: AccessFeature;
-  icon: typeof Swords;
-  path: string;
-};
 
 const homeExperienceCards = [
   {
     accent: "#9a35ff",
     cta: "Enter AI Arena",
-    description: "Battle AI Agents.\nTrain them. Earn reputation.\nClimb the leaderboard.",
+    description: "• Battle AI Agents\n• Train them\n• Earn reputation\n• Climb the leaderboard",
     eyebrow: "AI showdown",
     feature: "ai_arena",
     image: aiArenaSquadBanner,
@@ -77,17 +67,10 @@ const homeExperienceCards = [
     feature: "league",
     image: worldCupLeagueTrophy,
     path: "/league",
-    statusLabel: "Live",
     title: "World Cup\nAI Agent League",
   },
 ] satisfies HomeExperienceCard[];
 
-const homeShortcutLinks = [
-  { label: "AI Arena", path: "/ai-arena", icon: Swords, color: "#d06aff", feature: "ai_arena" },
-  { label: "League", path: "/league", icon: Medal, color: "#8aa8ff", feature: "league" },
-  { label: "Leaderboard", path: "/leaderboard", icon: Crown, color: "#ffc42e", feature: "league" },
-  { label: "Dashboard", path: "/dashboard", icon: UserRound, color: "#93b4ff", feature: "ai_arena" },
-] satisfies HomeShortcutLink[];
 
 const homeArenaSignals = [
   "HYBRID defeated SUPPORT",
@@ -134,7 +117,6 @@ export function HomePage() {
   const visibleStatTiles =
     baseStatTiles.length === 3 && canViewMoments ? [...baseStatTiles, momentsTile] : baseStatTiles;
   const visibleExperienceCards = homeExperienceCards.filter((card) => canUse(card.feature));
-  const visibleShortcutLinks = homeShortcutLinks.filter((link) => canUse(link.feature));
 
   useEffect(() => {
     const scroller = featuredScrollerRef.current;
@@ -454,33 +436,8 @@ export function HomePage() {
         </section>
       ) : null}
 
-      {visibleExperienceCards.length > 0 || visibleShortcutLinks.length > 0 ? (
-        <HomeFeaturedExperiencesSection cards={visibleExperienceCards} shortcuts={visibleShortcutLinks} />
-      ) : null}
-      
-      {canViewAiArena ? (
-        <div className="arena-panel flex flex-wrap items-center justify-between gap-4 border-white/8 bg-[#04080f]/95 p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="whitespace-nowrap font-tech text-lg font-black uppercase leading-tight text-white sm:text-2xl">Ready for the arena ?</h3>
-              <p className="text-sm leading-relaxed text-white/75">Train agents, earn rewards, and compete globally.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate("/ai-arena")}
-            className="footer-arena-cta footer-arena-cta--compact group mx-auto sm:mx-0"
-            style={{ width: "220px", minHeight: "42px", gap: "8px", borderRadius: "10px", fontSize: "13px" }}
-          >
-            <span className="footer-arena-cta__shine" aria-hidden />
-            <span className="footer-arena-cta__scan" aria-hidden />
-            <span className="footer-arena-cta__label">ENTER AI ARENA</span>
-            <ArrowUpRight className="footer-arena-cta__icon" aria-hidden />
-          </button>
-        </div>
+      {visibleExperienceCards.length > 0 ? (
+        <HomeFeaturedExperiencesSection cards={visibleExperienceCards} />
       ) : null}
     </div>
   );
@@ -488,58 +445,17 @@ export function HomePage() {
 
 function HomeFeaturedExperiencesSection({
   cards,
-  shortcuts,
 }: {
   cards: HomeExperienceCard[];
-  shortcuts: HomeShortcutLink[];
 }) {
-  const shortcutGridClass =
-    shortcuts.length === 1
-      ? "sm:grid-cols-1"
-      : shortcuts.length === 2
-        ? "sm:grid-cols-2"
-        : shortcuts.length === 3
-          ? "sm:grid-cols-3"
-          : "sm:grid-cols-2 xl:grid-cols-4";
-
   return (
     <section className="arena-panel relative overflow-hidden border-white/8 bg-[#02050c]/95 p-3.5 sm:p-4 lg:p-5">
       {/* <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.16),transparent_28%),radial-gradient(circle_at_0%_100%,rgba(17,167,255,0.12),transparent_24%),radial-gradient(circle_at_100%_0%,rgba(255,196,0,0.12),transparent_24%)]" /> */}
        
-       {shortcuts.length > 0 ? (
-          <div className="mb-10">
-            {/* <SectionRibbon label="Jump in" /> */}
-            <div className={`mt-3 grid grid-cols-1 gap-2.5 ${shortcutGridClass}`}>
-              {shortcuts.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group relative flex items-center justify-between overflow-hidden rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,rgba(9,14,25,0.92),rgba(4,8,15,0.92))] px-4 py-3 transition duration-300 hover:-translate-y-0.5 hover:border-[var(--shortcut-color)] hover:shadow-[0_0_30px_var(--shortcut-glow)] sm:px-5 sm:py-4"
-                  style={
-                    {
-                      "--shortcut-color": link.color,
-                      "--shortcut-glow": `${link.color}2e`,
-                    } as CSSProperties
-                  }
-                >
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,var(--shortcut-glow),transparent_46%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <div
-                      className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[0.04] transition duration-300 group-hover:bg-[var(--shortcut-glow)] group-hover:shadow-[0_0_24px_var(--shortcut-glow)]"
-                      style={{ color: link.color }}
-                    >
-                      <link.icon className="h-5 w-5" />
-                    </div>
-                    <span className="relative z-10 min-w-0 font-tech text-sm font-black uppercase tracking-[0.08em] text-white transition duration-300 group-hover:text-[var(--shortcut-color)] sm:text-[1.05rem]">
-                      {link.label}
-                    </span>
-                  </div>
-                  <ArrowUpRight className="relative z-10 h-4 w-4 shrink-0 text-white/28 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--shortcut-color)]" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : null}
+       <div className="mb-4">
+          <h3 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Ready for the arena ?</h3>
+          <p className="mt-1 text-sm leading-relaxed text-white/85">Train agents, earn rewards, and compete globally.</p>
+        </div>
 
       <div className="relative">
         {cards.length > 0 ? (
@@ -549,6 +465,7 @@ function HomeFeaturedExperiencesSection({
               {cards.map((card) => {
                 const titleLines = card.title.split("\n");
                 const isGoldTheme = card.accent === "#ffc42e";
+                const isLiveCard = card.eyebrow.toLowerCase().includes("live");
                 const eyebrowStyle = {
                   backgroundColor: `${card.accent}18`,
                   borderColor: `${card.accent}52`,
@@ -585,12 +502,18 @@ function HomeFeaturedExperiencesSection({
                     <div className="absolute inset-0 bg-gradient-to-r from-[#060914]/96 via-[#060914]/88 via-45% to-[#060914]/24" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_52%,var(--feature-glow),transparent_34%)] opacity-80" />
                     <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent opacity-70" />
-                    <div className="relative z-10 flex h-full flex-col justify-between gap-4 p-4 sm:gap-6 sm:p-6">
+                    <div className="relative z-10 flex h-full flex-col justify-start gap-4 p-4 sm:gap-6 sm:p-6">
                       <div className="flex items-start justify-between gap-3">
                         <span
-                          className="rounded-full border px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.18em] sm:px-2.5 sm:text-[9px] sm:tracking-[0.22em]"
-                          style={eyebrowStyle}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.18em] sm:px-2.5 sm:text-[9px] sm:tracking-[0.22em] ${isLiveCard ? "season-live-badge" : ""}`}
+                          style={isLiveCard ? { ...eyebrowStyle, ["--live-glow" as string]: `${card.accent}47` } : eyebrowStyle}
                         >
+                          {isLiveCard ? (
+                            <span
+                              className="season-live-dot h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: card.accent, boxShadow: `0 0 8px ${card.accent}` }}
+                            />
+                          ) : null}
                           {card.eyebrow}
                         </span>
                         {card.statusLabel ? (
@@ -601,7 +524,7 @@ function HomeFeaturedExperiencesSection({
                         ) : null}
                       </div>
                       <div className="max-w-[14rem] sm:max-w-[18rem]">
-                        <h2 className="font-tech text-[1.45rem] font-black uppercase leading-[0.95] tracking-tight text-white sm:text-[2.15rem] sm:leading-[0.98]">
+                        <h2 className="font-tech text-[1.45rem] font-black uppercase leading-[0.95] tracking-tight text-white sm:text-[2.15rem] sm:leading-[0.98] xl:flex xl:min-h-[6.3rem] xl:flex-col xl:justify-end">
                           {titleLines.map((line, index) => {
                             const isAccentLine = titleLines.length === 1 || index === titleLines.length - 1;
 
@@ -625,12 +548,12 @@ function HomeFeaturedExperiencesSection({
                             );
                           })}
                         </h2>
-                        <p className="mt-2 whitespace-pre-line text-[12px] leading-[1.4] text-white/72 sm:mt-3 sm:text-[15px] sm:leading-relaxed">
+                        <p className="mt-3.5 whitespace-pre-line text-[12px] leading-[1.4] text-white/72 sm:mt-5 sm:text-[15px] sm:leading-relaxed">
                           {card.description}
                         </p>
                       </div>
                       <span
-                        className="inline-flex w-fit items-center gap-1.5 rounded-md border px-4 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
+                        className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-md border px-4 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
                         style={buttonStyle}
                       >
                         {card.cta}
@@ -801,7 +724,7 @@ function FixtureAgentPortrait({ src, color, name, sub }: { src: string; color: s
       </div>
       <div className="text-center">
         <div className="font-tech text-sm font-black uppercase tracking-wide" style={{ color }}>{name}</div>
-        <div className="mt-0.5 text-[10px] text-white/45">{sub}</div>
+        <div className="mt-0.5 text-[10px] text-white/75">{sub}</div>
       </div>
     </div>
   );
@@ -864,7 +787,9 @@ function HomeLiveLeaguesSection() {
 
         <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div className="relative overflow-hidden rounded-lg border border-[#9a35ff]/25 bg-[radial-gradient(circle_at_15%_0%,rgba(154,53,255,0.16),transparent_45%),radial-gradient(circle_at_85%_100%,rgba(82,203,255,0.14),transparent_45%),#06070f] p-3.5 shadow-[0_0_30px_rgba(154,53,255,0.08)]">
-            <div className="flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.18em] text-white/50">
+            <div className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${homeLeagueBkg})` }} aria-hidden />
+            <div className="pointer-events-none absolute inset-0 bg-[#06070f]/40" aria-hidden />
+            <div className="relative flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.18em] text-white/75">
               <span>Live fixture</span>
               <span className="inline-flex items-center gap-1.5 rounded border border-red-500/40 bg-red-500/10 px-2 py-1 text-red-300">
                 <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" /></span>
@@ -872,7 +797,7 @@ function HomeLiveLeaguesSection() {
               </span>
             </div>
 
-            <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <div className="relative mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
               <FixtureAgentPortrait src={agentNexus} color="#b66dff" name="HYBRID" sub="Neural Syndicate" />
               <div className="relative flex h-14 w-12 items-center justify-center">
                 <span className="absolute h-12 w-12 rounded-full blur-xl" style={{ background: "radial-gradient(circle, rgba(168,85,247,0.7), transparent 70%)" }} />
@@ -881,9 +806,9 @@ function HomeLiveLeaguesSection() {
               <FixtureAgentPortrait src={agentAegis} color="#52cbff" name="TACTICIAN" sub="Protocol Zero" />
             </div>
 
-            <div className="mt-3 grid grid-cols-3 divide-x divide-white/8 rounded-lg border border-white/8 bg-white/[0.025] py-1.5 text-center">
+            <div className="relative mt-3 grid grid-cols-3 divide-x divide-white/8 rounded-lg border border-white/8 bg-white/[0.025] py-1.5 text-center">
               <div>
-                <div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Round</div>
+                <div className="font-tech text-[9px] uppercase tracking-wider text-white/70">Round</div>
                 <div className="mt-1 font-tech text-xs font-bold text-white">03 / 05</div>
                 <div className="mt-1 flex items-center justify-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -891,12 +816,12 @@ function HomeLiveLeaguesSection() {
                   ))}
                 </div>
               </div>
-              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Time</div><div className="mt-1 font-tech text-base font-black tabular-nums text-[#26e63b]">{timerMinutes}:{timerSeconds}</div></div>
-              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/40">Damage</div><div className="mt-1 font-tech text-base font-black tabular-nums text-white">{liveFixture.damage.toLocaleString()}</div></div>
+              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/70">Time</div><div className="mt-1 font-tech text-base font-black tabular-nums text-[#26e63b]">{timerMinutes}:{timerSeconds}</div></div>
+              <div><div className="font-tech text-[9px] uppercase tracking-wider text-white/70">Damage</div><div className="mt-1 font-tech text-base font-black tabular-nums text-white">{liveFixture.damage.toLocaleString()}</div></div>
             </div>
 
-            <div className="mt-3">
-              <div className="mb-1.5 flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-300">
+            <div className="relative mt-3">
+              <div className="mb-1.5 flex items-center gap-1.5 font-tech text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-200">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 <span>Live agent consensus</span>
               </div>
@@ -906,7 +831,7 @@ function HomeLiveLeaguesSection() {
                 <div className="pointer-events-none absolute inset-0 overflow-hidden"><div className="animate-league-sheen h-full w-1/4 bg-gradient-to-r from-transparent via-white/30 to-transparent" /></div>
                 <div className="absolute top-1/2 h-4 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] transition-[left] duration-1000" style={{ left: `${liveFixture.hybridWin}%` }} />
               </div>
-              <div className="mt-1.5 flex justify-between font-tech text-[9px] uppercase tracking-wider text-white/48"><span className="text-[#b66dff]">Hybrid win {liveFixture.hybridWin}%</span><span className="text-[#52cbff]">Tactician win {tacticianWin}%</span></div>
+              <div className="mt-1.5 flex justify-between font-tech text-[9px] font-bold uppercase tracking-wider text-white/70"><span className="text-[#cf9bff]">Hybrid win {liveFixture.hybridWin}%</span><span className="text-[#82dbff]">Tactician win {tacticianWin}%</span></div>
             </div>
           </div>
 
@@ -1006,7 +931,7 @@ function HomeMomentsSection() {
               <Link
                 key={moment.momentId}
                 to={`/moments/${moment.momentId}`}
-                className="group w-full min-w-full snap-start overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:-translate-y-0.5 hover:border-[#9a35ff]/35 md:min-w-0"
+                className="group w-full min-w-full snap-start overflow-hidden rounded-lg border border-[#5d6d8c]/45 bg-[#04080f]/95 shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-[#a855f7]/70 hover:shadow-[0_12px_34px_rgba(133,49,235,0.26)] md:min-w-0"
               >
                 <div className="relative aspect-[16/9] overflow-hidden bg-[#0a0f18]">
                   {moment.assetUrl && (
@@ -1026,8 +951,9 @@ function HomeMomentsSection() {
                       />
                     )
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-transparent to-transparent" />
-                  <div className="absolute left-3 top-3">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(164,105,255,0.18),transparent_48%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent opacity-70" />
+                  <div className="absolute left-3 top-3 z-10">
                     <MomentGameBadge moment={moment} size="xs" />
                   </div>
                 </div>
