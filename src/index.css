@@ -2319,3 +2319,65 @@ button[aria-label="close modal"]:hover {
     overflow-y: auto;
   }
 }
+
+/* Login prompt toast — page-accent glass card */
+.login-prompt-toast {
+  background:
+    linear-gradient(145deg, rgba(10, 12, 18, 0.94), rgba(16, 18, 26, 0.88));
+  border: 1px solid color-mix(in srgb, var(--toast-accent) 32%, rgba(255, 255, 255, 0.1));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 48px color-mix(in srgb, var(--toast-accent) 16%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.login-prompt-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--toast-accent) 70%, white),
+    transparent
+  );
+  opacity: 0.85;
+}
+
+.login-prompt-toast__glow {
+  background:
+    radial-gradient(
+      ellipse 80% 120% at 0% 50%,
+      color-mix(in srgb, var(--toast-accent) 22%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 100% 100%,
+      color-mix(in srgb, var(--toast-accent) 10%, transparent),
+      transparent 55%
+    );
+}
+
+.login-prompt-toast__cta {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--toast-accent) 28%, rgba(154, 53, 255, 0.2)),
+      color-mix(in srgb, var(--toast-accent) 12%, rgba(10, 12, 18, 0.6))
+    );
+  border: 1px solid color-mix(in srgb, var(--toast-accent) 48%, rgba(255, 255, 255, 0.12));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 20px color-mix(in srgb, var(--toast-accent) 22%, transparent);
+}
+
+.login-prompt-toast__cta:hover {
+  border-color: color-mix(in srgb, var(--toast-accent) 72%, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 28px color-mix(in srgb, var(--toast-accent) 36%, transparent);
+}

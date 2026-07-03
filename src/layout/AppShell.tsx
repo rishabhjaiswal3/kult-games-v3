@@ -4,6 +4,7 @@ import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { AppSidebar } from "@/layout/AppSidebar";
 import { AppTopbar } from "@/layout/AppTopbar";
 import { MobileBottomNav } from "@/layout/MobileBottomNav";
+import { PageLoginPrompt } from "@/components/LoginPromptToast";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { isMomentsPath } from "@/constants/moments";
 import { navLabelForPath } from "@/layout/navConfig";
@@ -95,6 +96,7 @@ export function AppShell() {
           )}
         </main>
         <MobileBottomNav />
+        <PageLoginPrompt />
       </div>
     </div>
   );

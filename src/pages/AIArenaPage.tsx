@@ -725,59 +725,21 @@ function StatsBar() {
     { icon: Trophy, label: "Founding Season", detail: "Early Access", color: "#ffc42e" },
   ];
 
-  const desktopTileClass =
-    "home-stat-tile relative z-10 hidden items-center gap-2 px-4 py-3 md:flex xl:gap-4 xl:px-6 xl:py-4";
-  const desktopIconClass =
+  const tileClass =
+    "home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-2.5 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4";
+  const iconClass =
     "home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg xl:h-11 xl:w-11";
 
   return (
     <section className="relative z-10">
-      <div className="arena-panel home-stats-panel ai-arena-stats-panel overflow-hidden md:grid md:grid-cols-4 md:divide-x md:divide-white/8">
-        {/* Mobile — compact full-width rows */}
-        <div
-          className="home-stat-tile ai-arena-stat-tile relative z-10 flex items-center justify-between gap-3 border-b border-white/8 px-3.5 py-2.5 md:hidden"
-          style={{ "--stat-color": "#00f080" } as CSSProperties}
-        >
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className="home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
-            </div>
-            <span className="font-tech text-[13px] font-semibold leading-none text-primary">Beta Live</span>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[12px] font-medium leading-none text-white/85">
-            Powered by <ZeroGLogo className="h-3 w-auto shrink-0" />
-          </span>
-        </div>
-
-        {stats.map((s, index) => (
-          <div
-            key={s.label}
-            className={`home-stat-tile ai-arena-stat-tile relative z-10 flex items-center justify-between gap-3 px-3.5 py-2.5 md:hidden ${
-              index < stats.length - 1 ? "border-b border-white/8" : ""
-            }`}
-            style={{ "--stat-color": s.color } as CSSProperties}
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg">
-                <s.icon className="h-4 w-4" />
-              </div>
-              <span className="font-tech text-[13px] font-semibold leading-none text-primary">{s.label}</span>
-            </div>
-            <span className="shrink-0 text-right text-[12px] font-medium leading-none text-white/85">{s.detail}</span>
-          </div>
-        ))}
-
-        {/* Desktop — original column layout */}
-        <div
-          className={desktopTileClass}
-          style={{ "--stat-color": "#00f080" } as CSSProperties}
-        >
-          <div className={desktopIconClass}>
+      <div className="arena-panel home-stats-panel ai-arena-stats-panel grid grid-cols-1 divide-y divide-white/8 overflow-hidden md:grid-cols-4 md:divide-x md:divide-y-0">
+        <div className={tileClass} style={{ "--stat-color": "#00f080" } as CSSProperties}>
+          <div className={iconClass}>
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] xl:h-2.5 xl:w-2.5" />
           </div>
           <div className="min-w-0">
-            <div className="font-tech text-[11px] font-semibold leading-tight text-primary xl:text-sm">Beta Live</div>
-            <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white xl:text-base">
+            <div className="font-tech text-xs font-semibold leading-tight text-primary md:text-[11px] xl:text-sm">Beta Live</div>
+            <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white md:text-[12px] xl:text-base">
               <span className="inline-flex items-center gap-1.5">
                 Powered by <ZeroGLogo className="h-3 w-auto shrink-0 xl:h-4" />
               </span>
@@ -786,16 +748,12 @@ function StatsBar() {
         </div>
 
         {stats.map((s) => (
-          <div
-            key={`desktop-${s.label}`}
-            className={desktopTileClass}
-            style={{ "--stat-color": s.color } as CSSProperties}
-          >
-            <div className={desktopIconClass}>
+          <div key={s.label} className={tileClass} style={{ "--stat-color": s.color } as CSSProperties}>
+            <div className={iconClass}>
               <s.icon className="h-4 w-4 xl:h-5 xl:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="font-tech text-[11px] font-semibold leading-tight text-primary xl:text-sm">{s.label}</div>
+              <div className="font-tech text-xs font-semibold leading-tight text-primary md:text-[11px] xl:text-sm">{s.label}</div>
               <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white xl:text-base">{s.detail}</div>
             </div>
           </div>
