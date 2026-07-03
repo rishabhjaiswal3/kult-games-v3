@@ -539,7 +539,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       </span>
       <h1
         className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
-          compact ? "text-[2.45rem] max-[380px]:text-[2.05rem]" : "text-4xl sm:text-5xl md:text-3xl lg:text-4xl xl:text-6xl"
+          compact ? "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_28px_rgba(154,53,255,0.5)]" : "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl"
         }`}
       >
         AI ARENA
@@ -559,7 +559,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       </h2>
       <p
         className={`max-w-md text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
-          compact ? "mt-2 text-[13px] leading-snug max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
+          compact ? "mt-2 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
         }`}
       >
         Collect, train, and battle unique AI Agents.
