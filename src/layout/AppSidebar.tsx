@@ -154,14 +154,23 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
     window.addEventListener("toggle-mobile-sidebar", handleToggle);
+    window.addEventListener("open-mobile-sidebar", handleOpen);
     window.addEventListener("close-mobile-sidebar", handleClose);
     return () => {
       window.removeEventListener("toggle-mobile-sidebar", handleToggle);
+      window.removeEventListener("open-mobile-sidebar", handleOpen);
       window.removeEventListener("close-mobile-sidebar", handleClose);
     };
   }, []);
+
+  // Broadcast open/closed state so other decoupled parts of the app (e.g. the
+  // product tour) can read it without prop-drilling into this component.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("mobile-sidebar-state", { detail: { isOpen } }));
+  }, [isOpen]);
 
   const { isAuthenticated } = useAuth();
   const { session } = useAccess();

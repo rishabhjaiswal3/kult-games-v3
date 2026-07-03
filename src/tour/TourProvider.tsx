@@ -22,6 +22,53 @@ const AUTO_TOUR_DELAY_MS = 1200;
 const TOUR_GLOBALLY_DISMISSED_KEY = "kult_tour_globally_dismissed";
 const TourContext = createContext<TourContextValue | null>(null);
 
+// Sidebar nav items render twice in the DOM: a desktop <aside> (always mounted,
+// CSS-hidden below `lg`) and a mobile drawer (only mounted while open). Both
+// share the same `data-tour` attribute, so a plain querySelector always finds
+// the desktop copy first — even when it's invisible. `MOBILE_SIDEBAR_SELECTOR_PREFIX`
+// lets us detect steps that live inside that drawer so we can open it first.
+const MOBILE_SIDEBAR_SELECTOR_PREFIX = "[data-tour='sidebar-";
+const MOBILE_BREAKPOINT_PX = 1024; // matches Tailwind's `lg` used by AppSidebar
+const MOBILE_SIDEBAR_OPEN_DELAY_MS = 220; // time for the drawer to mount + animate in
+
+type TourDriveStep = DriveStep & { __selector?: string };
+
+function isRenderedVisible(el: Element): boolean {
+  if (!(el instanceof HTMLElement)) return true;
+  return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+}
+
+/** Among all elements matching `selector`, pick the one actually rendered (not display:none). */
+function pickVisibleElement(selector: string): Element | undefined {
+  const matches = Array.from(document.querySelectorAll(selector));
+  return matches.find(isRenderedVisible) ?? matches[0];
+}
+
+/** Replace string selectors with a resolver that skips hidden duplicates at highlight time. */
+function withDynamicElements(steps: DriveStep[]): TourDriveStep[] {
+  return steps.map((item) => {
+    if (typeof item.element !== "string") return item;
+    const selector = item.element;
+    return { ...item, element: () => pickVisibleElement(selector) as Element, __selector: selector };
+  });
+}
+
+function isMobileViewport() {
+  return typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT_PX;
+}
+
+function stepNeedsMobileSidebar(step: TourDriveStep | undefined): boolean {
+  return Boolean(step?.__selector?.startsWith(MOBILE_SIDEBAR_SELECTOR_PREFIX) && isMobileViewport());
+}
+
+function dispatchOpenMobileSidebar() {
+  window.dispatchEvent(new CustomEvent("open-mobile-sidebar"));
+}
+
+function dispatchCloseMobileSidebar() {
+  window.dispatchEvent(new CustomEvent("close-mobile-sidebar"));
+}
+
 function isTourGloballyDismissed(): boolean {
   try {
     return localStorage.getItem(TOUR_GLOBALLY_DISMISSED_KEY) === "1";
@@ -104,7 +151,43 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
   const [isRunning, setIsRunning] = useState(false);
   const driverRef = useRef<Driver | null>(null);
   const autoStartedRef = useRef(new Set<string>());
+  const mobileSidebarOpenRef = useRef(false);
+  const autoOpenedSidebarRef = useRef(false);
   const currentTourId = useMemo(() => tourIdForPathname(pathname), [pathname]);
+
+  useEffect(() => {
+    const handleState = (event: Event) => {
+      const detail = (event as CustomEvent<{ isOpen: boolean }>).detail;
+      mobileSidebarOpenRef.current = Boolean(detail?.isOpen);
+    };
+    window.addEventListener("mobile-sidebar-state", handleState);
+    return () => window.removeEventListener("mobile-sidebar-state", handleState);
+  }, []);
+
+  const restoreSidebarIfAutoOpened = useCallback(() => {
+    if (autoOpenedSidebarRef.current) {
+      autoOpenedSidebarRef.current = false;
+      dispatchCloseMobileSidebar();
+    }
+  }, []);
+
+  /** Opens the mobile drawer before highlighting a sidebar step, closes it again once we move past. */
+  const advanceTo = useCallback((targetStep: TourDriveStep | undefined, move: () => void) => {
+    const needsSidebar = stepNeedsMobileSidebar(targetStep);
+
+    if (needsSidebar) {
+      if (!mobileSidebarOpenRef.current) {
+        autoOpenedSidebarRef.current = true;
+        dispatchOpenMobileSidebar();
+        window.setTimeout(move, MOBILE_SIDEBAR_OPEN_DELAY_MS);
+        return;
+      }
+    } else {
+      restoreSidebarIfAutoOpened();
+    }
+
+    move();
+  }, [restoreSidebarIfAutoOpened]);
 
   const buildSteps = useCallback(() => {
     return resolveAvailableSteps(getWebsiteTourSteps({ pathname, isAuthenticated }));
@@ -113,10 +196,11 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
   const startWebsiteTour = useCallback(() => {
     if (!enabled) return;
     window.setTimeout(() => {
-      const steps = buildSteps();
+      const steps = withDynamicElements(buildSteps());
       if (steps.length === 0) return;
 
       driverRef.current?.destroy();
+      autoOpenedSidebarRef.current = false;
       const instance = driver({
         steps,
         animate: true,
@@ -134,7 +218,14 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
         prevBtnText: "Back",
         doneBtnText: "Done",
         popoverClass: "kult-driver-popover",
+        onNextClick: (_element, _step, { driver: driverObj }) => {
+          advanceTo(driverObj.getNextStep() as TourDriveStep | undefined, () => driverObj.moveNext());
+        },
+        onPrevClick: (_element, _step, { driver: driverObj }) => {
+          advanceTo(driverObj.getPreviousStep() as TourDriveStep | undefined, () => driverObj.movePrevious());
+        },
         onDestroyed: () => {
+          restoreSidebarIfAutoOpened();
           setIsRunning(false);
           markTourCompleted(currentTourId);
           markTourGloballyDismissed();
@@ -143,9 +234,17 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
 
       driverRef.current = instance;
       setIsRunning(true);
-      instance.drive();
+
+      const firstStep = steps[0];
+      if (stepNeedsMobileSidebar(firstStep) && !mobileSidebarOpenRef.current) {
+        autoOpenedSidebarRef.current = true;
+        dispatchOpenMobileSidebar();
+        window.setTimeout(() => instance.drive(), MOBILE_SIDEBAR_OPEN_DELAY_MS);
+      } else {
+        instance.drive();
+      }
     }, 150);
-  }, [buildSteps, currentTourId, enabled]);
+  }, [advanceTo, buildSteps, currentTourId, enabled, restoreSidebarIfAutoOpened]);
 
   const resetWebsiteTour = useCallback(() => {
     clearTourCompleted(currentTourId);
