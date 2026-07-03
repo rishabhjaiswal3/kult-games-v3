@@ -149,6 +149,17 @@ export interface LineupRow {
   balanceArena: number;
 }
 
+/** POST /v1/league/predictions/:matchId/:agentId/generate response — the actual LeaguePrediction row. */
+export interface GeneratedPrediction {
+  agentId: string;
+  winner: PredictionOutcome;
+  scoreHome: number;
+  scoreAway: number;
+  conviction: ConvictionLevel;
+  reasoning: string | null;
+  source: "AI" | "FALLBACK" | "USER_OVERRIDE";
+}
+
 export interface OpenBattle {
   id: string;
   matchId: string;
@@ -203,11 +214,16 @@ export const leagueApi = {
 
   /**
    * POST /v1/league/predictions/:matchId/:agentId/generate — auth required, must own agentId.
-   * Triggers the agent's AI to generate (or return its existing) prediction for this match.
+   * Triggers the agent's AI to generate (or return its existing) prediction for this match,
+   * and returns the actual prediction — server always returns the full row, whether newly
+   * generated or already existing.
    * Rate-limited server-side to 5/min per user.
    */
-  generatePrediction: async (matchId: string, agentId: string): Promise<void> => {
-    await http().post(`/v1/league/predictions/${encodeURIComponent(matchId)}/${encodeURIComponent(agentId)}/generate`);
+  generatePrediction: async (matchId: string, agentId: string): Promise<GeneratedPrediction> => {
+    const { data } = await http().post<GeneratedPrediction>(
+      `/v1/league/predictions/${encodeURIComponent(matchId)}/${encodeURIComponent(agentId)}/generate`,
+    );
+    return data;
   },
 
   /** GET /v1/league/matches?status=&stage=&page=&limit= — public. */

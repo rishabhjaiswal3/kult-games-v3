@@ -7,19 +7,28 @@ import { LeaguePanel } from "./LeaguePanel";
 import { leagueApi, type MatchListItem } from "@/api/leagueApi";
 import { formatKickoffDisplay, useCountdown } from "@/lib/matchTime";
 import { fifaMakePickBtn, fifaSectionTitle, fifaSubTitle } from "./leagueFifaStyles";
-import { useMakeLeaguePick } from "@/hooks/useMakeLeaguePick";
+import { useMakeLeaguePick, type PickResult } from "@/hooks/useMakeLeaguePick";
 import { useAuth } from "@/contexts/AuthContext";
+
+const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
+
+function pickLabel(pick: PickResult, match: MatchListItem): string {
+  const outcome = pick.winner === "HOME" ? match.home : pick.winner === "AWAY" ? match.away : "Draw";
+  return `${outcome} ${pick.scoreHome}-${pick.scoreAway}`;
+}
 
 function UpcomingMatchCard({
   match,
   onMakePick,
-  isThisMatchLoading,
-  isThisMatchDone,
+  isLoading,
+  result,
+  error,
 }: {
   match: MatchListItem;
   onMakePick: (matchId: string) => void;
-  isThisMatchLoading: boolean;
-  isThisMatchDone: boolean;
+  isLoading: boolean;
+  result: PickResult | null;
+  error: string | null;
 }) {
   const countdown = useCountdown(match.kickoffAt);
 
@@ -43,14 +52,24 @@ function UpcomingMatchCard({
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
         Locks in {countdown}
       </div>
-      <button
-        type="button"
-        disabled={isThisMatchLoading}
-        onClick={() => onMakePick(match.id)}
-        className={`mt-3 ${fifaMakePickBtn} disabled:cursor-not-allowed disabled:opacity-60`}
-      >
-        {isThisMatchLoading ? "Generating…" : isThisMatchDone ? "✓ Picked" : "Make Pick"}
-      </button>
+
+      {result ? (
+        <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/8 p-2 text-center">
+          <p className="font-tech text-[9px] uppercase tracking-wider text-white/45">{result.agentName}'s pick</p>
+          <p className="mt-0.5 font-tech text-xs font-bold text-emerald-300">{pickLabel(result, match)}</p>
+          <p className="mt-0.5 font-tech text-[9px] text-white/40">{CONVICTION_PCT[result.conviction] ?? 70}% confidence</p>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => onMakePick(match.id)}
+          className={`mt-3 ${fifaMakePickBtn} disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          {isLoading ? "Generating…" : "Make Pick"}
+        </button>
+      )}
+      {error ? <p className="mt-1.5 text-center text-[9px] text-rose-400">{error}</p> : null}
     </article>
   );
 }
@@ -59,9 +78,9 @@ export function LeagueUpcomingCarousel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
-  const { makePick, status, pickedMatchId, hasAgent, error } = useMakeLeaguePick();
+  const { makePick, isLoading, result, error, hasAgent } = useMakeLeaguePick();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: isLoadingMatches } = useQuery({
     queryKey: ["league", "matches", "scheduled"],
     queryFn: () => leagueApi.listMatches({ status: "SCHEDULED", limit: 10 }),
     staleTime: 30_000,
@@ -116,7 +135,7 @@ export function LeagueUpcomingCarousel() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoadingMatches ? (
         <div className="flex gap-3 overflow-x-auto pb-1">
           {[0, 1, 2].map((i) => (
             <div key={i} className="skeleton h-48 w-[190px] shrink-0 rounded-xl" />
@@ -125,25 +144,21 @@ export function LeagueUpcomingCarousel() {
       ) : matches.length === 0 ? (
         <p className="py-4 text-[11px] text-white/40">No scheduled matches found.</p>
       ) : (
-        <>
-          <div
-            ref={scrollerRef}
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none"
-          >
-            {matches.map((match) => (
-              <UpcomingMatchCard
-                key={match.id}
-                match={match}
-                onMakePick={handleMakePick}
-                isThisMatchLoading={status === "loading" && pickedMatchId === match.id}
-                isThisMatchDone={status === "success" && pickedMatchId === match.id}
-              />
-            ))}
-          </div>
-          {status === "error" && pickedMatchId ? (
-            <p className="mt-2 text-[10px] text-rose-400">{error}</p>
-          ) : null}
-        </>
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none"
+        >
+          {matches.map((match) => (
+            <UpcomingMatchCard
+              key={match.id}
+              match={match}
+              onMakePick={handleMakePick}
+              isLoading={isLoading(match.id)}
+              result={result(match.id)}
+              error={error(match.id)}
+            />
+          ))}
+        </div>
       )}
     </LeaguePanel>
   );

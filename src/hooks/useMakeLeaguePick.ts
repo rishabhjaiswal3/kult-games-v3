@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { leagueApi } from "@/api/leagueApi";
+import { leagueApi, type GeneratedPrediction } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
 
-type PickStatus = "idle" | "loading" | "success" | "error";
+export interface PickResult extends GeneratedPrediction {
+  agentName: string;
+}
 
 /**
  * "Make Pick" for a League match — has your first enrolled agent generate its
@@ -11,13 +13,16 @@ type PickStatus = "idle" | "loading" | "success" | "error";
  * make the call, not a manual form. No agent picker: uses the first row from
  * /v1/league/me/agents, which is enough for a single-agent user and a
  * reasonable default for multi-agent users until a picker is worth building.
+ *
+ * Results are kept per-matchId (not just "the last one clicked") so picking
+ * on match A and then match B keeps showing A's result too.
  */
 export function useMakeLeaguePick() {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const [status, setStatus] = useState<PickStatus>("idle");
-  const [error, setError] = useState<string | null>(null);
-  const [pickedMatchId, setPickedMatchId] = useState<string | null>(null);
+  const [loadingMatchId, setLoadingMatchId] = useState<string | null>(null);
+  const [errorsByMatch, setErrorsByMatch] = useState<Record<string, string>>({});
+  const [resultsByMatch, setResultsByMatch] = useState<Record<string, PickResult>>({});
 
   const { data: lineup } = useQuery({
     queryKey: ["league", "me", "agents"],
@@ -31,21 +36,31 @@ export function useMakeLeaguePick() {
   async function makePick(matchId: string) {
     if (!isAuthenticated || !lineup || lineup.length === 0) return;
 
-    setStatus("loading");
-    setError(null);
-    setPickedMatchId(matchId);
+    const agent = lineup[0];
+    setLoadingMatchId(matchId);
+    setErrorsByMatch((prev) => ({ ...prev, [matchId]: "" }));
     try {
-      await leagueApi.generatePrediction(matchId, lineup[0].agentId);
-      setStatus("success");
-      // Refresh everything this pick could have affected.
+      const prediction = await leagueApi.generatePrediction(matchId, agent.agentId);
+      setResultsByMatch((prev) => ({ ...prev, [matchId]: { ...prediction, agentName: agent.agentName } }));
       queryClient.invalidateQueries({ queryKey: ["league", "matches"] });
       queryClient.invalidateQueries({ queryKey: ["league", "predictions", "today"] });
       queryClient.invalidateQueries({ queryKey: ["league", "me", "predictions"] });
     } catch (err) {
-      setStatus("error");
-      setError(err instanceof Error ? err.message : "Couldn't generate a pick — try again.");
+      setErrorsByMatch((prev) => ({
+        ...prev,
+        [matchId]: err instanceof Error ? err.message : "Couldn't generate a pick — try again.",
+      }));
+    } finally {
+      setLoadingMatchId((current) => (current === matchId ? null : current));
     }
   }
 
-  return { makePick, status, error, pickedMatchId, isAuthenticated, hasAgent };
+  return {
+    makePick,
+    isLoading: (matchId: string) => loadingMatchId === matchId,
+    result: (matchId: string) => resultsByMatch[matchId] ?? null,
+    error: (matchId: string) => errorsByMatch[matchId] || null,
+    isAuthenticated,
+    hasAgent,
+  };
 }

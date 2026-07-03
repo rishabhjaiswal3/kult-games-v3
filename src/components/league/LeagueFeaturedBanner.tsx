@@ -31,7 +31,7 @@ function formatStage(stage: string): string {
 export function LeagueFeaturedBanner() {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
-  const { makePick, status, pickedMatchId, hasAgent } = useMakeLeaguePick();
+  const { makePick, isLoading: isPickLoading, result: pickResult, error: pickError, hasAgent } = useMakeLeaguePick();
 
   const { data: match, isLoading } = useQuery({
     queryKey: ["league", "matches", "featured"],
@@ -63,8 +63,9 @@ export function LeagueFeaturedBanner() {
 
   const consensus = match.consensus;
 
-  const isPickingThis = status === "loading" && pickedMatchId === match.id;
-  const pickedThis = status === "success" && pickedMatchId === match.id;
+  const isPickingThis = isPickLoading(match.id);
+  const thisPick = pickResult(match.id);
+  const thisPickError = pickError(match.id);
 
   function handleMakeYourPick() {
     if (!isAuthenticated) {
@@ -166,16 +167,30 @@ export function LeagueFeaturedBanner() {
             </div>
           ) : null}
 
+          {thisPick ? (
+            <div className="mt-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/8 p-2.5 text-center">
+              <p className="font-tech text-[9px] uppercase tracking-wider text-white/45">{thisPick.agentName}'s pick</p>
+              <p className="mt-0.5 font-tech text-sm font-bold text-emerald-300">
+                {thisPick.winner === "HOME" ? match.home : thisPick.winner === "AWAY" ? match.away : "Draw"} {thisPick.scoreHome}-{thisPick.scoreAway}
+              </p>
+              <p className="mt-0.5 font-tech text-[9px] text-white/40">{CONVICTION_PCT[thisPick.conviction] ?? 70}% confidence</p>
+              {thisPick.reasoning ? <p className="mt-1 text-[10px] italic text-white/50">&ldquo;{thisPick.reasoning}&rdquo;</p> : null}
+            </div>
+          ) : null}
+          {thisPickError ? <p className="mt-1.5 text-center text-[10px] text-rose-400">{thisPickError}</p> : null}
+
           <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
             <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Live Stats <ChevronRight className="h-3 w-3 shrink-0" /></button>
-            <button
-              type="button"
-              disabled={isPickingThis}
-              onClick={handleMakeYourPick}
-              className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-60 sm:text-[10px]"
-            >
-              {isPickingThis ? "Generating…" : pickedThis ? "✓ Pick locked" : "Make Your Pick"}
-            </button>
+            {!thisPick ? (
+              <button
+                type="button"
+                disabled={isPickingThis}
+                onClick={handleMakeYourPick}
+                className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-60 sm:text-[10px]"
+              >
+                {isPickingThis ? "Generating…" : "Make Your Pick"}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
