@@ -1,13 +1,26 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { TeamFlagHex } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
 import { leagueApi, type MatchListItem } from "@/api/leagueApi";
 import { formatKickoffDisplay, useCountdown } from "@/lib/matchTime";
 import { fifaMakePickBtn, fifaSectionTitle, fifaSubTitle } from "./leagueFifaStyles";
+import { useMakeLeaguePick } from "@/hooks/useMakeLeaguePick";
+import { useAuth } from "@/contexts/AuthContext";
 
-function UpcomingMatchCard({ match }: { match: MatchListItem }) {
+function UpcomingMatchCard({
+  match,
+  onMakePick,
+  isThisMatchLoading,
+  isThisMatchDone,
+}: {
+  match: MatchListItem;
+  onMakePick: (matchId: string) => void;
+  isThisMatchLoading: boolean;
+  isThisMatchDone: boolean;
+}) {
   const countdown = useCountdown(match.kickoffAt);
 
   return (
@@ -30,8 +43,13 @@ function UpcomingMatchCard({ match }: { match: MatchListItem }) {
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
         Locks in {countdown}
       </div>
-      <button type="button" className={`mt-3 ${fifaMakePickBtn}`}>
-        Make Pick
+      <button
+        type="button"
+        disabled={isThisMatchLoading}
+        onClick={() => onMakePick(match.id)}
+        className={`mt-3 ${fifaMakePickBtn} disabled:cursor-not-allowed disabled:opacity-60`}
+      >
+        {isThisMatchLoading ? "Generating…" : isThisMatchDone ? "✓ Picked" : "Make Pick"}
       </button>
     </article>
   );
@@ -39,6 +57,9 @@ function UpcomingMatchCard({ match }: { match: MatchListItem }) {
 
 export function LeagueUpcomingCarousel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+  const { makePick, status, pickedMatchId, hasAgent, error } = useMakeLeaguePick();
 
   const { data, isLoading } = useQuery({
     queryKey: ["league", "matches", "scheduled"],
@@ -53,6 +74,18 @@ export function LeagueUpcomingCarousel() {
     const amount = card ? card.offsetWidth + 12 : 200;
     el.scrollBy({ left: dir * amount, behavior: "smooth" });
   };
+
+  function handleMakePick(matchId: string) {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    if (!hasAgent) {
+      navigate("/my-agents");
+      return;
+    }
+    void makePick(matchId);
+  }
 
   const matches = data?.matches ?? [];
 
@@ -92,14 +125,25 @@ export function LeagueUpcomingCarousel() {
       ) : matches.length === 0 ? (
         <p className="py-4 text-[11px] text-white/40">No scheduled matches found.</p>
       ) : (
-        <div
-          ref={scrollerRef}
-          className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none"
-        >
-          {matches.map((match) => (
-            <UpcomingMatchCard key={match.id} match={match} />
-          ))}
-        </div>
+        <>
+          <div
+            ref={scrollerRef}
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none"
+          >
+            {matches.map((match) => (
+              <UpcomingMatchCard
+                key={match.id}
+                match={match}
+                onMakePick={handleMakePick}
+                isThisMatchLoading={status === "loading" && pickedMatchId === match.id}
+                isThisMatchDone={status === "success" && pickedMatchId === match.id}
+              />
+            ))}
+          </div>
+          {status === "error" && pickedMatchId ? (
+            <p className="mt-2 text-[10px] text-rose-400">{error}</p>
+          ) : null}
+        </>
       )}
     </LeaguePanel>
   );

@@ -201,6 +201,15 @@ export const leagueApi = {
     return data;
   },
 
+  /**
+   * POST /v1/league/predictions/:matchId/:agentId/generate — auth required, must own agentId.
+   * Triggers the agent's AI to generate (or return its existing) prediction for this match.
+   * Rate-limited server-side to 5/min per user.
+   */
+  generatePrediction: async (matchId: string, agentId: string): Promise<void> => {
+    await http().post(`/v1/league/predictions/${encodeURIComponent(matchId)}/${encodeURIComponent(agentId)}/generate`);
+  },
+
   /** GET /v1/league/matches?status=&stage=&page=&limit= — public. */
   listMatches: async (params: {
     status?: LeagueMatchStatus;

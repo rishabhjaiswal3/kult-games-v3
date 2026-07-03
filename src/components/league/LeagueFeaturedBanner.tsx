@@ -1,10 +1,13 @@
 import { ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { TeamFlagCircle } from "./FlagHex";
 import { LeagueStadiumBackground } from "./LeagueStadiumBackground";
 import { leagueApi } from "@/api/leagueApi";
+import { useMakeLeaguePick } from "@/hooks/useMakeLeaguePick";
+import { useAuth } from "@/contexts/AuthContext";
 
 /** Rough display-only confidence badge from a conviction tier — not authoritative scoring, just a UI label. */
 const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
@@ -26,6 +29,10 @@ function formatStage(stage: string): string {
 }
 
 export function LeagueFeaturedBanner() {
+  const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+  const { makePick, status, pickedMatchId, hasAgent } = useMakeLeaguePick();
+
   const { data: match, isLoading } = useQuery({
     queryKey: ["league", "matches", "featured"],
     queryFn: () => leagueApi.getFeaturedMatch(),
@@ -55,6 +62,21 @@ export function LeagueFeaturedBanner() {
   }
 
   const consensus = match.consensus;
+
+  const isPickingThis = status === "loading" && pickedMatchId === match.id;
+  const pickedThis = status === "success" && pickedMatchId === match.id;
+
+  function handleMakeYourPick() {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    if (!hasAgent) {
+      navigate("/my-agents");
+      return;
+    }
+    void makePick(match!.id);
+  }
 
   return (
     <section className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#a855f7]/40 shadow-[0_0_56px_rgba(168,85,247,0.15)]">
@@ -146,7 +168,14 @@ export function LeagueFeaturedBanner() {
 
           <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
             <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Live Stats <ChevronRight className="h-3 w-3 shrink-0" /></button>
-            <button type="button" onClick={() => document.getElementById("league-prediction-questions")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 sm:text-[10px]">Make Your Pick</button>
+            <button
+              type="button"
+              disabled={isPickingThis}
+              onClick={handleMakeYourPick}
+              className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-60 sm:text-[10px]"
+            >
+              {isPickingThis ? "Generating…" : pickedThis ? "✓ Pick locked" : "Make Your Pick"}
+            </button>
           </div>
         </div>
       </div>
