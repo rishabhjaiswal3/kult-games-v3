@@ -5,6 +5,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { privyConfig } from "@/lib/privyConfig";
 
+const MOMENT_ID_PATTERN = /^[A-Za-z0-9_-]{21}$/;
+
 // When the backend OG-HTML page redirects human browsers it sends them to
 // /#m/<momentId> so that DigitalOcean routes the request to the static SPA
 // (path = "/") instead of back to the backend (/moments route).
@@ -13,7 +15,7 @@ import { privyConfig } from "@/lib/privyConfig";
   const hash = window.location.hash;
   if (hash.startsWith("#m/")) {
     const momentId = hash.slice(3);
-    if (momentId) {
+    if (MOMENT_ID_PATTERN.test(momentId)) {
       window.history.replaceState(null, "", "/moments/" + momentId);
     }
   }

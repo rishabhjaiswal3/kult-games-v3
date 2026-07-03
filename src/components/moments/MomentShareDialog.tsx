@@ -36,11 +36,11 @@ type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
 function resolveFacebookPreviewUrl(payload: SharePayload): string {
-  return payload.momentUrl || payload.url;
+  return payload.url;
 }
 
 function resolveTwitterPreviewUrl(payload: SharePayload): string {
-  return payload.momentUrl || payload.url;
+  return payload.url;
 }
 
 // ── Platforms ─────────────────────────────────────────────────────────────────
@@ -438,9 +438,9 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
               </p>
             </div>
             <CopyLinkBar url={payload.previewUrl} />
-            <p className="font-tech text-[9px] text-white/35">
+            {/* <p className="font-tech text-[9px] text-white/35">
               This link embeds the moment image automatically on Twitter, Telegram, WhatsApp, Discord &amp; Reddit.
-            </p>
+            </p> */}
           </div>
 
           {/* Platform grid — 6 platforms, 3 per row */}

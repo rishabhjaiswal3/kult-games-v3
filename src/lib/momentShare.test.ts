@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 describe("buildMomentShareUrl", () => {
   it("builds the public moment page URL on the current origin", async () => {
+    vi.resetModules();
     vi.stubGlobal("window", { location: { origin: "https://kult-browser-rust-l2lwg.ondigitalocean.app" } });
     vi.stubEnv("VITE_API_URL", "https://kult-browser-rust-l2lwg.ondigitalocean.app");
 
@@ -48,10 +49,47 @@ describe("buildMomentShareUrl", () => {
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
     );
   });
+
+  it("uses the backend base for preview and image URLs when the app origin differs", async () => {
+    vi.resetModules();
+    vi.stubGlobal("window", { location: { origin: "https://app.kult.games" } });
+    vi.stubEnv("VITE_API_URL", "https://kult-browser-rust-l2lwg.ondigitalocean.app");
+
+    const { buildMomentSharePayload, buildMomentShareOgImageUrl } = await import("./momentShare");
+    const momentId = "moment-123";
+    const payload = buildMomentSharePayload({
+      momentId,
+      title: "Journey Just Begin",
+      description: "Starting to Play WarzoneWarriors",
+      assetUrl: "https://cdn.example/moment.webp",
+      tags: [],
+      relatedGames: ["warzonewarriors"],
+      playerWalletAddress: "0x1",
+      numLikes: 0,
+      numComments: 0,
+      aiHighlights: [],
+    });
+
+    expect(payload.url).toBe(`https://app.kult.games/moments/${momentId}`);
+    expect(payload.momentUrl).toBe(`https://app.kult.games/moments/${momentId}`);
+    expect(payload.previewUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}`,
+    );
+    expect(payload.publicPreviewUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/share/moments/${momentId}`,
+    );
+    expect(payload.mediaUrl).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
+    );
+    expect(buildMomentShareOgImageUrl(momentId)).toBe(
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
+    );
+  });
 });
 
 describe("resolvePlatformShareUrl", () => {
   it("uses preview URL for social crawlers by default", async () => {
+    vi.resetModules();
     vi.stubGlobal("window", { location: { origin: "https://kult-browser-rust-l2lwg.ondigitalocean.app" } });
 
     const { buildMomentSharePayload, resolvePlatformShareUrl } = await import("./momentShare");
@@ -73,6 +111,7 @@ describe("resolvePlatformShareUrl", () => {
 
 describe("buildRedditSubmitParams", () => {
   it("merges title and description for Reddit link posts", async () => {
+    vi.resetModules();
     const { buildRedditSubmitParams, buildRedditSubmitTitle } = await import("./momentShare");
 
     const payload = {

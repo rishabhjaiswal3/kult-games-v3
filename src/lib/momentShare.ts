@@ -73,18 +73,22 @@ function normalizeHashtag(value: string) {
     .slice(0, 24);
 }
 
-function resolveHostBase(): string {
+function resolveMomentPageBase(): string {
   if (APP_ORIGIN && !looksLikeLocalOrigin(APP_ORIGIN)) return APP_ORIGIN;
   return resolveShareBaseUrl() || APP_ORIGIN;
 }
 
+function resolveShareServiceBase(): string {
+  return resolveShareBaseUrl() || resolveMomentPageBase();
+}
+
 export function buildMomentShareOgImageUrl(momentId: string): string {
-  return buildMomentShareImageProxyUrl(momentId, resolveHostBase());
+  return buildMomentShareImageProxyUrl(momentId, resolveShareServiceBase());
 }
 
 /** Public image URL for Pinterest/WhatsApp — always JPEG proxy (any source format). */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
-  return resolveMomentShareImageUrl(moment, resolveHostBase());
+  return resolveMomentShareImageUrl(moment, resolveShareServiceBase());
 }
 
 /**
@@ -98,7 +102,7 @@ export function resolvePlatformShareUrl(payload: SharePayload): string {
 }
 
 export function buildMomentShareUrl(momentId: string): string {
-  return `${resolveHostBase()}/moments/${momentId}`;
+  return `${resolveMomentPageBase()}/moments/${momentId}`;
 }
 
 function buildPreviewUrlOnHost(hostBase: string, momentId: string, previewPath: string): string {
@@ -108,11 +112,11 @@ function buildPreviewUrlOnHost(hostBase: string, momentId: string, previewPath: 
 }
 
 export function buildMomentSharePreviewUrl(momentId: string): string {
-  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PREVIEW_PATH);
+  return buildPreviewUrlOnHost(resolveShareServiceBase(), momentId, SHARE_PREVIEW_PATH);
 }
 
 export function buildMomentPublicPreviewUrl(momentId: string): string {
-  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PUBLIC_PREVIEW_PATH);
+  return buildPreviewUrlOnHost(resolveShareServiceBase(), momentId, SHARE_PUBLIC_PREVIEW_PATH);
 }
 
 function buildMomentShareCacheKey(moment: Moment): string {

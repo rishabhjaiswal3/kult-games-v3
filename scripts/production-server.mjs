@@ -37,9 +37,10 @@ const API_ORIGIN = (
 const CRAWLER_UA =
   /twitterbot|facebookexternalhit|facebot|discordbot|slackbot|telegrambot|whatsapp|linkedinbot|googlebot|bingbot|applebot|pinterest|redditbot|vkshare|bot\/|spider\/|crawler\//i;
 
-const MOMENT_PAGE = /^\/moments\/([A-Za-z0-9_-]+)\/?$/;
+const MOMENT_ID_PATTERN = "[A-Za-z0-9_-]{21}";
+const MOMENT_PAGE = new RegExp(`^/moments/(${MOMENT_ID_PATTERN})/?$`);
 /** Legacy share URLs — redirect humans to the public moment page. */
-const LEGACY_SHARE_MOMENT_PAGE = /^\/share\/moments\/([A-Za-z0-9_-]+)\/?$/;
+const LEGACY_SHARE_MOMENT_PAGE = new RegExp(`^/share/moments/(${MOMENT_ID_PATTERN})/?$`);
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
