@@ -703,7 +703,7 @@ function Hero() {
         >
           <source src={mobileHeroVideo} type="video/mp4" />
         </video>
-        <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
           <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white/50 min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
             <span className="flex shrink-0 items-center gap-1">
