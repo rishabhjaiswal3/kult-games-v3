@@ -1,10 +1,13 @@
 import { ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
-import { FlagCircle } from "./FlagHex";
+import { TeamFlagCircle } from "./FlagHex";
 import { LeagueStadiumBackground } from "./LeagueStadiumBackground";
-import { FEATURED_MATCH } from "./leagueData";
+import { leagueApi } from "@/api/leagueApi";
+
+/** Rough display-only confidence badge from a conviction tier — not authoritative scoring, just a UI label. */
+const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
 
 function LiveBadge() {
   return (
@@ -18,34 +21,47 @@ function LiveBadge() {
   );
 }
 
+function formatStage(stage: string): string {
+  return stage.replace(/_/g, " ").replace(/\w\S*/g, (w) => w[0] + w.slice(1).toLowerCase());
+}
+
 export function LeagueFeaturedBanner() {
-  const match = FEATURED_MATCH;
-  const [consensus, setConsensus] = useState({ home: 43, draw: 15, away: 42 });
-  const consensusAgents = ["TACTICIAN", "ASSASSIN", "BERSERKER", "HYBRID"]
-    .map(getLeagueAgent)
-    .filter((agent): agent is NonNullable<typeof agent> => Boolean(agent));
+  const { data: match, isLoading } = useQuery({
+    queryKey: ["league", "matches", "featured"],
+    queryFn: () => leagueApi.getFeaturedMatch(),
+    staleTime: 15_000,
+    refetchInterval: 15_000, // consensus/score move server-side; poll rather than fake-animate client-side
+  });
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setConsensus((current) => {
-        const direction = Math.random() > 0.5 ? 1 : -1;
-        const home = Math.min(49, Math.max(38, current.home + direction));
-        const draw = Math.min(18, Math.max(11, current.draw - direction));
-        return { home, draw, away: 100 - home - draw };
-      });
-    }, 2200);
+  const { data: detail } = useQuery({
+    queryKey: ["league", "matches", match?.id, "detail"],
+    queryFn: () => leagueApi.getMatchDetail(match!.id),
+    enabled: !!match?.id,
+    staleTime: 15_000,
+  });
 
-    return () => window.clearInterval(timer);
-  }, []);
+  const agentBets = (detail?.agentBets ?? []).slice(0, 4);
+
+  if (isLoading) {
+    return <div className="skeleton h-[420px] w-full rounded-xl" />;
+  }
+
+  if (!match) {
+    return (
+      <section className="w-full rounded-xl border border-white/10 bg-[#05050a] p-6 text-center">
+        <p className="text-sm text-white/50">No featured match right now — check back closer to kickoff.</p>
+      </section>
+    );
+  }
+
+  const consensus = match.consensus;
 
   return (
     <section className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#a855f7]/40 shadow-[0_0_56px_rgba(168,85,247,0.15)]">
-      {/* Video — full width on all breakpoints */}
       <div className="relative aspect-video w-full min-w-0 max-w-full overflow-hidden sm:aspect-auto sm:h-[340px] md:h-[400px]">
         <LeagueStadiumBackground clean />
       </div>
 
-      {/* Content below video — never overlaid */}
       <div className="w-full min-w-0 border-t border-white/10 bg-[#05050a] px-3 py-2.5 sm:px-5 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -59,7 +75,7 @@ export function LeagueFeaturedBanner() {
               FIFA World Cup 2026™
             </p>
             <p className="font-tech text-[9px] uppercase tracking-widest text-white/55">
-              {match.stage} · Matchday {match.matchday}
+              {formatStage(match.stage)}{match.matchday ? ` · Matchday ${match.matchday}` : ""}
             </p>
           </div>
         </div>
@@ -67,47 +83,66 @@ export function LeagueFeaturedBanner() {
         <div className="mt-2.5 rounded-lg border border-white/12 bg-[#080914]/95 p-3 sm:p-3.5">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <div className="text-center">
-              <FlagCircle code={match.home.code} className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
-              <p className="mt-1 font-tech text-xs font-black uppercase text-white">Brazil</p>
+              <TeamFlagCircle teamName={match.home} className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
+              <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.home}</p>
             </div>
             <div className="min-w-[88px] text-center sm:min-w-[130px]">
-              <p className="font-tech text-[8px] uppercase tracking-[0.26em] text-[#aaa9dc] sm:text-[10px]">{match.stage} · MD {match.matchday}</p>
-              <p className="my-0.5 font-display text-3xl font-black text-[#a78bfa]">VS</p>
-              <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-400 sm:text-[10px]">Live · {match.liveMinute}&apos;</p>
+              <p className="font-tech text-[8px] uppercase tracking-[0.26em] text-[#aaa9dc] sm:text-[10px]">
+                {formatStage(match.stage)}{match.matchday ? ` · MD ${match.matchday}` : ""}
+              </p>
+              <p className="my-0.5 font-display text-3xl font-black text-[#a78bfa]">
+                {match.isLive && match.homeScore !== null && match.awayScore !== null
+                  ? `${match.homeScore} - ${match.awayScore}`
+                  : "VS"}
+              </p>
+              {match.isLive ? (
+                <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-400 sm:text-[10px]">
+                  Live{match.liveMinute !== null ? ` · ${match.liveMinute}'` : ""}
+                </p>
+              ) : null}
             </div>
             <div className="text-center">
-              <FlagCircle code={match.away.code} className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
-              <p className="mt-1 font-tech text-xs font-black uppercase text-white">Argentina</p>
+              <TeamFlagCircle teamName={match.away} className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
+              <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.away}</p>
             </div>
           </div>
 
           <div className="mt-2.5">
-            <p className="mb-1.5 text-center font-tech text-[9px] uppercase tracking-[0.28em] text-[#aaa9dc] sm:text-[10px]">Live Agent Consensus</p>
+            <p className="mb-1.5 text-center font-tech text-[9px] uppercase tracking-[0.28em] text-[#aaa9dc] sm:text-[10px]">Agent Consensus</p>
             <div className="flex h-10 overflow-hidden rounded-xl border border-white/15 bg-white/5 font-tech font-black text-white sm:h-11">
-              <div className="flex items-center justify-center bg-gradient-to-r from-[#244ac4] to-[#2d65dd] transition-all duration-1000" style={{ width: `${consensus.home}%` }}>{consensus.home}%</div>
-              <div className="flex items-center justify-center bg-[#3b3a60] transition-all duration-1000" style={{ width: `${consensus.draw}%` }}>{consensus.draw}%</div>
-              <div className="flex items-center justify-center bg-gradient-to-r from-[#139bc1] to-[#117b99] transition-all duration-1000" style={{ width: `${consensus.away}%` }}>{consensus.away}%</div>
+              <div className="flex items-center justify-center bg-gradient-to-r from-[#244ac4] to-[#2d65dd] transition-all duration-1000" style={{ width: `${consensus.homePct}%` }}>{consensus.homePct}%</div>
+              <div className="flex items-center justify-center bg-[#3b3a60] transition-all duration-1000" style={{ width: `${consensus.drawPct}%` }}>{consensus.drawPct}%</div>
+              <div className="flex items-center justify-center bg-gradient-to-r from-[#139bc1] to-[#117b99] transition-all duration-1000" style={{ width: `${consensus.awayPct}%` }}>{consensus.awayPct}%</div>
             </div>
             <div className="mt-1.5 grid grid-cols-3 font-tech text-[9px] uppercase tracking-wider text-white/75 sm:text-[10px]">
-              <span>Brazil win <span className="text-blue-300">↑</span></span>
+              <span>{match.home} win <span className="text-blue-300">↑</span></span>
               <span className="text-center">Draw</span>
-              <span className="text-right">Argentina win <span className="text-cyan-300">↓</span></span>
+              <span className="text-right">{match.away} win <span className="text-cyan-300">↓</span></span>
             </div>
           </div>
 
-          <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {consensusAgents.map((agent, index) => (
-              <div key={agent.name} className="relative flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-white/10 bg-[#101022] p-1.5" style={{ borderTopColor: agent.accentHex }}>
-                <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: agent.accentHex }}>
-                  <ArenaAgentMedia src={agent.img} alt={agent.name} />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-tech text-xs font-black uppercase text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">{agent.name}</p>
-                  <p className="font-tech text-[9px] font-bold uppercase tracking-wider" style={{ color: agent.accentHex }}>{index % 2 ? "Argentina" : "Brazil"} · {78 - index * 4}%</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {agentBets.length > 0 ? (
+            <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {agentBets.map((bet) => {
+                const agent = getLeagueAgent(bet.agentName);
+                if (!agent) return null;
+                const pickLabel = bet.winner === "HOME" ? match.home : bet.winner === "AWAY" ? match.away : "Draw";
+                return (
+                  <div key={bet.agentId} className="relative flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-white/10 bg-[#101022] p-1.5" style={{ borderTopColor: agent.accentHex }}>
+                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: agent.accentHex }}>
+                      <ArenaAgentMedia src={agent.img} alt={agent.name} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-tech text-xs font-black uppercase text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">{agent.name}</p>
+                      <p className="font-tech text-[9px] font-bold uppercase tracking-wider" style={{ color: agent.accentHex }}>
+                        {pickLabel} · {CONVICTION_PCT[bet.conviction] ?? 70}%
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
 
           <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
             <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Live Stats <ChevronRight className="h-3 w-3 shrink-0" /></button>

@@ -1,11 +1,18 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { LeaguePanel } from "./LeaguePanel";
-import { LEAGUE_AGENT_DUELS } from "./leagueData";
+import { leagueApi } from "@/api/leagueApi";
 import { LeagueFightScene } from "./leagueFightUi";
 
 export function LeagueFightCarousel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const { data: battles, isLoading } = useQuery({
+    queryKey: ["league", "battles", "open", 8],
+    queryFn: () => leagueApi.getOpenBattles(8),
+    staleTime: 20_000,
+  });
 
   const scroll = (dir: number) => {
     const el = scrollerRef.current;
@@ -27,7 +34,7 @@ export function LeagueFightCarousel() {
             Agent Fight Arena
           </h3>
           <p className="mt-1 text-xs text-white/58">
-            FIFA matchday duels · agents stake KP head-to-head
+            FIFA matchday duels · agents stake $ARENA head-to-head
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -50,28 +57,37 @@ export function LeagueFightCarousel() {
         </div>
       </div>
 
-      <div
-        ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 scrollbar-none"
-      >
-        {LEAGUE_AGENT_DUELS.map((duel) => (
-          <div
-            key={duel.id}
-            className="w-[min(100%,300px)] shrink-0 snap-center sm:w-[280px] lg:w-[calc(25%-9px)] lg:min-w-[240px]"
-          >
-            <div className="mb-2 flex items-center justify-between font-tech text-[10px] uppercase tracking-wider text-white/55">
-              <span>{duel.title}</span>
-              <span className="text-[#00f080]">{duel.pool.toLocaleString()} KP pool</span>
+      {isLoading ? (
+        <div className="flex gap-4 overflow-x-auto pb-1">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton h-40 w-[280px] shrink-0 rounded-xl" />
+          ))}
+        </div>
+      ) : !battles || battles.length === 0 ? (
+        <p className="py-3 text-[11px] text-white/40">No open agent battles right now — check back soon.</p>
+      ) : (
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 scrollbar-none"
+        >
+          {battles.map((battle) => (
+            <div
+              key={battle.id}
+              className="w-[min(100%,300px)] shrink-0 snap-center sm:w-[280px] lg:w-[calc(25%-9px)] lg:min-w-[240px]"
+            >
+              <div className="mb-2 flex items-center justify-between font-tech text-[10px] uppercase tracking-wider text-white/55">
+                <span>{battle.title}</span>
+                <span className="text-[#00f080]">{(battle.stakeArena * 2).toLocaleString()} $ARENA pool</span>
+              </div>
+              <LeagueFightScene
+                leftAgent={battle.challengerAgentName}
+                rightAgent={battle.opponentAgentName}
+                compact
+              />
             </div>
-            <LeagueFightScene
-              leftAgent={duel.leftAgent}
-              rightAgent={duel.rightAgent}
-              compact
-            />
-          </div>
-        ))}
-      </div>
-
+          ))}
+        </div>
+      )}
     </LeaguePanel>
   );
 }

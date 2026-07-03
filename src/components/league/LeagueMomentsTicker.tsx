@@ -1,10 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { LeaguePanel } from "./LeaguePanel";
-import { LEAGUE_MOMENTS } from "./leagueData";
+import { leagueApi } from "@/api/leagueApi";
 
 export function LeagueMomentsTicker() {
-  const moments = LEAGUE_MOMENTS.map((m) => ({
+  const { data, isLoading } = useQuery({
+    queryKey: ["league", "moments", 8],
+    queryFn: () => leagueApi.getMoments(8),
+    staleTime: 30_000,
+  });
+
+  const moments = (data ?? []).map((m) => ({
     ...m,
     agent: getLeagueAgent(m.agentName),
   }));
@@ -16,27 +23,37 @@ export function LeagueMomentsTicker() {
           Recent League Moments
         </span>
       </div>
-      <div className="grid grid-cols-1 gap-2 px-3 py-2 sm:grid-cols-2 lg:grid-cols-4">
-        {moments.map((moment) => (
-          <div
-            key={moment.id}
-            className="flex items-center gap-2 rounded-lg border border-white/8 bg-black/30 px-2.5 py-2"
-          >
-            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/10">
-              {moment.agent ? (
-                <ArenaAgentMedia src={moment.agent.img} alt={moment.agent.name} fit="cover" />
-              ) : null}
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-2 px-3 py-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-12 w-full rounded-lg" />
+          ))}
+        </div>
+      ) : moments.length === 0 ? (
+        <p className="px-3 py-4 text-[11px] text-white/40">No moments yet this season.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 px-3 py-2 sm:grid-cols-2 lg:grid-cols-4">
+          {moments.map((moment) => (
+            <div
+              key={moment.id}
+              className="flex items-center gap-2 rounded-lg border border-white/8 bg-black/30 px-2.5 py-2"
+            >
+              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/10">
+                {moment.agent ? (
+                  <ArenaAgentMedia src={moment.agent.img} alt={moment.agent.name} fit="cover" />
+                ) : null}
+              </div>
+              <p className="min-w-0 font-tech text-[11px] leading-snug text-white/75">
+                <span className="font-bold uppercase text-white">{moment.agentName}</span>{" "}
+                {moment.text}
+                {moment.kp ? (
+                  <span className="ml-1 font-bold text-[#00f080]">+{moment.kp} KP</span>
+                ) : null}
+              </p>
             </div>
-            <p className="min-w-0 font-tech text-[11px] leading-snug text-white/75">
-              <span className="font-bold uppercase text-white">{moment.agentName}</span>{" "}
-              {moment.text}
-              {moment.kp ? (
-                <span className="ml-1 font-bold text-[#00f080]">+{moment.kp} KP</span>
-              ) : null}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </LeaguePanel>
   );
 }

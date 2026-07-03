@@ -1,6 +1,6 @@
 import { Swords, Zap } from "lucide-react";
 import { getLeagueAgent } from "@/constants/leagueAgents";
-import type { LeaguePredictionQuestion } from "./leagueData";
+import type { LeaguePredictionQuestion } from "@/api/leagueApi";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 
 export function LeagueFightScene({
@@ -99,7 +99,7 @@ export function LeagueQuestionCard({ question }: { question: LeaguePredictionQue
               </div>
               <div className="shrink-0 text-right font-tech text-[9px] uppercase tracking-wider">
                 <p style={{ color: accent }}>{agent.confidence}%</p>
-                <p className="text-[#00f080]">{agent.stake} KP</p>
+                <p className="text-[#00f080]">{agent.stake} $ARENA</p>
               </div>
             </div>
           );

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { leagueApi } from "@/api/leagueApi";
 import { LeagueFeaturedBanner } from "@/components/league/LeagueFeaturedBanner";
 import { LeagueFightCarousel } from "@/components/league/LeagueFightCarousel";
 import { LeagueMomentsTicker } from "@/components/league/LeagueMomentsTicker";
@@ -14,7 +16,7 @@ import { LeagueUpcomingCarousel } from "@/components/league/LeagueUpcomingCarous
 import { LeagueWinRatePanel } from "@/components/league/LeagueWinRatePanel";
 import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
 import { LeagueTrashTalkPanel } from "@/components/league/LeagueTrashTalkPanel";
-import { FlagCircle } from "@/components/league/FlagHex";
+import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { PolymarketLogo } from "@/components/league/PolymarketLogo";
 
 const LeaguePage = () => {
@@ -94,18 +96,36 @@ function KultLeagueBoard() {
       </div>
 
       <p className="mt-3 text-center font-mono text-[10px] tracking-wide text-white/30">
-        // picks lock 15 minutes before kickoff · all times in UTC
+        // picks lock at kickoff · all times in UTC
       </p>
     </>
   );
 }
 
+const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
+
 function LeagueAgentDesk() {
-  const calls = [
-    { agent: "Hybrid", read: "Brazil win", confidence: 68, note: "Late-game momentum and squad depth win out." },
-    { agent: "Assassin", read: "Argentina upset", confidence: 61, note: "The market is underpricing knockout variance." },
-    { agent: "Tactician", read: "Draw", confidence: 54, note: "Both sides are likely to manage risk early." },
-  ];
+  const { data: match } = useQuery({
+    queryKey: ["league", "matches", "featured"],
+    queryFn: () => leagueApi.getFeaturedMatch(),
+    staleTime: 15_000,
+  });
+
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["league", "matches", match?.id, "detail"],
+    queryFn: () => leagueApi.getMatchDetail(match!.id),
+    enabled: !!match?.id,
+    staleTime: 15_000,
+  });
+
+  const calls = (detail?.agentBets ?? []).slice(0, 3).map((bet) => ({
+    agent: bet.agentName,
+    read: bet.winner === "HOME" ? `${match!.home} win` : bet.winner === "AWAY" ? `${match!.away} win` : "Draw",
+    confidence: CONVICTION_PCT[bet.conviction] ?? 70,
+    note: bet.reasoning ?? "Agent hasn't shared its reasoning yet.",
+  }));
+
+  if (!match) return null;
 
   return (
     <section className="rounded-none border border-[#a855f7]/25 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.14),transparent_54%),#070911] p-3 sm:p-4">
@@ -113,25 +133,35 @@ function LeagueAgentDesk() {
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-300">&gt; agent_debate --live</p>
           <h3 className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
-            <FlagCircle code="BRA" className="h-6 w-6 border-blue-400/35" />
-            <span>Brazil</span>
+            <TeamFlagCircle teamName={match.home} className="h-6 w-6 border-blue-400/35" />
+            <span>{match.home}</span>
             <span className="text-white/45">vs</span>
-            <span>Argentina</span>
-            <FlagCircle code="ARG" className="h-6 w-6 border-cyan-400/35" />
+            <span>{match.away}</span>
+            <TeamFlagCircle teamName={match.away} className="h-6 w-6 border-cyan-400/35" />
           </h3>
           <p className="mt-0.5 font-mono text-[11px] text-white/45"># different reads, visible reasoning — you make the pick.</p>
         </div>
         <span className="rounded-none border border-[#a855f7]/30 bg-[#a855f7]/10 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-[#d8b4fe]">trust earned from results</span>
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-3">
-        {calls.map((call) => (
-          <article key={call.agent} className="rounded-none border border-white/10 bg-black/40 p-3">
-            <div className="flex items-center justify-between gap-2"><span className="font-tech text-xs font-bold uppercase text-white">{call.agent}</span><span className="font-tech text-xs font-bold text-cyan-300">{call.confidence}%</span></div>
-            <p className="mt-1 font-tech text-xs uppercase text-[#d8b4fe]">&gt; {call.read}</p>
-            <p className="mt-1.5 font-tech text-xs leading-relaxed text-white/45">{call.note}</p>
-          </article>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton h-24 w-full rounded" />
+          ))}
+        </div>
+      ) : calls.length === 0 ? (
+        <p className="mt-3 font-mono text-xs text-white/40">No agent picks locked in for this match yet.</p>
+      ) : (
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {calls.map((call) => (
+            <article key={call.agent} className="rounded-none border border-white/10 bg-black/40 p-3">
+              <div className="flex items-center justify-between gap-2"><span className="font-tech text-xs font-bold uppercase text-white">{call.agent}</span><span className="font-tech text-xs font-bold text-cyan-300">{call.confidence}%</span></div>
+              <p className="mt-1 font-tech text-xs uppercase text-[#d8b4fe]">&gt; {call.read}</p>
+              <p className="mt-1.5 font-tech text-xs leading-relaxed text-white/45">{call.note}</p>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

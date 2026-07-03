@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { resolveCountryCode, teamInitials } from "@/lib/teamCode";
 
 export type CountryCode =
   | "BRA"
@@ -40,6 +41,27 @@ export function FlagCircle({ code, className }: { code: CountryCode; className?:
   );
 }
 
+/**
+ * Safe wrapper around `FlagCircle` for a live team-name string (not a fixed
+ * `CountryCode`) — falls back to a plain initials badge for any team not in
+ * the hardcoded flag set instead of crashing. Use this at every real-data
+ * call site instead of `FlagCircle` directly.
+ */
+export function TeamFlagCircle({ teamName, className }: { teamName: string; className?: string }) {
+  const code = resolveCountryCode(teamName);
+  if (code) return <FlagCircle code={code} className={className} />;
+  return (
+    <div
+      className={cn(
+        "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10 font-tech text-[8px] font-bold text-white/60",
+        className,
+      )}
+    >
+      {teamInitials(teamName)}
+    </div>
+  );
+}
+
 type FlagHexProps = {
   code: CountryCode;
   size?: "sm" | "md" | "lg" | "xl";
@@ -71,6 +93,18 @@ export function FlagHex({ code, size = "md", className }: FlagHexProps) {
           FLAG_STYLES[code],
         )}
       />
+    </div>
+  );
+}
+
+/** Safe wrapper around `FlagHex` for a live team-name string — see `TeamFlagCircle` above for why this exists. */
+export function TeamFlagHex({ teamName, size = "md", className }: { teamName: string; size?: FlagHexProps["size"]; className?: string }) {
+  const code = resolveCountryCode(teamName);
+  if (code) return <FlagHex code={code} size={size} className={className} />;
+  return (
+    <div className={cn("relative flex shrink-0 items-center justify-center", SIZE_MAP[size ?? "md"], className)}>
+      <div className="absolute inset-0 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)] bg-[#1a1f2e] shadow-[0_0_12px_rgba(154,53,255,0.25)]" />
+      <span className="relative font-tech text-[10px] font-bold text-white/60">{teamInitials(teamName)}</span>
     </div>
   );
 }

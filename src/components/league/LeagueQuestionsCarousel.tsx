@@ -1,11 +1,27 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { LeaguePanel } from "./LeaguePanel";
-import { FEATURED_MATCH_QUESTIONS } from "./leagueData";
+import { leagueApi } from "@/api/leagueApi";
 import { LeagueQuestionCard } from "./leagueFightUi";
 
 export function LeagueQuestionsCarousel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const { data: featuredMatch } = useQuery({
+    queryKey: ["league", "matches", "featured"],
+    queryFn: () => leagueApi.getFeaturedMatch(),
+    staleTime: 15_000,
+  });
+
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["league", "matches", featuredMatch?.id, "detail"],
+    queryFn: () => leagueApi.getMatchDetail(featuredMatch!.id),
+    enabled: !!featuredMatch?.id,
+    staleTime: 15_000,
+  });
+
+  const questions = detail?.questions ?? [];
 
   const scroll = (dir: number) => {
     const el = scrollerRef.current;
@@ -32,7 +48,7 @@ export function LeagueQuestionsCarousel() {
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden font-tech text-[9px] uppercase tracking-widest text-white/30 sm:inline">
-            {FEATURED_MATCH_QUESTIONS.length} live
+            {questions.length} live
           </span>
           <button
             type="button"
@@ -53,14 +69,26 @@ export function LeagueQuestionsCarousel() {
         </div>
       </div>
 
-      <div
-        ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-0.5 scrollbar-none"
-      >
-        {FEATURED_MATCH_QUESTIONS.map((q) => (
-          <LeagueQuestionCard key={q.id} question={q} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex gap-3 overflow-x-auto pb-0.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton h-40 w-[320px] shrink-0 rounded-xl" />
+          ))}
+        </div>
+      ) : questions.length === 0 ? (
+        <p className="py-3 text-[11px] text-white/40">
+          Prediction questions need at least two agents to disagree on this match's outcome — check back once more picks are in.
+        </p>
+      ) : (
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-0.5 scrollbar-none"
+        >
+          {questions.map((q) => (
+            <LeagueQuestionCard key={q.id} question={q} />
+          ))}
+        </div>
+      )}
     </LeaguePanel>
   );
 }

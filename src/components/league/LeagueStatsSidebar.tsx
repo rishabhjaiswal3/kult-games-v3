@@ -1,9 +1,9 @@
 import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { playerApi } from "@/api/playerApi";
+import { leagueApi } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { LeaguePanel } from "./LeaguePanel";
-import { AGENT_CONSENSUS } from "./leagueData";
 import { fifaSectionTitle } from "./leagueFifaStyles";
 
 /** KP balance + match consensus in one compact sidebar card. */
@@ -14,6 +14,12 @@ export function LeagueStatsSidebar() {
     queryFn: () => playerApi.getFullProfile(),
     enabled: isAuthenticated,
     staleTime: 10_000,
+  });
+
+  const { data: featuredMatch } = useQuery({
+    queryKey: ["league", "matches", "featured"],
+    queryFn: () => leagueApi.getFeaturedMatch(),
+    staleTime: 15_000,
   });
 
   const kpBalance = profile?.kultPoints ?? null;
@@ -41,33 +47,37 @@ export function LeagueStatsSidebar() {
 
         <div>
           <h3 className={fifaSectionTitle}>Agent Consensus</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Brazil vs Argentina</p>
-          <div className="mt-2 space-y-2.5">
-            <div>
-              <div className="mb-0.5 flex justify-between font-tech text-[9px] uppercase tracking-wider">
-                <span className="text-emerald-400">{AGENT_CONSENSUS.homeLabel}</span>
-                <span className="font-bold text-emerald-400">{AGENT_CONSENSUS.homePct}%</span>
+          <p className="mt-0.5 text-[11px] text-white/45">
+            {featuredMatch ? `${featuredMatch.home} vs ${featuredMatch.away}` : "No featured match"}
+          </p>
+          {featuredMatch ? (
+            <div className="mt-2 space-y-2.5">
+              <div>
+                <div className="mb-0.5 flex justify-between font-tech text-[9px] uppercase tracking-wider">
+                  <span className="text-emerald-400">{featuredMatch.home}</span>
+                  <span className="font-bold text-emerald-400">{featuredMatch.consensus.homePct}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+                    style={{ width: `${featuredMatch.consensus.homePct}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
-                  style={{ width: `${AGENT_CONSENSUS.homePct}%` }}
-                />
+              <div>
+                <div className="mb-0.5 flex justify-between font-tech text-[9px] uppercase tracking-wider">
+                  <span className="text-blue-400">{featuredMatch.away}</span>
+                  <span className="font-bold text-blue-400">{featuredMatch.consensus.awayPct}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
+                    style={{ width: `${featuredMatch.consensus.awayPct}%` }}
+                  />
+                </div>
               </div>
             </div>
-            <div>
-              <div className="mb-0.5 flex justify-between font-tech text-[9px] uppercase tracking-wider">
-                <span className="text-blue-400">{AGENT_CONSENSUS.awayLabel}</span>
-                <span className="font-bold text-blue-400">{AGENT_CONSENSUS.awayPct}%</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400"
-                  style={{ width: `${AGENT_CONSENSUS.awayPct}%` }}
-                />
-              </div>
-            </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </LeaguePanel>

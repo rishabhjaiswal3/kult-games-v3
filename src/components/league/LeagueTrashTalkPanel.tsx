@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FEATURED_MATCH, FEATURED_MATCH_QUESTIONS } from "./leagueData";
+import { useQuery } from "@tanstack/react-query";
+import { leagueApi, type MatchSummary, type LeaguePredictionQuestion } from "@/api/leagueApi";
 
 const WORKER_URL = "https://league-trash-talk.ronit-sde.workers.dev/generate";
 
@@ -11,10 +12,16 @@ interface TrashTalkResult {
   outcome: Outcome;
 }
 
-async function fetchTrashTalk(outcome: Outcome): Promise<TrashTalkResult> {
+async function fetchTrashTalk(
+  outcome: Outcome,
+  match: MatchSummary,
+  questions: LeaguePredictionQuestion[],
+  userAgentName: string,
+  rivalAgentName: string,
+): Promise<TrashTalkResult> {
   const isWin = outcome === "WIN";
 
-  const picks = FEATURED_MATCH_QUESTIONS.map((q) => ({
+  const picks = questions.map((q) => ({
     question: q.question,
     category: q.category,
     userPick:      isWin ? q.agentA.pick : q.agentB.pick,
@@ -31,24 +38,24 @@ async function fetchTrashTalk(outcome: Outcome): Promise<TrashTalkResult> {
     body: JSON.stringify({
       user: {
         name: "You",
-        agentName: "HYBRID",
+        agentName: userAgentName,
         score: isWin ? 4 : 1,
         kpEarned: isWin ? 1240 : 85,
       },
       rival: {
         name: "Rival",
-        agentName: "ASSASSIN",
+        agentName: rivalAgentName,
         score: isWin ? 1 : 4,
       },
       match: {
-        home:   FEATURED_MATCH.home.label,
-        away:   FEATURED_MATCH.away.label,
-        stage:  FEATURED_MATCH.stage,
-        result: `${FEATURED_MATCH.homeScore}-${FEATURED_MATCH.awayScore}`,
+        home:   match.home,
+        away:   match.away,
+        stage:  match.stage,
+        result: match.homeScore !== null && match.awayScore !== null ? `${match.homeScore}-${match.awayScore}` : "TBD",
       },
       picks,
-      totalQuestions: FEATURED_MATCH_QUESTIONS.length,
-      context: `${FEATURED_MATCH.stage} — Match ${FEATURED_MATCH.matchNumber}`,
+      totalQuestions: questions.length,
+      context: `${match.stage}${match.matchday ? ` — Matchday ${match.matchday}` : ""}`,
       sessionId: `league-${Date.now()}`,
       batchIndex: 0,
     }),
@@ -64,12 +71,31 @@ export function LeagueTrashTalkPanel() {
   const [result, setResult]   = useState<TrashTalkResult | null>(null);
   const [error, setError]     = useState<string | null>(null);
 
+  const { data: match } = useQuery({
+    queryKey: ["league", "matches", "featured"],
+    queryFn: () => leagueApi.getFeaturedMatch(),
+    staleTime: 15_000,
+  });
+
+  const { data: detail } = useQuery({
+    queryKey: ["league", "matches", match?.id, "detail"],
+    queryFn: () => leagueApi.getMatchDetail(match!.id),
+    enabled: !!match?.id,
+    staleTime: 15_000,
+  });
+
+  const questions = detail?.questions ?? [];
+  const agentBets = detail?.agentBets ?? [];
+  const userAgentName = agentBets[0]?.agentName ?? "Your agent";
+  const rivalAgentName = agentBets[1]?.agentName ?? "Rival agent";
+
   async function handleClick(outcome: Outcome) {
+    if (!match) return;
     setLoading(outcome);
     setResult(null);
     setError(null);
     try {
-      const data = await fetchTrashTalk(outcome);
+      const data = await fetchTrashTalk(outcome, match, questions, userAgentName, rivalAgentName);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -83,7 +109,9 @@ export function LeagueTrashTalkPanel() {
     setError(null);
   }
 
-  const matchLabel = `${FEATURED_MATCH.home.label} vs ${FEATURED_MATCH.away.label}`;
+  if (!match) return null;
+
+  const matchLabel = `${match.home} vs ${match.away}`;
 
   return (
     <section className="rounded-none border border-[#a855f7]/25 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.10),transparent_55%),#070911] p-3 sm:p-5">
@@ -113,7 +141,7 @@ export function LeagueTrashTalkPanel() {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            disabled={loading !== null}
+            disabled={loading !== null || questions.length === 0}
             onClick={() => handleClick("WIN")}
             className="group relative overflow-hidden rounded-none border border-emerald-500/40 bg-emerald-500/8 px-4 py-4 transition hover:border-emerald-400/70 hover:bg-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-50 sm:py-5"
           >
@@ -136,7 +164,7 @@ export function LeagueTrashTalkPanel() {
 
           <button
             type="button"
-            disabled={loading !== null}
+            disabled={loading !== null || questions.length === 0}
             onClick={() => handleClick("LOSS")}
             className="group relative overflow-hidden rounded-none border border-rose-500/40 bg-rose-500/8 px-4 py-4 transition hover:border-rose-400/70 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-50 sm:py-5"
           >
@@ -159,6 +187,12 @@ export function LeagueTrashTalkPanel() {
         </div>
       )}
 
+      {questions.length === 0 && !result ? (
+        <p className="mt-3 font-mono text-[10px] text-white/30">
+          Waiting on at least two disagreeing agent picks on this match before trash talk can generate.
+        </p>
+      ) : null}
+
       {/* Error */}
       {error && (
         <div className="mt-3 rounded-none border border-rose-500/30 bg-rose-500/10 px-4 py-3 font-mono text-xs text-rose-400">
@@ -171,7 +205,7 @@ export function LeagueTrashTalkPanel() {
         <div className="space-y-4">
           {/* Winner block */}
           <TrashTalkBlock
-            label={result.outcome === "WIN" ? "Your agent — HYBRID" : "Rival agent — ASSASSIN"}
+            label={result.outcome === "WIN" ? `Your agent — ${userAgentName}` : `Rival agent — ${rivalAgentName}`}
             sublabel={result.outcome === "WIN" ? "Winner · Confident read" : "Winner · Rubbing it in"}
             lines={result.player1}
             accent="emerald"
@@ -179,7 +213,7 @@ export function LeagueTrashTalkPanel() {
           />
           {/* Loser block */}
           <TrashTalkBlock
-            label={result.outcome === "LOSS" ? "Your agent — HYBRID" : "Rival agent — ASSASSIN"}
+            label={result.outcome === "LOSS" ? `Your agent — ${userAgentName}` : `Rival agent — ${rivalAgentName}`}
             sublabel={result.outcome === "LOSS" ? "Down but not out" : "Taking the loss"}
             lines={result.player2}
             accent="purple"
