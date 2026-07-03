@@ -41,10 +41,6 @@ export default defineConfig(({ mode }) => ({
             return "vendor-motion";
           }
 
-          if (id.includes("recharts") || id.includes("/d3-")) {
-            return "vendor-charts";
-          }
-
           if (
             id.includes("@radix-ui") ||
             id.includes("lucide-react") ||

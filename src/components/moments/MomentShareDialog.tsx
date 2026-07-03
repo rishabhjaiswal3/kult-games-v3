@@ -3,8 +3,9 @@ import { Check, Copy, ExternalLink, Share2, X } from "lucide-react";
 import type { Moment } from "@/types/api";
 import {
   buildMomentSharePayload,
+  buildMomentSharePostText,
   buildRedditSubmitParams,
-  buildRedditSubmitTitle,
+  buildTemplateShareBody,
   resolvePlatformShareUrl,
   resolveShareMediaUrl,
   type SharePayload,
@@ -35,14 +36,6 @@ type SharePlatform = {
 type ShareTemplate = { id: string; label: string; text: string };
 type GameTemplateGroup = { gameSlug: string; gameName: string; templates: ShareTemplate[] };
 
-function resolveFacebookPreviewUrl(payload: SharePayload): string {
-  return payload.url;
-}
-
-function resolveTwitterPreviewUrl(payload: SharePayload): string {
-  return payload.url;
-}
-
 // ── Platforms ─────────────────────────────────────────────────────────────────
 // Public share links use `/moments/:id`. Social crawlers receive OG HTML (with the
 // moment image URL from storage) via the production server or /api/share fallback.
@@ -55,18 +48,10 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
-      const text = [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
-        .filter(Boolean)
-        .join("\n\n");
+      const text = buildMomentSharePostText(withPlatformShareUrl(p));
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => {
-      const tags = p.hashtags.length > 0 ? p.hashtags.map((h) => `#${h}`).join(" ") : null;
-      return [p.title, p.teaser, tags, resolveTwitterPreviewUrl(p)]
-        .filter(Boolean)
-        .join("\n\n");
-    },
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "facebook",
@@ -74,8 +59,14 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
-    buildUrl: (p) => `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(p) })}`,
-    buildPostText: (p) => [p.title, p.teaser, resolveFacebookPreviewUrl(p)].filter(Boolean).join("\n\n"),
+    buildUrl: (p) => {
+      const platformPayload = withPlatformShareUrl(p);
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
+        u: platformPayload.previewUrl,
+        quote: buildMomentSharePostText(platformPayload),
+      })}`;
+    },
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "reddit",
@@ -83,14 +74,11 @@ const PLATFORMS: SharePlatform[] = [
     icon: "r/",
     color: "#fff",
     bg: "#ff4500",
-    buildUrl: (p) =>
-      `https://www.reddit.com/submit?${new URLSearchParams(buildRedditSubmitParams(p))}`,
-    buildPostText: (p) => {
-      const redditTitle = buildRedditSubmitTitle(p);
-      return [redditTitle, p.teaser && p.teaser !== redditTitle ? p.teaser : "", p.url]
-        .filter(Boolean)
-        .join("\n\n");
+    buildUrl: (p) => {
+      const platformPayload = withPlatformShareUrl(p);
+      return `https://www.reddit.com/submit?${new URLSearchParams(buildRedditSubmitParams(platformPayload))}`;
     },
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "whatsapp",
@@ -99,13 +87,10 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#25d366",
     buildUrl: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
-      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
+      const text = buildMomentSharePostText(withPlatformShareUrl(p));
+      return `https://api.whatsapp.com/send?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => {
-      const parts = [`*${p.title}*`, p.teaser, p.hashtags.map((h) => `#${h}`).join(" "), p.url];
-      return parts.filter(Boolean).join("\n");
-    },
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "pinterest",
@@ -114,14 +99,15 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#e60023",
     buildUrl: (p) => {
+      const platformPayload = withPlatformShareUrl(p);
       const params = new URLSearchParams({
-        url: p.url,
-        description: `${p.title} – ${p.teaser}`,
+        url: platformPayload.previewUrl,
+        description: buildMomentSharePostText(platformPayload),
       });
-      if (p.mediaUrl) params.set("media", p.mediaUrl);
+      if (platformPayload.mediaUrl) params.set("media", platformPayload.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     },
-    buildPostText: (p) => [p.title, p.teaser, p.url].filter(Boolean).join("\n\n"),
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "tiktok",
@@ -131,7 +117,7 @@ const PLATFORMS: SharePlatform[] = [
     bg: "#010101",
     copyOnly: true,
     buildUrl: () => "https://www.tiktok.com",
-    buildPostText: (p) => [p.title, p.hashtags.map((h) => `#${h}`).join(" "), p.url].filter(Boolean).join("\n\n"),
+    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
   },
 ];
 
@@ -191,30 +177,29 @@ function withPlatformShareUrl(payload: SharePayload): SharePayload {
 
 function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: string, payload: SharePayload): string {
   const platformPayload = withPlatformShareUrl(payload);
+  const text = buildTemplateShareBody(templateText, platformPayload);
+
   switch (platform.id) {
     case "twitter": {
-      const previewUrl = resolveTwitterPreviewUrl(platformPayload);
-      const text = [templateText, previewUrl].filter(Boolean).join("\n\n");
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     }
     case "whatsapp": {
-      const parts = [templateText, platformPayload.hashtags.map((h) => `#${h}`).join(" "), platformPayload.url];
-      return `https://api.whatsapp.com/send?${new URLSearchParams({ text: parts.filter(Boolean).join("\n") })}`;
+      return `https://api.whatsapp.com/send?${new URLSearchParams({ text })}`;
     }
     case "reddit": {
       const templateTitle = templateText.split("\n")[0]?.trim() || platformPayload.title;
-      const titleWithTeaser = platformPayload.teaser
-        ? `${templateTitle} — ${platformPayload.teaser}`
-        : templateTitle;
       return `https://www.reddit.com/submit?${new URLSearchParams(
-        buildRedditSubmitParams(platformPayload, titleWithTeaser),
+        buildRedditSubmitParams(platformPayload, templateTitle),
       )}`;
     }
     case "facebook": {
-      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: resolveFacebookPreviewUrl(platformPayload) })}`;
+      return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
+        u: platformPayload.previewUrl,
+        quote: text,
+      })}`;
     }
     case "pinterest": {
-      const params = new URLSearchParams({ url: platformPayload.url, description: templateText });
+      const params = new URLSearchParams({ url: platformPayload.previewUrl, description: text });
       if (platformPayload.mediaUrl) params.set("media", platformPayload.mediaUrl);
       return `https://www.pinterest.com/pin/create/button/?${params}`;
     }
@@ -306,7 +291,7 @@ function PostPreviewText({ platform, payload, customText }: {
 }) {
   const platformPayload = withPlatformShareUrl(payload);
   const postText = customText
-    ? [customText, platformPayload.url].filter(Boolean).join("\n\n")
+    ? buildTemplateShareBody(customText, platformPayload)
     : platform.buildPostText(platformPayload);
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
@@ -353,7 +338,9 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
 
   const handleShare = useCallback(async () => {
     if (platform.copyOnly) {
-      const text = selectedTemplate?.text ?? platform.buildPostText(payload);
+      const text = selectedTemplate
+        ? buildTemplateShareBody(selectedTemplate.text, withPlatformShareUrl(payload))
+        : platform.buildPostText(withPlatformShareUrl(payload));
       try {
         await copyText(text);
       } catch {

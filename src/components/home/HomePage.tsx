@@ -18,6 +18,7 @@ import { momentsApi } from "@/api/momentsApi";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { MomentGameBadge } from "@/components/moments/MomentGameBadge";
+import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import type { AccessFeature } from "@/lib/accessControl";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import heroVideo from "@/assets/homebkg.mp4";
@@ -156,25 +157,11 @@ export function HomePage() {
   return (
     <div className="home-page space-y-6 pb-10">
       <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-        <video
-          src={mobileHeroVideo}
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover sm:hidden"
-        />
-        <video
-          src={heroVideo}
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
+        <ResponsiveBackgroundVideo
+          mobileSrc={mobileHeroVideo}
+          desktopSrc={heroVideo}
+          mobileClassName="absolute inset-0 h-full w-full object-cover sm:hidden"
+          desktopClassName="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />

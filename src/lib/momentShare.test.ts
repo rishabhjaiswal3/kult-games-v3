@@ -110,7 +110,7 @@ describe("resolvePlatformShareUrl", () => {
 });
 
 describe("buildRedditSubmitParams", () => {
-  it("merges title and description for Reddit link posts", async () => {
+  it("uses title for the link post and description + tags in the body", async () => {
     vi.resetModules();
     const { buildRedditSubmitParams, buildRedditSubmitTitle } = await import("./momentShare");
 
@@ -118,14 +118,16 @@ describe("buildRedditSubmitParams", () => {
       title: "New Trash Talk",
       teaser: "Let's try to wrap up early because you are not good enough to compete",
       url: "https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/abc",
+      previewUrl: "https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/abc",
+      hashtags: ["KultGames", "KultMoments"],
     };
 
-    expect(buildRedditSubmitTitle(payload)).toContain("New Trash Talk —");
-    expect(buildRedditSubmitTitle(payload)).toContain("wrap up early");
+    expect(buildRedditSubmitTitle(payload)).toBe("New Trash Talk");
 
     const params = buildRedditSubmitParams(payload);
-    expect(params.url).toBe(payload.url);
-    expect(params.title).toContain(" — ");
-    expect(params.text).toBe(payload.teaser);
+    expect(params.url).toBe(payload.previewUrl);
+    expect(params.title).toBe("New Trash Talk");
+    expect(params.text).toContain("wrap up early");
+    expect(params.text).toContain("#KultGames");
   });
 });

@@ -37,7 +37,10 @@ const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating")
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
-import { TourProvider } from "@/tour/TourProvider";
+
+const TourProvider = lazyWithRetry(() =>
+  import("@/tour/TourProvider").then((mod) => ({ default: mod.TourProvider }))
+);
 
 function OAuthRedirectLoader() {
   useEffect(() => {
@@ -69,15 +72,9 @@ const queryClient = new QueryClient({
   },
 });
 
-/** How long before the route tree is hinted behind the splash (blur preview). */
-const FADED_CONTENT_DELAY = 350;
-/** Keep preview subtle — avoid `filter: blur` on the whole app (hurts scroll compositing & text clarity). */
-const PREVIEW_OPACITY = 0.35;
-
 function BrowserApp() {
   const { canUse, hasAccess } = useAccess();
   const [loaded, setLoaded] = useState(readSplashAlreadySeen);
-  const [showPreview, setShowPreview] = useState(readSplashAlreadySeen);
   const handleComplete = useCallback(() => {
     try {
       sessionStorage.setItem(SPLASH_SEEN_KEY, "1");
@@ -86,21 +83,6 @@ function BrowserApp() {
     }
     setLoaded(true);
   }, []);
-
-  useEffect(() => {
-    if (loaded) {
-      setShowPreview(true);
-      return;
-    }
-
-    const previewTimer = window.setTimeout(() => {
-      setShowPreview(true);
-    }, FADED_CONTENT_DELAY);
-
-    return () => {
-      window.clearTimeout(previewTimer);
-    };
-  }, [loaded]);
 
   /** Warm a likely next route after first paint instead of competing with startup work. */
   useEffect(() => {
@@ -125,27 +107,24 @@ function BrowserApp() {
     );
   }
 
+  if (!loaded) {
+    return (
+      <Suspense fallback={null}>
+        <LoadingScreen onComplete={handleComplete} />
+      </Suspense>
+    );
+  }
+
   return (
     <AuthProvider>
       <CreateAgentProvider>
       <TooltipProvider>
-        {!loaded ? (
-          <Suspense fallback={null}>
-            <LoadingScreen onComplete={handleComplete} />
-          </Suspense>
-        ) : null}
         <BrowserRouter>
-          <TourProvider enabled={loaded}>
-            <div
-              className={loaded ? "" : "pointer-events-none"}
-              style={{
-                opacity: loaded ? 1 : showPreview ? PREVIEW_OPACITY : 0,
-                transition: loaded ? "opacity 450ms ease" : "opacity 350ms ease",
-              }}
-            >
-              <RouteChunkErrorBoundary>
-                <Suspense fallback={<PageRouteFallback />}>
-                  <Routes>
+          <Suspense fallback={null}>
+            <TourProvider enabled>
+            <RouteChunkErrorBoundary>
+              <Suspense fallback={<PageRouteFallback />}>
+                <Routes>
                   <Route element={<AppShell />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/dashboard" element={<AccessRoute><Dashboard /></AccessRoute>} />
@@ -175,17 +154,15 @@ function BrowserApp() {
                   <Route path="/arena/highway-hustle/:battleId" element={<AccessRoute><HighwayHustleGamePage /></AccessRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                </Suspense>
-              </RouteChunkErrorBoundary>
-            </div>
+              </Suspense>
+            </RouteChunkErrorBoundary>
             <LoginModalHost />
             <OAuthRedirectLoader />
-            {loaded ? (
-              <Suspense fallback={null}>
-                <KultAIFloating />
-              </Suspense>
-            ) : null}
+            <Suspense fallback={null}>
+              <KultAIFloating />
+            </Suspense>
           </TourProvider>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
       </CreateAgentProvider>

@@ -29,6 +29,7 @@ import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
+import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
@@ -284,8 +285,8 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
         })
       ),
     enabled: isAiArenaReady && agents.length > 0,
-    staleTime: 2_000,
-    refetchInterval: 2_000,
+    staleTime: 4_000,
+    refetchInterval: 4_000,
     retry: 1,
   });
 
@@ -675,34 +676,20 @@ function Hero() {
       className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
       data-tour="ai-arena-hero"
     >
-      <div className="absolute inset-0 hidden md:block">
-        <video
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="h-full w-full object-contain object-center xl:object-cover xl:object-right"
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
+      <div className="absolute inset-0">
+        <ResponsiveBackgroundVideo
+          mobileSrc={mobileHeroVideo}
+          desktopSrc={heroVideo}
+          breakpoint="md"
+          mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
+          desktopClassName="h-full w-full object-contain object-center xl:object-cover xl:object-right"
+        />
+        <div className="absolute inset-0 hidden bg-gradient-to-b from-transparent via-transparent to-background/65 md:block" />
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent md:hidden" />
       </div>
       {/* original line kept — bg-black was added intentionally by another dev, commented out to fix black rectangle artifact */}
       {/* <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black"> */}
       <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
-        <video
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover object-top"
-        >
-          <source src={mobileHeroVideo} type="video/mp4" />
-        </video>
         <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
           <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white/50 min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
