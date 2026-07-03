@@ -918,7 +918,7 @@ export function AllMomentsPage() {
 
             <div
               ref={isBrowseAll ? undefined : feedScrollRef}
-              className={isBrowseAll ? "space-y-4" : "moments-feed-scroll min-h-0 flex-1 overflow-y-auto pr-0.5 pt-1 xl:min-h-0"}
+              className={isBrowseAll ? "space-y-4" : "moments-feed-scroll xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-0.5 xl:pt-1"}
             >
 
             {(discoverQuery.isLoading
