@@ -2363,9 +2363,10 @@ button[aria-label="close modal"]:hover {
 }
 
 .login-prompt-toast__copy {
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .login-prompt-toast__cta {

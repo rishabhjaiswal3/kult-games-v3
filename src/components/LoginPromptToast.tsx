@@ -4,7 +4,6 @@ import {
   BrainCircuit,
   Crown,
   Gamepad2,
-  Home,
   Medal,
   Package,
   Sparkles,
@@ -122,7 +121,7 @@ const DEFAULT_LOGIN_PROMPT: LoginPromptToast = {
   description: "Sign in to access the full platform.",
 };
 
-const EXCLUDED_PATHS = new Set(["/access"]);
+const EXCLUDED_PATHS = new Set(["/access", "/"]);
 
 function getLoginPromptForPath(pathname: string): LoginPromptToast | null {
   if (EXCLUDED_PATHS.has(pathname)) return null;
@@ -159,7 +158,7 @@ function LoginPromptToastCard({
         ) : null}
       </div>
 
-      <p className="login-prompt-toast__copy relative z-[1] min-w-0 flex-1 truncate text-[11px] leading-none sm:text-xs">
+      <p className="login-prompt-toast__copy relative z-[1] min-w-0 flex-1 text-[11px] leading-snug sm:text-xs">
         <span className="font-bold text-white">{toast.title}</span>
         <span className="mx-1.5 text-white/30">·</span>
         <span className="text-white/55">{toast.description}</span>
