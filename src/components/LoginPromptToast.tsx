@@ -37,7 +37,7 @@ const LOGIN_PROMPTS: Array<{ match: (path: string) => boolean; toast: LoginPromp
     toast: {
       color: "#00f080",
       title: "Beta Live",
-      description: "Sign in to enter the arena on 0G.",
+      description: "Your AI Agent is waiting. Enter the Arena and begin your journey",
       liveDot: true,
     },
   },
