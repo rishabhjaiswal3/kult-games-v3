@@ -24,15 +24,6 @@ type LoginPromptToast = {
 
 const LOGIN_PROMPTS: Array<{ match: (path: string) => boolean; toast: LoginPromptToast }> = [
   {
-    match: (path) => path === "/",
-    toast: {
-      icon: Home,
-      color: "#a855ff",
-      title: "Welcome to Kult",
-      description: "Sign in to play, compete, and earn rewards.",
-    },
-  },
-  {
     match: (path) => path === "/ai-arena" || path === "/dashboard",
     toast: {
       color: "#00f080",
@@ -149,37 +140,38 @@ function LoginPromptToastCard({
   return (
     <div
       role="status"
-      className="login-prompt-toast pointer-events-auto relative flex w-full items-center gap-3.5 overflow-hidden rounded-2xl p-4 pr-3.5 animate-in slide-in-from-bottom-3 fade-in duration-500"
+      className="login-prompt-toast pointer-events-auto relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-3 py-2.5 pr-2.5 animate-in slide-in-from-bottom-3 fade-in duration-500"
       style={{ "--toast-accent": toast.color } as CSSProperties}
     >
       <div className="login-prompt-toast__glow pointer-events-none absolute inset-0" aria-hidden />
 
       <div
-        className="home-stat-icon relative z-[1] grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+        className="home-stat-icon relative z-[1] grid h-8 w-8 shrink-0 place-items-center rounded-lg"
         style={{ "--stat-color": toast.color } as CSSProperties}
       >
         {toast.liveDot ? (
-          <span className="relative flex h-2.5 w-2.5">
+          <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#26e63b] opacity-60" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#26e63b] shadow-[0_0_12px_rgba(38,230,59,0.95)]" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.95)]" />
           </span>
         ) : Icon ? (
-          <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} />
+          <Icon className="h-4 w-4" strokeWidth={2.25} />
         ) : null}
       </div>
 
-      <div className="relative z-[1] grid min-w-0 flex-1 gap-1">
-        <p className="text-[13px] font-bold leading-none tracking-tight text-white sm:text-sm">{toast.title}</p>
-        <p className="text-[11px] leading-snug text-white/58 sm:text-xs">{toast.description}</p>
-      </div>
+      <p className="login-prompt-toast__copy relative z-[1] min-w-0 flex-1 truncate text-[11px] leading-none sm:text-xs">
+        <span className="font-bold text-white">{toast.title}</span>
+        <span className="mx-1.5 text-white/30">·</span>
+        <span className="text-white/55">{toast.description}</span>
+      </p>
 
       <button
         type="button"
         onClick={onLogin}
-        className="login-prompt-toast__cta relative z-[1] inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white transition duration-200 hover:scale-[1.03] active:scale-[0.98] sm:text-xs"
+        className="login-prompt-toast__cta relative z-[1] inline-flex h-7 shrink-0 items-center justify-center self-center rounded-full px-3 text-[11px] font-semibold text-white transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
         style={{ "--toast-accent": toast.color } as CSSProperties}
       >
-        Connect Wallet
+        Connect
       </button>
     </div>
   );

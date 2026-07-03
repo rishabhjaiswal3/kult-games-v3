@@ -2362,6 +2362,12 @@ button[aria-label="close modal"]:hover {
     );
 }
 
+.login-prompt-toast__copy {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .login-prompt-toast__cta {
   background:
     linear-gradient(
