@@ -368,9 +368,9 @@ const Leaderboard = () => {
 
                 <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
                   <Info className="h-4 w-4 shrink-0 text-blue-400" />
-                  <span>
+                  {/* <span>
                     KULT Points currently read from the existing KULT backend leaderboard/profile data. Ledger-backed KP can replace this data source when the backend KP module is ready.
-                  </span>
+                  </span> */}
                 </div>
               </>
             ) : activeMode === "KULT_POINTS" ? (

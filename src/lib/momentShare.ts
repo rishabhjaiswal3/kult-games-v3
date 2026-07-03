@@ -60,6 +60,9 @@ export type SharePayload = {
   relatedGames: string[];
 };
 
+/** Blank line between share blocks (title, description, link, tags). */
+export const SHARE_BLOCK_GAP = "\n\n";
+
 function truncateText(value: string, maxLength: number) {
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength - 1).trimEnd()}…`;
@@ -73,18 +76,72 @@ function normalizeHashtag(value: string) {
     .slice(0, 24);
 }
 
-function resolveHostBase(): string {
+function joinShareBlocks(parts: Array<string | undefined>) {
+  return parts.filter((part): part is string => Boolean(part?.trim())).join(SHARE_BLOCK_GAP);
+}
+
+export function buildMomentShareTags(payload: Pick<SharePayload, "hashtags">): string {
+  const tags = new Set<string>();
+  for (const tag of payload.hashtags) {
+    const normalized = normalizeHashtag(tag);
+    if (normalized) tags.add(normalized);
+  }
+  return [...tags].map((tag) => `#${tag}`).join(" ");
+}
+
+export type BuildMomentShareBodyOptions = {
+  title?: string;
+  description?: string;
+  linkUrl?: string;
+  includeTags?: boolean;
+};
+
+/** Canonical share copy: Title → description → link → tags. Image preview is platform OG. */
+export function buildMomentShareBody(
+  payload: SharePayload,
+  options: BuildMomentShareBodyOptions = {},
+): string {
+  const title = (options.title ?? payload.title).trim();
+  const description = (options.description ?? payload.teaser).trim();
+  const link = (options.linkUrl ?? resolvePlatformShareUrl(payload)).trim();
+  const includeTags = options.includeTags ?? true;
+
+  return joinShareBlocks([
+    title,
+    description,
+    link,
+    includeTags ? buildMomentShareTags(payload) : undefined,
+  ]);
+}
+
+export function buildTemplateShareBody(templateText: string, payload: SharePayload): string {
+  return joinShareBlocks([
+    templateText.trim(),
+    resolvePlatformShareUrl(payload),
+    buildMomentShareTags(payload),
+  ]);
+}
+
+export function buildMomentSharePostText(payload: SharePayload, linkUrl?: string): string {
+  return buildMomentShareBody(payload, { linkUrl });
+}
+
+function resolveMomentPageBase(): string {
   if (APP_ORIGIN && !looksLikeLocalOrigin(APP_ORIGIN)) return APP_ORIGIN;
   return resolveShareBaseUrl() || APP_ORIGIN;
 }
 
+function resolveShareServiceBase(): string {
+  return resolveShareBaseUrl() || resolveMomentPageBase();
+}
+
 export function buildMomentShareOgImageUrl(momentId: string): string {
-  return buildMomentShareImageProxyUrl(momentId, resolveHostBase());
+  return buildMomentShareImageProxyUrl(momentId, resolveShareServiceBase());
 }
 
 /** Public image URL for Pinterest/WhatsApp — always JPEG proxy (any source format). */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
-  return resolveMomentShareImageUrl(moment, resolveHostBase());
+  return resolveMomentShareImageUrl(moment, resolveShareServiceBase());
 }
 
 /**
@@ -98,7 +155,7 @@ export function resolvePlatformShareUrl(payload: SharePayload): string {
 }
 
 export function buildMomentShareUrl(momentId: string): string {
-  return `${resolveHostBase()}/moments/${momentId}`;
+  return `${resolveMomentPageBase()}/moments/${momentId}`;
 }
 
 function buildPreviewUrlOnHost(hostBase: string, momentId: string, previewPath: string): string {
@@ -108,11 +165,11 @@ function buildPreviewUrlOnHost(hostBase: string, momentId: string, previewPath: 
 }
 
 export function buildMomentSharePreviewUrl(momentId: string): string {
-  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PREVIEW_PATH);
+  return buildPreviewUrlOnHost(resolveShareServiceBase(), momentId, SHARE_PREVIEW_PATH);
 }
 
 export function buildMomentPublicPreviewUrl(momentId: string): string {
-  return buildPreviewUrlOnHost(resolveHostBase(), momentId, SHARE_PUBLIC_PREVIEW_PATH);
+  return buildPreviewUrlOnHost(resolveShareServiceBase(), momentId, SHARE_PUBLIC_PREVIEW_PATH);
 }
 
 function buildMomentShareCacheKey(moment: Moment): string {
@@ -136,23 +193,22 @@ function buildMomentShareCacheKey(moment: Moment): string {
 }
 
 export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "teaser">): string {
-  const REDDIT_TITLE_MAX = 300;
-  if (!payload.teaser.trim()) return truncateText(payload.title, REDDIT_TITLE_MAX);
-  return truncateText(`${payload.title} — ${payload.teaser}`, REDDIT_TITLE_MAX);
+  return truncateText(payload.title, 300);
 }
 
 export function buildRedditSubmitParams(
-  payload: Pick<SharePayload, "title" | "teaser" | "url">,
+  payload: Pick<SharePayload, "title" | "teaser" | "url" | "previewUrl" | "hashtags">,
   titleOverride?: string,
 ): Record<string, string> {
   const params: Record<string, string> = {
-    url: payload.url,
+    url: payload.previewUrl ?? payload.url,
     title: titleOverride
       ? truncateText(titleOverride, 300)
       : buildRedditSubmitTitle(payload),
   };
-  if (payload.teaser.trim()) {
-    params.text = payload.teaser;
+  const body = joinShareBlocks([payload.teaser, buildMomentShareTags(payload)]);
+  if (body.trim()) {
+    params.text = body;
   }
   return params;
 }

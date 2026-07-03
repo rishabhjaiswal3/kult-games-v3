@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { AppSidebar } from "@/layout/AppSidebar";
@@ -36,11 +36,17 @@ export function AppShell() {
     }
   }, [isGamePlay]);
 
+  useEffect(() => {
+    mainScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
   const showDashboardTopbar = isHome || isAIArenaLanding || isLeaderboard || isAutonomous || isAchievements || isMoments || isLeague;
   const hideAppTopbar = isArenaLayout || showDashboardTopbar;
   const isFullBleedRoute = isAIArenaLanding || isArenaLayout || showDashboardTopbar || isGamePlay;
   const showSidebar = !isGamePlay || isGameChromeVisible;
   const showTopbar = !hideAppTopbar && (!isGamePlay || isGameChromeVisible);
+  const mainScrollRef = useRef<HTMLDivElement>(null);
   const shellOutletContext = useMemo<AppShellOutletContext>(
     () => ({
       isGameChromeVisible,
@@ -64,6 +70,7 @@ export function AppShell() {
         >
           {isFullBleedRoute ? (
             <div
+              ref={mainScrollRef}
               className={cn(
                 "arena-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden",
                 isGamePlay || isHome ? "pb-0" : isAIArenaLanding ? "pb-32 sm:pb-0" : "pb-24 sm:pb-0"
@@ -76,7 +83,7 @@ export function AppShell() {
               </Suspense>
             </div>
           ) : (
-            <div className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-32 sm:pb-0">
+            <div ref={mainScrollRef} className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-32 sm:pb-0">
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {showTopbar ? <AppTopbar /> : null}
               <div className="px-4 py-5 sm:px-6 lg:px-8">

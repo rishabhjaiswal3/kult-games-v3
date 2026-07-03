@@ -25,9 +25,11 @@ import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import Footer from "@/components/Footer";
 import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
+import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
+import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
@@ -40,6 +42,7 @@ import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import baseLogo from "@/assets/Base Logo.png";
 import solanaLogo from "@/assets/solana-sol-logo.png";
+import okxLogo from "@/assets/okx-icon.png";
 import agentNexus from "@/assets/hybrid.mp4";
 import agentShadow from "@/assets/defender.mp4";
 import agentAegis from "@/assets/tactician.mp4";
@@ -177,6 +180,17 @@ function SolanaLogo({ className = "h-4 w-auto" }: { className?: string }) {
   );
 }
 
+function OKXLogo({ className = "h-4 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src={okxLogo}
+      alt="OKX"
+      loading="lazy"
+      className={`inline-block object-contain ${className}`}
+    />
+  );
+}
+
 function ChainLogo({
   name,
   className = "h-3.5 w-auto",
@@ -197,6 +211,9 @@ function ChainLogo({
     if (lower === "solana") {
       return <SolanaLogo className={className} />;
     }
+    if (lower === "okx") {
+      return <OKXLogo className={className} />;
+    }
   }
 
   return <span>{name}</span>;
@@ -215,6 +232,7 @@ type AiArenaMatchmakingContextValue = {
   startButtonDisabled: boolean;
   startMatchmaking: (gameId?: AiArenaGameId) => void;
   openQueuedMatchStatus: () => void;
+  openJoinBattle: () => void;
 };
 
 const AiArenaMatchmakingContext = createContext<AiArenaMatchmakingContextValue | null>(null);
@@ -244,6 +262,7 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
   const { setActiveBattleId } = useArenaLiveMatch();
   const myAgentsQ = useMyArenaAgents(1, 50);
   const [startModalOpen, setStartModalOpen] = useState(false);
+  const [joinBattleOpen, setJoinBattleOpen] = useState(false);
   const [statusModalAgent, setStatusModalAgent] = useState<AiArenaAgent | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
   const [trackedBattleId, setTrackedBattleId] = useState(() => getTrackedAiArenaBattleId());
@@ -266,8 +285,8 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
         })
       ),
     enabled: isAiArenaReady && agents.length > 0,
-    staleTime: 2_000,
-    refetchInterval: 2_000,
+    staleTime: 4_000,
+    refetchInterval: 4_000,
     retry: 1,
   });
 
@@ -324,6 +343,20 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     setStartModalOpen(true);
   }, [agents.length, isAuthenticated, login, navigate]);
 
+  const openJoinBattle = useCallback(() => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    if (agents.length === 0) {
+      navigate("/my-agents");
+      return;
+    }
+
+    setJoinBattleOpen(true);
+  }, [agents.length, isAuthenticated, login, navigate]);
+
   const handleMatchFound = (payload: {
     agent: AiArenaAgent;
     opponent: AiArenaAgent;
@@ -370,8 +403,9 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       startButtonDisabled,
       startMatchmaking,
       openQueuedMatchStatus: () => queuedAgent && setStatusModalAgent(queuedAgent),
+      openJoinBattle,
     }),
-    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking],
+    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking, openJoinBattle],
   );
 
   return (
@@ -389,6 +423,13 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
           if (queued) setStatusModalAgent(queued);
           await queueQ.refetch();
         }}
+      />
+
+      <ArenaJoinBattleModal
+        open={joinBattleOpen}
+        onOpenChange={setJoinBattleOpen}
+        agents={agents}
+        onJoined={(agent) => setStatusModalAgent(agent)}
       />
 
       <ArenaMatchStatusModal
@@ -499,7 +540,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       </span>
       <h1
         className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
-          compact ? "text-[2.45rem] max-[380px]:text-[2.05rem]" : "text-4xl sm:text-5xl md:text-3xl lg:text-4xl xl:text-6xl"
+          compact ? "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_28px_rgba(154,53,255,0.5)]" : "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl"
         }`}
       >
         AI ARENA
@@ -519,7 +560,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       </h2>
       <p
         className={`max-w-md text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
-          compact ? "mt-2 text-[13px] leading-snug max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
+          compact ? "mt-2 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
         }`}
       >
         Collect, train, and battle unique AI Agents.
@@ -530,7 +571,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         className={
           compact
             ? "mt-3 mx-auto flex w-full max-w-[350px] flex-col items-center gap-1.5 px-3 py-2 max-[380px]:max-w-[310px] max-[380px]:gap-1 max-[380px]:px-2"
-            : "mt-4 flex w-[224px] flex-col items-start gap-2"
+            : "mt-4 grid w-full max-w-[280px] grid-cols-2 items-start gap-2 xl:flex xl:w-[224px] xl:flex-col"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -547,10 +588,11 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     startButtonDisabled,
     startMatchmaking,
     openQueuedMatchStatus,
+    openJoinBattle,
   } = useAiArenaMatchmakingFlow();
   const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.16em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center ${compact ? "justify-center" : "justify-start text-left"} transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
 
   return (
     <div className="contents">
@@ -559,14 +601,23 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
         ) : (
           <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
-        <span className={`leading-tight whitespace-nowrap ${compact ? "text-center" : "text-left"}`}>{buttonLabel}</span>
+        <span className="leading-tight whitespace-nowrap text-center">{buttonLabel}</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={openJoinBattle}
+        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
+      >
+        <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+        <span>JOIN BATTLE</span>
       </button>
 
       <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
@@ -591,7 +642,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 
       {queuedAgent ? (
         <div
-          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "max-w-md text-left text-xs"}`}
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "col-span-2 max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
             {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
@@ -609,7 +660,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
       ) : (
         <p
           className={`font-medium leading-relaxed text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.85)] ${
-            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "max-w-md text-left text-sm"
+            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "col-span-2 max-w-md text-left text-sm xl:col-span-1"
           }`}
         >
           {helperText}
@@ -625,35 +676,21 @@ function Hero() {
       className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
       data-tour="ai-arena-hero"
     >
-      <div className="absolute inset-0 hidden md:block">
-        <video
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="h-full w-full object-contain object-center xl:object-cover xl:object-right"
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
+      <div className="absolute inset-0">
+        <ResponsiveBackgroundVideo
+          mobileSrc={mobileHeroVideo}
+          desktopSrc={heroVideo}
+          breakpoint="md"
+          mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
+          desktopClassName="h-full w-full object-contain object-center xl:object-cover xl:object-right"
+        />
+        <div className="absolute inset-0 hidden bg-gradient-to-b from-transparent via-transparent to-background/65 md:block" />
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent md:hidden" />
       </div>
       {/* original line kept — bg-black was added intentionally by another dev, commented out to fix black rectangle artifact */}
       {/* <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black"> */}
       <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
-        <video
-          aria-hidden
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover object-top"
-        >
-          <source src={mobileHeroVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-x-0 top-0 h-[56%] bg-gradient-to-b from-black via-black/75 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
           <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white/50 min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
             <span className="flex shrink-0 items-center gap-1">
@@ -687,44 +724,79 @@ function StatsBar() {
     { icon: Swords, label: "24/7 Matchmaking", detail: "Humans vs Agents", color: "#11a7ff" },
     { icon: Trophy, label: "Founding Season", detail: "Early Access", color: "#ffc42e" },
   ];
+
+  const desktopTileClass =
+    "home-stat-tile relative z-10 hidden items-center gap-2 px-4 py-3 md:flex xl:gap-4 xl:px-6 xl:py-4";
+  const desktopIconClass =
+    "home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg xl:h-11 xl:w-11";
+
   return (
     <section className="relative z-10">
-      <div className="arena-panel home-stats-panel grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4">
+      <div className="arena-panel home-stats-panel ai-arena-stats-panel overflow-hidden md:grid md:grid-cols-4 md:divide-x md:divide-white/8">
+        {/* Mobile — compact full-width rows */}
         <div
-          className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
+          className="home-stat-tile ai-arena-stat-tile relative z-10 flex items-center justify-between gap-3 border-b border-white/8 px-3.5 py-2.5 md:hidden"
           style={{ "--stat-color": "#00f080" } as CSSProperties}
         >
-          <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] sm:h-2.5 sm:w-2.5 md:h-2 md:w-2 xl:h-2.5 xl:w-2.5" />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)]" />
+            </div>
+            <span className="font-tech text-[13px] font-semibold leading-none text-primary">Beta Live</span>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[12px] font-medium leading-none text-white/85">
+            Powered by <ZeroGLogo className="h-3 w-auto shrink-0" />
+          </span>
+        </div>
+
+        {stats.map((s, index) => (
+          <div
+            key={s.label}
+            className={`home-stat-tile ai-arena-stat-tile relative z-10 flex items-center justify-between gap-3 px-3.5 py-2.5 md:hidden ${
+              index < stats.length - 1 ? "border-b border-white/8" : ""
+            }`}
+            style={{ "--stat-color": s.color } as CSSProperties}
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className="home-stat-icon grid h-8 w-8 shrink-0 place-items-center rounded-lg">
+                <s.icon className="h-4 w-4" />
+              </div>
+              <span className="font-tech text-[13px] font-semibold leading-none text-primary">{s.label}</span>
+            </div>
+            <span className="shrink-0 text-right text-[12px] font-medium leading-none text-white/85">{s.detail}</span>
+          </div>
+        ))}
+
+        {/* Desktop — original column layout */}
+        <div
+          className={desktopTileClass}
+          style={{ "--stat-color": "#00f080" } as CSSProperties}
+        >
+          <div className={desktopIconClass}>
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] xl:h-2.5 xl:w-2.5" />
           </div>
           <div className="min-w-0">
-            <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
-              Beta Live
-            </div>
-            <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
-              <span className="block md:inline">Powered</span>
-              <span className="flex items-center gap-1.5 md:inline-flex md:pl-1">
-                by <ZeroGLogo className="h-3.5 w-auto shrink-0 sm:h-4 md:h-3 xl:h-4" />
+            <div className="font-tech text-[11px] font-semibold leading-tight text-primary xl:text-sm">Beta Live</div>
+            <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white xl:text-base">
+              <span className="inline-flex items-center gap-1.5">
+                Powered by <ZeroGLogo className="h-3 w-auto shrink-0 xl:h-4" />
               </span>
             </div>
           </div>
         </div>
+
         {stats.map((s) => (
           <div
-            key={s.label}
-            className="home-stat-tile relative z-10 flex items-center gap-3 px-3.5 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-2 md:px-4 md:py-3 xl:gap-4 xl:px-6 xl:py-4"
+            key={`desktop-${s.label}`}
+            className={desktopTileClass}
             style={{ "--stat-color": s.color } as CSSProperties}
           >
-            <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-11 sm:w-11 md:h-8 md:w-8 xl:h-11 xl:w-11">
-              <s.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5 md:h-4 md:w-4 xl:h-5 xl:w-5" />
+            <div className={desktopIconClass}>
+              <s.icon className="h-4 w-4 xl:h-5 xl:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="min-h-[2rem] font-tech text-xs font-semibold leading-tight text-primary sm:min-h-[2.25rem] sm:text-sm md:min-h-[1.7rem] md:text-[11px] xl:min-h-[2.25rem] xl:text-sm">
-                {s.label}
-              </div>
-              <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base md:text-[12px] xl:text-base">
-                {s.detail}
-              </div>
+              <div className="font-tech text-[11px] font-semibold leading-tight text-primary xl:text-sm">{s.label}</div>
+              <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white xl:text-base">{s.detail}</div>
             </div>
           </div>
         ))}
@@ -1666,6 +1738,7 @@ function PartnersBlock() {
     { key: "0G", label: "ZeroG" },
     { key: "Base", label: "Base" },
     { key: "Solana", label: "Solana" },
+    { key: "OKX", label: "OKX" },
   ];
   return (
     <section>
@@ -1692,8 +1765,15 @@ function PartnersBlock() {
                 key={p.key}
                 className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.035] px-2 py-1.5 font-tech text-[10px] text-white/80 sm:px-2.5 sm:text-[11px] lg:px-2 lg:py-1.5 lg:text-[10px] xl:px-2.5 xl:text-[11px]"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
-                <ChainLogo name={p.key} className="h-2.5 w-auto sm:h-3 xl:h-3.5" useLogosForChains={true} />
+                <ChainLogo
+                  name={p.key}
+                  className={
+                    p.key.toLowerCase() === "0g"
+                      ? "h-2.5 w-auto sm:h-3 xl:h-3.5"
+                      : "h-3.5 w-auto sm:h-4 xl:h-[18px]"
+                  }
+                  useLogosForChains={true}
+                />
                 <span>{p.label}</span>
               </div>
             ))}

@@ -113,6 +113,7 @@ export function LeagueTrashTalkPanel() {
 
   const matchLabel = `${match.home} vs ${match.away}`;
 
+  return (<></>)
   return (
     <section className="rounded-none border border-[#a855f7]/25 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.10),transparent_55%),#070911] p-3 sm:p-5">
       {/* Header */}

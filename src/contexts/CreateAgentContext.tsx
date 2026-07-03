@@ -1,5 +1,7 @@
 import {
   createContext,
+  lazy,
+  Suspense,
   useCallback,
   useContext,
   useMemo,
@@ -8,8 +10,6 @@ import {
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
-import { PlayerTitleModal } from "@/components/titles/PlayerTitleModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { ARENA_AGENTS_LIST_QUERY_KEY } from "@/hooks/useArenaAgentsList";
@@ -18,6 +18,17 @@ import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { playerTitlesApi, type PlayerTitle } from "@/api/playerTitlesApi";
+
+const CreateAiArenaAgentModal = lazy(() =>
+  import("@/components/arena/CreateAiArenaAgentModal").then((mod) => ({
+    default: mod.CreateAiArenaAgentModal,
+  }))
+);
+const PlayerTitleModal = lazy(() =>
+  import("@/components/titles/PlayerTitleModal").then((mod) => ({
+    default: mod.PlayerTitleModal,
+  }))
+);
 
 type AgentCreatedListener = (agent: AiArenaAgent) => void | Promise<void>;
 
@@ -117,21 +128,29 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
   return (
     <CreateAgentContext.Provider value={value}>
       {children}
-      <CreateAiArenaAgentModal
-        open={createOpen}
-        onOpenChange={(open) => {
-          setCreateOpen(open);
-          if (!open) setPendingArchetype(undefined);
-        }}
-        defaultName={defaultName}
-        defaultArchetype={pendingArchetype}
-        onCreated={(agent) => void handleCreated(agent)}
-      />
-      <PlayerTitleModal
-        open={titleModalOpen}
-        titles={titleModalTitles}
-        onClose={() => setTitleModalOpen(false)}
-      />
+      {createOpen ? (
+        <Suspense fallback={null}>
+          <CreateAiArenaAgentModal
+            open={createOpen}
+            onOpenChange={(open) => {
+              setCreateOpen(open);
+              if (!open) setPendingArchetype(undefined);
+            }}
+            defaultName={defaultName}
+            defaultArchetype={pendingArchetype}
+            onCreated={(agent) => void handleCreated(agent)}
+          />
+        </Suspense>
+      ) : null}
+      {titleModalOpen ? (
+        <Suspense fallback={null}>
+          <PlayerTitleModal
+            open={titleModalOpen}
+            titles={titleModalTitles}
+            onClose={() => setTitleModalOpen(false)}
+          />
+        </Suspense>
+      ) : null}
     </CreateAgentContext.Provider>
   );
 }
