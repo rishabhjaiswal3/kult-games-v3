@@ -2265,8 +2265,24 @@ button[aria-label="close modal"]:hover {
 
 .moments-feed-scroll {
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
+}
+
+.moments-sidebar-column {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(154, 53, 255, 0.25) transparent;
+}
+
+.moments-sidebar-column::-webkit-scrollbar {
+  width: 4px;
+}
+
+.moments-sidebar-column::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(154, 53, 255, 0.25);
 }
 
 .moments-feed-scroll::-webkit-scrollbar {
@@ -2280,13 +2296,20 @@ button[aria-label="close modal"]:hover {
 
 @media (min-width: 1280px) {
   .moments-page-grid {
-    align-items: stretch;
-    min-height: calc(100dvh - 5rem);
+    align-items: start;
+    height: calc(100dvh - 11rem);
+    max-height: calc(100dvh - 11rem);
   }
 
-  .moments-main-column,
-  .moments-sidebar-column {
-    height: calc(100dvh - 5rem);
-    max-height: calc(100dvh - 5rem);
+  .moments-main-column {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+  }
+
+  .moments-feed-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
   }
 }

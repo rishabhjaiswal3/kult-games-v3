@@ -790,7 +790,7 @@ export function AllMomentsPage() {
     <div className="min-h-full text-white" style={{ backgroundColor: "#03070d" }}>
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-5 sm:px-6 lg:px-8">
+      <section className="w-full px-4 py-5 sm:px-6 lg:px-8">
         <div className="space-y-4">
 
           <div className="min-w-0 space-y-4">
@@ -819,7 +819,7 @@ export function AllMomentsPage() {
                 className="flex h-10 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Create Momentt</span>
+                <span>Create Moment</span>
               </button>
             </div>
 
@@ -922,7 +922,7 @@ export function AllMomentsPage() {
               || (activeTab === "BOOKMARKS" && bookmarksQuery.isLoading)
               || (activeTab === "RECENTLY WATCHED" && recentlyWatchedQuery.isLoading)
             ) ? (
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`} data-tour="moments-grid">
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-2"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
                     <div className="aspect-[16/8.7] bg-white/5" />
@@ -947,7 +947,8 @@ export function AllMomentsPage() {
                 </button>
               </div>
             ) : (
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-4" : "lg:grid-cols-2"}`}>
+              <>
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-2"}`}>
                 {displayMoments.slice(0, isBrowseAll ? undefined : 6).map((item) => (
                   <article key={item.id} className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
                     <button
@@ -1012,6 +1013,15 @@ export function AllMomentsPage() {
                   </article>
                 ))}
               </div>
+
+              {!isBrowseAll && displayMoments.length > 6 ? (
+                <div className="grid gap-4 pt-1 sm:grid-cols-2 lg:grid-cols-2">
+                  {displayMoments.slice(6).map((item) => (
+                    <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} isAuthenticated={isAuthenticated} />
+                  ))}
+                </div>
+              ) : null}
+              </>
             )}
 
             {isBrowseAll && activeTab === "DISCOVER" ? (
@@ -1030,7 +1040,7 @@ export function AllMomentsPage() {
           </div>
 
           {!isBrowseAll ? (
-          <aside className="moments-sidebar-column space-y-3 overflow-y-auto rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)] xl:pr-0.5">
+          <aside className="moments-sidebar-column space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)] xl:sticky xl:top-0 xl:max-h-[calc(100dvh-11rem)] xl:overflow-y-auto xl:overscroll-contain xl:pr-0.5">
 
             {/* <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
               <div className="mx-auto grid h-10 w-10 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
@@ -1150,13 +1160,6 @@ export function AllMomentsPage() {
           </aside>
           ) : null}
         </div>
-        {!isBrowseAll && displayMoments.length > 6 ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {displayMoments.slice(6).map((item) => (
-              <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} isAuthenticated={isAuthenticated} />
-            ))}
-          </div>
-        ) : null}
         </div>
       </section>
 
