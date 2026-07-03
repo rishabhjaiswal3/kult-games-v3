@@ -21,6 +21,10 @@ const MOMENT_ID_PATTERN = /^[A-Za-z0-9_-]{21}$/;
   }
 })();
 
+if ("scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
+
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID ?? "";
 
 createRoot(document.getElementById("root")!).render(

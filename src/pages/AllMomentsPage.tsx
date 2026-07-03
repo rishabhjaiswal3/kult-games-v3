@@ -757,6 +757,10 @@ export function AllMomentsPage() {
 
   useEffect(() => () => { observerRef.current?.disconnect(); }, []);
 
+  useEffect(() => {
+    feedScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname, location.search]);
+
   const bookmarkMutation = useMutation({
     mutationFn: (momentId: string) => momentsApi.toggleBookmark(momentId),
     onSuccess: () => {
