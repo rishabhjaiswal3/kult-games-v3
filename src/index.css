@@ -1688,6 +1688,12 @@ button[aria-label="close modal"]:hover {
       0 0 30px color-mix(in srgb, var(--stat-color) 38%, transparent);
   }
 
+  @media (max-width: 767px) {
+    .ai-arena-stats-panel .ai-arena-stat-tile::before {
+      opacity: 0.35;
+    }
+  }
+
   .card-glass-arena {
     background: linear-gradient(180deg, rgba(22, 14, 38, 0.7), rgba(10, 8, 18, 0.6));
     backdrop-filter: blur(10px);
