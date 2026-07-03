@@ -2262,3 +2262,31 @@ button[aria-label="close modal"]:hover {
     radial-gradient(circle at center, hsl(278 100% 70% / 0.14) 0%, hsl(270 80% 60% / 0.08) 38%, transparent 68%),
     linear-gradient(180deg, hsl(220 50% 4% / 0.3), hsl(220 50% 4% / 0.88));
 }
+
+.moments-feed-scroll {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
+}
+
+.moments-feed-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.moments-feed-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(154, 53, 255, 0.35);
+}
+
+@media (min-width: 1280px) {
+  .moments-page-grid {
+    align-items: stretch;
+    min-height: calc(100dvh - 5rem);
+  }
+
+  .moments-main-column,
+  .moments-sidebar-column {
+    height: calc(100dvh - 5rem);
+    max-height: calc(100dvh - 5rem);
+  }
+}

@@ -736,14 +736,20 @@ export function AllMomentsPage() {
   const handleLoadMoreRef = useRef(() => {});
   handleLoadMoreRef.current = () => { if (canLoadMore) void discoverQuery.fetchNextPage(); };
 
+  const feedScrollRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRefCallback = useCallback((node: HTMLDivElement | null) => {
     observerRef.current?.disconnect();
     observerRef.current = null;
     if (!node) return;
+    const scrollRoot = feedScrollRef.current;
+    const useNestedRoot =
+      scrollRoot &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1280px)").matches;
     const io = new IntersectionObserver(
       (entries) => { if (entries[0]?.isIntersecting) handleLoadMoreRef.current(); },
-      { rootMargin: "240px" },
+      { root: useNestedRoot ? scrollRoot : null, rootMargin: "240px" },
     );
     io.observe(node);
     observerRef.current = io;
@@ -831,8 +837,9 @@ export function AllMomentsPage() {
             </div>
           </div>
 
-          <div className={isBrowseAll ? "min-w-0 space-y-4" : "grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
-            <div className="min-w-0 space-y-4">
+          <div className={isBrowseAll ? "min-w-0 space-y-4" : "moments-page-grid grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
+            <div className={isBrowseAll ? "min-w-0 space-y-4" : "moments-main-column flex min-w-0 min-h-0 flex-col"}>
+            <div className={isBrowseAll ? "space-y-4" : "shrink-0 space-y-4"}>
 
             <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2" data-tour="moments-filters">
               <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -903,6 +910,12 @@ export function AllMomentsPage() {
                 </Link>
               ) : null}
             </div>
+            </div>
+
+            <div
+              ref={isBrowseAll ? undefined : feedScrollRef}
+              className={isBrowseAll ? "space-y-4" : "moments-feed-scroll min-h-0 flex-1 overflow-y-auto pr-0.5 pt-1 xl:min-h-0"}
+            >
 
             {(discoverQuery.isLoading
               || (activeTab === "MY MOMENTS" && myMomentsQuery.isLoading)
@@ -1013,10 +1026,11 @@ export function AllMomentsPage() {
                 ) : null}
               </div>
             ) : null}
+            </div>
           </div>
 
           {!isBrowseAll ? (
-          <aside className="relative space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)]">
+          <aside className="moments-sidebar-column space-y-3 overflow-y-auto rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)] xl:pr-0.5">
 
             {/* <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
               <div className="mx-auto grid h-10 w-10 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
