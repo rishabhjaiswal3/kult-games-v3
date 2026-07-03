@@ -1018,7 +1018,7 @@ export function AllMomentsPage() {
           {!isBrowseAll ? (
           <aside className="relative space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)]">
 
-            <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
+            {/* <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
               <div className="mx-auto grid h-10 w-10 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
                 <Zap className="h-6 w-6" strokeWidth={2.5} />
               </div>
@@ -1033,7 +1033,7 @@ export function AllMomentsPage() {
               >
                 View Attention Rewards <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
               </button>
-            </section>
+            </section> */}
 
             {/* Featured moment */}
             <div className="arena-panel relative space-y-2.5 overflow-hidden border-white/8 bg-[#04080f]/95 p-3">
