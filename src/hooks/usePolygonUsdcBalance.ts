@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createPublicClient, erc20Abi, formatUnits, http } from "viem";
-import { polygon } from "viem/chains";
+import { erc20Abi, formatUnits } from "viem";
+import { polygonPublicClient } from "@/lib/polygonClient";
 import { POLYGON_USDC_ADDRESS, POLYGON_USDC_DECIMALS } from "@/lib/polygonUsdc";
-
-const polygonClient = createPublicClient({ chain: polygon, transport: http() });
 
 /**
  * Read-only USDC balance for a wallet address on Polygon (docs/polymarket
@@ -16,7 +14,7 @@ export function usePolygonUsdcBalance(address: string | null) {
   return useQuery({
     queryKey: ["polygon", "usdc-balance", address],
     queryFn: async () => {
-      const raw = await polygonClient.readContract({
+      const raw = await polygonPublicClient.readContract({
         address: POLYGON_USDC_ADDRESS,
         abi: erc20Abi,
         functionName: "balanceOf",

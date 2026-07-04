@@ -15,8 +15,10 @@ export type PolyMarket = {
   yes: number;
   /** Formatted volume, e.g. "$1.2M". */
   volume: string;
-  /** CLOB token id for the YES outcome (used for price history). */
+  /** CLOB token id for the YES outcome (used for price history and buying YES). */
   tokenId: string;
+  /** CLOB token id for the NO outcome (used for buying NO) -- undefined if the market has no distinct NO leg. */
+  noTokenId?: string;
 };
 
 // ── Football filtering ──────────────────────────────────────────────────────
@@ -119,10 +121,12 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
 
   let yesIdx = outcomes.findIndex((o) => o.toLowerCase() === "yes");
   if (yesIdx < 0) yesIdx = 0;
+  const noIdx = outcomes.findIndex((o) => o.toLowerCase() === "no");
 
   const yes = Math.round(Math.min(1, Math.max(0, toNumber(prices[yesIdx]))) * 100);
   const tokenId = tokenIds[yesIdx];
   if (!tokenId) return null;
+  const noTokenId = noIdx >= 0 ? tokenIds[noIdx] : undefined;
 
   const volumeNum = toNumber(raw.volumeNum ?? raw.volume);
 
@@ -134,6 +138,7 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
     yes,
     volume: formatVolume(volumeNum),
     tokenId,
+    ...(noTokenId && { noTokenId }),
   };
 }
 

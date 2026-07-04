@@ -44,6 +44,7 @@ import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
+import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -675,10 +676,20 @@ const SIGNAL_CONFIDENCE_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIG
  * useLiveMarketData() and wires in the actual agent-signal feature
  * (docs/polymarket §5 Phase 2) instead of a mock "agent predictions" row.
  */
+const TRADING_STATUS_LABEL: Record<string, string> = {
+  "switching-network": "Switching to Polygon…",
+  approving: "Approving (check your wallet)…",
+  "deriving-key": "Setting up trading…",
+  "placing-order": "Placing order…",
+};
+
 function RealMarketCard({ market }: { market: LiveMarket }) {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
   const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
+  const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
+  const [stakeUsd, setStakeUsd] = useState(10);
+  const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
 
   const { data: signals } = useQuery({
     queryKey: ["polymarket", "signals", market.id],
@@ -690,6 +701,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
   const signal = result(market.id) ?? myPersistedSignal;
   const loading = isLoading(market.id);
   const signalError = error(market.id);
+  const isTrading = tradingStatus !== "idle" && tradingStatus !== "done";
 
   function handleGetSignal() {
     if (!isAuthenticated) {
@@ -701,6 +713,22 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
       return;
     }
     void getSignal(market.id, market.question, market.category);
+  }
+
+  async function handleBuy(side: "YES" | "NO") {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    const tokenId = side === "YES" ? market.tokenId : market.noTokenId;
+    if (!tokenId || isTrading) return;
+    setPlacedOrder(null);
+    try {
+      const result = await placeMarketBuy(tokenId, stakeUsd);
+      setPlacedOrder({ side, orderId: result.orderId });
+    } catch {
+      // tradeError from the hook already surfaces this
+    }
   }
 
   const agent = signal ? getLeagueAgent(signal.agentName) : null;
@@ -715,10 +743,50 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
       <div className="relative">
         <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p>
         <p className="mt-0.5 min-h-9 font-tech text-sm font-bold text-white">{market.question}</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300"><span>Yes</span><span>{market.yes}¢</span></div>
-          <div className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300"><span>No</span><span>{100 - market.yes}¢</span></div>
+
+        <div className="mt-3 flex items-center gap-2">
+          <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={stakeUsd}
+            onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+            disabled={isTrading}
+            className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
+          />
+          <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">USDC</span>
         </div>
+
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={isTrading}
+            onClick={() => void handleBuy("YES")}
+            className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span>Buy Yes</span><span>{market.yes}¢</span>
+          </button>
+          <button
+            type="button"
+            disabled={isTrading || !market.noTokenId}
+            onClick={() => void handleBuy("NO")}
+            title={!market.noTokenId ? "No-side token unavailable for this market" : undefined}
+            className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span>Buy No</span><span>{100 - market.yes}¢</span>
+          </button>
+        </div>
+
+        {isTrading ? (
+          <p className="mt-1.5 text-center font-tech text-[9px] uppercase tracking-wider text-cyan-300">{TRADING_STATUS_LABEL[tradingStatus]}</p>
+        ) : tradeError ? (
+          <p className="mt-1.5 text-center text-[9px] text-rose-400">{tradeError}</p>
+        ) : placedOrder ? (
+          <p className="mt-1.5 text-center font-tech text-[9px] uppercase tracking-wider text-emerald-300">
+            {placedOrder.side} order placed{placedOrder.orderId ? ` · ${placedOrder.orderId.slice(0, 10)}…` : ""}
+          </p>
+        ) : null}
       </div>
 
       {/* Real agent signal (docs/polymarket §5 Phase 2) — replaces the old mock "agent predictions" row */}
