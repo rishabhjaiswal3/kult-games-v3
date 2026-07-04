@@ -42,6 +42,7 @@ import { fetchFootballNews, type NewsItem } from "@/api/footballNewsApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, type CountryCode } from "./FlagHex";
@@ -398,6 +399,7 @@ export function LeaguePolymarketBoard() {
   return (
     <div className="min-w-0 space-y-3">
       <PolymarketComplianceNotice source={source} />
+      <PolygonWalletBalance />
       <BoardViewTabs view={view} onChange={setView} marketCount={liveMarkets.length} newsCount={MATCH_NEWS.length} />
 
       {view === "pulse" ? (
@@ -550,6 +552,37 @@ function PolymarketComplianceNotice({ source }: { source: "live" | "sim" }) {
           {source === "live" ? "Live Polymarket data" : "Fallback preview data"}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Read-only USDC-on-Polygon balance readout (docs/polymarket §5 Phase 3).
+ * Funding is entirely on the user -- this just confirms what's already
+ * there before Phase 4 lets them actually trade against it.
+ */
+function PolygonWalletBalance() {
+  const { isAuthenticated, walletAddress, login } = useAuth();
+  const { data: usdc, isLoading } = usePolygonUsdcBalance(walletAddress);
+
+  if (!isAuthenticated) {
+    return (
+      <button
+        type="button"
+        onClick={login}
+        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-[#2E5CFF]/40 hover:text-white"
+      >
+        Connect wallet to see your Polygon USDC balance
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+      <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Your Polygon USDC</span>
+      <span className="font-tech text-sm font-bold text-white">
+        {isLoading ? "…" : usdc != null ? `$${usdc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+      </span>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { PrivyClientConfig } from "@privy-io/react-auth";
-import { mainnet } from "viem/chains";
+import { mainnet, polygon } from "viem/chains";
 import { buildPrivyWalletList } from "@/lib/privyWalletList";
 import { KULT_PRIVY_APPEARANCE } from "@/lib/privyAppearance";
 import { buildAppChain } from "@/lib/zerogChain";
@@ -31,7 +31,11 @@ export function buildPrivyConfig(): PrivyClientConfig {
         }
       : {}),
     loginMethods: ["wallet", "email", "google"],
-    supportedChains: [mainnet, zeroGChain],
+    // polygon added for Polymarket signal/trading (docs/polymarket) -- same wallet address,
+    // switched into only when reading a Polygon balance or signing a Polymarket order, exactly
+    // like zeroGChain is switched into post-login (see AuthContext). Does not change
+    // login/SIWE/0G Mainnet behavior anywhere else in the app.
+    supportedChains: [mainnet, zeroGChain, polygon],
     defaultChain: mainnet,
   };
 }
