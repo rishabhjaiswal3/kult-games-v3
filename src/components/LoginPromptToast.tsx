@@ -12,6 +12,7 @@ import {
   Video,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsDesktopLayout } from "@/hooks/useMediaQuery";
 
 type LoginPromptToast = {
   icon?: typeof BrainCircuit;
@@ -179,12 +180,13 @@ function LoginPromptToastCard({
 export function PageLoginPrompt() {
   const { pathname } = useLocation();
   const { login, isAuthenticated } = useAuth();
+  const isDesktop = useIsDesktopLayout();
   const [visible, setVisible] = useState(false);
 
   const toast = getLoginPromptForPath(pathname);
 
   useEffect(() => {
-    if (!toast || isAuthenticated) {
+    if (isDesktop || !toast || isAuthenticated) {
       setVisible(false);
       return;
     }
@@ -200,12 +202,12 @@ export function PageLoginPrompt() {
     scroller.addEventListener("scroll", updateVisibility, { passive: true });
     updateVisibility();
     return () => scroller.removeEventListener("scroll", updateVisibility);
-  }, [pathname, isAuthenticated, toast]);
+  }, [pathname, isAuthenticated, toast, isDesktop]);
 
-  if (!toast || isAuthenticated || !visible) return null;
+  if (isDesktop || !toast || isAuthenticated || !visible) return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-20 right-4 z-[60] w-[calc(100%-2rem)] max-w-[400px] sm:bottom-6">
+    <div className="pointer-events-none fixed bottom-20 right-4 z-[60] w-[calc(100%-2rem)] max-w-[400px] sm:hidden">
       <LoginPromptToastCard toast={toast} onLogin={() => void login()} />
     </div>
   );
