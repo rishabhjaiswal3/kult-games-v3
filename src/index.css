@@ -520,8 +520,9 @@
   width: var(--kult-auth-width) !important;
   max-width: var(--kult-auth-max-width) !important;
   height: auto !important;
-  max-height: var(--kult-auth-max-height) !important;
-  overflow: hidden !important;
+  /* Do not cap Privy modal height — fixed max-height hid wallet list options */
+  max-height: none !important;
+  overflow: visible !important;
   display: flex !important;
   flex-direction: column !important;
   border-radius: var(--kult-auth-radius) !important;
@@ -559,8 +560,8 @@
   flex: 1 1 auto !important;
   height: auto !important;
   min-height: 0 !important;
-  max-height: 100% !important;
-  overflow: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
   background: transparent !important;
   display: flex !important;
   flex-direction: column !important;

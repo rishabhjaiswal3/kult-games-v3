@@ -10,6 +10,7 @@ import {
 } from "@privy-io/react-auth";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
 import { KULT_LOGIN_LANDING_HEADER } from "@/lib/privyAppearance";
+import { buildPrivyWalletList } from "@/lib/privyWalletList";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   clearUserLoginIntent,
@@ -333,7 +334,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     if (!ready || walletFlowBusy) return;
     setRecoveryMode(false);
     if (isAuthenticated) {
-      linkWallet({ walletChainType: "ethereum-only" });
+      linkWallet({ walletChainType: "ethereum-only", walletList: buildPrivyWalletList() });
       return;
     }
     if (authenticated) {
@@ -349,6 +350,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     login({
       loginMethods: ["wallet"],
       walletChainType: "ethereum-only",
+      walletList: buildPrivyWalletList(),
     });
   };
 
@@ -368,7 +370,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       setOtpNotice(
         resend
           ? "We sent a new code. Use the newest email, because older codes may stop working."
-          : "Code sent. It can take a few seconds to arrive — check spam or promotions too.",
+          : "Verification code sent. Check your inbox — if it's not there, look in spam or promotions.",
       );
     } catch (err) {
       const msg = privyAuthErrorMessage(err);
@@ -531,13 +533,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 ) : (
                   <div className="kult-auth-stack kult-auth-stack--landing">
                     {otpNotice ? <p className="kult-auth-notice">{otpNotice}</p> : null}
-                    {showDelayedOtpNotice ? (
-                      <p className="kult-auth-notice kult-auth-notice--error">
-                        Still waiting? Email delivery can be delayed. Check spam/promotions, confirm
-                        the email address, or send a new code below.
-                      </p>
-                    ) : null}
-
                     <label className="kult-auth-field">
                       <input
                         type="text"
@@ -574,7 +569,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 </div>
                 </div>
 
-                <ProtectedByPrivyFooter />
+                {/* <ProtectedByPrivyFooter /> */}
               </div>
             </div>
           </motion.div>
