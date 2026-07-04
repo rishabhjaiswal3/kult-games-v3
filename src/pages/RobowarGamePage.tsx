@@ -1142,7 +1142,7 @@ export default function RobowarGamePage() {
     };
     localStorage.setItem('robowarPayload', JSON.stringify(rwPayload));
 
-    const buildUrl = `${UNITY_BASE_URL}/Arena2`;
+    const buildUrl = `${UNITY_BASE_URL}/Arena3`;
 
     const script = document.createElement("script");
     script.src   = `${buildUrl}/HighwayHustle.loader.js`;
@@ -1571,7 +1571,7 @@ export default function RobowarGamePage() {
                       </p>
                     ) : (
                       <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-3">
-                        Build files not reachable at: {UNITY_BASE_URL}/Arena2/Robowar.data
+                        Build files not reachable at: {UNITY_BASE_URL}/Arena3/Robowar.data
                       </p>
                     )}
             <button
