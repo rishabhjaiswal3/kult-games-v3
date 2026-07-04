@@ -1,10 +1,29 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { leagueApi, type GeneratedPrediction } from "@/api/leagueApi";
+import { leagueApi, type GeneratedPrediction, type UserAgentPick } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface PickResult extends GeneratedPrediction {
   agentName: string;
+}
+
+/**
+ * Backend truth (from `match.userAgentPick`, present on every match fetch) ->
+ * the same shape the UI renders after a fresh click. Used so a pick made
+ * before a refresh still displays correctly on load, not just right after
+ * clicking "Make Pick" in this same session.
+ */
+export function toPickResult(pick: UserAgentPick): PickResult {
+  return {
+    agentId: pick.agentId,
+    agentName: pick.agentName,
+    winner: pick.predictedWinner,
+    scoreHome: pick.scoreHome,
+    scoreAway: pick.scoreAway,
+    conviction: pick.conviction,
+    reasoning: null,
+    source: "AI",
+  };
 }
 
 /**

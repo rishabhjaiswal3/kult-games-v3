@@ -42,8 +42,9 @@ export function LeagueRecentPicks() {
             <thead>
               <tr className="border-b border-white/8 font-tech text-[9px] uppercase tracking-wider text-white/40">
                 <th className="pb-2 pr-3">Match</th>
-                <th className="pb-2 pr-3">Your Pick</th>
-                <th className="pb-2 pr-3">Agent Confidence</th>
+                <th className="pb-2 pr-3">Agent</th>
+                <th className="pb-2 pr-3">Pick</th>
+                <th className="pb-2 pr-3">Confidence</th>
                 <th className="pb-2 pr-3">Result</th>
                 <th className="pb-2 text-right">KP Earned</th>
               </tr>
@@ -60,6 +61,9 @@ export function LeagueRecentPicks() {
                         {row.home}/{row.away}
                       </span>
                     </div>
+                  </td>
+                  <td className="py-2.5 pr-3 font-tech text-[10px] font-bold uppercase text-[#c084fc]">
+                    {row.agentName}
                   </td>
                   <td className="py-2.5 pr-3 font-tech text-[10px] font-bold text-white/80">
                     {row.pick}

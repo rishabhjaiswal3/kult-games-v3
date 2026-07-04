@@ -78,6 +78,7 @@ export interface MatchListItem {
   venue: string | null;
   kickoffAt: string;
   status: LeagueMatchStatus;
+  userAgentPick: UserAgentPick | null;
 }
 
 export interface LeaguePredictionQuestionAgent {
@@ -119,6 +120,7 @@ export interface TodayPrediction {
 
 export interface RecentPick {
   id: string;
+  agentName: string;
   home: string;
   away: string;
   pick: string;

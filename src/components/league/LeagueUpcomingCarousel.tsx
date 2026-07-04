@@ -7,7 +7,7 @@ import { LeaguePanel } from "./LeaguePanel";
 import { leagueApi, type MatchListItem } from "@/api/leagueApi";
 import { formatKickoffDisplay, useCountdown } from "@/lib/matchTime";
 import { fifaMakePickBtn, fifaSectionTitle, fifaSubTitle } from "./leagueFifaStyles";
-import { useMakeLeaguePick, type PickResult } from "@/hooks/useMakeLeaguePick";
+import { useMakeLeaguePick, toPickResult, type PickResult } from "@/hooks/useMakeLeaguePick";
 import { useAuth } from "@/contexts/AuthContext";
 
 const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
@@ -154,7 +154,7 @@ export function LeagueUpcomingCarousel() {
               match={match}
               onMakePick={handleMakePick}
               isLoading={isLoading(match.id)}
-              result={result(match.id)}
+              result={result(match.id) ?? (match.userAgentPick ? toPickResult(match.userAgentPick) : null)}
               error={error(match.id)}
             />
           ))}

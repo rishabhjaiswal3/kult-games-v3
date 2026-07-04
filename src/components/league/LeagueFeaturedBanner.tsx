@@ -6,7 +6,7 @@ import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { TeamFlagCircle } from "./FlagHex";
 import { LeagueStadiumBackground } from "./LeagueStadiumBackground";
 import { leagueApi } from "@/api/leagueApi";
-import { useMakeLeaguePick } from "@/hooks/useMakeLeaguePick";
+import { useMakeLeaguePick, toPickResult } from "@/hooks/useMakeLeaguePick";
 import { useAuth } from "@/contexts/AuthContext";
 
 /** Rough display-only confidence badge from a conviction tier — not authoritative scoring, just a UI label. */
@@ -64,7 +64,7 @@ export function LeagueFeaturedBanner() {
   const consensus = match.consensus;
 
   const isPickingThis = isPickLoading(match.id);
-  const thisPick = pickResult(match.id);
+  const thisPick = pickResult(match.id) ?? (match.userAgentPick ? toPickResult(match.userAgentPick) : null);
   const thisPickError = pickError(match.id);
 
   function handleMakeYourPick() {
