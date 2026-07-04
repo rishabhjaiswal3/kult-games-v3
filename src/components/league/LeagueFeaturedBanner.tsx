@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -38,6 +38,7 @@ export function LeagueFeaturedBanner() {
     queryFn: () => leagueApi.getFeaturedMatch(),
     staleTime: 15_000,
     refetchInterval: 15_000, // consensus/score move server-side; poll rather than fake-animate client-side
+    placeholderData: keepPreviousData,
   });
 
   const { data: detail } = useQuery({
@@ -45,6 +46,7 @@ export function LeagueFeaturedBanner() {
     queryFn: () => leagueApi.getMatchDetail(match!.id),
     enabled: !!match?.id,
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
   });
 
   const agentBets = (detail?.agentBets ?? []).slice(0, 4);
@@ -180,7 +182,7 @@ export function LeagueFeaturedBanner() {
           {thisPickError ? <p className="mt-1.5 text-center text-[10px] text-rose-400">{thisPickError}</p> : null}
 
           <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
-            <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Live Stats <ChevronRight className="h-3 w-3 shrink-0" /></button>
+            <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Agent Battles <ChevronRight className="h-3 w-3 shrink-0" /></button>
             {!thisPick ? (
               <button
                 type="button"

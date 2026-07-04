@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { leagueApi } from "@/api/leagueApi";
 import { LeagueFeaturedBanner } from "@/components/league/LeagueFeaturedBanner";
 import { LeagueFightCarousel } from "@/components/league/LeagueFightCarousel";
@@ -109,6 +109,7 @@ function LeagueAgentDesk() {
     queryKey: ["league", "matches", "featured"],
     queryFn: () => leagueApi.getFeaturedMatch(),
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
   });
 
   const { data: detail, isLoading } = useQuery({
@@ -116,6 +117,7 @@ function LeagueAgentDesk() {
     queryFn: () => leagueApi.getMatchDetail(match!.id),
     enabled: !!match?.id,
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
   });
 
   const calls = (detail?.agentBets ?? []).slice(0, 3).map((bet) => ({
@@ -127,11 +129,16 @@ function LeagueAgentDesk() {
 
   if (!match) return null;
 
+  const kickoff = new Date(match.kickoffAt);
+  const kickoffLabel = kickoff.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+
   return (
     <section className="rounded-none border border-[#a855f7]/25 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.14),transparent_54%),#070911] p-3 sm:p-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-300">&gt; agent_debate --live</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-300">
+            &gt; agent_debate {match.isLive ? "--live" : "--pending"}
+          </p>
           <h3 className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">
             <TeamFlagCircle teamName={match.home} className="h-6 w-6 border-blue-400/35" />
             <span>{match.home}</span>
@@ -139,7 +146,11 @@ function LeagueAgentDesk() {
             <span>{match.away}</span>
             <TeamFlagCircle teamName={match.away} className="h-6 w-6 border-cyan-400/35" />
           </h3>
-          <p className="mt-0.5 font-mono text-[11px] text-white/45"># different reads, visible reasoning — you make the pick.</p>
+          <p className="mt-0.5 font-mono text-[11px] text-white/45">
+            {match.isLive
+              ? "# different reads, visible reasoning — you make the pick."
+              : `# picks lock at kickoff (${kickoffLabel}) — reasoning reveals then.`}
+          </p>
         </div>
         <span className="rounded-none border border-[#a855f7]/30 bg-[#a855f7]/10 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-[#d8b4fe]">trust earned from results</span>
       </div>
@@ -150,7 +161,28 @@ function LeagueAgentDesk() {
           ))}
         </div>
       ) : calls.length === 0 ? (
-        <p className="mt-3 font-mono text-xs text-white/40">No agent picks locked in for this match yet.</p>
+        <div className="mt-3 rounded-none border border-white/10 bg-black/30 p-3">
+          {match.userAgentPick ? (
+            <>
+              <p className="font-mono text-xs text-white/70">
+                <span className="font-bold text-emerald-300">{match.userAgentPick.agentName}</span> already picked{" "}
+                {match.userAgentPick.predictedWinner === "HOME"
+                  ? match.home
+                  : match.userAgentPick.predictedWinner === "AWAY"
+                    ? match.away
+                    : "a draw"}{" "}
+                {match.userAgentPick.scoreHome}-{match.userAgentPick.scoreAway}.
+              </p>
+              <p className="mt-1 font-mono text-[11px] text-white/40">
+                Every agent's pick — including reasoning — reveals here once picks lock at kickoff ({kickoffLabel}).
+              </p>
+            </>
+          ) : (
+            <p className="font-mono text-xs text-white/40">
+              No picks locked in yet — they reveal at kickoff ({kickoffLabel}). Make your pick above before then.
+            </p>
+          )}
+        </div>
       ) : (
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           {calls.map((call) => (

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { TeamFlagHex } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -84,6 +84,7 @@ export function LeagueUpcomingCarousel() {
     queryKey: ["league", "matches", "scheduled"],
     queryFn: () => leagueApi.listMatches({ status: "SCHEDULED", limit: 10 }),
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 
   const scroll = (dir: number) => {
