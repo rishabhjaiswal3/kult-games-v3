@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, Loader2, Wallet } from "lucide-react";
+import { ChevronLeft, Loader2, Mail, Wallet, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 import {
@@ -9,10 +9,12 @@ import {
   usePrivy,
 } from "@privy-io/react-auth";
 import { privyAuthErrorMessage } from "@/lib/privyAuthErrors";
+import { KULT_LOGIN_LANDING_HEADER } from "@/lib/privyAppearance";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   clearUserLoginIntent,
   consumePendingLoginModalRequest,
+  getUserLoginMethod,
   markUserLoginIntent,
   subscribeOpenLoginModal,
 } from "@/lib/loginModalBus";
@@ -46,8 +48,19 @@ const GoogleIcon = () => (
 const OTP_RESEND_COOLDOWN_SECONDS = 30;
 const OTP_DELAY_NOTICE_SECONDS = 20;
 
-const CARD_DOT_GRID =
-  "radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)";
+function ProtectedByPrivyFooter() {
+  return (
+    <div className="kult-auth-footer">
+      <a
+        href="https://privy.io/?utm_source=module&utm_medium=module&utm_campaign=registration_module"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Protected by privy
+      </a>
+    </div>
+  );
+}
 
 function otpVerifyErrorMessage(error: unknown) {
   const fallback = privyAuthErrorMessage(error);
@@ -68,49 +81,7 @@ function otpVerifyErrorMessage(error: unknown) {
   return fallback || "Could not verify the code. Please try again or request a new one.";
 }
 
-function OrDivider() {
-  return (
-    <div className="flex items-center gap-3 py-1">
-      <div className="h-px flex-1 border-t border-dashed border-gray-200" />
-      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">or</span>
-      <div className="h-px flex-1 border-t border-dashed border-gray-200" />
-    </div>
-  );
-}
-
-function GradientSubmitButton({
-  disabled,
-  loading,
-  onClick,
-  label = "Continue",
-}: {
-  disabled?: boolean;
-  loading?: boolean;
-  onClick: () => void;
-  label?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || loading}
-      aria-label={label}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
-      style={{
-        background: "linear-gradient(135deg, #00FF94 0%, #00E0FF 100%)",
-        boxShadow: "0 4px 14px rgba(0, 224, 255, 0.35)",
-      }}
-    >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-      )}
-    </button>
-  );
-}
-
-function AltLoginButton({
+function AuthMethodButton({
   icon,
   label,
   onClick,
@@ -122,16 +93,50 @@ function AltLoginButton({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="group flex w-full items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3.5 text-left transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-      <span className="flex-1 text-sm font-medium text-gray-600">{label}</span>
-      <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 transition-colors group-hover:text-gray-400" />
+    <button type="button" onClick={onClick} disabled={disabled} className="kult-auth-method-btn">
+      <span className="kult-auth-method-icon">{icon}</span>
+      <span className="flex-1">{label}</span>
     </button>
+  );
+}
+
+function AuthEmailField({
+  value,
+  onChange,
+  onSubmit,
+  disabled,
+  loading,
+  placeholder = "your@email.com",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <div className="kult-auth-field-stack" style={{ marginTop: "10px" }}>
+      <label className="kult-auth-field kult-auth-field--input-only">
+        <Mail className="kult-auth-field-icon h-[18px] w-[18px]" strokeWidth={2} />
+        <input
+          type="email"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+          disabled={disabled}
+        />
+      </label>
+      <button
+        type="button"
+        className="kult-auth-submit-btn"
+        onClick={onSubmit}
+        disabled={disabled || loading || !value}
+      >
+        {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Continue"}
+      </button>
+    </div>
   );
 }
 
@@ -219,6 +224,9 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       if (msg) setAuthError(msg);
     },
   });
+
+  const loginMethod = getUserLoginMethod();
+  const isEmbeddedLoginFlow = loginMethod === "email" || loginMethod === "google";
 
   useEffect(() => {
     return subscribeOpenLoginModal((request) => {
@@ -317,9 +325,9 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             : "Sign-in started but could not complete. Please try again or use Wallet login.",
         );
       }
-    }, authLoading ? 50_000 : 12_000);
+    }, authLoading ? 90_000 : isEmbeddedLoginFlow ? 60_000 : 12_000);
     return () => window.clearTimeout(timer);
-  }, [isOpen, finishingSignIn, authLoading, isAuthenticated, recoveryMode]);
+  }, [isOpen, finishingSignIn, authLoading, isAuthenticated, recoveryMode, isEmbeddedLoginFlow]);
 
   const handleWalletAuth = () => {
     if (!ready || walletFlowBusy) return;
@@ -338,7 +346,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     setAuthError("");
     markUserLoginIntent("wallet");
     walletFlowInFlightRef.current = true;
-    login({ loginMethods: ["wallet"], walletChainType: "ethereum-only" });
+    login({
+      loginMethods: ["wallet"],
+      walletChainType: "ethereum-only",
+    });
   };
 
   const handleSendCode = async (resend = false) => {
@@ -401,66 +412,75 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#f4f4f5]/80 backdrop-blur-md"
+            className="kult-auth-backdrop fixed inset-0 z-[100]"
             onClick={onClose}
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 16 }}
+            initial={{ opacity: 0, scale: 0.97, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 16 }}
-            transition={{ type: "spring", damping: 28, stiffness: 320 }}
+            exit={{ opacity: 0, scale: 0.97, y: 12 }}
+            transition={{ type: "spring", damping: 26, stiffness: 340 }}
             className="pointer-events-none fixed inset-0 z-[101] flex items-center justify-center p-4"
           >
-            <div
-              className="pointer-events-auto relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-gray-200/80 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)]"
-              style={{
-                backgroundImage: CARD_DOT_GRID,
-                backgroundSize: "18px 18px",
-              }}
-            >
-              <div className="relative px-7 pb-6 pt-5">
-                <button
-                  type="button"
-                  onClick={otpSent ? handleBackToEmail : onClose}
-                  className="absolute left-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-600"
-                  aria-label={otpSent ? "Back to email" : "Close"}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
+            <div className="kult-auth-shell pointer-events-auto">
+              <div className="kult-auth-shell-glow" aria-hidden />
+              <div className="kult-auth-card">
+                <div className="kult-auth-card-accent" aria-hidden />
 
-                <div className="px-2 pb-2 pt-10 text-center">
-                  <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-900 shadow-sm">
-                    <img src={kultLogo} alt="Kult" className="h-8 w-8 object-contain" />
+                <div className="kult-auth-toolbar">
+                  <div className="w-9">
+                    {otpSent ? (
+                      <button
+                        type="button"
+                        onClick={handleBackToEmail}
+                        className="kult-auth-icon-btn"
+                        aria-label="Back to email"
+                      >
+                        <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+                      </button>
+                    ) : null}
                   </div>
-
-                  <h2 className="font-body text-[1.65rem] font-bold tracking-tight text-gray-900">
-                    {otpSent ? "Check your email" : "Welcome to Kult"}
-                  </h2>
-                  <p className="mx-auto mt-2 max-w-[280px] text-sm leading-relaxed text-gray-500">
-                    {otpSent
-                      ? `Enter the code we sent to ${email}`
-                      : "Sign in with your email or connect a Web3 wallet to get started."}
-                  </p>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="kult-auth-icon-btn"
+                    aria-label="close modal"
+                  >
+                    <X className="h-4 w-4" strokeWidth={2} />
+                  </button>
                 </div>
 
+                <div className="kult-auth-body">
+                  <header className="kult-auth-header">
+                    <img src={kultLogo} alt="Kult Games" className="kult-auth-logo" />
+                    {otpSent ? (
+                      <p className="kult-auth-subtitle">
+                        Code sent to{" "}
+                        <span className="text-[var(--privy-color-foreground)]">{email}</span>
+                      </p>
+                    ) : (
+                      <h3 className="kult-auth-subtitle">{KULT_LOGIN_LANDING_HEADER}</h3>
+                    )}
+                  </header>
+
+                <div className="kult-auth-main flex flex-col">
                 {authError ? (
-                  <p className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-                    {authError}
-                  </p>
+                  <p className="kult-auth-notice kult-auth-notice--error">{authError}</p>
                 ) : null}
 
                 {finishingSignIn ? (
-                  <div className="flex flex-col items-center gap-3 py-10 text-center">
-                    <div
-                      className="h-11 w-11 animate-spin rounded-full border-2 border-gray-200"
-                      style={{ borderTopColor: "#00E0FF" }}
-                    />
-                    <p className="text-sm font-medium text-gray-700">Signing you in…</p>
-                    <p className="max-w-[260px] text-xs leading-relaxed text-gray-500">
-                      {authLoading
-                        ? "Completing wallet verification with Kult…"
-                        : "If a wallet prompt appears, approve it to verify with SIWE."}
+                  <div className="kult-auth-finishing flex flex-col items-center gap-3 text-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-[var(--privy-color-accent)]" />
+                    <p className="text-sm font-medium text-[var(--privy-color-foreground)]">Signing you in…</p>
+                    <p className="max-w-[280px] text-xs leading-relaxed text-[var(--privy-color-foreground-2)]">
+                      {isEmbeddedLoginFlow
+                        ? authLoading
+                          ? "Creating your wallet and completing sign-in with Kult…"
+                          : "Setting up your wallet — this usually takes a few seconds."
+                        : authLoading
+                          ? "Completing wallet verification with Kult…"
+                          : "If a wallet prompt appears, approve it to verify with SIWE."}
                     </p>
                     <button
                       type="button"
@@ -473,88 +493,76 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                           void privyLogout();
                         }
                       }}
-                      className="mt-1 text-xs text-gray-400 underline-offset-2 transition-colors hover:text-gray-600 hover:underline"
+                      className="mt-1 text-xs text-[var(--privy-color-foreground-3)] underline-offset-2 hover:underline"
                     >
                       Use a different method
                     </button>
                   </div>
                 ) : !otpSent ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 pl-5 shadow-sm transition-all focus-within:border-gray-300 focus-within:shadow-md">
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && void handleSendCode()}
-                        className="h-11 min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
-                      />
-                      <GradientSubmitButton
-                        disabled={!email}
-                        loading={loading}
-                        onClick={() => void handleSendCode()}
-                        label="Send code"
-                      />
+                  <div className="kult-auth-stack kult-auth-stack--landing">
+                    <AuthEmailField
+                      value={email}
+                      onChange={setEmail}
+                      onSubmit={() => void handleSendCode()}
+                      disabled={loading}
+                      loading={loading}
+                    />
+                    <div className="kult-auth-divider" aria-hidden="true">
+                      <span>or</span>
                     </div>
-
-                    <OrDivider />
-
-                    <div className="space-y-2.5">
-                      <AltLoginButton
-                        icon={<GoogleIcon />}
-                        label="Google"
-                        onClick={() => {
-                          setRecoveryMode(false);
-                          setAuthError("");
-                          markUserLoginIntent("google");
-                          void initOAuth({ provider: "google" });
-                        }}
-                        disabled={loading}
-                      />
-                      <AltLoginButton
-                        icon={<Wallet className="h-4 w-4 text-gray-800" strokeWidth={1.75} />}
-                        label="Login with Wallet"
-                        onClick={handleWalletAuth}
-                        disabled={loading || walletFlowBusy || !ready}
-                      />
-                    </div>
+                    <AuthMethodButton
+                      icon={<GoogleIcon />}
+                      label="Google"
+                      onClick={() => {
+                        setRecoveryMode(false);
+                        setAuthError("");
+                        markUserLoginIntent("google");
+                        void initOAuth({ provider: "google" });
+                      }}
+                      disabled={loading}
+                    />
+                    <AuthMethodButton
+                      icon={<Wallet className="h-[18px] w-[18px]" strokeWidth={1.75} />}
+                      label="Continue with a wallet"
+                      onClick={handleWalletAuth}
+                      disabled={loading || walletFlowBusy || !ready}
+                    />
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {otpNotice ? (
-                      <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs leading-relaxed text-cyan-800">
-                        {otpNotice}
-                      </p>
-                    ) : null}
+                  <div className="kult-auth-stack kult-auth-stack--landing">
+                    {otpNotice ? <p className="kult-auth-notice">{otpNotice}</p> : null}
                     {showDelayedOtpNotice ? (
-                      <p className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                      <p className="kult-auth-notice kult-auth-notice--error">
                         Still waiting? Email delivery can be delayed. Check spam/promotions, confirm
                         the email address, or send a new code below.
                       </p>
                     ) : null}
 
-                    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 pl-5 shadow-sm transition-all focus-within:border-gray-300 focus-within:shadow-md">
+                    <label className="kult-auth-field">
                       <input
                         type="text"
                         placeholder="000000"
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && void handleVerifyCode()}
-                        className="h-11 min-w-0 flex-1 bg-transparent text-center text-lg font-mono tracking-[0.35em] text-gray-900 outline-none placeholder:text-gray-300"
+                        className="!pl-5 !text-center !text-lg !tracking-[0.35em]"
+                        style={{ fontFamily: "ui-monospace, monospace" }}
                       />
-                      <GradientSubmitButton
-                        disabled={!otpCode}
-                        loading={loading}
+                      <button
+                        type="button"
+                        className="kult-auth-field-submit"
                         onClick={() => void handleVerifyCode()}
-                        label="Verify code"
-                      />
-                    </div>
+                        disabled={loading || !otpCode}
+                      >
+                        {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Continue"}
+                      </button>
+                    </label>
 
                     <button
                       type="button"
                       onClick={() => void handleSendCode(true)}
                       disabled={loading || otpResendCooldown > 0}
-                      className="w-full rounded-full border border-gray-200 px-4 py-3 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="kult-auth-method-btn justify-center disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {otpResendCooldown > 0
                         ? `Resend code in ${otpResendCooldown}s`
@@ -563,9 +571,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   </div>
                 )}
 
-                <p className="mt-8 text-center text-[10px] text-gray-400">
-                  © Copyright 2026 — Kult Games — All Rights Reserved
-                </p>
+                </div>
+                </div>
+
+                <ProtectedByPrivyFooter />
               </div>
             </div>
           </motion.div>

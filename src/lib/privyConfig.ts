@@ -1,6 +1,7 @@
 import type { PrivyClientConfig } from "@privy-io/react-auth";
 import { mainnet } from "viem/chains";
-import { PRIVY_WALLET_LIST } from "@/lib/privyWalletList";
+import { buildPrivyWalletList } from "@/lib/privyWalletList";
+import { KULT_PRIVY_APPEARANCE } from "@/lib/privyAppearance";
 import { buildAppChain } from "@/lib/zerogChain";
 
 const canUseEmbeddedWallets =
@@ -10,18 +11,17 @@ const canUseEmbeddedWallets =
  * Privy wallet SIWE is verified on auth.privy.io — only known chains (e.g. mainnet) pass.
  * 0G (16661) in the SIWE message returns 422 `invalid_data`. Use mainnet for Privy login,
  * then switch the wallet to 0G after auth (see LoginModal). Kult backend SIWE uses 16661 separately.
+ *
+ * Note: createOnLogin only runs for Privy's built-in modal — whitelabel email/Google flows must
+ * call createWallet() after login (see AuthContext).
  */
 export function buildPrivyConfig(): PrivyClientConfig {
   const zeroGChain = buildAppChain();
   return {
     appearance: {
-      // Dark base matching site bg hsl(220 50% 6%) ≈ #070d1a
-      theme: "#070d1a",
-      // Kult primary purple hsl(278 88% 58%) ≈ #9835f5
-      accentColor: "#9835f5",
+      ...KULT_PRIVY_APPEARANCE,
       walletChainType: "ethereum-only",
-      showWalletLoginFirst: true,
-      walletList: [...PRIVY_WALLET_LIST],
+      walletList: buildPrivyWalletList(),
     },
     ...(canUseEmbeddedWallets
       ? {
