@@ -452,10 +452,10 @@ function FilterDropdown({ label, options, value, onSelect, activeDropdown, name,
     <div className="relative">
       <button
         onClick={() => onToggle(name)}
-        className="flex h-[34px] max-w-[9.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white/70 transition hover:border-white/15 hover:text-white sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
+        className="flex h-[34px] max-w-[9.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white [text-shadow:0_0_10px_rgba(255,255,255,0.35)] transition hover:border-white/20 hover:text-white sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
       >
         <span className="truncate">{value}</span>
-        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/70" />
       </button>
       {activeDropdown === name && (
         <>
@@ -808,34 +808,46 @@ export function AllMomentsPage() {
               </Link>
             ) : null}
 
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="font-tech text-[10px] font-semibold uppercase tracking-[0.38em] text-cyan-300">One feed · every world</div>
-                <h1 className="mt-2 font-tech text-3xl font-bold tracking-tight text-white">Moments</h1>
-                <p className="mt-1 text-[11px] font-medium text-white/55">
-                  Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
-                </p>
+            <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#04080f]/80 px-4 py-4 sm:px-5 sm:py-5">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(154,53,255,0.18),transparent_45%),radial-gradient(circle_at_4%_100%,rgba(33,144,255,0.12),transparent_42%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/70 to-transparent" />
+              <div className="relative flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/[0.07] px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.3em] text-cyan-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]" />
+                    One feed · every world
+                  </div>
+                  <h1 className="mt-3 flex items-center gap-2.5 font-tech text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#9a35ff]/40 bg-[#9a35ff]/[0.12] text-[#c98bff] shadow-[0_0_16px_rgba(154,53,255,0.28)]">
+                      <Video className="h-5 w-5" />
+                    </span>
+                    <span className="text-gradient-arena">Moments</span>
+                  </h1>
+                  <p className="mt-2.5 max-w-xl text-[13px] font-medium leading-relaxed text-white/80">
+                    Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCreateOpenChange(true)}
+                  data-tour="moments-create"
+                  className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:-translate-y-0.5 hover:bg-[#8525eb] hover:shadow-[0_0_24px_rgba(154,53,255,0.55)]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Create Moment</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => handleCreateOpenChange(true)}
-                data-tour="moments-create"
-                className="flex h-10 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Create Moment</span>
-              </button>
             </div>
 
-            <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6" data-tour="moments-tabs">
+            <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 font-tech text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6" data-tour="moments-tabs">
               {(["DISCOVER", "MY MOMENTS", "BOOKMARKS", "RECENTLY WATCHED"] as MainTab[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative shrink-0 cursor-pointer pb-2.5 uppercase transition-all hover:text-white ${activeTab === tab ? "text-white" : "text-white/45"}`}
+                  className={`relative shrink-0 cursor-pointer pb-2.5 uppercase tracking-[0.12em] transition-all hover:text-white ${activeTab === tab ? "text-[#bdeeff] [text-shadow:0_0_16px_rgba(82,203,255,0.95)]" : "text-[#a3e2ff] [text-shadow:0_0_10px_rgba(82,203,255,0.55)]"}`}
                 >
                   {tab}
-                  {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9a35ff]" />}
+                  {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-gradient-to-r from-[#9a35ff] to-[#c98bff] shadow-[0_0_8px_rgba(154,53,255,0.6)]" />}
                 </button>
               ))}
             </div>
@@ -854,13 +866,13 @@ export function AllMomentsPage() {
               </div>
               <div className="flex min-w-[10rem] flex-1 basis-[10rem] items-center gap-2">
                 <div className="relative min-w-0 flex-1">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/55" />
                   <input
                     type="text"
                     placeholder="Search moments..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-[34px] w-full min-w-0 rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white/86 placeholder-white/30 transition focus:border-purple-500/50 focus:outline-none"
+                    className="h-[34px] w-full min-w-0 rounded border border-white/8 bg-[#0a0f1b]/60 py-1.5 pl-9 pr-3 text-xs text-white placeholder-white/55 transition focus:border-purple-500/50 focus:outline-none"
                   />
                 </div>
                 <button

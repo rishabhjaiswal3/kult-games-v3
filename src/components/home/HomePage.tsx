@@ -252,7 +252,7 @@ export function HomePage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:items-stretch lg:gap-6">
-            <div className="grid content-start gap-2">
+            <div className="grid content-start gap-2 lg:auto-rows-fr">
               {[
                 {
                   emoji: "⚔️",
