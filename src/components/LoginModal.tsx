@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Wallet, Globe, Zap } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowRight, ChevronLeft, Loader2, Wallet } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 import {
   useLogin,
@@ -23,7 +23,7 @@ interface LoginModalProps {
 }
 
 const GoogleIcon = () => (
-  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+  <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -46,6 +46,9 @@ const GoogleIcon = () => (
 const OTP_RESEND_COOLDOWN_SECONDS = 30;
 const OTP_DELAY_NOTICE_SECONDS = 20;
 
+const CARD_DOT_GRID =
+  "radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)";
+
 function otpVerifyErrorMessage(error: unknown) {
   const fallback = privyAuthErrorMessage(error);
   const lower = fallback.toLowerCase();
@@ -63,6 +66,73 @@ function otpVerifyErrorMessage(error: unknown) {
   }
 
   return fallback || "Could not verify the code. Please try again or request a new one.";
+}
+
+function OrDivider() {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <div className="h-px flex-1 border-t border-dashed border-gray-200" />
+      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">or</span>
+      <div className="h-px flex-1 border-t border-dashed border-gray-200" />
+    </div>
+  );
+}
+
+function GradientSubmitButton({
+  disabled,
+  loading,
+  onClick,
+  label = "Continue",
+}: {
+  disabled?: boolean;
+  loading?: boolean;
+  onClick: () => void;
+  label?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || loading}
+      aria-label={label}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+      style={{
+        background: "linear-gradient(135deg, #00FF94 0%, #00E0FF 100%)",
+        boxShadow: "0 4px 14px rgba(0, 224, 255, 0.35)",
+      }}
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+      )}
+    </button>
+  );
+}
+
+function AltLoginButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="group flex w-full items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3.5 text-left transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+      <span className="flex-1 text-sm font-medium text-gray-600">{label}</span>
+      <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 transition-colors group-hover:text-gray-400" />
+    </button>
+  );
 }
 
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
@@ -140,7 +210,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       setWalletFlowBusy(false);
       setRecoveryMode(false);
       setAuthError("");
-      /* Keep modal open — AuthContext runs Kult SIWE and will close when isAuthenticated. */
       setFinishingSignIn(true);
     },
     onError: (error) => {
@@ -204,7 +273,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       return;
     }
 
-    // Resume in-progress Kult SIWE only when the modal is freshly opened — not after a timeout/recover.
     if (
       justOpened &&
       authenticated &&
@@ -329,290 +397,175 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100]"
-            style={{
-              background: "radial-gradient(ellipse at 50% 40%, hsl(270 82% 15% / 0.3), hsl(220 50% 4% / 0.88))",
-              backdropFilter: "blur(12px)",
-            }}
+            className="fixed inset-0 z-[100] bg-[#f4f4f5]/80 backdrop-blur-md"
             onClick={onClose}
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 30 }}
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 30 }}
+            exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
-            style={{ maxHeight: "100vh" }}
+            className="pointer-events-none fixed inset-0 z-[101] flex items-center justify-center p-4"
           >
-            <div className="relative w-full max-w-md pointer-events-auto">
-              {/* Outer ambient glow */}
-              <div
-                className="absolute -inset-4 -z-10 rounded-[36px] opacity-60"
-                style={{
-                  background: "radial-gradient(circle at 50% 0%, hsl(270 82% 58% / 0.25), transparent 60%)",
-                  filter: "blur(30px)",
-                }}
-              />
-
-              {/* Card */}
-              <div
-                className="relative w-full overflow-hidden"
-                style={{
-                  borderRadius: "24px",
-                  border: "1px solid hsl(270 80% 60% / 0.2)",
-                  background: "linear-gradient(160deg, hsl(265 48% 12% / 0.98), hsl(220 45% 7% / 0.98))",
-                  boxShadow:
-                    "0 30px 80px hsl(220 50% 2% / 0.5), 0 0 0 1px hsl(270 80% 60% / 0.08), 0 0 60px hsl(270 82% 58% / 0.08), inset 0 1px 0 hsl(278 100% 82% / 0.08)",
-                }}
-              >
-                {/* Top accent line */}
-                <div
-                  className="absolute top-0 left-[10%] right-[10%] h-[1px]"
-                  style={{
-                    background: "linear-gradient(90deg, transparent, hsl(270 80% 65% / 0.6), hsl(195 100% 65% / 0.4), transparent)",
-                  }}
-                />
-
-                {/* Close button */}
+            <div
+              className="pointer-events-auto relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-gray-200/80 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)]"
+              style={{
+                backgroundImage: CARD_DOT_GRID,
+                backgroundSize: "18px 18px",
+              }}
+            >
+              <div className="relative px-7 pb-6 pt-5">
                 <button
-                  onClick={onClose}
-                  className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center text-muted-foreground hover:text-foreground transition-all"
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid hsl(210 25% 20% / 0.5)",
-                    background: "hsl(220 45% 10% / 0.5)",
-                  }}
+                  type="button"
+                  onClick={otpSent ? handleBackToEmail : onClose}
+                  className="absolute left-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-600"
+                  aria-label={otpSent ? "Back to email" : "Close"}
                 >
-                  <X className="w-4 h-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
 
-                <div className="px-6 pb-7 pt-10">
-                  {/* Header */}
-                  <div className="text-center mb-7">
-                    {/* Logo */}
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                      className="mx-auto mb-6 flex items-center justify-center"
-                    >
-                      <img 
-                        src={kultLogo} 
-                        alt="Kult Logo" 
-                        className="w-48 h-auto object-contain filter drop-shadow-[0_0_15px_rgba(224,167,255,0.6)]" 
-                      />
-                    </motion.div>
-
-                    {/* <h2 className="font-display text-2xl font-black tracking-tight text-foreground">
-                      Welcome Back
-                    </h2> */}
-                    {/* <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                      Sign in to access games, AI features & rankings.
-                    </p> */}
+                <div className="px-2 pb-2 pt-10 text-center">
+                  <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-900 shadow-sm">
+                    <img src={kultLogo} alt="Kult" className="h-8 w-8 object-contain" />
                   </div>
 
-                  {authError ? (
-                    <p className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/95">
-                      {authError}
-                    </p>
-                  ) : null}
+                  <h2 className="font-body text-[1.65rem] font-bold tracking-tight text-gray-900">
+                    {otpSent ? "Check your email" : "Welcome to Kult"}
+                  </h2>
+                  <p className="mx-auto mt-2 max-w-[280px] text-sm leading-relaxed text-gray-500">
+                    {otpSent
+                      ? `Enter the code we sent to ${email}`
+                      : "Sign in with your email or connect a Web3 wallet to get started."}
+                  </p>
+                </div>
 
-                  {finishingSignIn ? (
-                    <motion.div className="flex flex-col items-center gap-3 py-8 text-center">
-                      <div className="h-10 w-10 animate-spin rounded-full border-2 border-neon-cyan/30 border-t-neon-cyan" />
-                      <p className="text-sm text-muted-foreground">Signing you in…</p>
-                      <p className="text-xs text-muted-foreground/70">
-                        {authLoading
-                          ? "Completing wallet verification with Kult…"
-                          : "If a wallet prompt appears, approve it to verify with SIWE."}
-                      </p>
-                      <button
-                        type="button"
+                {authError ? (
+                  <p className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                    {authError}
+                  </p>
+                ) : null}
+
+                {finishingSignIn ? (
+                  <div className="flex flex-col items-center gap-3 py-10 text-center">
+                    <div
+                      className="h-11 w-11 animate-spin rounded-full border-2 border-gray-200"
+                      style={{ borderTopColor: "#00E0FF" }}
+                    />
+                    <p className="text-sm font-medium text-gray-700">Signing you in…</p>
+                    <p className="max-w-[260px] text-xs leading-relaxed text-gray-500">
+                      {authLoading
+                        ? "Completing wallet verification with Kult…"
+                        : "If a wallet prompt appears, approve it to verify with SIWE."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearUserLoginIntent();
+                        setFinishingSignIn(false);
+                        setRecoveryMode(false);
+                        setAuthError("");
+                        if (authenticated && !isAuthenticated) {
+                          void privyLogout();
+                        }
+                      }}
+                      className="mt-1 text-xs text-gray-400 underline-offset-2 transition-colors hover:text-gray-600 hover:underline"
+                    >
+                      Use a different method
+                    </button>
+                  </div>
+                ) : !otpSent ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 pl-5 shadow-sm transition-all focus-within:border-gray-300 focus-within:shadow-md">
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && void handleSendCode()}
+                        className="h-11 min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+                      />
+                      <GradientSubmitButton
+                        disabled={!email}
+                        loading={loading}
+                        onClick={() => void handleSendCode()}
+                        label="Send code"
+                      />
+                    </div>
+
+                    <OrDivider />
+
+                    <div className="space-y-2.5">
+                      <AltLoginButton
+                        icon={<GoogleIcon />}
+                        label="Google"
                         onClick={() => {
-                          clearUserLoginIntent();
-                          setFinishingSignIn(false);
                           setRecoveryMode(false);
                           setAuthError("");
-                          if (authenticated && !isAuthenticated) {
-                            void privyLogout();
-                          }
+                          markUserLoginIntent("google");
+                          void initOAuth({ provider: "google" });
                         }}
-                        className="mt-1 text-xs text-muted-foreground/50 underline-offset-2 transition-colors hover:text-muted-foreground hover:underline"
-                      >
-                        ← Use a different method
-                      </button>
-                    </motion.div>
-                  ) : !otpSent ? (
-                    <div className="space-y-4">
-                      {/* Email input */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</label>
-                        <input
-                          type="email"
-                          placeholder="you@example.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && void handleSendCode()}
-                          className="w-full h-12 px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all"
-                          style={{
-                            borderRadius: "14px",
-                            border: "1px solid hsl(210 25% 20% / 0.6)",
-                            background: "hsl(220 45% 8% / 0.6)",
-                            boxShadow: "inset 0 2px 4px hsl(220 50% 4% / 0.3)",
-                          }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.5)";
-                            e.currentTarget.style.boxShadow = "inset 0 2px 4px hsl(220 50% 4% / 0.3), 0 0 0 3px hsl(270 80% 60% / 0.1)";
-                          }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.6)";
-                            e.currentTarget.style.boxShadow = "inset 0 2px 4px hsl(220 50% 4% / 0.3)";
-                          }}
-                        />
-                      </div>
-
-                      {/* Send Code button */}
-                      <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={() => void handleSendCode()}
-                        disabled={loading || !email}
-                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Mail className="w-4 h-4" />
-                        {loading ? "Sending..." : "Send Code"}
-                      </motion.button>
-
-                      {/* Divider */}
-                      <div className="flex items-center gap-3 py-1">
-                        <div className="flex-1 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(210 25% 20% / 0.6), transparent)" }} />
-                        <span className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest">or</span>
-                        <div className="flex-1 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(210 25% 20% / 0.6), transparent)" }} />
-                      </div>
-
-                      {/* Alt methods */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleWalletAuth}
-                          disabled={loading || walletFlowBusy || !ready}
-                          className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all group"
-                          style={{
-                            borderRadius: "12px",
-                            border: "1px solid hsl(210 25% 20% / 0.5)",
-                            background: "hsl(220 45% 10% / 0.4)",
-                            color: "hsl(210 20% 93%)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.4)";
-                            e.currentTarget.style.boxShadow = "0 0 15px hsl(270 82% 58% / 0.1)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.5)";
-                            e.currentTarget.style.boxShadow = "none";
-                          }}
-                        >
-                          <Wallet className="w-3.5 h-3.5 text-[hsl(195_100%_65%)]" />
-                          Wallet
-                        </motion.button>
-
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                            setRecoveryMode(false);
-                            setAuthError("");
-                            markUserLoginIntent("google");
-                            void initOAuth({ provider: "google" });
-                          }}
-                          className="h-11 font-medium text-xs flex items-center justify-center gap-2 transition-all"
-                          style={{
-                            borderRadius: "12px",
-                            border: "1px solid hsl(210 25% 20% / 0.5)",
-                            background: "hsl(220 45% 10% / 0.4)",
-                            color: "hsl(210 20% 93%)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(270 80% 60% / 0.4)";
-                            e.currentTarget.style.boxShadow = "0 0 15px hsl(270 82% 58% / 0.1)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "hsl(210 25% 20% / 0.5)";
-                            e.currentTarget.style.boxShadow = "none";
-                          }}
-                        >
-                          <GoogleIcon />
-                          Google
-                        </motion.button>
-                      </div>
+                        disabled={loading}
+                      />
+                      <AltLoginButton
+                        icon={<Wallet className="h-4 w-4 text-gray-800" strokeWidth={1.75} />}
+                        label="Login with Wallet"
+                        onClick={handleWalletAuth}
+                        disabled={loading || walletFlowBusy || !ready}
+                      />
                     </div>
-                  ) : (
-                    <div className="space-y-5">
-                      <p className="text-sm text-muted-foreground text-center">
-                        Enter the code sent to <span className="text-foreground font-medium">{email}</span>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {otpNotice ? (
+                      <p className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs leading-relaxed text-cyan-800">
+                        {otpNotice}
                       </p>
-                      {otpNotice ? (
-                        <p className="rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2.5 text-xs leading-relaxed text-cyan-100/90">
-                          {otpNotice}
-                        </p>
-                      ) : null}
-                      {showDelayedOtpNotice ? (
-                        <p className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/90">
-                          Still waiting? Email delivery can be delayed. Check spam/promotions, confirm the email address, or send a new code below.
-                        </p>
-                      ) : null}
+                    ) : null}
+                    {showDelayedOtpNotice ? (
+                      <p className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                        Still waiting? Email delivery can be delayed. Check spam/promotions, confirm
+                        the email address, or send a new code below.
+                      </p>
+                    ) : null}
+
+                    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 pl-5 shadow-sm transition-all focus-within:border-gray-300 focus-within:shadow-md">
                       <input
                         type="text"
                         placeholder="000000"
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()}
-                        className="w-full h-14 px-4 text-center text-foreground tracking-[0.4em] text-xl font-mono placeholder:text-muted-foreground/30 focus:outline-none transition-all"
-                        style={{
-                          borderRadius: "16px",
-                          border: "1px solid hsl(270 80% 60% / 0.3)",
-                          background: "hsl(220 45% 8% / 0.6)",
-                          boxShadow: "inset 0 2px 4px hsl(220 50% 4% / 0.3), 0 0 0 3px hsl(270 80% 60% / 0.08)",
-                        }}
+                        onKeyDown={(e) => e.key === "Enter" && void handleVerifyCode()}
+                        className="h-11 min-w-0 flex-1 bg-transparent text-center text-lg font-mono tracking-[0.35em] text-gray-900 outline-none placeholder:text-gray-300"
                       />
-                      <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={handleVerifyCode}
-                        disabled={loading || !otpCode}
-                        className="w-full h-12 font-display font-semibold text-sm tracking-wider btn-eye flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {loading ? "Verifying..." : "Verify Code"}
-                      </motion.button>
-                      <button
-                        type="button"
-                        onClick={() => void handleSendCode(true)}
-                        disabled={loading || otpResendCooldown > 0}
-                        className="w-full rounded-xl border border-white/10 px-4 py-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-cyan-300/35 hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/10 disabled:hover:text-muted-foreground"
-                      >
-                        {otpResendCooldown > 0
-                          ? `Resend code in ${otpResendCooldown}s`
-                          : "Resend code"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleBackToEmail}
-                        className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        ← Back
-                      </button>
+                      <GradientSubmitButton
+                        disabled={!otpCode}
+                        loading={loading}
+                        onClick={() => void handleVerifyCode()}
+                        label="Verify code"
+                      />
                     </div>
-                  )}
 
-                  {/* Footer */}
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleSendCode(true)}
+                      disabled={loading || otpResendCooldown > 0}
+                      className="w-full rounded-full border border-gray-200 px-4 py-3 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {otpResendCooldown > 0
+                        ? `Resend code in ${otpResendCooldown}s`
+                        : "Resend code"}
+                    </button>
+                  </div>
+                )}
+
+                <p className="mt-8 text-center text-[10px] text-gray-400">
+                  © Copyright 2026 — Kult Games — All Rights Reserved
+                </p>
               </div>
             </div>
           </motion.div>
