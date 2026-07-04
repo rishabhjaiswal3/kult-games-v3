@@ -11,6 +11,7 @@
 export const PRIVY_FEATURED_WALLETS = [
   "okx_wallet",
   "bitget_wallet",
+  "bitget",
   "zerion",
   "metamask",
   "phantom",
