@@ -9,12 +9,11 @@
  * the full WalletConnect registry (100+ searchable wallets below the featured set).
  */
 export const PRIVY_FEATURED_WALLETS = [
-  "coinbase_wallet",
   "okx_wallet",
   "bitget_wallet",
+  "zerion",
   "metamask",
   "phantom",
-  "zerion",
 ] as const;
 
 export type PrivyFeaturedWalletId = (typeof PRIVY_FEATURED_WALLETS)[number];
