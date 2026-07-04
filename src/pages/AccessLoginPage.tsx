@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, Eye, EyeOff, KeyRound, Loader2 } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, LockKeyhole } from "lucide-react";
 import { useAccess } from "@/contexts/AccessContext";
 import heroVideo from "@/assets/SC_1-3.mp4";
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
-
-const CARD_DOT_GRID =
-  "radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)";
 
 function errorMessage(error: unknown) {
   if (typeof error === "object" && error !== null && "response" in error) {
@@ -23,10 +20,11 @@ export default function AccessLoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const [focused, setFocused] = useState(false);
 
-  const handleSubmit = async (event?: React.FormEvent) => {
-    event?.preventDefault();
-    if (!code.trim() || isSubmitting || code.length !== 6) return;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!code.trim() || isSubmitting) return;
     setError("");
     setIsSubmitting(true);
     try {
@@ -39,9 +37,61 @@ export default function AccessLoginPage() {
   };
 
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#f4f4f5] px-4 py-10 font-body">
+    <main className="relative flex min-h-dvh overflow-hidden bg-[#03070d] text-white">
+
+      <style>{`
+        @keyframes flowR {
+          0%   { transform: translateX(-60%); opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { transform: translateX(60%); opacity: 0; }
+        }
+        @keyframes flowL {
+          0%   { transform: translateX(60%); opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { transform: translateX(-60%); opacity: 0; }
+        }
+        @keyframes flowR2 {
+          0%   { transform: translateX(-40%); opacity: 0; }
+          20%  { opacity: 0.7; }
+          80%  { opacity: 0.7; }
+          100% { transform: translateX(40%); opacity: 0; }
+        }
+
+        /* Entrance animations */
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleFade {
+          from { opacity: 0; transform: scale(0.92); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes letterSpread {
+          from { opacity: 0; letter-spacing: 0.4em; transform: translateY(16px); }
+          to   { opacity: 1; letter-spacing: 0.08em; transform: translateY(0); }
+        }
+        @keyframes pulseGlow {
+          0%, 100% { box-shadow: 0 0 24px rgba(154,53,255,0.45); }
+          50%       { box-shadow: 0 0 48px rgba(154,53,255,0.75), 0 0 80px rgba(154,53,255,0.3); }
+        }
+
+        .anim-logo    { animation: fadeDown 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.2s; }
+        .anim-title   { animation: letterSpread 0.9s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.5s; }
+        .anim-sub     { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.85s; }
+        .anim-input   { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 1.05s; }
+        .anim-btn     { animation: scaleFade 0.55s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 1.25s; }
+        .btn-glow-pulse { animation: pulseGlow 2.8s ease-in-out infinite; animation-delay: 1.8s; }
+      `}</style>
+
+      {/* Video background */}
       <video
-        className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.12]"
+        className="fixed inset-0 h-dvh w-screen object-cover"
         src={heroVideo}
         autoPlay
         muted
@@ -51,90 +101,110 @@ export default function AccessLoginPage() {
         aria-hidden
       />
 
-      <div
-        className="relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-gray-200/80 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)]"
-        style={{
-          backgroundImage: CARD_DOT_GRID,
-          backgroundSize: "18px 18px",
-        }}
-      >
-        <div className="relative px-7 pb-6 pt-5">
-          <div className="px-2 pb-2 pt-4 text-center">
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-900 shadow-sm">
-              <img src={kultLogo} alt="Kult" className="h-8 w-8 object-contain brightness-110" />
-            </div>
-
-            <h1 className="text-[1.65rem] font-bold tracking-tight text-gray-900">
-              Welcome to Kult Browser
-            </h1>
-            <p className="mx-auto mt-2 max-w-[300px] text-sm leading-relaxed text-gray-500">
-              Enter your private access code to unlock games, AI arena, and the full Kult experience.
-            </p>
-          </div>
-
-          <div className="mb-5 flex items-center justify-center gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 px-4 py-3">
-            <img src={zeroGLogo} alt="0G" className="h-6 w-auto object-contain opacity-80" />
-            <span className="h-5 w-px bg-gray-200" aria-hidden />
-            <img src={kultLogo} alt="Kult Games" className="h-7 w-auto object-contain" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="sr-only" htmlFor="access-code">
-              Access code
-            </label>
-
-            <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 pl-4 shadow-sm transition-all focus-within:border-gray-300 focus-within:shadow-md">
-              <KeyRound className="h-4 w-4 shrink-0 text-gray-400" />
-              <input
-                id="access-code"
-                type={showCode ? "text" : "password"}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                autoComplete="new-password"
-                value={code}
-                onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="Access code"
-                className="access-code-input h-11 min-w-0 flex-1 bg-transparent text-sm font-medium tracking-[0.22em] text-gray-900 outline-none placeholder:tracking-normal placeholder:text-gray-400"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCode((current) => !current)}
-                aria-label={showCode ? "Hide code" : "Show code"}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-              >
-                {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-              <button
-                type="submit"
-                disabled={code.length !== 6 || isSubmitting}
-                aria-label="Enter"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  background: "linear-gradient(135deg, #00FF94 0%, #00E0FF 100%)",
-                  boxShadow: "0 4px 14px rgba(0, 224, 255, 0.35)",
-                }}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-                )}
-              </button>
-            </div>
-
-            {error ? (
-              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
-                {error}
-              </div>
-            ) : null}
-          </form>
-
-          <p className="mt-8 text-center text-[10px] text-gray-400">
-            © Copyright 2026 — Kult Games — All Rights Reserved
-          </p>
-        </div>
+      {/* Fog layer — wide horizontal bands flowing like air */}
+      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
+        {/* Layer 1 — thick base fog, flows right, slowest */}
+        <div
+          className="absolute bottom-[10%] left-0 h-32 w-[200%] rounded-full bg-white/30 blur-[80px]"
+          style={{ animation: "flowR 18s linear infinite" }}
+        />
+        {/* Layer 2 — flows left, slightly higher */}
+        <div
+          className="absolute bottom-[18%] left-0 h-24 w-[200%] rounded-full bg-white/20 blur-[70px]"
+          style={{ animation: "flowL 22s linear infinite 4s" }}
+        />
+        {/* Layer 3 — thinner wisp, fast, flows right */}
+        <div
+          className="absolute bottom-[28%] left-0 h-16 w-[200%] rounded-full bg-white/15 blur-[60px]"
+          style={{ animation: "flowR2 14s linear infinite 2s" }}
+        />
+        {/* Layer 4 — faint purple tint, flows left, tall band */}
+        <div
+          className="absolute bottom-[6%] left-0 h-40 w-[200%] rounded-full bg-purple-100/20 blur-[90px]"
+          style={{ animation: "flowL 26s linear infinite 7s" }}
+        />
+        {/* Layer 5 — very faint top wisp */}
+        <div
+          className="absolute bottom-[35%] left-0 h-12 w-[200%] rounded-full bg-white/10 blur-[50px]"
+          style={{ animation: "flowR 16s linear infinite 9s" }}
+        />
       </div>
+
+      {/* Bottom scrim so text stays readable over fog */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[2] h-2/5 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+      {/* Content */}
+      <section className="relative z-10 flex min-h-dvh w-full flex-col items-center justify-end px-5 pb-28 text-center">
+
+        {/* Logo bar */}
+        <div className="anim-logo mb-6 flex items-center gap-4 rounded-xl border border-white/10 bg-black/40 px-5 py-2.5 backdrop-blur-md">
+          <img src={zeroGLogo} alt="0G" className="h-7 w-auto object-contain" />
+          <span className="h-6 w-px bg-white/20" aria-hidden />
+          <img src={kultLogo} alt="Kult Games" className="h-8 w-auto object-contain" />
+        </div>
+
+        <h1
+          className="anim-title w-full whitespace-nowrap font-tech font-black uppercase leading-none text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.25)]"
+          style={{ fontSize: "clamp(1.6rem, 8vw, 4.5rem)", letterSpacing: "0.08em" }}
+        >
+          Kult Browser
+        </h1>
+        <p className="anim-sub mt-2 text-[11px] font-bold uppercase tracking-[0.34em] text-white/50">
+          Private access gateway
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 w-full max-w-sm">
+          <label className="sr-only" htmlFor="access-code">Access code</label>
+
+          {/* Input wrapper — glows white when focused */}
+          <div
+            className="anim-input flex items-center gap-3 rounded-xl border bg-black/50 px-4 py-1 backdrop-blur-xl transition-all duration-300"
+            style={{
+              borderColor: focused ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.12)",
+              boxShadow: focused ? "0 0 0 1px rgba(255,255,255,0.1), 0 0 24px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)" : "none",
+            }}
+          >
+            <KeyRound className="h-4 w-4 shrink-0 text-white/50" />
+            <input
+              id="access-code"
+              type={showCode ? "text" : "password"}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
+              autoComplete="new-password"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              placeholder="Enter access code"
+              className="access-code-input h-12 min-w-0 flex-1 border-0 bg-transparent font-tech text-sm font-bold tracking-[0.18em] text-white outline-none placeholder:text-white/30"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCode((c) => !c)}
+              aria-label={showCode ? "Hide code" : "Show code"}
+              className="text-white/40 transition hover:text-white/80"
+            >
+              {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+
+          {error ? (
+            <div className="mt-3 rounded-lg border border-red-400/20 bg-red-950/40 px-4 py-2.5 text-xs font-semibold text-red-200 backdrop-blur-sm">
+              {error}
+            </div>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={code.length !== 6 || isSubmitting}
+            className="anim-btn btn-glow-pulse mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#9a35ff] font-tech text-sm font-black uppercase tracking-[0.14em] text-white transition-all duration-300 hover:bg-[#8525eb] hover:shadow-[0_0_40px_rgba(154,53,255,0.7)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
+            Enter
+          </button>
+        </form>
+      </section>
     </main>
   );
 }
