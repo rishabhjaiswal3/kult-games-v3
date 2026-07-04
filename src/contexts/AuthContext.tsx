@@ -21,6 +21,7 @@ import {
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import {
+  getWalletAddressFromPrivyUser,
   isEmbeddedPrivyConnectedWallet,
   pickSigningWallet,
   resolvePrivyWalletAddress,
@@ -44,8 +45,10 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Dedupes SIWE across React Strict Mode remounts (refs reset; a second `personal_sign` was still fired). */
 const siweInFlightByAddress = new Map<string, Promise<void>>();
-const SIGNING_WALLET_WAIT_MS = 20_000;
+const SIGNING_WALLET_WAIT_MS = 45_000;
 const SIGNING_WALLET_POLL_MS = 250;
+/** Whitelabel email/Google login does not trigger createOnLogin — allow time for manual createWallet. */
+const EMBEDDED_WALLET_PROVISION_TIMEOUT_MS = 90_000;
 const PERSONAL_SIGN_TIMEOUT_MS = 45_000;
 /** Hard cap for the full SIWE pipeline (nonce, sign, backend login). */
 const SIWE_RUN_TIMEOUT_MS = 90_000;
@@ -87,7 +90,7 @@ async function waitForSigningWallet(
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user, getAccessToken, logout: privyLogout } = usePrivy();
+  const { ready, authenticated, user, getAccessToken, logout: privyLogout, createWallet } = usePrivy();
   const { wallets } = useWallets();
   const queryClient = useQueryClient();
   const { clearAccess } = useAccess();
@@ -110,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const walletsRef = useRef(wallets);
   const staleLogoutInFlightRef = useRef(false);
+  const createWalletInFlightRef = useRef(false);
 
   useEffect(() => {
     walletsRef.current = wallets;
@@ -198,24 +202,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ready, authenticated, resolvedAddress, resetStalePrivySession]);
 
-  // Privy may provision embedded wallets after email/Google — only while user initiated login.
+  // Whitelabel email/Google (loginWithCode / OAuth) does not run createOnLogin — create embedded wallet ourselves.
   useEffect(() => {
     if (!ready || !authenticated || resolvedAddress || !hasUserLoginIntent()) return;
+    if (walletPreference !== "embedded") return;
+
+    let cancelled = false;
     setIsLoading(true);
-    const timer = window.setTimeout(() => {
-      setIsLoading(false);
-      if (!resolvePrivyWalletAddress(user, walletsRef.current, walletPreference)) {
-        requestOpenLoginModal({
-          mode: "recover",
-          message:
-            walletPreference === "embedded"
-              ? "Your email/Google wallet is still being set up. Please wait a moment and try again."
-              : "Your wallet is still being set up. Please wait a moment and try again, or use Wallet login.",
-        });
+    requestOpenLoginModal({ mode: "finishing" });
+
+    const ensureEmbeddedWallet = async () => {
+      if (createWalletInFlightRef.current) return;
+
+      const existing =
+        getWalletAddressFromPrivyUser(user, "embedded") ??
+        walletsRef.current.find((w) => isEmbeddedPrivyConnectedWallet(w))?.address;
+      if (existing) return;
+
+      createWalletInFlightRef.current = true;
+      try {
+        await createWallet();
+      } catch (err) {
+        console.warn("[Auth] Embedded wallet creation after email/Google login:", err);
+      } finally {
+        createWalletInFlightRef.current = false;
       }
-    }, SIGNING_WALLET_WAIT_MS);
-    return () => window.clearTimeout(timer);
-  }, [ready, authenticated, resolvedAddress, user, walletPreference]);
+    };
+
+    void ensureEmbeddedWallet();
+
+    const fallbackTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      if (resolvePrivyWalletAddress(user, walletsRef.current, "embedded")) return;
+
+      setIsLoading(false);
+      requestOpenLoginModal({
+        mode: "recover",
+        message:
+          "We couldn't finish setting up your wallet. Please try again — your account was created and should work on retry.",
+      });
+    }, EMBEDDED_WALLET_PROVISION_TIMEOUT_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(fallbackTimer);
+    };
+  }, [ready, authenticated, resolvedAddress, user, walletPreference, createWallet, wallets]);
 
   // SIWE only when the user explicitly started login (Connect / wallet / email / Google).
   useEffect(() => {

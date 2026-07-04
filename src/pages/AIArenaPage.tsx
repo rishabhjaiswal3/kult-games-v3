@@ -611,14 +611,24 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         <span className="leading-tight whitespace-nowrap text-center">{buttonLabel}</span>
       </button>
 
-      <button
-        type="button"
-        onClick={openJoinBattle}
-        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
-      >
-        <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
-        <span>JOIN BATTLE</span>
-      </button>
+      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+        <button
+          type="button"
+          onClick={openJoinBattle}
+          className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
+        >
+          <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+          <span>JOIN BATTLE</span>
+        </button>
+
+        <Link
+          to="/my-agents"
+          className={`${actionButtonBase} ${actionButtonSize} border-[#0089ff]/50 bg-[linear-gradient(135deg,rgba(0,137,255,0.42),rgba(4,8,15,0.92))] text-sky-50 hover:border-[#38bdf8]/85 hover:bg-[linear-gradient(135deg,rgba(0,137,255,0.55),rgba(4,8,15,0.94))] hover:text-white`}
+        >
+          <Box className="h-3.5 w-3.5 shrink-0 text-[#7cc9ff]" />
+          <span>MY AGENTS</span>
+        </Link>
+      </div>
 
       <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
         <a

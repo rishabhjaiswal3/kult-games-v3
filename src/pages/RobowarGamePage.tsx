@@ -146,13 +146,13 @@ function AgentLoadingCard({
       >
         {portrait ? (
           isVideo ? (
-            <video
+              <video
               src={portrait}
               autoPlay
               loop
-              muted
-              playsInline
-              className={cn(
+                muted
+                playsInline
+                className={cn(
                 "h-full w-full object-cover object-top",
                 side === "right" && "-scale-x-100"
               )}
@@ -283,7 +283,7 @@ function PreMatchOverlay({
                 </span>
                 <span className="font-mono text-[10px] text-white/40">
                   {myAgent?.eloRating ? `${myAgent.eloRating} ELO` : ""}
-                </span>
+          </span>
               </div>
             </div>
             <img
@@ -293,7 +293,7 @@ function PreMatchOverlay({
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
-          </div>
+        </div>
 
           {/* Centre VS */}
           <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
@@ -334,7 +334,7 @@ function PreMatchOverlay({
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
-          </div>
+      </div>
 
         </div>
 
@@ -499,8 +499,8 @@ function AgentCard({
         <ArenaAgentThumbnail agent={agent} className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15" />
         {isWinner && (
           <Crown className="absolute -top-2 -right-2 h-4 w-4 drop-shadow-lg" style={{ color: "#fbbf24" }} />
-        )}
-      </div>
+          )}
+        </div>
 
       <div className={`min-w-0 ${isRight ? "text-right" : "text-left"}`}>
         <div className="font-display text-sm sm:text-lg font-bold leading-tight truncate max-w-[88px] sm:max-w-[160px]">
@@ -641,7 +641,7 @@ function ResultCard({
         <Trophy className="h-3.5 w-3.5 shrink-0" style={{ color: winnerColor }} />
         <span className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: winnerColor }}>
           {iWon ? "VICTORY" : "DEFEAT"}
-        </span>
+          </span>
         <span className="ml-auto font-mono text-[9px] text-white/25">{shortId(battle.id)}</span>
       </div>
 
@@ -703,8 +703,8 @@ function ResultCard({
         ) : (
           <span className="text-[9px] font-mono text-white/20">Stored on 0G</span>
         )}
-        <button
-          type="button"
+          <button
+            type="button"
           onClick={onShareMoment}
           disabled={!onShareMoment}
           className={`ml-auto flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-tech uppercase tracking-wider transition ${
@@ -715,9 +715,9 @@ function ResultCard({
         >
           <Share2 className="h-2.5 w-2.5" />
           Kult Moment
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
   );
 }
 
@@ -1466,14 +1466,14 @@ export default function RobowarGamePage() {
             <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
               <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
               LIVE
-            </span>
+          </span>
           )}
           {gamePhase === "ended" && (
             <span className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/40">
               ENDED
-            </span>
+          </span>
           )}
-        </div>
+      </div>
 
         <div className="flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">{mode}</span>
@@ -1488,8 +1488,8 @@ export default function RobowarGamePage() {
             </button>
           ) : null}
           {battleQ.isFetching && <Loader2 className="h-3 w-3 animate-spin text-white/25" />}
-        </div>
-      </div>
+          </div>
+            </div>
 
       {/* Agent VS Banner */}
       <div data-tour="robowar-agents">
@@ -1500,7 +1500,7 @@ export default function RobowarGamePage() {
           gamePhase={gamePhase}
           mode={mode}
         />
-      </div>
+        </div>
 
       {/* Main: Canvas + Chat */}
       <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
@@ -1515,8 +1515,8 @@ export default function RobowarGamePage() {
                 <button onClick={() => battleQ.refetch()} className="font-tech text-xs text-primary hover:text-primary/80 underline">
                   Retry
                 </button>
-              </div>
-            </div>
+          </div>
+        </div>
           )}
 
           {!isError && !UNITY_BASE_URL && (
@@ -1528,7 +1528,7 @@ export default function RobowarGamePage() {
                 <p className="font-mono text-[9px] text-white/20 mt-1">
                   Set VITE_UNITY_BUILD_URL in .env to load the game
                 </p>
-              </div>
+          </div>
             </div>
           )}
 
@@ -1558,7 +1558,7 @@ export default function RobowarGamePage() {
                       <span className={`font-display text-base font-bold uppercase tracking-wider ${unityLoadError === 'slow' ? 'text-yellow-400' : 'text-red-400'}`}>
                         {unityLoadError === 'slow' ? 'Loading Slow' : unityLoadError === 'cors' ? 'CORS Blocked' : 'Files Not Found'}
                       </span>
-                    </div>
+                </div>
                     {unityLoadError === 'slow' ? (
                       <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
                         The game is taking too long to start — the server may be under load.
@@ -1574,15 +1574,15 @@ export default function RobowarGamePage() {
                         Build files not reachable at: {UNITY_BASE_URL}/Arena2/Robowar.data
                       </p>
                     )}
-                    <button
-                      type="button"
+            <button
+              type="button"
                       onClick={() => { setUnityLoadError(null); unityLoadingRef.current = false; window.location.reload(); }}
                       className="mt-2 w-full rounded-xl border border-primary/40 bg-primary/15 py-2 font-tech text-[11px] uppercase tracking-wider text-primary hover:bg-primary/25 transition"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                </div>
+            >
+              Retry
+            </button>
+          </div>
+          </div>
               )}
 
               {battleResult && (
@@ -1602,10 +1602,10 @@ export default function RobowarGamePage() {
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
                       {unityLoaded ? `robowar · ${shortId(battleId)}` : `loading · ${loadingProgress}%`}
-                    </span>
-                  </div>
-                </div>
-              )}
+                </span>
+            </div>
+          </div>
+        )}
             </div>
           )}
         </div>

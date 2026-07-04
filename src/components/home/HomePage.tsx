@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { momentsApi } from "@/api/momentsApi";
+import { playerApi } from "@/api/playerApi";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { MomentGameBadge } from "@/components/moments/MomentGameBadge";
@@ -73,6 +74,13 @@ const homeExperienceCards = [
 ] satisfies HomeExperienceCard[];
 
 
+function formatKultPoints(value: number): string {
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 1,
+    maximumFractionDigits: 1,
+  });
+}
+
 const homeArenaSignals = [
   "HYBRID defeated SUPPORT",
   "Revenge initiated by BERSERKER",
@@ -105,6 +113,13 @@ export function HomePage() {
     queryFn: () => gamesApi.getAll(1, 8),
     enabled: canViewGames,
     staleTime: 5 * 60_000,
+  });
+
+  const { data: profile } = useQuery({
+    queryKey: ["player", "full-profile"],
+    queryFn: () => playerApi.getFullProfile(),
+    enabled: isAuthenticated && canViewAiArena,
+    staleTime: 60_000,
   });
 
   const featuredGames = gamesData?.games?.slice(0, 6) ?? [];
@@ -218,33 +233,128 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-3 sm:px-5 sm:py-3.5">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_50%,rgba(0,137,255,0.14),transparent_35%),radial-gradient(circle_at_10%_20%,rgba(154,53,255,0.14),transparent_32%)]" />
-        <div className="relative grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] md:items-center">
+      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(0,137,255,0.16),transparent_40%),radial-gradient(circle_at_6%_16%,rgba(154,53,255,0.16),transparent_38%)]" />
+        <div className="relative flex flex-col gap-4">
           <div>
-            <div className="font-tech text-[10px] font-bold uppercase tracking-[0.26em] text-[#bd6cff]">Your KULT ID</div>
-            <h2 className="mt-2 max-w-xl font-tech text-lg font-semibold leading-snug text-white sm:text-xl">
-              One identity for your entire game world
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#bd6cff]/30 bg-[#bd6cff]/[0.08] px-3 py-1 font-tech text-[10px] font-bold uppercase tracking-[0.26em] text-[#c98bff]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#bd6cff] shadow-[0_0_8px_rgba(189,108,255,0.9)]" />
+              Your KULT ID
+            </div>
+            <h2 className="mt-3 font-tech text-2xl font-black uppercase leading-[1.05] text-white sm:text-3xl lg:text-[2.25rem]">
+              One Identity
+              <br />
+              <span className="text-gradient-arena">Every Battle Every Prediction</span>
             </h2>
-            <ul className="mt-1.5 grid max-w-xl grid-cols-2 gap-x-3 gap-y-1 text-sm leading-relaxed text-white/58 sm:flex sm:flex-wrap sm:items-center">
-              {["Infinite Games", "Intelligent Agents", "Capture moments", "Predict the future"].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span className="h-1 w-1 shrink-0 rounded-full bg-[#bd6cff]" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/60 sm:text-[15px]">
+              One identity. Every world you play in — Arena, League, and beyond. Your AI agents, reputation, and progress evolve with every match.
+            </p>
           </div>
-          {canViewAiArena ? (
-            <Link to="/dashboard" className="group flex items-center gap-3 rounded-lg border border-cyan-300/20 bg-[#06101d]/80 px-3 py-2.5 transition hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-[#49c8ff]/45 bg-[#0b2742] font-tech text-sm font-bold text-[#66d5ff]">K</div>
-              <div className="min-w-0">
-                <div className="font-tech text-[9px] uppercase tracking-[0.2em] text-[#bd6cff]">Identity card</div>
-                <div className="mt-1 font-tech text-lg font-semibold leading-snug text-[#66d5ff] group-hover:text-[#66d5ff] sm:text-xl sm:text-white">One profile across Kult</div>
-                <div className="mt-0.5 text-xs text-white/52">Wallet, agents, progress, and reputation</div>
-              </div>
-            </Link>
-          ) : null}
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:items-stretch lg:gap-6">
+            <div className="grid content-start gap-2 lg:auto-rows-fr">
+              {[
+                {
+                  emoji: "⚔️",
+                  title: "Own Intelligent AI Agents",
+                  desc: "Every agent has its own identity, memory, and personality that grows with it.",
+                  accent: "154,53,255",
+                },
+                {
+                  emoji: "🏆",
+                  title: "Build Your Reputation",
+                  desc: "Earn KULT Points (KP) as your agents battle, predict, and complete challenges.",
+                  accent: "255,196,46",
+                },
+                {
+                  emoji: "⚽",
+                  title: "Compete Across Experiences",
+                  desc: "From AI Arena battles to the World Cup AI Agent League — one identity, everywhere you play.",
+                  accent: "0,240,128",
+                },
+                {
+                  emoji: "📈",
+                  title: "Progress Never Resets",
+                  desc: "Every victory, prediction, and achievement permanently strengthens your KULT ID.",
+                  accent: "0,137,255",
+                },
+              ].map(({ emoji, title, desc, accent }) => (
+                <div
+                  key={title}
+                  className="group/kid relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 transition duration-300 hover:-translate-y-0.5 hover:border-white/20"
+                >
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/45 via-black/15 to-transparent" />
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/kid:opacity-100"
+                    style={{ background: `radial-gradient(circle at 22% 0%, rgba(${accent},0.16), transparent 60%)` }}
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg leading-none"
+                      style={{
+                        background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.05))`,
+                        boxShadow: `0 0 16px rgba(${accent},0.28)`,
+                      }}
+                    >
+                      {emoji}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-tech text-[13px] font-bold leading-tight text-white">{title}</div>
+                      <p className="mt-1 text-xs leading-relaxed text-white/52">{desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {canViewAiArena ? (
+              <Link
+                to="/dashboard"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-cyan-300/25 bg-[#06101d]/80 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]"
+              >
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(73,200,255,0.18),transparent_55%)]" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#49c8ff]/80 to-transparent" />
+                <div className="relative">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#49c8ff]/45 bg-gradient-to-br from-[#0e3355] to-[#0b2742] font-tech text-sm font-black text-[#66d5ff] shadow-[0_0_16px_rgba(73,200,255,0.3)]">
+                      K
+                    </div>
+                    <div className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#bd6cff]">Identity Card</div>
+                  </div>
+                  <div className="mt-2.5 font-tech text-lg font-black leading-tight text-white sm:text-xl">
+                    One profile across <span className="text-gradient-arena">KULT</span>
+                  </div>
+                  <p className="mt-1.5 text-[13px] leading-snug text-white/58">
+                    Wallet, agents, progress, reputation — all in one place.
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between rounded-lg border border-[#49c8ff]/20 bg-[#49c8ff]/[0.05] px-3 py-2">
+                      <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">Rank</span>
+                      <span className="font-tech text-base font-black text-[#66d5ff]">
+                        {profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border border-[#bd6cff]/20 bg-[#bd6cff]/[0.05] px-3 py-2">
+                      <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">Level</span>
+                      <span className="font-tech text-base font-black text-[#c98bff]">
+                        {profile?.level ?? "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative mt-3">
+                  <div className="flex items-center justify-between rounded-lg border border-[#00f080]/25 bg-[#00f080]/[0.06] px-3 py-2">
+                    <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">KP earned</span>
+                    <span className="font-tech text-base font-black text-[#00f080] [text-shadow:0_0_12px_rgba(0,240,128,0.45)]">{profile ? `${formatKultPoints(profile.kultPoints)} KP` : "— KP"}</span>
+                  </div>
+                  <div className="mt-3 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#66d5ff] transition group-hover:gap-2.5">
+                    Open your ID
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+              </Link>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -610,16 +720,39 @@ function HomeAIArenaSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid max-w-[16rem] grid-cols-1 gap-2.5 md:max-w-[15rem] xl:max-w-none xl:grid-cols-2">
             {[
-              ["384", "Live battles"],
-              ["12.4K", "Agents awake"],
-              ["72", "Rivalries"],
-              ["9", "Tournaments"],
-            ].map(([value, label]) => (
-              <div key={label} className="min-w-0 rounded-md border border-white/8 bg-white/[0.035] p-3">
-                <div className="font-tech text-xl font-bold text-white">{value}</div>
-                <div className="mt-1 break-words font-tech text-[8px] uppercase tracking-normal text-white/42 sm:text-[7px] md:text-[8px] lg:text-[9px] lg:tracking-wider">{label}</div>
+              { emoji: "🧠", label: "Adaptive Intelligence", accent: "154,53,255" },
+              { emoji: "⚔️", label: "Living Rivalries", accent: "0,137,255" },
+              { emoji: "🏆", label: "Legendary Rankings", accent: "255,196,46" },
+              { emoji: "🌍", label: "Persistent Evolution", accent: "0,240,128" },
+            ].map(({ emoji, label, accent }) => (
+              <div
+                key={label}
+                className="group/pillar relative flex min-w-0 items-center gap-2.5 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 transition duration-300 hover:-translate-y-0.5"
+                style={{ boxShadow: `inset 0 0 0 1px rgba(${accent},0.06)` }}
+              >
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/55 via-black/25 to-transparent" />
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/pillar:opacity-100"
+                  style={{ background: `radial-gradient(circle at 30% 0%, rgba(${accent},0.18), transparent 65%)` }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, rgba(${accent},0.9), transparent)` }}
+                />
+                <span
+                  className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-base leading-none"
+                  style={{
+                    background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.05))`,
+                    boxShadow: `0 0 16px rgba(${accent},0.28)`,
+                  }}
+                >
+                  {emoji}
+                </span>
+                <div className="relative min-w-0 whitespace-nowrap font-tech text-[11.5px] font-bold uppercase leading-tight tracking-tight text-[#8fddff] [text-shadow:0_0_10px_rgba(82,203,255,0.55)]">
+                  {label}
+                </div>
               </div>
             ))}
           </div>
