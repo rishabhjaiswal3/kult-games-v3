@@ -37,64 +37,67 @@ export function LeagueRecentPicks() {
       ) : !rows || rows.length === 0 ? (
         <p className="mt-3 text-xs text-white/40">No settled predictions yet.</p>
       ) : (
-        <div className="mt-3 overflow-x-auto scrollbar-none">
-          <table className="w-full min-w-[520px] text-left">
-            <thead>
-              <tr className="border-b border-white/8 font-tech text-[9px] uppercase tracking-wider text-white/40">
-                <th className="pb-2 pr-3">Match</th>
-                <th className="pb-2 pr-3">Agent</th>
-                <th className="pb-2 pr-3">Pick</th>
-                <th className="pb-2 pr-3">Confidence</th>
-                <th className="pb-2 pr-3">Result</th>
-                <th className="pb-2 text-right">KP Earned</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b border-white/5 last:border-0">
-                  <td className="py-2.5 pr-3">
-                    <div className="flex items-center gap-1.5">
-                      <TeamFlagCircle teamName={row.home} className="h-5 w-5" />
-                      <span className="font-tech text-[9px] text-white/35">vs</span>
-                      <TeamFlagCircle teamName={row.away} className="h-5 w-5" />
-                      <span className="ml-1 font-tech text-[10px] font-bold uppercase text-white/75">
-                        {row.home}/{row.away}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-2.5 pr-3 font-tech text-[10px] font-bold uppercase text-[#c084fc]">
-                    {row.agentName}
-                  </td>
-                  <td className="py-2.5 pr-3 font-tech text-[10px] font-bold text-white/80">
-                    {row.pick}
-                  </td>
-                  <td className="py-2.5 pr-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/10 sm:w-24">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] to-[#c084fc]"
-                          style={{ width: `${row.confidence}%` }}
-                        />
-                      </div>
-                      <span className="font-tech text-[9px] font-bold text-[#c084fc]">
-                        {row.confidence}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-2.5 pr-3">
-                    <span
-                      className={`inline-flex rounded border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${OUTCOME_STYLES[row.outcome]}`}
-                    >
-                      {row.result} {row.outcome}
-                    </span>
-                  </td>
-                  <td className="py-2.5 text-right font-tech text-[10px] font-bold text-[#00f080]">
-                    {row.kpEarned > 0 ? `+${row.kpEarned} KP` : "—"}
-                  </td>
+        <div className="relative mt-3">
+          <div className="table-scroll-x pb-1.5">
+            <table className="w-full min-w-[560px] text-left">
+              <thead>
+                <tr className="border-b border-white/8 font-tech text-[9px] uppercase tracking-wider text-white/40">
+                  <th className="pb-2 pr-3">Match</th>
+                  <th className="pb-2 pr-3">Agent</th>
+                  <th className="pb-2 pr-3">Pick</th>
+                  <th className="pb-2 pr-3">Confidence</th>
+                  <th className="pb-2 pr-3">Result</th>
+                  <th className="pb-2 text-right">KP Earned</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id} className="border-b border-white/5 last:border-0">
+                    <td className="py-2.5 pr-3">
+                      <div className="flex items-center gap-1.5">
+                        <TeamFlagCircle teamName={row.home} className="h-5 w-5" />
+                        <span className="font-tech text-[9px] text-white/35">vs</span>
+                        <TeamFlagCircle teamName={row.away} className="h-5 w-5" />
+                        <span className="ml-1 font-tech text-[10px] font-bold uppercase text-white/75">
+                          {row.home}/{row.away}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 pr-3 font-tech text-[10px] font-bold uppercase text-[#c084fc]">
+                      {row.agentName}
+                    </td>
+                    <td className="py-2.5 pr-3 font-tech text-[10px] font-bold text-white/80">
+                      {row.pick}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/10 sm:w-24">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] to-[#c084fc]"
+                            style={{ width: `${row.confidence}%` }}
+                          />
+                        </div>
+                        <span className="font-tech text-[9px] font-bold text-[#c084fc]">
+                          {row.confidence}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <span
+                        className={`inline-flex rounded border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${OUTCOME_STYLES[row.outcome]}`}
+                      >
+                        {row.result} {row.outcome}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-right font-tech text-[10px] font-bold text-[#00f080]">
+                      {row.kpEarned > 0 ? `+${row.kpEarned} KP` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="pointer-events-none absolute right-0 top-0 bottom-1.5 w-8 bg-gradient-to-l from-[#05050a] to-transparent" />
         </div>
       )}
     </LeaguePanel>
