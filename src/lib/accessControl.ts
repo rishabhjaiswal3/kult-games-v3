@@ -34,7 +34,7 @@ export function featureForPath(pathname: string): AccessFeature | null {
   if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
   if (pathname === "/league" || pathname === "/leaderboard" || pathname === "/achievements") return "league";
   if (pathname === "/creator-platform") return "creator_platform";
-  if (pathname === "/creator-studio" || pathname === "/studio") return "creator_studio";
+  if (pathname === "/studio" || pathname === "/studio") return "creator_studio";
   if (pathname === "/inventory" || pathname === "/autonomous") return "full_browser";
   return null;
 }
@@ -51,6 +51,6 @@ export function firstAllowedPath(session: BrowserAccessSession | null) {
   if (hasFeature(session, "games")) return "/games";
   if (hasFeature(session, "moments")) return "/moments";
   if (hasFeature(session, "creator_platform")) return "/creator-platform";
-  if (hasFeature(session, "creator_studio")) return "/creator-studio";
+  if (hasFeature(session, "creator_studio")) return "/studio";
   return "/";
 }
