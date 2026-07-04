@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   ArrowDown,
@@ -37,7 +39,10 @@ import {
   type WorldCupGroup,
 } from "@/api/worldCupApi";
 import { fetchFootballNews, type NewsItem } from "@/api/footballNewsApi";
+import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -389,12 +394,11 @@ export function LeaguePolymarketBoard() {
   });
 
   const selectedMarket = liveMarkets.find((market) => market.id === selectedMarketId) ?? liveMarkets[0];
-  const visibleMatches = category === "All" ? MATCHES : MATCHES.filter((match) => match.category === category);
 
   return (
     <div className="min-w-0 space-y-3">
       <PolymarketComplianceNotice source={source} />
-      <BoardViewTabs view={view} onChange={setView} marketCount={MATCHES.length} newsCount={MATCH_NEWS.length} />
+      <BoardViewTabs view={view} onChange={setView} marketCount={liveMarkets.length} newsCount={MATCH_NEWS.length} />
 
       {view === "pulse" ? (
         <MatchPulseView category={category} />
@@ -412,9 +416,9 @@ export function LeaguePolymarketBoard() {
       <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={setSelectedMarketId} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
-        {visibleMatches.map((match) => <MatchCard key={match.id} match={match} />)}
-        {visibleMatches.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">No matches in this category yet</div>
+        {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} />)}
+        {liveMarkets.length === 0 ? (
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">No markets in this category yet</div>
         ) : null}
       </div>
       </div>
@@ -618,13 +622,6 @@ function MatchdayBadge({ label, tone = "blue" }: { label: string; tone?: "blue" 
   );
 }
 
-function shortMatchDate(value: string) {
-  const date = value.split(",").pop()?.trim() ?? value;
-  const [month, day] = date.split(/\s+/);
-  return day && month ? `${day} ${month.slice(0, 3)}` : date;
-}
-
-
 function TradeReview({ agent, market, side, price, token }: { agent: string; market: string; side: "YES" | "NO"; price: number; token: "USDC" | "USDT" }) {
   return (
     <div className="mt-3 rounded-lg border border-cyan-400/30 bg-cyan-400/[0.07] p-3">
@@ -635,35 +632,85 @@ function TradeReview({ agent, market, side, price, token }: { agent: string; mar
   );
 }
 
-function MatchCard({ match }: { match: Match }) {
+const SIGNAL_CONFIDENCE_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
+
+/**
+ * Real Polymarket market card — replaces the old MatchCard, which rendered
+ * from a fully fabricated MATCHES array (fake teams, fake prices, no real
+ * Polymarket id) with no bearing on anything tradeable. This one takes a
+ * real LiveMarket (real question, real price, real tokenId) from
+ * useLiveMarketData() and wires in the actual agent-signal feature
+ * (docs/polymarket §5 Phase 2) instead of a mock "agent predictions" row.
+ */
+function RealMarketCard({ market }: { market: LiveMarket }) {
+  const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+  const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
+
+  const { data: signals } = useQuery({
+    queryKey: ["polymarket", "signals", market.id],
+    queryFn: () => polymarketSignalApi.getSignalsForMarket(market.id),
+    staleTime: 30_000,
+  });
+
+  const myPersistedSignal = signals?.find((s) => s.agentId === myAgentId) ?? null;
+  const signal = result(market.id) ?? myPersistedSignal;
+  const loading = isLoading(market.id);
+  const signalError = error(market.id);
+
+  function handleGetSignal() {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    if (!hasAgent) {
+      navigate("/my-agents");
+      return;
+    }
+    void getSignal(market.id, market.question, market.category);
+  }
+
+  const agent = signal ? getLeagueAgent(signal.agentName) : null;
+
   return (
     <article className="relative overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(0,200,83,0.08),transparent_55%),#0b0d12] p-3.5 transition hover:border-[#2E5CFF]/45">
       <div className="relative mb-2.5 flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white">{match.kickoff}</span>
-          <span className="shrink-0 font-mono text-[10px] text-white/40">{match.vol} Vol</span>
-          <span className="hidden min-w-0 truncate font-mono text-[9px] uppercase tracking-wider text-white/30 sm:inline">· {match.league}</span>
-        </div>
-        <MatchdayBadge label={shortMatchDate(match.day)} tone="green" />
+        <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">{market.category}</span>
+        <span className="shrink-0 font-mono text-[10px] text-white/40">{market.volume} Vol</span>
       </div>
 
       <div className="relative">
-        <div className="flex items-center gap-2.5">
-          <FlagCircle code={match.home.code} className="h-9 w-9 rounded-lg" />
-          <div><p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Will {match.home.name} win?</p></div>
-        </div>
+        <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p>
+        <p className="mt-0.5 min-h-9 font-tech text-sm font-bold text-white">{market.question}</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20"><span>YES signal</span><span>{match.home.price}¢</span></button>
-          <button type="button" className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20"><span>NO signal</span><span>{100 - match.home.price}¢</span></button>
+          <div className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300"><span>Yes</span><span>{market.yes}¢</span></div>
+          <div className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300"><span>No</span><span>{100 - market.yes}¢</span></div>
         </div>
       </div>
 
-      {/* Agent predictions on the card */}
+      {/* Real agent signal (docs/polymarket §5 Phase 2) — replaces the old mock "agent predictions" row */}
       <div className="relative mt-3 border-t border-white/10 pt-2.5">
-        <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent predictions</p>
-        <div className="grid grid-cols-2 gap-2">
-          {match.agents.map((prediction) => <MarketCardAgentPrediction key={prediction.name} prediction={prediction} />)}
-        </div>
+        <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent signal</p>
+        {signal ? (
+          <div className={`flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 ${signal.signal === "YES" ? "border-cyan-400/15 bg-cyan-400/[0.04]" : "border-fuchsia-400/15 bg-fuchsia-400/[0.04]"}`}>
+            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
+            <div className="min-w-0">
+              <p className="truncate font-tech text-[9px] font-bold uppercase text-white">{signal.agentName}</p>
+              <p className={`mt-0.5 truncate font-tech text-[9px] font-bold ${signal.signal === "YES" ? "text-cyan-300" : "text-fuchsia-300"}`}>{signal.signal} · {SIGNAL_CONFIDENCE_PCT[signal.confidence] ?? 70}%</p>
+              {signal.reasoning ? <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-snug text-white/58">{signal.reasoning}</p> : null}
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleGetSignal}
+            className="w-full rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#aebfff] transition hover:bg-[#2E5CFF]/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Reading market…" : "Get my agent's read"}
+          </button>
+        )}
+        {signalError ? <p className="mt-1.5 text-center text-[9px] text-rose-400">{signalError}</p> : null}
       </div>
     </article>
   );
@@ -954,19 +1001,6 @@ function AgentEdgeSignal({
     <div className="flex min-w-0 items-center gap-2">
       <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
       <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{signal.name}</p><p className={`truncate text-[9px] ${positive ? "text-cyan-300" : "text-fuchsia-300"}`}>{signal.pick}</p></div>
-    </div>
-  );
-}
-
-function MarketCardAgentPrediction({ prediction }: { prediction: (typeof MARKETS)[number]["agents"][number] }) {
-  const agent = getLeagueAgent(prediction.name);
-  const binaryPick = "outcome" in prediction ? prediction.outcome === "HOME" ? "YES" : "NO" : prediction.pick.toUpperCase() === "YES" ? "YES" : "NO";
-  const isPositive = binaryPick === "YES";
-
-  return (
-    <div className={`flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 ${isPositive ? "border-cyan-400/15 bg-cyan-400/[0.04]" : "border-fuchsia-400/15 bg-fuchsia-400/[0.04]"}`}>
-      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-      <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{prediction.name}</p><p className={`mt-0.5 truncate font-tech text-[9px] font-bold ${isPositive ? "text-emerald-300" : "text-rose-300"}`}>{binaryPick}</p><p className="mt-0.5 text-[10px] font-semibold text-white/65">{prediction.confidence}% confidence</p><p className="mt-1 line-clamp-2 text-[10px] font-medium leading-snug text-white/58">{prediction.reason}</p></div>
     </div>
   );
 }
