@@ -4,18 +4,12 @@
 
 const trimTrailingSlash = (url: string) => url.replace(/\/+$/, "");
 
-/** Current app origin (browser) or VITE_API_URL host fallback for non-DOM contexts. */
-export function appOrigin(): string {
-  if (typeof window !== "undefined") {
-    return trimTrailingSlash(window.location.origin);
-  }
-  const apiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
-  return apiUrl ? trimTrailingSlash(apiUrl.replace(/\/api$/i, "")) : "";
-}
-
-/** Creator Studio — same host as this app, `/studio` path. */
+/** Creator Studio — served at `/studio/` on the main app host (nginx routes this, not the SPA). */
 export function studioUrl(): string {
-  return `${appOrigin()}/studio`;
+  const host = trimTrailingSlash(
+    import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app",
+  ).replace(/\/api$/i, "");
+  return `${host}/studio/`;
 }
 
 /** Primary Kult API (games, player, leaderboard, …) — same origin as today + `/api`. */

@@ -1388,7 +1388,7 @@ export default function RobowarGamePage() {
 
   const navigateToTrashTalkMoment = useCallback(() => {
     if (!battleId || !myAgentId) return;
-    navigate(buildTrashTalkMomentPath(battleId, myAgentId));
+    navigate(buildTrashTalkMomentPath(battleId, myAgentId, "robowar"));
   }, [battleId, myAgentId, navigate]);
 
   const addResult = useCallback(

@@ -1482,7 +1482,7 @@ export default function HighwayHustleGamePage() {
 
   const navigateToTrashTalkMoment = useCallback(() => {
     if (!battleId || !myAgentId) return;
-    navigate(buildTrashTalkMomentPath(battleId, myAgentId));
+    navigate(buildTrashTalkMomentPath(battleId, myAgentId, "highway-hustle"));
   }, [battleId, myAgentId, navigate]);
 
   const addResult = useCallback(

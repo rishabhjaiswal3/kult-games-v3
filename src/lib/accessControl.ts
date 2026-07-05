@@ -34,7 +34,7 @@ export function featureForPath(pathname: string): AccessFeature | null {
   if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
   if (pathname === "/league" || pathname === "/leaderboard" || pathname === "/achievements") return "league";
   if (pathname === "/creator-platform") return "creator_platform";
-  if (pathname === "/studio" || pathname === "/studio") return "creator_studio";
+  if (pathname === "/studio" || pathname.startsWith("/studio/")) return "creator_studio";
   if (pathname === "/inventory" || pathname === "/autonomous") return "full_browser";
   return null;
 }

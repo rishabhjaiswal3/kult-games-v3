@@ -83,6 +83,9 @@ export const MOMENTS_BATTLE_ID_QUERY_PARAM = "battleId" as const;
 /** Optional — disambiguates which of the user's agents fought in the battle. */
 export const MOMENTS_MY_AGENT_ID_QUERY_PARAM = "myAgentId" as const;
 
+/** Arena game id for trash-talk prefill (`warzone` | `robowar` | `highway-hustle`). */
+export const MOMENTS_ARENA_GAME_ID_QUERY_PARAM = "gameId" as const;
+
 export const WARZONE_TRASH_TALK_MOMENT_TITLE = "WarzoneWarriors Trash Talk";
 
 /** Moments hub shows 2 rows × 3 columns on large screens. */
