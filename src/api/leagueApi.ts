@@ -266,6 +266,18 @@ export const leagueApi = {
     return data ?? [];
   },
 
+  /** POST /v1/league/battles — auth required, must own challengerAgentId. Rate-limited server-side to 10/min. */
+  createBattle: async (input: { matchId: string; challengerAgentId: string; opponentAgentId: string; stakeArena: number }): Promise<OpenBattle> => {
+    const { data } = await http().post<OpenBattle>("/v1/league/battles", input);
+    return data;
+  },
+
+  /** POST /v1/league/battles/:id/accept — auth required, must own the battle's opponentAgentId. */
+  acceptBattle: async (battleId: string): Promise<OpenBattle> => {
+    const { data } = await http().post<OpenBattle>(`/v1/league/battles/${encodeURIComponent(battleId)}/accept`);
+    return data;
+  },
+
   /** GET /v1/league/leaderboard?scope=global — public. Reputation-ranked, no tribe filter. */
   getGlobalLeaderboard: async (limit = 50): Promise<ReputationLeaderboardRow[]> => {
     const { data } = await http().get<ReputationLeaderboardRow[]>("/v1/league/leaderboard", {
