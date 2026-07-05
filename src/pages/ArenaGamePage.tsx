@@ -946,7 +946,7 @@ function GameChatPanel({
   };
 
   return (
-    <div className="flex h-[460px] w-full shrink-0 flex-col border-t border-white/8 bg-[#04080f]/90 md:h-auto md:w-[300px] md:border-l md:border-t-0 lg:w-[320px]">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col border-t border-white/8 bg-[#04080f]/90 md:border-l md:border-t-0">
       <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2.5">
         <MessageSquare className="h-3.5 w-3.5 text-primary/70" />
         <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">
@@ -960,14 +960,14 @@ function GameChatPanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+      <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
         ))}
         <div ref={chatEndRef} />
       </div>
 
-      <div className="border-t border-white/8 p-2">
+      <div className="shrink-0 border-t border-white/8 p-2">
         <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 focus-within:border-primary/40 transition">
           <input
             type="text"
@@ -1023,16 +1023,17 @@ function BattleResultOverlay({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-center justify-center p-4"
+      className="absolute inset-0 z-40 overflow-y-auto"
       style={{ background: "rgba(3,7,16,0.90)", backdropFilter: "blur(10px)" }}
     >
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
       <div
-        className="w-full max-w-lg rounded-3xl border border-white/10 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.85)]"
+        className="w-full max-w-sm rounded-2xl border border-white/10 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.85)] sm:max-w-md sm:rounded-3xl"
         style={{ background: "rgba(8,12,24,0.97)" }}
       >
         {/* ── Header ── */}
         <div
-          className="relative px-8 pt-8 pb-5 text-center overflow-hidden"
+          className="relative px-5 pt-2 pb-2 text-center overflow-hidden sm:px-8 sm:pt-5 sm:pb-3.5"
           style={{
             background: result.myAgentWon
               ? `linear-gradient(135deg, ${winnerColor}20 0%, transparent 60%)`
@@ -1050,7 +1051,7 @@ function BattleResultOverlay({
           />
 
           <div
-            className="font-display text-5xl font-black tracking-[0.08em]"
+            className="font-display text-2xl font-black tracking-[0.08em] sm:text-4xl"
             style={{
               color: result.myAgentWon ? winnerColor : "#ef4444",
               textShadow: `0 0 40px ${result.myAgentWon ? winnerColor : "#ef4444"}88`,
@@ -1059,7 +1060,7 @@ function BattleResultOverlay({
             {result.myAgentWon ? "VICTORY" : "DEFEAT"}
           </div>
 
-          <div className="flex items-center justify-center gap-3 mt-3">
+          <div className="flex items-center justify-center gap-3 mt-1.5 sm:mt-2">
             <span
               className="rounded-full border px-3 py-0.5 font-tech text-[9px] uppercase tracking-widest"
               style={{
@@ -1075,15 +1076,15 @@ function BattleResultOverlay({
         </div>
 
         {/* ── Fighter Cards ── */}
-        <div className="grid grid-cols-2 gap-3 px-6 py-4">
+        <div className="grid grid-cols-2 gap-2.5 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3">
           {/* Winner */}
           <div
-            className="rounded-2xl border p-4"
+            className="rounded-xl border p-2 sm:rounded-2xl sm:p-3.5"
             style={{ borderColor: `${winnerColor}35`, background: `${winnerColor}09` }}
           >
-            <div className="flex items-center gap-1.5 mb-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <Crown className="h-3 w-3 text-yellow-400 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/65">
                 Winner
               </span>
             </div>
@@ -1093,20 +1094,20 @@ function BattleResultOverlay({
             >
               {result.winnerName}
             </div>
-            <div className="font-tech text-[9px] text-white/35 uppercase tracking-wider mt-0.5">
+            <div className="font-tech text-[9px] text-white/60 uppercase tracking-wider mt-0.5">
               {result.winnerArchetype}
             </div>
             {result.winnerClan && (
               <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-1"
+                className="font-tech text-[8px] uppercase tracking-widest mt-0.5"
                 style={{ color: winnerColor }}
               >
                 {result.winnerClan}
               </div>
             )}
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-1.5 space-y-0.5">
               <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/30">HP</span>
+                <span className="text-white/55">HP</span>
                 <span style={{ color: winnerColor }}>{result.winnerHpPercent}%</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
@@ -1115,7 +1116,7 @@ function BattleResultOverlay({
                   style={{ width: `${result.winnerHpPercent}%`, background: winnerColor }}
                 />
               </div>
-              <div className="font-mono text-[9px] text-white/25 text-right">
+              <div className="font-mono text-[9px] text-white/50 text-right">
                 {result.winnerElo.toLocaleString()} ELO
               </div>
             </div>
@@ -1123,32 +1124,32 @@ function BattleResultOverlay({
 
           {/* Loser */}
           <div
-            className="rounded-2xl border p-4"
+            className="rounded-xl border p-2 sm:rounded-2xl sm:p-3.5"
             style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
           >
-            <div className="flex items-center gap-1.5 mb-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <Shield className="h-3 w-3 text-white/20 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/40">
+              <span className="font-tech text-[9px] uppercase tracking-widest text-white/65">
                 Loser
               </span>
             </div>
-            <div className="font-display text-sm font-bold leading-tight truncate text-white/45">
+            <div className="font-display text-sm font-bold leading-tight truncate text-white/80">
               {result.loserName}
             </div>
-            <div className="font-tech text-[9px] text-white/25 uppercase tracking-wider mt-0.5">
+            <div className="font-tech text-[9px] text-white/60 uppercase tracking-wider mt-0.5">
               {result.loserArchetype}
             </div>
             {result.loserClan && (
               <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-1"
+                className="font-tech text-[8px] uppercase tracking-widest mt-0.5"
                 style={{ color: `${loserColor}60` }}
               >
                 {result.loserClan}
               </div>
             )}
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-1.5 space-y-0.5">
               <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/30">HP</span>
+                <span className="text-white/55">HP</span>
                 <span className="text-white/30">{result.loserHpPercent}%</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
@@ -1157,7 +1158,7 @@ function BattleResultOverlay({
                   style={{ width: `${result.loserHpPercent}%` }}
                 />
               </div>
-              <div className="font-mono text-[9px] text-white/25 text-right">
+              <div className="font-mono text-[9px] text-white/50 text-right">
                 {result.loserElo.toLocaleString()} ELO
               </div>
             </div>
@@ -1166,8 +1167,8 @@ function BattleResultOverlay({
 
         {/* ── 0G Compute Commentary ── */}
         {commentary && (
-          <div className="mx-6 mb-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-            <div className="flex items-center gap-1.5 mb-2">
+          <div className="mx-4 mb-1.5 rounded-xl border border-white/8 bg-white/[0.03] p-2 sm:mx-6 sm:mb-3 sm:rounded-2xl sm:p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <MessageSquare className="h-3 w-3 text-primary/60 shrink-0" />
               <span className="font-tech text-[9px] uppercase tracking-widest text-white/35">
                 0G Compute · AI Commentator
@@ -1197,7 +1198,7 @@ function BattleResultOverlay({
 
         {/* ── Loading commentary indicator (while waiting for 0G Compute) ── */}
         {!commentary && (
-          <div className="mx-6 mb-3 flex items-center gap-2">
+          <div className="mx-4 mb-3 flex items-center gap-2 sm:mx-6">
             <Loader2 className="h-3 w-3 animate-spin text-white/15 shrink-0" />
             <span className="font-tech text-[9px] text-white/20 uppercase tracking-widest">
               AI commentator generating…
@@ -1206,12 +1207,12 @@ function BattleResultOverlay({
         )}
 
         {/* ── Action Buttons ── */}
-        <div className="flex flex-col gap-2.5 px-6 pb-7">
+        <div className="flex flex-col gap-1.5 px-4 pb-2.5 sm:gap-2 sm:px-6 sm:pb-5">
           <button
             type="button"
             onClick={onShareMoment}
             disabled={!onShareMoment}
-            className={`flex w-full items-center justify-center gap-2.5 rounded-2xl border py-3.5 font-tech text-[11px] uppercase tracking-widest transition ${
+            className={`flex w-full items-center justify-center gap-2.5 rounded-xl border py-2 font-tech text-[11px] uppercase tracking-widest transition sm:rounded-2xl sm:py-3 ${
               onShareMoment
                 ? "border-[#9a35ff]/45 bg-[#9a35ff]/15 text-white hover:bg-[#9a35ff]/25 hover:border-[#9a35ff]/60"
                 : "border-white/8 bg-white/[0.04] text-white/25 cursor-not-allowed"
@@ -1225,12 +1226,13 @@ function BattleResultOverlay({
           <button
             type="button"
             onClick={onHome}
-            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/15 bg-white/[0.06] py-3.5 font-tech text-[11px] uppercase tracking-widest text-white/65 hover:bg-white/10 hover:text-white hover:border-white/25 transition"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-white/15 bg-white/[0.06] py-2 font-tech text-[11px] uppercase tracking-widest text-white/65 hover:bg-white/10 hover:text-white hover:border-white/25 transition sm:rounded-2xl sm:py-3"
           >
             <ArrowLeft className="h-4 w-4" />
             Home Page
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -2050,7 +2052,7 @@ export default function ArenaGamePage() {
         </div>
 
         {/* Chat panel */}
-        <div data-tour="arena-game-chat">
+        <div data-tour="arena-game-chat" className="flex min-h-[360px] w-full flex-1 flex-col md:h-full md:min-h-0 md:w-[300px] md:flex-none md:shrink-0 lg:w-[320px]">
           <GameChatPanel
             messages={messages}
             chatInput={chatInput}
