@@ -7,6 +7,7 @@ import kultLogo from "@/assets/Kult Logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { hasFeature } from "@/lib/accessControl";
+import { studioUrl } from "@/lib/serviceUrls";
 import { navItemsForAccess } from "@/layout/navConfig";
 import { cn } from "@/lib/utils";
 
@@ -185,7 +186,7 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
       {isAuthenticated && showStudio && (
         <div className={cn("shrink-0 border-t border-white/5", isCollapsed ? "p-2" : "p-3")} data-tour="sidebar-studio">
           <a
-            href="https://kult-browser-rust-l2lwg.ondigitalocean.app/studio/"
+            href={studioUrl()}
             onClick={onNavigate}
             aria-label="Open Studio"
             className={cn(
