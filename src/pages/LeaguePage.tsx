@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Lightbulb } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { leagueApi } from "@/api/leagueApi";
 import { LeagueFeaturedBanner } from "@/components/league/LeagueFeaturedBanner";
@@ -33,10 +34,27 @@ const LeaguePage = () => {
   );
 };
 
+function LeagueTipBox() {
+  return (
+    <div className="flex items-center gap-2.5 rounded-xl border border-amber-400/25 bg-[radial-gradient(circle_at_0%_0%,rgba(251,191,36,0.12),transparent_60%),#0a0a12] px-3 py-2.5">
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-amber-400/30 bg-amber-400/10">
+        <Lightbulb className="h-3.5 w-3.5 text-amber-300" />
+      </span>
+      <p className="min-w-0 text-[11px] leading-snug text-white/70 sm:text-xs">
+        <span className="font-tech font-bold uppercase tracking-wider text-amber-300">Tip:</span>{" "}
+        Picks lock at kickoff — <span className="font-semibold text-white">get yours in early</span> so you don't miss out.
+      </p>
+    </div>
+  );
+}
+
 function KultLeagueBoard() {
   return (
     <>
       <div className="grid w-full min-w-0 grid-cols-1 items-start gap-2.5 lg:grid-cols-12 lg:gap-3">
+        <div className="lg:col-span-12">
+          <LeagueTipBox />
+        </div>
         <div className="lg:col-span-12">
           <SectionKicker label="Live now" detail="Follow the match, read the room, make your move" />
         </div>

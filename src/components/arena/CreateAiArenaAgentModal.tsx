@@ -147,7 +147,7 @@ export function CreateAiArenaAgentModal({
           <div className="space-y-2">
             <Label className="arena-label">Clan</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {AI_ARENA_CLAN_OPTIONS.map((c) => (
+              {AI_ARENA_CLAN_OPTIONS.filter((c) => c.value !== "OKX").map((c) => (
                 <button
                   key={c.value}
                   type="button"

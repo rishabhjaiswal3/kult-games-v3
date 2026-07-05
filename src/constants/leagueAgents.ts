@@ -95,6 +95,37 @@ export const LEAGUE_ARENA_AGENTS: LeagueArenaAgent[] = [
   },
 ];
 
-export function getLeagueAgent(name: string): LeagueArenaAgent | undefined {
-  return LEAGUE_ARENA_AGENTS.find((a) => a.name === name);
+/** Stable, order-independent hash so a given agent name always maps to the same portrait. */
+function hashAgentName(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Cache so a given name ALWAYS returns the same object reference across renders — otherwise a
+ * fresh object each call breaks referential equality in memo/effect deps.
+ */
+const leagueAgentCache = new Map<string, LeagueArenaAgent>();
+
+/**
+ * Resolves the media/theme for a League agent by name.
+ * Real agents (e.g. "POTTASIUM", "AGENT 0X41AC1F") have no exact roster entry, so we
+ * deterministically assign one of the roster portraits by hashing the name — keeping the
+ * agent's real name while still showing a consistent image/accent.
+ */
+export function getLeagueAgent(name: string): LeagueArenaAgent {
+  const exact = LEAGUE_ARENA_AGENTS.find((a) => a.name === name);
+  if (exact) return exact;
+
+  const key = name ?? "";
+  const cached = leagueAgentCache.get(key);
+  if (cached) return cached;
+
+  const base = LEAGUE_ARENA_AGENTS[hashAgentName(key) % LEAGUE_ARENA_AGENTS.length];
+  const resolved: LeagueArenaAgent = { ...base, name: name ?? base.name };
+  leagueAgentCache.set(key, resolved);
+  return resolved;
 }
