@@ -649,8 +649,12 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
   const loading = isLoading(market.id);
   const signalError = error(market.id);
   const isTrading = tradingStatus !== "idle" && tradingStatus !== "done";
+  // Fallback/preview markets (Gamma unreachable) have no real CLOB tokenId -- there's nothing
+  // real to sign a read or an order against, so both actions are disabled, not silently no-op'd.
+  const isRealMarket = Boolean(market.tokenId);
 
   function handleGetSignal() {
+    if (!isRealMarket) return;
     if (!isAuthenticated) {
       login();
       return;
@@ -663,6 +667,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
   }
 
   async function handleBuy(side: "YES" | "NO") {
+    if (!isRealMarket) return;
     if (!isAuthenticated) {
       login();
       return;
@@ -691,6 +696,12 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
         <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p>
         <p className="mt-0.5 min-h-9 font-tech text-sm font-bold text-white">{market.question}</p>
 
+        {!isRealMarket ? (
+          <p className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-wider text-amber-300">
+            Preview data — Polymarket is unreachable right now, not a live tradeable market
+          </p>
+        ) : null}
+
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
@@ -699,7 +710,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
             step={1}
             value={stakeUsd}
             onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
-            disabled={isTrading}
+            disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">USDC</span>
@@ -708,7 +719,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
             type="button"
-            disabled={isTrading}
+            disabled={isTrading || !isRealMarket}
             onClick={() => void handleBuy("YES")}
             className="flex items-center justify-between rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -716,7 +727,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
           </button>
           <button
             type="button"
-            disabled={isTrading || !market.noTokenId}
+            disabled={isTrading || !isRealMarket || !market.noTokenId}
             onClick={() => void handleBuy("NO")}
             title={!market.noTokenId ? "No-side token unavailable for this market" : undefined}
             className="flex items-center justify-between rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 font-tech text-xs font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-60"
@@ -751,8 +762,9 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
         ) : (
           <button
             type="button"
-            disabled={loading}
+            disabled={loading || !isRealMarket}
             onClick={handleGetSignal}
+            title={!isRealMarket ? "Preview data — no real market to read" : undefined}
             className="w-full rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#aebfff] transition hover:bg-[#2E5CFF]/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Reading market…" : "Get my agent's read"}
