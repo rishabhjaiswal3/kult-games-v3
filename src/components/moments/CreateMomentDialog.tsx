@@ -34,6 +34,8 @@ export type CreateMomentDialogProps = {
   /** When set, pre-fills trash-talk title, winning commentary, and artwork. */
   battleId?: string | null;
   myAgentId?: string | null;
+  /** Arena game id — warzone, robowar, or highway-hustle. */
+  arenaGameId?: string | null;
 };
 
 type PreviewKind = "image" | "video";
@@ -72,6 +74,7 @@ export function CreateMomentDialog({
   onCreated,
   battleId,
   myAgentId,
+  arenaGameId,
 }: CreateMomentDialogProps) {
   const { isAuthenticated } = useAuth();
 
@@ -116,14 +119,14 @@ export function CreateMomentDialog({
   useEffect(() => {
     if (!open || !battleId?.trim() || !isAuthenticated) return;
 
-    const prefillKey = `${battleId}:${myAgentId ?? ""}`;
+    const prefillKey = `${battleId}:${myAgentId ?? ""}:${arenaGameId ?? ""}`;
     if (prefillKeyRef.current === prefillKey) return;
 
     let cancelled = false;
     setIsPrefilling(true);
     resetForm();
 
-    void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId })
+    void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId, arenaGameId })
       .then((draft) => {
         if (cancelled) {
           URL.revokeObjectURL(draft.previewUrl);
@@ -159,17 +162,17 @@ export function CreateMomentDialog({
     return () => {
       cancelled = true;
     };
-  }, [battleId, isAuthenticated, myAgentId, open, resetForm]);
+  }, [arenaGameId, battleId, isAuthenticated, myAgentId, open, resetForm]);
 
   useEffect(() => {
     if (!open || !battleId?.trim() || !isAuthenticated || !awaitingCommentary) return;
 
     let cancelled = false;
     const poll = () => {
-      void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId })
+      void resolveBattleTrashTalkDraft({ battleId: battleId.trim(), myAgentId, arenaGameId })
         .then((draft) => {
           if (cancelled || draft.pendingCommentary || !draft.description.trim()) return;
-          prefillKeyRef.current = `${battleId}:${myAgentId ?? ""}`;
+          prefillKeyRef.current = `${battleId}:${myAgentId ?? ""}:${arenaGameId ?? ""}`;
           setDescription(draft.description);
           setTags(draft.tags);
           setSelectedGame(draft.relatedGameSlugs[0] ?? null);
@@ -183,7 +186,7 @@ export function CreateMomentDialog({
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [awaitingCommentary, battleId, isAuthenticated, myAgentId, open]);
+  }, [arenaGameId, awaitingCommentary, battleId, isAuthenticated, myAgentId, open]);
 
   const createMomentMutation = useMutation({
     mutationFn: async () => {

@@ -33,6 +33,7 @@ import {
   KNOWN_MOMENT_GAME_LABELS,
   MOMENTS_BATTLE_ID_QUERY_PARAM,
   MOMENTS_CREATE_QUERY_PARAM,
+  MOMENTS_ARENA_GAME_ID_QUERY_PARAM,
   MOMENTS_HUB_PREVIEW_COUNT,
   MOMENTS_MY_AGENT_ID_QUERY_PARAM,
   MOMENTS_QUERY_KEY_ROOT,
@@ -515,6 +516,7 @@ export function AllMomentsPage() {
   const [createSearchParams, setSearchParams] = useSearchParams();
   const battleIdParam = createSearchParams.get(MOMENTS_BATTLE_ID_QUERY_PARAM);
   const myAgentIdParam = createSearchParams.get(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
+  const arenaGameIdParam = createSearchParams.get(MOMENTS_ARENA_GAME_ID_QUERY_PARAM);
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
@@ -553,6 +555,7 @@ export function AllMomentsPage() {
         next.delete(MOMENTS_CREATE_QUERY_PARAM);
         next.delete(MOMENTS_BATTLE_ID_QUERY_PARAM);
         next.delete(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
+        next.delete(MOMENTS_ARENA_GAME_ID_QUERY_PARAM);
       }
       const nextSearch = next.toString();
       const currentSearch = createSearchParams.toString();
@@ -607,6 +610,8 @@ export function AllMomentsPage() {
     if (battleId) params.set(MOMENTS_BATTLE_ID_QUERY_PARAM, battleId);
     const myAgentId = createSearchParams.get(MOMENTS_MY_AGENT_ID_QUERY_PARAM);
     if (myAgentId) params.set(MOMENTS_MY_AGENT_ID_QUERY_PARAM, myAgentId);
+    const arenaGameId = createSearchParams.get(MOMENTS_ARENA_GAME_ID_QUERY_PARAM);
+    if (arenaGameId) params.set(MOMENTS_ARENA_GAME_ID_QUERY_PARAM, arenaGameId);
     const nextSearch = params.toString();
     if (nextSearch !== createSearchParams.toString()) {
       setSearchParams(params, { replace: true });
@@ -1184,6 +1189,7 @@ export function AllMomentsPage() {
         onOpenChange={handleCreateOpenChange}
         battleId={battleIdParam}
         myAgentId={myAgentIdParam}
+        arenaGameId={arenaGameIdParam}
         onCreated={() => void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY_ROOT] })}
       />
     </div>

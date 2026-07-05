@@ -34,7 +34,7 @@ export function featureForPath(pathname: string): AccessFeature | null {
   if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
   if (pathname === "/league" || pathname === "/leaderboard" || pathname === "/achievements") return "league";
   if (pathname === "/creator-platform") return "creator_platform";
-  if (pathname === "/studio" || pathname === "/studio") return "creator_studio";
+  if (pathname === "/studio" || pathname.startsWith("/studio/")) return "creator_studio";
   if (pathname === "/inventory" || pathname === "/autonomous") return "full_browser";
   return null;
 }
@@ -44,13 +44,7 @@ export function canAccessPath(session: BrowserAccessSession | null, pathname: st
   return !feature || hasFeature(session, feature);
 }
 
-export function firstAllowedPath(session: BrowserAccessSession | null) {
-  if (!session) return "/";
-  if (hasFeature(session, "ai_arena")) return "/ai-arena";
-  if (hasFeature(session, "league")) return "/league";
-  if (hasFeature(session, "games")) return "/games";
-  if (hasFeature(session, "moments")) return "/moments";
-  if (hasFeature(session, "creator_platform")) return "/creator-platform";
-  if (hasFeature(session, "creator_studio")) return "/studio";
+/** Safe fallback when a route requires a feature the user does not have — home is always open. */
+export function firstAllowedPath(_session: BrowserAccessSession | null) {
   return "/";
 }

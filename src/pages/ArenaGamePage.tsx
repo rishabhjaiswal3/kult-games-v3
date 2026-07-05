@@ -1728,7 +1728,7 @@ export default function ArenaGamePage() {
 
   const navigateToTrashTalkMoment = useCallback(() => {
     if (!battleId || !myAgentId) return;
-    navigate(buildTrashTalkMomentPath(battleId, myAgentId));
+    navigate(buildTrashTalkMomentPath(battleId, myAgentId, "warzone"));
   }, [battleId, myAgentId, navigate]);
 
   const addResult = useCallback(

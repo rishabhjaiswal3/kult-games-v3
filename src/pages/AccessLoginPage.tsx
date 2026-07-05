@@ -29,6 +29,8 @@ export default function AccessLoginPage() {
     setIsSubmitting(true);
     try {
       await verifyCode(code);
+      // Land on home — the only page that does not require a tier feature.
+      window.history.replaceState(null, "", "/");
     } catch (err) {
       setError(errorMessage(err));
     } finally {
