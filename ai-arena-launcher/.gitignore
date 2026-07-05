@@ -1,0 +1,11 @@
+node_modules/
+build/
+*.log
+
+# Game build output — not committed to this repo
+RoboWars/*
+!RoboWars/.gitkeep
+
+# Icon/logo binaries — provide locally before building
+assets/*
+!assets/.gitkeep

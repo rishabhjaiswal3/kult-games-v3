@@ -1,0 +1,2 @@
+Place icon.ico (and logo.png if used) here before running `npm run build`.
+electron-builder requires assets/icon.ico for the NSIS installer.

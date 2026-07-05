@@ -1,0 +1,2 @@
+Place the built RoboWars.exe (and its content folder) here before running `npm run build`.
+This folder's contents are excluded from git — they get bundled by electron-builder as extraFiles.
