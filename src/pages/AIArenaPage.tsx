@@ -373,11 +373,16 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
       const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
 
-      let gameId: string = selectedGameIdRef.current;
+      // payload.gameId (server-reported) is authoritative — selectedGameIdRef.current defaults to
+      // "warzone" and is only reliable when the host queued via startMatchmaking; for joiners it
+      // is always the stale initial value, so checking it first caused joiners to always land on
+      // the Warzone page regardless of the actual game mode.
+      let gameId: string = (payload.gameId && payload.gameId !== "default") ? payload.gameId : "";
+      if (!gameId) gameId = selectedGameIdRef.current;
       if (!gameId || gameId === "default") {
         try { gameId = sessionStorage.getItem("arena_queued_game_id") || "default"; } catch { gameId = "default"; }
       }
-      if (!gameId || gameId === "default") gameId = payload.gameId || "default";
+      if (!gameId || gameId === "default") gameId = "warzone";
 
       if (gameId === "robowar") {
         navigate(`/arena/robowar/${payload.battleId}?${base}`);

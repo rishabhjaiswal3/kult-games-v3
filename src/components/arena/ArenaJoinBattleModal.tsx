@@ -34,7 +34,7 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
 
   const [challengeAgentId, setChallengeAgentId] = useState<string | null>(agents[0]?.id ?? null);
   const [mode, setMode] = useState<AiArenaMatchMode>("RANKED");
-  const [gameId] = useState<AiArenaGameId>(AI_ARENA_DEFAULT_GAME_ID);
+  // gameId comes from the specific lobby being joined (item.status.gameId), not a shared state value.
   const [joiningLobbyId, setJoiningLobbyId] = useState<string | null>(null);
 
   const myAgentIds = useMemo(() => new Set(agents.map((agent) => agent.id)), [agents]);
@@ -50,17 +50,20 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
   const items = useMemo(() => battleBoardQ.items.slice(0, 8), [battleBoardQ.items]);
 
   const directChallengeMut = useMutation({
-    mutationFn: async (opponentId: string) => {
+    mutationFn: async ({ opponentId, lobbyGameId }: { opponentId: string; lobbyGameId: string }) => {
       const nextAgentId = challengeAgentId ?? agents[0]?.id;
       if (!nextAgentId) throw new Error("Pick an agent to join with first.");
+      // Mirror what ArenaStartMatchmakingModal does so handleMatchFound routing can use the
+      // sessionStorage fallback even if payload.gameId comes back empty from the server.
+      try { sessionStorage.setItem("arena_queued_game_id", lobbyGameId); } catch { /* ignore */ }
       return aiArenaGatewayApi.directMatchmakingChallenge({
         agentId: nextAgentId,
         opponentId,
-        gameId,
+        gameId: lobbyGameId as AiArenaGameId,
         mode,
       });
     },
-    onMutate: (opponentId) => {
+    onMutate: ({ opponentId }) => {
       setJoiningLobbyId(opponentId);
     },
     onSuccess: async () => {
@@ -161,7 +164,10 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
                     }
                     onAction={
                       item.kind === "open-lobby" && !isOwnLobby && canJoin
-                        ? () => directChallengeMut.mutate(item.agent.id)
+                        ? () => directChallengeMut.mutate({
+                            opponentId: item.agent.id,
+                            lobbyGameId: item.status.gameId || AI_ARENA_DEFAULT_GAME_ID,
+                          })
                         : undefined
                     }
                     actionDisabled={
