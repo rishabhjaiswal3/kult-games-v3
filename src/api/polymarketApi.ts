@@ -5,6 +5,7 @@
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
 const CLOB_BASE = "https://clob.polymarket.com";
+const DATA_API_BASE = "https://data-api.polymarket.com";
 
 export type PolyMarket = {
   id: string;
@@ -165,6 +166,70 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
       .filter((m): m is PolyMarket => m !== null);
 
     return football.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+export type ResolvedMarket = {
+  id: string;
+  question: string;
+  category: string;
+  outcome: "YES" | "NO";
+  settledLabel: string;
+};
+
+function formatRelativeTime(value: unknown): string {
+  if (typeof value !== "string" || !value) return "recently";
+  const ts = Date.parse(value);
+  if (!Number.isFinite(ts)) return "recently";
+  const days = Math.round((Date.now() - ts) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  if (days === 1) return "1d ago";
+  return `${days}d ago`;
+}
+
+/** Fetch real settled/closed football markets. Returns [] on any failure. */
+export async function fetchResolvedFootballMarkets(limit = 8): Promise<ResolvedMarket[]> {
+  try {
+    const url = `${GAMMA_BASE}/markets?closed=true&limit=200&order=closedTime&ascending=false`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const json: unknown = await res.json();
+    const list: RawMarket[] = Array.isArray(json)
+      ? (json as RawMarket[])
+      : Array.isArray((json as { data?: unknown })?.data)
+        ? ((json as { data: RawMarket[] }).data)
+        : [];
+
+    const resolved = list
+      .filter((raw) => {
+        const q = typeof raw.question === "string" ? raw.question : "";
+        const slug = typeof raw.slug === "string" ? raw.slug : "";
+        return isFootball(`${q} ${slug}`);
+      })
+      .map((raw): ResolvedMarket | null => {
+        const question = typeof raw.question === "string" ? raw.question : "";
+        if (!question) return null;
+        const outcomes = parseStringArray(raw.outcomes);
+        const prices = parseStringArray(raw.outcomePrices);
+        if (outcomes.length < 2 || prices.length < 2) return null;
+
+        let yesIdx = outcomes.findIndex((o) => o.toLowerCase() === "yes");
+        if (yesIdx < 0) yesIdx = 0;
+        const outcome: "YES" | "NO" = toNumber(prices[yesIdx]) >= 0.5 ? "YES" : "NO";
+
+        return {
+          id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
+          question,
+          category: deriveCategory(question),
+          outcome,
+          settledLabel: formatRelativeTime(raw.closedTime ?? raw.endDate),
+        };
+      })
+      .filter((m): m is ResolvedMarket => m !== null);
+
+    return resolved.slice(0, limit);
   } catch {
     return [];
   }
@@ -335,6 +400,56 @@ export async function fetchPriceHistory(tokenId: string, points = 36): Promise<n
       .map((point) => Math.round(Math.min(1, Math.max(0, toNumber(point.p))) * 100))
       .filter((n) => Number.isFinite(n));
     return series.slice(-points);
+  } catch {
+    return [];
+  }
+}
+
+export type PolyPosition = {
+  marketId: string;
+  question: string;
+  side: "YES" | "NO";
+  /** Average entry price in cents. */
+  entry: number;
+  /** Current mid price in cents. */
+  current: number;
+  shares: number;
+  /** Unrealized P&L in USD. */
+  pnl: number;
+};
+
+/**
+ * Fetch a wallet's real open Polymarket positions via Polymarket's public
+ * Data API (docs/polymarket) -- read-only, key-less, same "any address" civic
+ * lookup pattern Polygonscan/Etherscan use. Best-effort field parsing since
+ * this specific endpoint's exact response shape could not be verified live
+ * from this environment (same network restriction as Gamma/CLOB) -- degrades
+ * to [] rather than guessing wrong, matching every other fetcher in this file.
+ */
+export async function fetchUserPositions(address: string): Promise<PolyPosition[]> {
+  try {
+    const url = `${DATA_API_BASE}/positions?user=${encodeURIComponent(address)}&sizeThreshold=1`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const json: unknown = await res.json();
+    const list: RawMarket[] = Array.isArray(json) ? (json as RawMarket[]) : [];
+
+    return list
+      .map((raw): PolyPosition | null => {
+        const question = typeof raw.title === "string" ? raw.title : typeof raw.question === "string" ? raw.question : "";
+        const conditionId = typeof raw.conditionId === "string" ? raw.conditionId : typeof raw.market === "string" ? raw.market : "";
+        if (!question || !conditionId) return null;
+
+        const outcomeRaw = typeof raw.outcome === "string" ? raw.outcome : "";
+        const side: "YES" | "NO" = outcomeRaw.toLowerCase() === "no" ? "NO" : "YES";
+        const entry = Math.round(toNumber(raw.avgPrice) * 100);
+        const current = Math.round(toNumber(raw.curPrice) * 100);
+        const shares = toNumber(raw.size);
+        const pnl = toNumber(raw.cashPnl ?? raw.percentPnl);
+
+        return { marketId: conditionId, question, side, entry, current, shares, pnl };
+      })
+      .filter((p): p is PolyPosition => p !== null);
   } catch {
     return [];
   }

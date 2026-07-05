@@ -11,12 +11,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Flame,
   LineChart,
   Newspaper,
   Radio,
   ShieldCheck,
-  Sparkles,
   TrendingDown,
   TrendingUp,
   Trophy,
@@ -27,6 +25,7 @@ import {
   fetchFootballEvents,
   fetchFootballMarkets,
   fetchPriceHistory,
+  fetchUserPositions,
   type PolyComment,
   type PolyEvent,
   type PolyMarket,
@@ -39,6 +38,7 @@ import {
   type WorldCupGroup,
 } from "@/api/worldCupApi";
 import { fetchFootballNews, type NewsItem } from "@/api/footballNewsApi";
+import { leagueApi } from "@/api/leagueApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,59 +94,6 @@ const MARKETS = [
 ];
 
 const MARKET_CATEGORIES = ["All", "World Cup", "Champions League", "Premier League", "La Liga", "Transfers", "Ballon d'Or"] as const;
-
-const AGENT_RIVALRIES = [
-  {
-    id: "wc-final",
-    question: "Will Argentina win the 2026 World Cup?",
-    left: { name: "HYBRID", pick: "Yes", confidence: 64, tone: "cyan" },
-    right: { name: "ASSASSIN", pick: "No", confidence: 71, tone: "purple" },
-  },
-  {
-    id: "ucl-final",
-    question: "Will Real Madrid win the Champions League?",
-    left: { name: "TACTICIAN", pick: "Yes", confidence: 73, tone: "cyan" },
-    right: { name: "HYBRID", pick: "No", confidence: 55, tone: "purple" },
-  },
-  {
-    id: "ballon",
-    question: "Will Haaland win the 2026 Ballon d'Or?",
-    left: { name: "DEFENDER", pick: "Yes", confidence: 62, tone: "cyan" },
-    right: { name: "BERSERKER", pick: "No", confidence: 59, tone: "purple" },
-  },
-];
-
-const TOP_AGENTS = [
-  { rank: 1, name: "HYBRID", accuracy: 74, roi: "+38%", streak: 6, calls: 142 },
-  { rank: 2, name: "TACTICIAN", accuracy: 71, roi: "+29%", streak: 4, calls: 128 },
-  { rank: 3, name: "DEFENDER", accuracy: 68, roi: "+22%", streak: 3, calls: 119 },
-  { rank: 4, name: "ASSASSIN", accuracy: 66, roi: "+18%", streak: 5, calls: 134 },
-  { rank: 5, name: "SUPPORT", accuracy: 63, roi: "+12%", streak: 2, calls: 97 },
-  { rank: 6, name: "BERSERKER", accuracy: 61, roi: "+9%", streak: 2, calls: 110 },
-];
-
-const TODAY_AGENT_PREDICTIONS = [
-  { name: "HYBRID", market: "Argentina win the 2026 World Cup", category: "World Cup", pick: "YES", confidence: 64, price: 64 },
-  { name: "TACTICIAN", market: "Real Madrid win the Champions League", category: "Champions League", pick: "YES", confidence: 73, price: 73 },
-  { name: "DEFENDER", market: "Barcelona win La Liga this season", category: "La Liga", pick: "YES", confidence: 66, price: 66 },
-  { name: "ASSASSIN", market: "Messi scores at the World Cup", category: "World Cup", pick: "YES", confidence: 78, price: 78 },
-  { name: "SUPPORT", market: "Mbappé wins the Golden Boot", category: "World Cup", pick: "NO", confidence: 59, price: 41 },
-  { name: "BERSERKER", market: "Haaland wins the 2026 Ballon d'Or", category: "Ballon d'Or", pick: "YES", confidence: 62, price: 62 },
-];
-
-const OPEN_POSITIONS = [
-  { marketId: "ucl-final", label: "Real Madrid win the Champions League", category: "Champions League", side: "YES" as const, entry: 64, shares: 120 },
-  { marketId: "messi-goal", label: "Messi scores at the World Cup", category: "World Cup", side: "YES" as const, entry: 70, shares: 80 },
-  { marketId: "wc-final", label: "Argentina win the 2026 World Cup", category: "World Cup", side: "NO" as const, entry: 33, shares: 150 },
-];
-
-const RESOLVED_MARKETS = [
-  { id: "r1", question: "Did Real Madrid win the Club World Cup?", category: "Champions League", outcome: "YES" as const, settled: "3d ago", agent: "TACTICIAN", agentPick: "YES", correct: true },
-  { id: "r2", question: "Did Man City keep a clean sheet vs Arsenal?", category: "Premier League", outcome: "YES" as const, settled: "6d ago", agent: "BERSERKER", agentPick: "YES", correct: true },
-  { id: "r3", question: "Did Brazil win the Copa América final?", category: "World Cup", outcome: "NO" as const, settled: "8d ago", agent: "ASSASSIN", agentPick: "YES", correct: false },
-  { id: "r4", question: "Did Mbappé score in El Clásico?", category: "La Liga", outcome: "YES" as const, settled: "12d ago", agent: "HYBRID", agentPick: "YES", correct: true },
-];
-
 
 type NewsImpact = "up" | "down" | "flat";
 
@@ -860,7 +807,7 @@ function RecentTradesFeed({ trades }: { trades: MarketTrade[] }) {
   return (
     <LeaguePanel fill={false} className="overflow-hidden border-cyan-400/20 bg-[radial-gradient(circle_at_100%_0%,rgba(34,211,238,0.13),transparent_48%),#080c14] p-4">
       <div className="flex items-center justify-between gap-3">
-        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Market intel</p><p className="mt-1 font-tech text-sm font-bold text-white">Recent trades</p></div>
+        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Market intel</p><p className="mt-1 font-tech text-sm font-bold text-white">Simulated market activity</p></div>
         <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
       </div>
       <div className="mt-3 max-h-[238px] space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
@@ -885,79 +832,70 @@ function RecentTradesFeed({ trades }: { trades: MarketTrade[] }) {
   );
 }
 
+/** "18-2" -> 90 (rounded win %). Same predictionRecord() format League's leaderboard already returns. */
+function accuracyFromRecord(record: string): number {
+  const [wins, losses] = record.split("-").map((n) => parseInt(n, 10));
+  const total = (wins || 0) + (losses || 0);
+  return total > 0 ? Math.round(((wins || 0) / total) * 100) : 0;
+}
+
+/**
+ * Real League reputation leaderboard (docs/polymarket) -- the product's
+ * own framing is "agents use the same record to recommend market calls",
+ * so this is the correct real data source, not a stand-in: there is no
+ * separate Polymarket-specific accuracy stat, by design.
+ */
 function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["league", "leaderboard", "global", 6],
+    queryFn: () => leagueApi.getGlobalLeaderboard(6),
+    staleTime: 60_000,
+  });
+
   return (
     <LeaguePanel fill={false} className={`border-[#2E5CFF]/25 ${sidebar ? "p-4" : "lg:col-span-6"}`}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Top agents</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">This week · ranked by prediction accuracy &amp; ROI</p>
+          <p className="mt-0.5 text-[11px] text-white/45">Ranked by League reputation &amp; prediction record</p>
         </div>
         <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live standings</span>
       </div>
       <div className="max-h-[238px] overflow-y-auto pr-1 [scrollbar-color:rgba(46,92,255,0.55)_transparent] [scrollbar-width:thin]">
+      {isLoading ? (
+        <div className={`grid grid-cols-2 gap-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
+          {[0, 1, 2].map((i) => <div key={i} className="skeleton h-24 w-full rounded-xl" />)}
+        </div>
+      ) : !rows || rows.length === 0 ? (
+        <p className="py-4 text-center text-[11px] text-white/40">No ranked agents yet — check back once League picks start settling.</p>
+      ) : (
       <div className={`grid grid-cols-2 gap-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
-        {TOP_AGENTS.map((row) => {
-          const agent = getLeagueAgent(row.name);
+        {rows.map((row) => {
+          const agent = getLeagueAgent(row.agentName);
+          const accuracy = accuracyFromRecord(row.record);
           return (
-            <article key={row.name} className="overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(46,92,255,0.12),transparent_55%),#070911] p-3">
+            <article key={row.agentId} className="overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(46,92,255,0.12),transparent_55%),#070911] p-3">
               <div className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded font-tech text-[9px] font-black ${row.rank === 1 ? "bg-amber-500/20 text-amber-400" : "bg-white/8 text-white/50"}`}>{row.rank}</span>
                 <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-                <p className="min-w-0 truncate font-tech text-[10px] font-bold uppercase text-white">{row.name}</p>
+                <p className="min-w-0 truncate font-tech text-[10px] font-bold uppercase text-white">{row.agentName}</p>
               </div>
               <div className="mt-3 flex items-center justify-between">
-                <div><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">Accuracy</p><p className="font-tech text-sm font-black text-cyan-300">{row.accuracy}%</p></div>
-                <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 font-tech text-[10px] font-bold text-emerald-300">{row.roi}</span>
+                <div><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">Accuracy</p><p className="font-tech text-sm font-black text-cyan-300">{accuracy}%</p></div>
+                <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 font-tech text-[10px] font-bold text-emerald-300">{row.reputation} rep</span>
               </div>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-[#2E5CFF]" style={{ width: `${row.accuracy}%` }} /></div>
-              <p className="mt-2 font-tech text-[8px] uppercase tracking-wider text-white/35">{row.calls} calls · {row.streak}W streak</p>
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-[#2E5CFF]" style={{ width: `${accuracy}%` }} /></div>
+              <p className="mt-2 font-tech text-[8px] uppercase tracking-wider text-white/35">{row.record} record · {row.streak}W streak</p>
             </article>
           );
         })}
       </div>
+      )}
       </div>
     </LeaguePanel>
   );
 }
 
-function TodayAgentPredictions() {
-  return (
-    <LeaguePanel fill={false} className="border-cyan-400/20 lg:col-span-6">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Today&apos;s agent predictions</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Each agent&apos;s headline call across today&apos;s markets</p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><Activity className="h-3.5 w-3.5" /> {TODAY_AGENT_PREDICTIONS.length} live</span>
-      </div>
-      <div className="max-h-[238px] overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {TODAY_AGENT_PREDICTIONS.map((prediction) => {
-          const agent = getLeagueAgent(prediction.name);
-          const isYes = prediction.pick === "YES";
-          return (
-            <article key={prediction.name} className="flex items-center gap-3 overflow-hidden rounded-xl border bg-[#05050a]/60 p-2.5" style={{ borderColor: agent ? `${agent.accentHex}40` : "rgba(255,255,255,0.1)" }}>
-              <div className="h-12 w-11 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate font-tech text-[10px] font-black uppercase text-white">{prediction.name}</p>
-                  <span className={`shrink-0 rounded px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase ${isYes ? "bg-cyan-400/15 text-cyan-300" : "bg-fuchsia-400/15 text-fuchsia-300"}`}>{prediction.pick} {prediction.price}¢</span>
-                </div>
-                <p className="mt-0.5 truncate text-[10px] text-white/55">{prediction.market}</p>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full" style={{ width: `${prediction.confidence}%`, backgroundColor: agent?.accentHex ?? "#22d3ee" }} /></div>
-                  <span className="shrink-0 font-tech text-[9px] font-bold" style={{ color: agent?.accentHex ?? "#22d3ee" }}>{prediction.confidence}%</span>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-      </div>
-    </LeaguePanel>
-  );
-}
 
 function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
@@ -992,25 +930,43 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   );
 }
 
-function OpenPositions({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
-  const rows = OPEN_POSITIONS.map((position) => {
-    const market = markets.find((m) => m.id === position.marketId);
-    const liveYes = market?.yes ?? position.entry;
-    const current = position.side === "YES" ? liveYes : 100 - liveYes;
-    const pnl = ((current - position.entry) * position.shares) / 100;
-    return { ...position, current, pnl };
+/** Real positions for the connected wallet (docs/polymarket) -- was previously always-fake data labeled "Your positions" regardless of login state. */
+function OpenPositions() {
+  const { isAuthenticated, walletAddress, login } = useAuth();
+
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["polymarket", "positions", walletAddress],
+    queryFn: () => fetchUserPositions(walletAddress!),
+    enabled: isAuthenticated && !!walletAddress,
+    staleTime: 30_000,
   });
-  const totalPnl = rows.reduce((sum, row) => sum + row.pnl, 0);
+
+  const totalPnl = (rows ?? []).reduce((sum, row) => sum + row.pnl, 0);
 
   return (
     <LeaguePanel fill={false} className="border-amber-400/20 lg:col-span-12">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Your positions</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">{rows.length} open · live mark-to-market</p>
+          <p className="mt-0.5 text-[11px] text-white/45">{rows ? `${rows.length} open · live mark-to-market` : "Real Polymarket positions for your connected wallet"}</p>
         </div>
-        <span className={`font-tech text-[11px] font-bold ${totalPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} P&amp;L</span>
+        {rows && rows.length > 0 ? (
+          <span className={`font-tech text-[11px] font-bold ${totalPnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} P&amp;L</span>
+        ) : null}
       </div>
+      {!isAuthenticated ? (
+        <button
+          type="button"
+          onClick={login}
+          className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-3 text-center font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-amber-400/40 hover:text-white"
+        >
+          Connect wallet to see your positions
+        </button>
+      ) : isLoading ? (
+        <div className="skeleton h-20 w-full rounded-lg" />
+      ) : !rows || rows.length === 0 ? (
+        <p className="py-4 text-center text-[11px] text-white/40">No open Polymarket positions for this wallet yet.</p>
+      ) : (
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] border-collapse">
           <thead>
@@ -1025,8 +981,8 @@ function OpenPositions({ markets, onSelect }: { markets: LiveMarket[]; onSelect:
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.marketId} onClick={() => onSelect(row.marketId)} className="cursor-pointer border-t border-white/8 transition hover:bg-white/[0.03]">
-                <td className="py-2 pr-3"><p className="font-tech text-[11px] font-bold text-white">{row.label}</p><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">{row.category}</p></td>
+              <tr key={row.marketId} className="border-t border-white/8">
+                <td className="py-2 pr-3"><p className="font-tech text-[11px] font-bold text-white">{row.question}</p></td>
                 <td className="py-2 pr-3"><span className={`rounded px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase ${row.side === "YES" ? "bg-cyan-400/15 text-cyan-300" : "bg-fuchsia-400/15 text-fuchsia-300"}`}>{row.side}</span></td>
                 <td className="py-2 pr-3 text-right font-tech text-[11px] text-white/70">{row.entry}¢</td>
                 <td className="py-2 pr-3 text-right font-tech text-[11px] font-bold text-white">{row.current}¢</td>
@@ -1037,39 +993,53 @@ function OpenPositions({ markets, onSelect }: { markets: LiveMarket[]; onSelect:
           </tbody>
         </table>
       </div>
+      )}
     </LeaguePanel>
   );
 }
 
+/**
+ * Real settled Polymarket football markets (docs/polymarket). Drops the old
+ * "agent called it, hit/miss" framing entirely -- there's no real
+ * correctness-tracking backend for Polymarket signals yet (unlike League,
+ * which settles and grades every prediction), so fabricating a per-market
+ * agent verdict here would just be a differently-shaped hardcoded number.
+ */
 function ResolvedMarkets() {
+  const { data: markets, isLoading } = useQuery({
+    queryKey: ["polymarket", "resolved-markets"],
+    queryFn: () => fetchResolvedFootballMarkets(8),
+    staleTime: 5 * 60_000,
+  });
+
   return (
     <LeaguePanel fill={false} className="border-white/10 lg:col-span-12">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Resolved markets</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Settled questions and how the agents called them</p>
+          <p className="mt-0.5 text-[11px] text-white/45">Recently settled questions</p>
         </div>
-        <span className="font-tech text-[9px] uppercase tracking-wider text-white/35">{RESOLVED_MARKETS.length} settled</span>
+        <span className="font-tech text-[9px] uppercase tracking-wider text-white/35">{markets?.length ?? 0} settled</span>
       </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {[0, 1].map((i) => <div key={i} className="skeleton h-16 w-full rounded-xl" />)}
+        </div>
+      ) : !markets || markets.length === 0 ? (
+        <p className="py-4 text-center text-[11px] text-white/40">No recently settled football markets found.</p>
+      ) : (
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {RESOLVED_MARKETS.map((market) => {
-          const agent = getLeagueAgent(market.agent);
-          return (
-            <article key={market.id} className="flex items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#070911] p-3 opacity-90">
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-tech text-[11px] font-bold text-white">{market.question}</p>
-                <p className="mt-0.5 font-tech text-[8px] uppercase tracking-wider text-white/35">{market.category} · settled {market.settled}</p>
-                <p className="mt-1 font-tech text-[9px] text-white/45">{market.agent} called <span className={market.correct ? "text-emerald-300" : "text-rose-300"}>{market.agentPick}</span></p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className={`rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase ${market.outcome === "YES" ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300" : "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-300"}`}>{market.outcome}</span>
-                <span className={`font-tech text-[9px] font-bold ${market.correct ? "text-emerald-300" : "text-rose-300"}`}>{market.correct ? "✓ Hit" : "✗ Miss"}</span>
-              </div>
-            </article>
-          );
-        })}
+        {markets.map((market) => (
+          <article key={market.id} className="flex items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#070911] p-3 opacity-90">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-tech text-[11px] font-bold text-white">{market.question}</p>
+              <p className="mt-0.5 font-tech text-[8px] uppercase tracking-wider text-white/35">{market.category} · settled {market.settledLabel}</p>
+            </div>
+            <span className={`shrink-0 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase ${market.outcome === "YES" ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300" : "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-300"}`}>{market.outcome}</span>
+          </article>
+        ))}
       </div>
+      )}
     </LeaguePanel>
   );
 }
@@ -1102,44 +1072,6 @@ function AgentEdgeSignal({
     <div className="flex min-w-0 items-center gap-2">
       <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
       <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{signal.name}</p><p className={`truncate text-[9px] ${positive ? "text-cyan-300" : "text-fuchsia-300"}`}>{signal.pick}</p></div>
-    </div>
-  );
-}
-
-function AgentRivalryQuestion({ rivalry }: { rivalry: (typeof AGENT_RIVALRIES)[number] }) {
-  const left = getLeagueAgent(rivalry.left.name);
-  const right = getLeagueAgent(rivalry.right.name);
-
-  return (
-    <article className="overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(46,92,255,0.13),transparent_50%),#070911] p-3 sm:p-4">
-      <p className="min-h-10 font-tech text-[11px] font-bold leading-snug text-white">{rivalry.question}</p>
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-        <AgentMarketPrediction agent={left} prediction={rivalry.left} side="left" />
-        <span className="font-tech text-[9px] tracking-[0.16em] text-white/30">VS</span>
-        <AgentMarketPrediction agent={right} prediction={rivalry.right} side="right" />
-      </div>
-    </article>
-  );
-}
-
-function AgentMarketPrediction({
-  agent,
-  prediction,
-  side,
-}: {
-  agent: ReturnType<typeof getLeagueAgent>;
-  prediction: (typeof AGENT_RIVALRIES)[number]["left"];
-  side: "left" | "right";
-}) {
-  const isPositive = prediction.tone === "cyan";
-
-  return (
-    <div className={`min-w-0 ${side === "right" ? "text-right" : "text-left"}`}>
-      <div className={`flex items-center gap-2 ${side === "right" ? "justify-end" : "justify-start"}`}>
-        {side === "right" ? null : <div className="h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>}
-        <div className="min-w-0"><p className="truncate font-tech text-[9px] font-bold uppercase text-white">{prediction.name}</p><p className={`mt-0.5 truncate font-tech text-[9px] font-bold ${isPositive ? "text-cyan-300" : "text-fuchsia-300"}`}>{prediction.pick}</p><p className="mt-1 text-[9px] text-white/45">{prediction.confidence}% confidence</p></div>
-        {side === "right" ? <div className="h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div> : null}
-      </div>
     </div>
   );
 }
@@ -2044,11 +1976,9 @@ function AnalysisView({
       </div>
       <div className="space-y-3 lg:col-span-4">
         <TrendingMovers markets={viewMarkets} onSelect={onSelect} />
-        <AgentWinRateCard />
       </div>
 
       <div className="space-y-3 lg:col-span-7">
-        <AgentNewsReactions />
         <TopAgentsBoard sidebar={false} />
         <RecentTradesFeed trades={trades} />
         <ResolvedMarkets />
@@ -2057,84 +1987,8 @@ function AnalysisView({
         <NewsFeed title="News driving the board" subtitle="What's moving prices right now" />
       </div>
 
-      <OpenPositions markets={markets} onSelect={onSelect} />
+      <OpenPositions />
     </div>
   );
 }
 
-function AgentWinRateCard() {
-  const total = RESOLVED_MARKETS.length;
-  const wins = RESOLVED_MARKETS.filter((m) => m.correct).length;
-  const losses = total - wins;
-  const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
-  const RADIUS = 30;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-  const dashOffset = CIRCUMFERENCE * (1 - rate / 100);
-
-  return (
-    <LeaguePanel fill={false} className="overflow-hidden border-cyan-400/20 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.14),transparent_45%),#070911] p-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div><p className="font-tech text-[9px] uppercase tracking-[0.2em] text-cyan-300">Agent accuracy</p><p className="mt-0.5 font-tech text-sm font-bold text-white">Win rate</p></div>
-        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-emerald-300"><TrendingUp className="h-3.5 w-3.5" /> +5% wk</span>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="relative grid h-[60px] w-[60px] shrink-0 place-items-center">
-          <svg className="h-[60px] w-[60px] -rotate-90" viewBox="0 0 72 72" aria-label={`${rate}% win rate`}>
-            <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="7" />
-            <circle cx="36" cy="36" r={RADIUS} fill="none" stroke="url(#pm-win-rate)" strokeWidth="7" strokeLinecap="round" strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
-            <defs>
-              <linearGradient id="pm-win-rate" x1="0" y1="0" x2="1" y2="1">
-                <stop stopColor="#22d3ee" />
-                <stop offset="1" stopColor="#2E5CFF" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <span className="absolute font-tech text-base font-black text-white">{rate}%</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] text-white/50">{wins} hits · {losses} {losses === 1 ? "miss" : "misses"} settled</p>
-          <div className="mt-1.5 flex flex-wrap gap-1">
-            {RESOLVED_MARKETS.map((m) => (
-              <span key={m.id} className={`flex h-4 w-4 items-center justify-center rounded font-tech text-[8px] font-black ${m.correct ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"}`}>{m.correct ? "W" : "L"}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </LeaguePanel>
-  );
-}
-
-function AgentNewsReactions() {
-  return (
-    <LeaguePanel fill={false} className="border-[#2E5CFF]/25 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[#9ab1ff]" />
-          <div><h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white">Agent reactions to news</h3><p className="mt-0.5 text-[10px] text-white/45">How each agent re-reads the market as facts land</p></div>
-        </div>
-        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><Flame className="h-3.5 w-3.5" /> {MATCH_NEWS.length} live reads</span>
-      </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {MATCH_NEWS.map((item) => {
-          const agent = getLeagueAgent(item.agent);
-          const up = item.impact === "up";
-          return (
-            <article key={item.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/30 p-3">
-              <div className="h-11 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate font-tech text-[10px] font-black uppercase text-white">{item.agent}</p>
-                  <span className={`inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 font-tech text-[8px] font-bold ${up ? "bg-emerald-400/15 text-emerald-300" : item.impact === "down" ? "bg-rose-400/15 text-rose-300" : "bg-cyan-400/15 text-cyan-300"}`}>
-                    {up ? <ArrowUp className="h-2.5 w-2.5" /> : item.impact === "down" ? <ArrowDown className="h-2.5 w-2.5" /> : null} {item.move}
-                  </span>
-                </div>
-                <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-white/55">{item.title}</p>
-                <p className="mt-1 truncate font-mono text-[9px] text-white/35">re: {item.market}</p>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </LeaguePanel>
-  );
-}
