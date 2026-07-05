@@ -15,6 +15,18 @@ const ROBOWAR_EXE = path.join(process.resourcesPath, "..", "RoboWars", "RoboWars
 log.transports.file.level = "info";
 log.info("AI Arena Launcher starting", { version: app.getVersion() });
 
+// ─── Protocol registration ────────────────────────────────────────────────────
+// electron-builder's NSIS config registers this automatically for installed
+// builds. This call makes `npm start` (dev, unpackaged) respond to
+// aiarena:// links too, so the checklist's manual test step works pre-install.
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("aiarena", process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient("aiarena");
+}
+
 // ─── Deep link handling on Windows ───────────────────────────────────────────
 // On Windows, a second instance is launched with the URI as argv[1].
 // We forward to the first instance and quit.

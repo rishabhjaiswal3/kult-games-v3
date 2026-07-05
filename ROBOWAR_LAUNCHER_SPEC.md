@@ -685,19 +685,26 @@ The "Download Launcher" button on the pre-match screen uses `VITE_LAUNCHER_DOWNL
 - [ ] **Test in isolation:** run exe from terminal with fake args, play to end, confirm JSON file appears
 
 ### Launcher side
-- [x] Create project, `npm install` — scaffolded at `ai-arena-launcher/`
+- [x] Create project, `npm install` — scaffolded at `ai-arena-launcher/`, `npm install` run and verified (0 vulnerabilities in the shipped runtime deps; audit findings are all in `electron-builder`'s build-time-only deps)
 - [x] Copy `main.js`, `preload.js`, `renderer/index.html`, `renderer/renderer.js` from this spec
-- [ ] Place Unreal build files inside `RoboWars/` folder in the project root (needs the actual game build)
-- [x] Verify `ROBOWAR_EXE` path in `main.js` points correctly
-- [ ] `npm start` — test by running `aiarena://launch?matchId=TEST&agentA=A&agentB=B` from the browser address bar (needs a local `npm install` + a `RoboWars.exe` to fully exercise)
-- [ ] Confirm window opens, game spawns, result file is read, backend POST fires
-- [ ] `npm run build` — generates NSIS installer (needs `assets/icon.ico`)
+- [ ] Place Unreal build files inside `RoboWars/` folder in the project root (needs the actual game build — not available in this environment)
+- [x] Verify `ROBOWAR_EXE` path in `main.js` points correctly — confirmed via dev run: resolves to `<electron-dir>/RoboWars/RoboWars.exe` in dev and to a sibling `RoboWars/` folder next to `resources/` once packaged, matching the `extraFiles` config
+- [x] `npm start` — smoke-tested: app boots cleanly, no startup errors
+- [x] Confirm window opens, deep link (`aiarena://launch?matchId=TEST001&agentA=agentXXX&agentB=agentYYY`) is parsed correctly, and missing-exe case fails gracefully (logs + surfaces an "error" phase instead of crashing)
+- [ ] Full match spawn → result file read → backend POST (blocked on having an actual `RoboWars.exe` to run)
+- [ ] `npm run build` — generates NSIS installer (needs `assets/icon.ico`, not available in this environment)
 - [ ] Install the output `.exe`, test the full browser → launcher → game → result flow
+
+**Also added:** `app.setAsDefaultProtocolClient("aiarena", ...)` call in `main.js` so `aiarena://`
+links work when running unpackaged via `npm start` (dev), not just after NSIS install — needed to
+make the manual test step above actually runnable pre-build.
 
 **Note:** `submitResult()` in `main.js` was aligned to the real `AiArenaEndBattleRequest` shape
 (`winnerId`, `loserId`, `rounds` — see `src/types/aiArenaGateway.ts:521`), not the `winnerHp`/`loserHp`/
 `durationSeconds` shape sketched earlier in Part 6 of this doc, since those fields aren't in the
-actual backend contract.
+actual backend contract. Cross-checked against the backend (`0g-AIArena/services/battle-service/src/routes/battle.routes.ts:72`
+and the gateway proxy rule in `services/api-gateway/src/main.ts:174`) — the route, path rewriting,
+and request body all line up with what the launcher sends; no backend changes were needed.
 
 ### Frontend / env
 - [ ] Upload installer `.exe` to CDN / R2
