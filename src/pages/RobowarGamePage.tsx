@@ -1,13 +1,17 @@
 /**
  * RobowarGamePage — Full-screen Robowar AI duel battle experience.
  *
- * Mirrors HighwayHustleGamePage pattern but wired to Robowar:
- *   • localStorage key: "robowarPayload"   (Unity SessionBootstrap reads this)
- *   • Unity event:      "robowarDuelEnd"    (Unity DuelBridge fires this)
- *   • Result payload:   { battleId, winnerId, winnerName, winnerHp,
- *                         loserId, loserName, loserHp }
+ * RoboWars is an Unreal Engine title that runs via the AI Arena desktop
+ * Launcher rather than a Unity WebGL embed. The launcher handles the match;
+ * this page:
+ *   1. Shows a pre-match landing (LauncherPreMatchView) with a Launch button.
+ *   2. Opens the aiarena:// URI scheme to hand off to the installed launcher.
+ *   3. Detects whether the launcher is installed (window blur heuristic).
+ *   4. Polls /v1/battles/:battleId every 2 s while the match runs.
+ *   5. When the backend marks the battle COMPLETE, transitions automatically
+ *      into the normal AI Arena result overlay (commentary + 0G storage).
  *
- * Build files use the Robowar.* prefix in the same R2 folder as other games.
+ * Highway Hustle and Warzone Warrior are completely unaffected.
  */
 
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -39,6 +43,13 @@ import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
+import {
+  LauncherPreMatchView,
+  LauncherWaitingScreen,
+  LauncherNotInstalledModal,
+  LauncherErrorView,
+} from "@/components/launcher";
+import { useLauncherBattle } from "@/hooks/useLauncherBattle";
 import type {
   AiArenaAgent,
   AiArenaBattle,
@@ -46,16 +57,10 @@ import type {
 } from "@/types/aiArenaGateway";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────────────────────────────────────
-
-const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Theme — red
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ACCENT = "#dc2626";
+const ACCENT       = "#dc2626";
 const ACCENT_BRIGHT = "#ef4444";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -146,13 +151,13 @@ function AgentLoadingCard({
       >
         {portrait ? (
           isVideo ? (
-              <video
+            <video
               src={portrait}
               autoPlay
               loop
-                muted
-                playsInline
-                className={cn(
+              muted
+              playsInline
+              className={cn(
                 "h-full w-full object-cover object-top",
                 side === "right" && "-scale-x-100"
               )}
@@ -208,260 +213,6 @@ function AgentLoadingCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pre-match overlay
-// ─────────────────────────────────────────────────────────────────────────────
-
-const PRE_MATCH_DURATION = 10;
-
-function PreMatchOverlay({
-  myAgent,
-  opponent,
-  mode,
-  countdown,
-}: {
-  myAgent: AiArenaAgent | null;
-  opponent: AiArenaAgent | null;
-  mode: string;
-  countdown: number;
-}) {
-  const pct = Math.max(0, (countdown / PRE_MATCH_DURATION) * 100);
-
-  return (
-    <div
-      className="absolute inset-0 z-50 flex flex-col overflow-hidden"
-      style={{ background: "#080202" }}
-    >
-      {/* Full-bleed background */}
-      <img
-        src="/Robowar/bg.png"
-        alt="Robowar arena"
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity: 0.9 }}
-        draggable={false}
-      />
-
-      {/* Dark tint */}
-      <div className="absolute inset-0" style={{ background: "rgba(8,2,2,0.72)" }} />
-
-      {/* 3-row layout */}
-      <div className="relative z-10 flex h-full flex-col">
-
-        {/* ROW 1: header */}
-        <div
-          className="flex items-center justify-between px-6 py-3 shrink-0"
-          style={{ background: "rgba(8,2,2,0.85)", borderBottom: `2px solid ${ACCENT}` }}
-        >
-          <div className="flex items-center gap-2">
-            <Bot className="h-3.5 w-3.5" style={{ color: ACCENT }} />
-            <span className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold" style={{ color: ACCENT }}>
-              Robowar · {mode}
-            </span>
-          </div>
-          <div className="font-display text-base font-black text-white tracking-widest uppercase">
-            The Crush Pit
-          </div>
-          <div className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>
-            Battle Starting
-          </div>
-        </div>
-
-        {/* ROW 2: fighters */}
-        <div className="flex flex-1 min-h-0 items-stretch">
-
-          {/* Left fighter panel */}
-          <div
-            className="flex flex-col items-center justify-end gap-0 flex-1"
-            style={{ background: "linear-gradient(to right, rgba(8,2,2,0.75) 0%, transparent 100%)" }}
-          >
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {myAgent?.name ?? "Agent A"}
-              </div>
-              <div className="flex items-center justify-center gap-2 mt-1.5">
-                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
-                  {myAgent?.archetype ?? "FIGHTER"}
-                </span>
-                <span className="font-mono text-[10px] text-white/40">
-                  {myAgent?.eloRating ? `${myAgent.eloRating} ELO` : ""}
-          </span>
-              </div>
-            </div>
-            <img
-              src="/Robowar/bot1.png"
-              alt="Bot A"
-              className="object-contain object-bottom drop-shadow-2xl"
-              style={{ maxHeight: "55%", width: "auto" }}
-              draggable={false}
-            />
-        </div>
-
-          {/* Centre VS */}
-          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
-            <div
-              className="font-display text-5xl font-black"
-              style={{
-                color: "#fff",
-                textShadow: `0 0 40px ${ACCENT}, 0 0 80px ${ACCENT}80`,
-                WebkitTextStroke: `2px ${ACCENT}`,
-              }}
-            >
-              VS
-            </div>
-          </div>
-
-          {/* Right fighter panel */}
-          <div
-            className="flex flex-col items-center justify-end gap-0 flex-1"
-            style={{ background: "linear-gradient(to left, rgba(8,2,2,0.75) 0%, transparent 100%)" }}
-          >
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
-                {opponent?.name ?? "Agent B"}
-              </div>
-              <div className="flex items-center justify-center gap-2 mt-1.5">
-                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
-                  {opponent?.archetype ?? "FIGHTER"}
-                </span>
-                <span className="font-mono text-[10px] text-white/40">
-                  {opponent?.eloRating ? `${opponent.eloRating} ELO` : ""}
-                </span>
-              </div>
-            </div>
-            <img
-              src="/Robowar/bot2.png"
-              alt="Bot B"
-              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
-              style={{ maxHeight: "55%", width: "auto" }}
-              draggable={false}
-            />
-      </div>
-
-        </div>
-
-        {/* ROW 3: footer */}
-        <div
-          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
-          style={{ background: "rgba(8,2,2,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
-            🤖 <span className="text-white font-bold">The Crush Pit</span> — last bot standing wins ·
-            Your agent fights based on <span className="font-bold" style={{ color: ACCENT }}>trained behaviour</span> ·
-            Winner earns <span className="text-white font-bold">ARENA rewards</span>
-          </p>
-          <div className="w-full max-w-sm">
-            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-              <div
-                className="h-full rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${ACCENT}, #8b6dff)` }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ background: ACCENT }} />
-            <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
-              Syncing with 0G Network...
-            </span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Unity loading screen
-// ─────────────────────────────────────────────────────────────────────────────
-
-function UnityLoadingScreen({
-  progress,
-  myAgent,
-  opponent,
-  mode,
-}: {
-  progress: number;
-  myAgent: AiArenaAgent | null;
-  opponent: AiArenaAgent | null;
-  mode: string;
-}) {
-  const myColor  = myAgent  ? clanColor(myAgent.clan)  : "#8b6dff";
-  const oppColor = opponent ? clanColor(opponent.clan) : "#06b6d4";
-
-  return (
-    <div className="absolute inset-0 z-20 overflow-hidden">
-      <video
-        src="/videos/SC_2-3.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ opacity: 0.55 }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, rgba(3,7,16,0.55) 0%, rgba(3,7,16,0.45) 50%, rgba(3,7,16,0.75) 100%)", backdropFilter: "blur(2px)" }}
-      />
-
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
-        <div className="text-center">
-          <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
-            🤖 &nbsp;Robowar&nbsp; ⚙️
-          </div>
-          <div className="font-display text-3xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)] sm:text-4xl">
-            AI ARENA
-          </div>
-        </div>
-
-        <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
-          <AgentLoadingCard agent={myAgent} side="left" />
-
-          <div className="flex flex-col items-center gap-2 shrink-0">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
-              style={{
-                background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
-                boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
-              }}
-            >
-              <Swords className="h-5 w-5 text-primary sm:h-7 sm:w-7" />
-            </div>
-            <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
-            <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
-              {mode}
-            </span>
-          </div>
-
-          <AgentLoadingCard agent={opponent} side="right" />
-        </div>
-
-        <div className="w-[420px] max-w-[90vw]">
-          <div className="flex justify-between font-tech text-[10px] text-white/40 mb-2 uppercase tracking-wider">
-            <span>{progress < 100 ? "Loading the crush pit…" : "Launching…"}</span>
-            <span className="font-mono">{progress}%</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <div
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={{
-                width: `${progress}%`,
-                background: `linear-gradient(90deg, ${myColor}, #8b5cf6 50%, ${oppColor})`,
-                boxShadow: progress > 0 ? "0 0 14px rgba(139,92,246,0.8)" : "none",
-              }}
-            />
-          </div>
-          <p className="text-center font-mono text-[9px] text-white/25 mt-2">
-            {progress === 0
-              ? "Connecting to 0G network…"
-              : `Loading the crush pit — ${progress}%`}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // AgentCard
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -499,8 +250,8 @@ function AgentCard({
         <ArenaAgentThumbnail agent={agent} className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15" />
         {isWinner && (
           <Crown className="absolute -top-2 -right-2 h-4 w-4 drop-shadow-lg" style={{ color: "#fbbf24" }} />
-          )}
-        </div>
+        )}
+      </div>
 
       <div className={`min-w-0 ${isRight ? "text-right" : "text-left"}`}>
         <div className="font-display text-sm sm:text-lg font-bold leading-tight truncate max-w-[88px] sm:max-w-[160px]">
@@ -625,10 +376,10 @@ function ResultCard({
   opponent: AiArenaAgent | null;
   onShareMoment?: () => void;
 }) {
-  const winner     = result.winnerId === myAgent?.id ? myAgent : result.winnerId === opponent?.id ? opponent : null;
-  const loser      = result.loserId  === myAgent?.id ? myAgent : result.loserId  === opponent?.id ? opponent : null;
-  const iWon       = result.winnerId === myAgentId;
-  const zgLink     = battle.id ? `https://storagescan.0g.ai/tx/${battle.id}` : null;
+  const winner      = result.winnerId === myAgent?.id ? myAgent : result.winnerId === opponent?.id ? opponent : null;
+  const loser       = result.loserId  === myAgent?.id ? myAgent : result.loserId  === opponent?.id ? opponent : null;
+  const iWon        = result.winnerId === myAgentId;
+  const zgLink      = battle.id ? `https://storagescan.0g.ai/tx/${battle.id}` : null;
   const winnerColor = winner ? clanColor(winner.clan) : "#fbbf24";
   const loserColor  = loser  ? clanColor(loser.clan)  : "#6b7280";
 
@@ -641,7 +392,7 @@ function ResultCard({
         <Trophy className="h-3.5 w-3.5 shrink-0" style={{ color: winnerColor }} />
         <span className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: winnerColor }}>
           {iWon ? "VICTORY" : "DEFEAT"}
-          </span>
+        </span>
         <span className="ml-auto font-mono text-[9px] text-white/25">{shortId(battle.id)}</span>
       </div>
 
@@ -703,8 +454,8 @@ function ResultCard({
         ) : (
           <span className="text-[9px] font-mono text-white/20">Stored on 0G</span>
         )}
-          <button
-            type="button"
+        <button
+          type="button"
           onClick={onShareMoment}
           disabled={!onShareMoment}
           className={`ml-auto flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-tech uppercase tracking-wider transition ${
@@ -715,9 +466,9 @@ function ResultCard({
         >
           <Share2 className="h-2.5 w-2.5" />
           Kult Moment
-          </button>
-        </div>
+        </button>
       </div>
+    </div>
   );
 }
 
@@ -928,7 +679,9 @@ function BattleResultOverlay({
               <div className="flex items-center gap-1.5 font-mono text-[9px]">
                 <Bot className="h-3 w-3 text-yellow-400/60 shrink-0" />
                 <span className="text-white/30">HP Remaining</span>
-                <span className="ml-auto font-bold text-yellow-400">{result.winnerHp}%</span>
+                <span className="ml-auto font-bold text-yellow-400">
+                  {result.winnerHp > 0 ? `${result.winnerHp}%` : "—"}
+                </span>
               </div>
             </div>
           </div>
@@ -949,7 +702,7 @@ function BattleResultOverlay({
               <div className="flex items-center gap-1.5 font-mono text-[9px]">
                 <Bot className="h-3 w-3 text-white/20 shrink-0" />
                 <span className="text-white/30">HP Remaining</span>
-                <span className="ml-auto text-white/30">{result.loserHp}%</span>
+                <span className="ml-auto text-white/30">0%</span>
               </div>
             </div>
           </div>
@@ -1040,26 +793,18 @@ export default function RobowarGamePage() {
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMsg[]>([
-    { id: uid(), kind: "system", text: "Arena lobby opened. Loading the crush pit…", ts: new Date() },
+    { id: uid(), kind: "system", text: "Arena lobby opened. Preparing the crush pit…", ts: new Date() },
   ]);
-  const [chatInput, setChatInput]         = useState("");
-  const [gamePhase, setGamePhase]         = useState<GamePhase>("live");
-  const [observerCount]                   = useState(() => Math.floor(Math.random() * 80) + 12);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [unityLoaded, setUnityLoaded]     = useState(false);
-  const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
-  const [battleResult, setBattleResult]   = useState<RobowarDuelResult | null>(null);
+  const [chatInput, setChatInput]       = useState("");
+  const [gamePhase, setGamePhase]       = useState<GamePhase>("live");
+  const [observerCount]                 = useState(() => Math.floor(Math.random() * 80) + 12);
+  const [battleResult, setBattleResult] = useState<RobowarDuelResult | null>(null);
   const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
-  const [showPreMatch, setShowPreMatch]   = useState(false);
-  const [preMatchCountdown, setPreMatchCountdown] = useState(PRE_MATCH_DURATION);
 
-  const canvasRef        = useRef<HTMLCanvasElement>(null);
-  const unityInstanceRef = useRef<any>(null);
-  const unityLoadingRef  = useRef(false);
-  const prevStatusRef    = useRef<string | null>(null);
-  const resultPostedRef  = useRef(false);
-  const chatEndRef       = useRef<HTMLDivElement>(null);
+  const prevStatusRef   = useRef<string | null>(null);
+  const resultPostedRef = useRef(false);
+  const chatEndRef      = useRef<HTMLDivElement>(null);
 
   // ── Queries ───────────────────────────────────────────────────────────────
 
@@ -1099,184 +844,41 @@ export default function RobowarGamePage() {
   const myAgent  = myAgentQ.data ?? null;
   const opponent = opponentQ.data ?? null;
 
-  // ── Unity loading ─────────────────────────────────────────────────────────
+  // ── Launcher state machine ────────────────────────────────────────────────
 
-  const diagnoseBuildFiles = async (buildUrl: string): Promise<'ok' | 'cors' | 'not-found'> => {
-    const testUrl = `${buildUrl}/HighwayHustle.data`;
-    try {
-      const res = await fetch(testUrl, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
-      if (res.ok || res.status === 206) return 'ok';
-      return 'not-found';
-    } catch (_corsErr) {
-      try {
-        await fetch(testUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
-        return 'cors';
-      } catch (_netErr) {
-        return 'not-found';
-      }
-    }
-  };
+  const { phase: launcherPhase, errorMessage, launch, retry } = useLauncherBattle({
+    battleId:     battleId ?? "",
+    agentAId:     myAgentId ?? "",
+    agentBId:     resolvedOpponentId ?? "",
+    battleStatus: battle?.status,
+    onComplete:   () => {
+      // Phase transitions to "complete" — result handling picks up from the
+      // status transition effect below.
+    },
+  });
 
-  const unityShowBanner = (msg: string, type: 'error' | 'warning' | string) => {
-    console.log(`[RW ${type}]`, msg);
-    if (type === 'warning') console.warn('[RW warning]', msg);
-  };
+  // ── Post-battle API calls (shared between launcher and any future Unity path)
+  const triggerPostBattleApis = useCallback(
+    async (
+      duelResult: RobowarDuelResult,
+      winnerAgent: AiArenaAgent | null,
+      loserAgent: AiArenaAgent | null,
+    ) => {
+      const bid = duelResult.battleId;
 
-  useEffect(() => {
-    if (!battleId || !UNITY_BASE_URL) return;
-    if (myAgentQ.isLoading || opponentQ.isLoading) return;
-    if (unityLoadingRef.current || !canvasRef.current) return;
-
-    unityLoadingRef.current = true;
-
-    // Write duel payload for Unity SessionBootstrap
-    const rwPayload = {
-      battleId,
-      botAId:   myAgentId           ?? '',
-      botAName: myAgent?.name        ?? '',
-      botAElo:  myAgent?.eloRating   ?? 1000,
-      botBId:   resolvedOpponentId   ?? '',
-      botBName: opponent?.name       ?? '',
-      botBElo:  opponent?.eloRating  ?? 1000,
-      mode,
-    };
-    localStorage.setItem('robowarPayload', JSON.stringify(rwPayload));
-
-    const buildUrl = `${UNITY_BASE_URL}/Arena3`;
-
-    const script = document.createElement("script");
-    script.src   = `${buildUrl}/HighwayHustle.loader.js`;
-
-    script.onload = async () => {
-      if (!canvasRef.current) return;
-
-      if (typeof (window as any).createUnityInstance !== 'function') {
-        console.error("[RW] createUnityInstance not found after loader script");
-        unityLoadingRef.current = false;
-        return;
-      }
-
-      const diagnosis = await diagnoseBuildFiles(buildUrl);
-      if (diagnosis === 'cors') {
-        setUnityLoadError('cors');
-        unityLoadingRef.current = false;
-        return;
-      }
-      if (diagnosis === 'not-found') {
-        setUnityLoadError('not-found');
-        unityLoadingRef.current = false;
-        return;
-      }
-
-      const stuckTimer = setTimeout(() => {
-        if (!unityInstanceRef.current) {
-          console.warn("[RW] Unity stuck at 0% — R2 rate-limit stall.");
-          setUnityLoadError('slow');
-        }
-      }, 90_000);
-
-      try {
-        const instance = await (window as any).createUnityInstance(
-          canvasRef.current,
-          {
-            arguments: [],
-            dataUrl:            `${buildUrl}/HighwayHustle.data`,
-            frameworkUrl:       `${buildUrl}/HighwayHustle.framework.js`,
-            codeUrl:            `${buildUrl}/HighwayHustle.wasm`,
-            streamingAssetsUrl: "StreamingAssets",
-            companyName:        "Kult Games",
-            productName:        "HighwayHustle",
-            productVersion:     "1.0",
-            matchWebGLToCanvasSize: false,
-            devicePixelRatio:   1,
-            showBanner:         unityShowBanner,
-          },
-          (progress: number) => {
-            setLoadingProgress(Math.round(progress * 100));
-          }
-        );
-
-        clearTimeout(stuckTimer);
-        unityInstanceRef.current = instance;
-        setUnityLoaded(true);
-
-        setTimeout(() => {
-          try {
-            instance.SendMessage("GameManager", "SetBattleId", battleId ?? '');
-            console.log("[RW] ✅ battleId sent to Unity");
-          } catch (err) {
-            console.warn("[RW] SendMessage failed:", err);
-          }
-        }, 1500);
-
-      } catch (err) {
-        clearTimeout(stuckTimer);
-        console.error("[RW] createUnityInstance failed:", err);
-        unityLoadingRef.current = false;
-      }
-    };
-
-    script.onerror = () => {
-      console.error("[RW] Failed to load loader from:", script.src);
-      unityLoadingRef.current = false;
-    };
-
-    document.body.appendChild(script);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [battleId, myAgentQ.isLoading, opponentQ.isLoading]);
-
-  useEffect(() => {
-    return () => {
-      if (unityInstanceRef.current) {
-        unityInstanceRef.current.Quit?.().catch(() => {});
-        unityInstanceRef.current = null;
-      }
-      localStorage.removeItem('robowarPayload');
-    };
-  }, []);
-
-  // ── Listen for robowarDuelEnd ─────────────────────────────────────────────
-  useEffect(() => {
-    const handler = async (e: Event) => {
-      const detail = (e as CustomEvent<RobowarDuelResult>).detail;
-      if (!detail || typeof detail !== "object") return;
-
-      setBattleResult(detail);
-      setGamePhase("ended");
-
-      const bid = detail.battleId;
-      if (!bid) {
-        console.warn("[RW] robowarDuelEnd — no battleId in payload, skipping API calls.");
-        return;
-      }
-
-      // 1. End battle
-      try {
-        await aiArenaGatewayApi.endBattle(bid, {
-          winnerId: detail.winnerId,
-          loserId:  detail.loserId,
-          playerStats: {
-            [detail.winnerId]: { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0 },
-            [detail.loserId]:  { jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0 },
-          },
-        });
-        console.log("[RW] ✅ endBattle submitted for:", bid);
-      } catch (err) {
-        console.warn("[RW] endBattle API failed (may already be ended):", err);
-      }
-
-      // 2. Trait evolution (fire-and-forget)
+      // 1. Trait evolution (fire-and-forget)
       void (async () => {
         try {
-          if (detail.winnerId) {
-            await aiArenaGatewayApi.evolveAgentTraits(detail.winnerId, {
-              outcome: "WIN", jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0, durationSeconds: 0,
+          if (duelResult.winnerId) {
+            await aiArenaGatewayApi.evolveAgentTraits(duelResult.winnerId, {
+              outcome: "WIN", jumps: 0, shotsAttempted: 0, shotsConnected: 0,
+              timesHit: 0, distanceCovered: 0, durationSeconds: 0,
             });
           }
-          if (detail.loserId) {
-            await aiArenaGatewayApi.evolveAgentTraits(detail.loserId, {
-              outcome: "LOSS", jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0, durationSeconds: 0,
+          if (duelResult.loserId) {
+            await aiArenaGatewayApi.evolveAgentTraits(duelResult.loserId, {
+              outcome: "LOSS", jumps: 0, shotsAttempted: 0, shotsConnected: 0,
+              timesHit: 0, distanceCovered: 0, durationSeconds: 0,
             });
           }
         } catch (err) {
@@ -1284,17 +886,19 @@ export default function RobowarGamePage() {
         }
       })();
 
-      // 3. Training trigger (fire-and-forget)
+      // 2. Training trigger (fire-and-forget)
       void (async () => {
         try {
-          if (detail.winnerId) {
-            await aiArenaGatewayApi.triggerTrainingFromBattle(detail.winnerId, {
-              jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0, outcome: "WIN", durationSeconds: 0,
+          if (duelResult.winnerId) {
+            await aiArenaGatewayApi.triggerTrainingFromBattle(duelResult.winnerId, {
+              jumps: 0, shotsAttempted: 0, shotsConnected: 0,
+              timesHit: 0, distanceCovered: 0, outcome: "WIN", durationSeconds: 0,
             });
           }
-          if (detail.loserId) {
-            await aiArenaGatewayApi.triggerTrainingFromBattle(detail.loserId, {
-              jumps: 0, shotsAttempted: 0, shotsConnected: 0, timesHit: 0, distanceCovered: 0, outcome: "LOSS", durationSeconds: 0,
+          if (duelResult.loserId) {
+            await aiArenaGatewayApi.triggerTrainingFromBattle(duelResult.loserId, {
+              jumps: 0, shotsAttempted: 0, shotsConnected: 0,
+              timesHit: 0, distanceCovered: 0, outcome: "LOSS", durationSeconds: 0,
             });
           }
         } catch (err) {
@@ -1302,24 +906,21 @@ export default function RobowarGamePage() {
         }
       })();
 
-      // 4. 0G Compute commentary
-      const winnerAgent = detail.winnerId === myAgentId ? myAgent : opponent;
-      const loserAgent  = detail.loserId  === myAgentId ? myAgent : opponent;
-
+      // 3. 0G Compute commentary
       let commentary = "";
       try {
         const res = await aiArenaGatewayApi.generateBattleCommentary({
           battleId:        bid,
-          winnerName:      detail.winnerName,
+          winnerName:      duelResult.winnerName,
           winnerArchetype: winnerAgent?.archetype ?? "",
           winnerClan:      winnerAgent?.clan      ?? "",
           winnerElo:       winnerAgent?.eloRating ?? 0,
-          winnerHpPercent: detail.winnerHp,
-          loserName:       detail.loserName,
+          winnerHpPercent: duelResult.winnerHp,
+          loserName:       duelResult.loserName,
           loserArchetype:  loserAgent?.archetype  ?? "",
           loserClan:       loserAgent?.clan       ?? "",
           loserElo:        loserAgent?.eloRating  ?? 0,
-          loserHpPercent:  detail.loserHp,
+          loserHpPercent:  0,
           durationSeconds: 0,
           endReason:       "robowar-battle-end",
           gameName:        "Robowar",
@@ -1333,52 +934,88 @@ export default function RobowarGamePage() {
         console.warn("[RW] Commentary generation failed:", err);
       }
 
-      // 5. Store battle memory on 0G Storage
+      // 4. Store battle memory on 0G Storage
       const memContent = commentary ||
-        `${detail.winnerName} won with ${detail.winnerHp}% HP; ${detail.loserName} was destroyed.`;
+        `${duelResult.winnerName} won the Robowar duel; ${duelResult.loserName} was destroyed.`;
       const hashes: string[] = [];
 
-      if (detail.winnerId) {
+      if (duelResult.winnerId) {
         try {
-          const r = await aiArenaGatewayApi.storeBattleMemory(detail.winnerId, { battleId: bid, outcome: "WIN", content: memContent });
+          const r = await aiArenaGatewayApi.storeBattleMemory(duelResult.winnerId, {
+            battleId: bid, outcome: "WIN", content: memContent,
+          });
           if (r.snapshotRootHash) hashes.push(r.snapshotRootHash);
         } catch (err) {
           console.warn("[RW] Winner memory storage failed:", err);
         }
       }
-      if (detail.loserId) {
+      if (duelResult.loserId) {
         try {
-          const r = await aiArenaGatewayApi.storeBattleMemory(detail.loserId, { battleId: bid, outcome: "LOSS", content: memContent });
+          const r = await aiArenaGatewayApi.storeBattleMemory(duelResult.loserId, {
+            battleId: bid, outcome: "LOSS", content: memContent,
+          });
           if (r.snapshotRootHash) hashes.push(r.snapshotRootHash);
         } catch (err) {
           console.warn("[RW] Loser memory storage failed:", err);
         }
       }
       if (hashes.length) setMemoryRootHashes(hashes);
-    };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-    window.addEventListener("robowarDuelEnd", handler);
-    return () => window.removeEventListener("robowarDuelEnd", handler);
+  // ── Battle status transitions ─────────────────────────────────────────────
+  useEffect(() => {
+    const status = battle?.status ?? null;
+    if (status === prevStatusRef.current) return;
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = status;
+    if (!status) return;
+
+    if ((status === "PENDING" || status === "INITIALIZING") && prev === null)
+      addSystem("⏳  Battle created — waiting for the launcher…");
+    if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS")
+      addSystem("🤖  Bots are LIVE! Battle has begun.");
+    if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {
+      resultPostedRef.current = true;
+      setGamePhase("ended");
+      addSystem("🏆  Battle concluded. Final results below.");
+      addResult(battle.result, battle);
+
+      // Build a RobowarDuelResult from the polling payload and show the overlay.
+      // The launcher POSTs endBattle directly to the backend so we skip that call here.
+      if (!battleResult) {
+        const r = battle.result;
+        const winnerAgent = r.winnerId === myAgentId ? myAgent : opponent;
+        const loserAgent  = r.loserId  === myAgentId ? myAgent : opponent;
+        const duelResult: RobowarDuelResult = {
+          battleId:   battleId ?? "",
+          winnerId:   r.winnerId ?? "",
+          winnerName: winnerAgent?.name ?? r.winnerId ?? "",
+          winnerHp:   0, // HP not stored in standard battle result; launcher can extend this
+          loserId:    r.loserId  ?? "",
+          loserName:  loserAgent?.name  ?? r.loserId  ?? "",
+          loserHp:    0,
+        };
+        setBattleResult(duelResult);
+        void triggerPostBattleApis(duelResult, winnerAgent, loserAgent);
+      }
+    }
+    if (status === "CANCELLED") {
+      setGamePhase("ended");
+      addSystem("❌  Battle was cancelled.");
+    }
+    if (status === "DISPUTED") {
+      setGamePhase("ended");
+      addSystem("⚠️  Battle result is disputed — under review.");
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Pre-match overlay ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!unityLoaded) return;
-    setPreMatchCountdown(PRE_MATCH_DURATION);
-    setShowPreMatch(true);
-  }, [unityLoaded]);
+  }, [battle?.status]);
 
   useEffect(() => {
-    if (!showPreMatch || preMatchCountdown <= 0) return;
-    const t = setTimeout(() => {
-      setPreMatchCountdown((c) => {
-        if (c <= 1) { setShowPreMatch(false); return 0; }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [showPreMatch, preMatchCountdown]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -1401,42 +1038,9 @@ export default function RobowarGamePage() {
     [myAgentId, myAgent, opponent]
   );
 
-  // ── Battle status transitions ─────────────────────────────────────────────
-  useEffect(() => {
-    const status = battle?.status ?? null;
-    if (status === prevStatusRef.current) return;
-    const prev = prevStatusRef.current;
-    prevStatusRef.current = status;
-    if (!status) return;
-
-    if ((status === "PENDING" || status === "INITIALIZING") && prev === null)
-      addSystem("⏳  Battle created — loading the crush pit…");
-    if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS")
-      addSystem("🤖  Bots are LIVE! Battle has begun.");
-    if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {
-      resultPostedRef.current = true;
-      setGamePhase("ended");
-      addSystem("🏆  Battle concluded. Final results below.");
-      addResult(battle.result, battle);
-    }
-    if (status === "CANCELLED") {
-      setGamePhase("ended");
-      addSystem("❌  Battle was cancelled.");
-    }
-    if (status === "DISPUTED") {
-      setGamePhase("ended");
-      addSystem("⚠️  Battle result is disputed — under review.");
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [battle?.status]);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   // ── Derived ───────────────────────────────────────────────────────────────
 
-  const isError   = battleQ.isError;
+  const isError           = battleQ.isError;
   const isBattleComplete  = Boolean((battle?.status === "COMPLETED" && battle?.result) || battleResult);
   const canShareMoment    = Boolean(battleId && myAgentId && isBattleComplete);
   const shareMomentHandler = canShareMoment ? navigateToTrashTalkMoment : undefined;
@@ -1466,18 +1070,18 @@ export default function RobowarGamePage() {
             <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
               <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
               LIVE
-          </span>
+            </span>
           )}
           {gamePhase === "ended" && (
             <span className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/40">
               ENDED
-          </span>
+            </span>
           )}
-      </div>
+        </div>
 
         <div className="flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">{mode}</span>
-          {canShareMoment ? (
+          {canShareMoment && (
             <button
               type="button"
               onClick={navigateToTrashTalkMoment}
@@ -1486,10 +1090,10 @@ export default function RobowarGamePage() {
               <Share2 className="h-3 w-3" />
               Kult Moment
             </button>
-          ) : null}
+          )}
           {battleQ.isFetching && <Loader2 className="h-3 w-3 animate-spin text-white/25" />}
-          </div>
-            </div>
+        </div>
+      </div>
 
       {/* Agent VS Banner */}
       <div data-tour="robowar-agents">
@@ -1500,113 +1104,120 @@ export default function RobowarGamePage() {
           gamePhase={gamePhase}
           mode={mode}
         />
-        </div>
+      </div>
 
-      {/* Main: Canvas + Chat */}
+      {/* Main: Launcher area + Chat */}
       <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
 
-        {/* Canvas area */}
-        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="robowar-canvas">
+        {/* Launcher canvas area */}
+        <div
+          className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1"
+          data-tour="robowar-canvas"
+        >
 
+          {/* ── Battle API error ── */}
           {isError && (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-                <button onClick={() => battleQ.refetch()} className="font-tech text-xs text-primary hover:text-primary/80 underline">
+                <button
+                  onClick={() => battleQ.refetch()}
+                  className="font-tech text-xs text-primary hover:text-primary/80 underline"
+                >
                   Retry
                 </button>
-          </div>
-        </div>
-          )}
-
-          {!isError && !UNITY_BASE_URL && (
-            <div className="flex h-full items-center justify-center px-4">
-              <div className="text-center">
-                <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
-                  Robowar Build URL not configured
-                </p>
-                <p className="font-mono text-[9px] text-white/20 mt-1">
-                  Set VITE_UNITY_BUILD_URL in .env to load the game
-                </p>
-          </div>
+              </div>
             </div>
           )}
 
-          {!isError && UNITY_BASE_URL && (
-            <div className="absolute inset-0">
-              <canvas
-                ref={canvasRef}
-                id="unity-canvas"
-                width={1280}
-                height={720}
-                style={{ width: "100%", height: "100%", display: "block", background: "#030710" }}
-              />
-
-              {!unityLoaded && !unityLoadError && (
-                <UnityLoadingScreen progress={loadingProgress} myAgent={myAgent} opponent={opponent} mode={mode} />
-              )}
-
-              {showPreMatch && !battleResult && (
-                <PreMatchOverlay myAgent={myAgent} opponent={opponent} mode={mode} countdown={preMatchCountdown} />
-              )}
-
-              {unityLoadError && (
-                <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#030710]/95 p-6">
-                  <div className={`w-full max-w-md rounded-2xl border bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)] ${unityLoadError === 'slow' ? 'border-yellow-500/30' : 'border-red-500/30'}`}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">{unityLoadError === 'slow' ? '⏳' : '⚠️'}</span>
-                      <span className={`font-display text-base font-bold uppercase tracking-wider ${unityLoadError === 'slow' ? 'text-yellow-400' : 'text-red-400'}`}>
-                        {unityLoadError === 'slow' ? 'Loading Slow' : unityLoadError === 'cors' ? 'CORS Blocked' : 'Files Not Found'}
-                      </span>
-                </div>
-                    {unityLoadError === 'slow' ? (
-                      <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
-                        The game is taking too long to start — the server may be under load.
-                        Click Retry to try again (usually loads on the 2nd or 3rd attempt).
-                      </p>
-                    ) : unityLoadError === 'cors' ? (
-                      <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
-                        Build files exist but the browser is blocking cross-origin requests.
-                        Add a CORS rule to your Cloudflare R2 bucket (AllowedOrigins: ["*"], Methods: GET/HEAD).
-                      </p>
-                    ) : (
-                      <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-3">
-                        Build files not reachable at: {UNITY_BASE_URL}/Arena3/Robowar.data
-                      </p>
-                    )}
-            <button
-              type="button"
-                      onClick={() => { setUnityLoadError(null); unityLoadingRef.current = false; window.location.reload(); }}
-                      className="mt-2 w-full rounded-xl border border-primary/40 bg-primary/15 py-2 font-tech text-[11px] uppercase tracking-wider text-primary hover:bg-primary/25 transition"
-            >
-              Retry
-            </button>
-          </div>
-          </div>
-              )}
-
-              {battleResult && (
-                <BattleResultOverlay
-                  result={battleResult}
-                  myAgentId={myAgentId}
-                  commentary={battleCommentary}
-                  storageHashes={memoryRootHashes}
-                  onHome={() => navigate(-1)}
-                  onShareMoment={shareMomentHandler}
+          {/* ── Launcher phases (shown when no battle API error) ── */}
+          {!isError && (
+            <>
+              {/* Phase: idle — pre-match landing with Download + Launch */}
+              {(launcherPhase === "idle" || launcherPhase === "launching") && (
+                <LauncherPreMatchView
+                  myAgent={myAgent}
+                  opponent={opponent}
+                  mode={mode}
+                  onLaunch={launch}
+                  isLaunching={launcherPhase === "launching"}
                 />
               )}
 
-              {gamePhase === "live" && !unityLoadError && (
+              {/* Phase: not_installed — install prompt */}
+              {launcherPhase === "not_installed" && (
+                <>
+                  {/* Keep pre-match visible as background */}
+                  <LauncherPreMatchView
+                    myAgent={myAgent}
+                    opponent={opponent}
+                    mode={mode}
+                    onLaunch={launch}
+                    isLaunching={false}
+                  />
+                  <LauncherNotInstalledModal onRetry={retry} />
+                </>
+              )}
+
+              {/* Phase: waiting — animated progress stepper */}
+              {launcherPhase === "waiting" && (
+                <LauncherWaitingScreen
+                  battleStatus={battle?.status}
+                  battleId={battleId}
+                />
+              )}
+
+              {/* Phase: complete — result overlay */}
+              {(launcherPhase === "complete" || battleResult) && (
+                <>
+                  {/* Keep waiting screen as backdrop */}
+                  <LauncherWaitingScreen
+                    battleStatus={battle?.status}
+                    battleId={battleId}
+                  />
+                  {battleResult && (
+                    <BattleResultOverlay
+                      result={battleResult}
+                      myAgentId={myAgentId}
+                      commentary={battleCommentary}
+                      storageHashes={memoryRootHashes}
+                      onHome={() => navigate(-1)}
+                      onShareMoment={shareMomentHandler}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* Phase: error / timeout / cancelled */}
+              {(launcherPhase === "error" ||
+                launcherPhase === "timeout" ||
+                launcherPhase === "cancelled") && (
+                <>
+                  <LauncherWaitingScreen
+                    battleStatus={battle?.status}
+                    battleId={battleId}
+                  />
+                  <LauncherErrorView
+                    phase={launcherPhase}
+                    errorMessage={errorMessage}
+                    onRetry={retry}
+                    onHome={() => navigate(-1)}
+                  />
+                </>
+              )}
+
+              {/* Status footer (shown while waiting, fades once complete) */}
+              {launcherPhase === "waiting" && (
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
                   <div className="flex items-center gap-1.5 rounded-full border border-white/8 bg-black/50 px-3 py-1 backdrop-blur">
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
-                      {unityLoaded ? `robowar · ${shortId(battleId)}` : `loading · ${loadingProgress}%`}
-                </span>
-            </div>
-          </div>
-        )}
-            </div>
+                      {`robowar · ${shortId(battleId)} · ${battle?.status ?? "—"}`}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
