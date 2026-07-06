@@ -35,12 +35,7 @@ import { ClanIcon } from "@/components/arena/ClanIcon";
 import { useArenaAgentsList } from "@/hooks/useArenaAgentsList";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
-import tacticianPortrait from "@/assets/tactician.mp4";
-import assassinPortrait from "@/assets/assassin.gif";
-import berserkerPortrait from "@/assets/berserker.mp4";
-import defenderPortrait from "@/assets/defender.mp4";
-import hybridPortrait from "@/assets/hybrid.mp4";
-import supportPortrait from "@/assets/support.mp4";
+import { clanTypeFromAgent, resolveAgentImage } from "@/lib/agentPortrait";
 
 const sortOptions = ["Recently Used", "Level", "Win Rate", "Power Score"] as const;
 
@@ -54,14 +49,6 @@ const STAGE_ORDER = [
   "MASTER",
   "LEGENDARY",
 ] as const;
-
-function clanTypeFromAgent(agent: AiArenaAgent): "zerog" | "solana" | "base" | "okx" {
-  const clan = agent.clan?.toUpperCase();
-  if (clan === "SOLANA") return "solana";
-  if (clan === "BASE") return "base";
-  if (clan === "OKX") return "okx";
-  return "zerog";
-}
 
 function clanLabel(clan?: string) {
   const normalized = clan?.trim().toUpperCase();
@@ -104,21 +91,6 @@ function progressFromAgent(agent: AiArenaAgent) {
     return Math.max(12, Math.min(100, Math.round((agent.wins / battles) * 100)));
   }
   return Math.max(12, Math.min(100, Math.round(agent.eloRating / 25)));
-}
-
-function resolveAgentImage(agent: AiArenaAgent, index: number) {
-  const archetype = agent.archetype?.toUpperCase();
-  if (archetype?.includes("ASSASSIN")) return assassinPortrait;
-  if (archetype?.includes("TACTICIAN")) return tacticianPortrait;
-  if (archetype?.includes("DEFENDER")) return defenderPortrait;
-  if (archetype?.includes("BERSERKER")) return berserkerPortrait;
-  if (archetype?.includes("SUPPORT")) return supportPortrait;
-  if (archetype?.includes("HYBRID")) return hybridPortrait;
-
-  const byClan = clanTypeFromAgent(agent);
-  if (byClan === "solana") return index % 2 === 0 ? tacticianPortrait : supportPortrait;
-  if (byClan === "base") return index % 2 === 0 ? defenderPortrait : berserkerPortrait;
-  return index % 2 === 0 ? assassinPortrait : hybridPortrait;
 }
 
 function sortAgents(agents: AiArenaAgent[], sortBy: string) {
