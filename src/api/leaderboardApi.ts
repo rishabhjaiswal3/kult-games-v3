@@ -11,6 +11,7 @@ function normalizeLeaderboardEntry(rawValue: unknown, index: number): Leaderboar
     wallet_address: wallet,
     name: pickString(raw.name, raw.username),
     score: pickNumber(raw.score) ?? 0,
+    kultPoints: pickNumber(raw.kultPoints, raw.kult_points),
     wins: pickNumber(raw.wins),
     level:
       raw.level == null

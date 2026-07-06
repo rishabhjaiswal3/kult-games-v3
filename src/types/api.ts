@@ -211,6 +211,7 @@ export interface LeaderboardEntry {
   wallet_address: string;
   name?: string;
   score: number;
+  kultPoints?: number;
   wins?: number;
   level?: string;
   game?: string;

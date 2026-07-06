@@ -26,11 +26,13 @@ function PodiumCard({
   slot,
   pointLabel,
   showLeagueBadge,
+  showKultScoreColumns,
 }: {
   player: DisplayPlayer;
   slot: PodiumSlot;
   pointLabel: string;
   showLeagueBadge: boolean;
+  showKultScoreColumns?: boolean;
 }) {
   const styles =
     slot === "first"
@@ -104,10 +106,22 @@ function PodiumCard({
       </div>
 
       <div className="relative z-10 mt-2 flex flex-col items-center gap-1">
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
-          <Trophy className="h-4 w-4 text-[#ffc000]" />
-          <span>{player.points} {pointLabel}</span>
-        </div>
+        {showKultScoreColumns ? (
+          <>
+            <div className="text-[11px] font-medium text-white/55">
+              Score <span className="font-semibold text-white/85">{player.score ?? "0"}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
+              <Trophy className="h-4 w-4 text-[#ffc000]" />
+              <span>{player.kultPoints ?? "0"} KP</span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
+            <Trophy className="h-4 w-4 text-[#ffc000]" />
+            <span>{player.points} {pointLabel}</span>
+          </div>
+        )}
         {showLeagueBadge && player.eloRating != null ? (
           <div className="flex items-center gap-1.5">
             <img
@@ -132,10 +146,12 @@ export function LeaderboardPodium({
   top3,
   pointLabel = "PTS",
   showLeagueBadge = true,
+  showKultScoreColumns = false,
 }: {
   top3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null;
   pointLabel?: string;
   showLeagueBadge?: boolean;
+  showKultScoreColumns?: boolean;
 }) {
   if (!top3) return null;
 
@@ -143,9 +159,9 @@ export function LeaderboardPodium({
 
   return (
     <div className="grid items-end gap-4 pt-4 sm:grid-cols-3">
-      <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
-      <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
-      <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} />
+      <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+      <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+      <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
     </div>
   );
 }

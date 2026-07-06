@@ -10,9 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 function TableRowSkeleton({
   showPerformanceColumns,
   showLeagueColumn,
+  showKultScoreColumns,
 }: {
   showPerformanceColumns: boolean;
   showLeagueColumn: boolean;
+  showKultScoreColumns?: boolean;
 }) {
   return (
     <tr aria-hidden>
@@ -31,7 +33,14 @@ function TableRowSkeleton({
           <td className="px-5 py-4 text-center"><Skeleton className="mx-auto h-3 w-6 bg-white/6" /></td>
         </>
       ) : null}
-      <td className="px-5 py-4 text-right"><Skeleton className="ml-auto h-3 w-16 bg-white/8" /></td>
+      {showKultScoreColumns ? (
+        <>
+          <td className="px-5 py-4 text-right"><Skeleton className="ml-auto h-3 w-14 bg-white/8" /></td>
+          <td className="px-5 py-4 text-right"><Skeleton className="ml-auto h-3 w-14 bg-white/8" /></td>
+        </>
+      ) : (
+        <td className="px-5 py-4 text-right"><Skeleton className="ml-auto h-3 w-16 bg-white/8" /></td>
+      )}
       {showLeagueColumn ? (
         <td className="px-3 py-4 text-center"><Skeleton className="mx-auto h-7 w-7 rounded bg-white/8" /></td>
       ) : null}
@@ -56,6 +65,8 @@ type LeaderboardTablePanelProps = {
   pointLabel?: string;
   showPerformanceColumns?: boolean;
   showLeagueColumn?: boolean;
+  /** KULT leaderboard: separate Score + KP columns instead of a single points column. */
+  showKultScoreColumns?: boolean;
 };
 
 function TableRow({
@@ -64,12 +75,14 @@ function TableRow({
   pointLabel,
   showPerformanceColumns,
   showLeagueColumn,
+  showKultScoreColumns,
 }: {
   player: DisplayPlayer;
   highlighted?: boolean;
   pointLabel: string;
   showPerformanceColumns: boolean;
   showLeagueColumn: boolean;
+  showKultScoreColumns?: boolean;
 }) {
   return (
     <tr
@@ -118,9 +131,20 @@ function TableRow({
           <td className="px-5 py-4 text-center">{player.battles ?? "—"}</td>
         </>
       ) : null}
-      <td className={`px-5 py-4 text-right font-semibold ${highlighted ? "font-bold text-[#d6acff]" : ""}`}>
-        {player.points} {pointLabel}
-      </td>
+      {showKultScoreColumns ? (
+        <>
+          <td className={`px-5 py-4 text-right font-semibold ${highlighted ? "font-bold text-[#d6acff]" : ""}`}>
+            {player.score ?? "0"}
+          </td>
+          <td className={`px-5 py-4 text-right font-semibold ${highlighted ? "font-bold text-[#d6acff]" : ""}`}>
+            {player.kultPoints ?? "0"} KP
+          </td>
+        </>
+      ) : (
+        <td className={`px-5 py-4 text-right font-semibold ${highlighted ? "font-bold text-[#d6acff]" : ""}`}>
+          {player.points} {pointLabel}
+        </td>
+      )}
       {showLeagueColumn ? (
         <td className="px-3 py-4 text-center">
           {player.eloRating != null ? (
@@ -146,9 +170,14 @@ export function LeaderboardTablePanel({
   pointLabel = "PTS",
   showPerformanceColumns = true,
   showLeagueColumn = true,
+  showKultScoreColumns = false,
 }: LeaderboardTablePanelProps) {
   const showUserGap = userRow && !rows.some((r) => r.wallet === userRow.wallet);
-  const columnCount = 4 + (showPerformanceColumns ? 3 : 0) + (showLeagueColumn ? 1 : 0);
+  const columnCount =
+    4 +
+    (showPerformanceColumns ? 3 : 0) +
+    (showKultScoreColumns ? 2 : 1) +
+    (showLeagueColumn ? 1 : 0);
 
   return (
     <div className="arena-panel relative overflow-hidden border border-white/8">
@@ -173,7 +202,14 @@ export function LeaderboardTablePanel({
                   <th className="px-5 py-4 text-center font-semibold">Battles</th>
                 </>
               ) : null}
-              <th className="px-5 py-4 text-right font-semibold">{pointLabel === "KP" ? "KP" : "Points"}</th>
+              {showKultScoreColumns ? (
+                <>
+                  <th className="px-5 py-4 text-right font-semibold">Score</th>
+                  <th className="px-5 py-4 text-right font-semibold">KP</th>
+                </>
+              ) : (
+                <th className="px-5 py-4 text-right font-semibold">{pointLabel === "KP" ? "KP" : "Points"}</th>
+              )}
               {showLeagueColumn ? (
                 <th className="w-12 px-3 py-4 text-center font-semibold">League</th>
               ) : null}
@@ -186,6 +222,7 @@ export function LeaderboardTablePanel({
                   key={i}
                   showPerformanceColumns={showPerformanceColumns}
                   showLeagueColumn={showLeagueColumn}
+                  showKultScoreColumns={showKultScoreColumns}
                 />
               ))
             ) : rows.length === 0 ? (
@@ -202,6 +239,7 @@ export function LeaderboardTablePanel({
                   pointLabel={pointLabel}
                   showPerformanceColumns={showPerformanceColumns}
                   showLeagueColumn={showLeagueColumn}
+                  showKultScoreColumns={showKultScoreColumns}
                 />
               ))
             )}
@@ -219,6 +257,7 @@ export function LeaderboardTablePanel({
                   pointLabel={pointLabel}
                   showPerformanceColumns={showPerformanceColumns}
                   showLeagueColumn={showLeagueColumn}
+                  showKultScoreColumns={showKultScoreColumns}
                 />
               </>
             ) : null}

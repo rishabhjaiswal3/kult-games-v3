@@ -11,7 +11,12 @@ export type DisplayPlayer = {
   avatar: string;
   clanName: string;
   clanIconType: string;
+  /** Formatted primary points label (arena ELO or KP for podium). */
   points: string;
+  /** Weighted game contribution score. */
+  score?: string;
+  /** Ledger-backed Kult Points. */
+  kultPoints?: string;
   wins?: number;
   winRate?: string;
   battles?: number;
@@ -54,7 +59,9 @@ export function entryToDisplayPlayer(entry: LeaderboardEntry, opts?: { isYou?: b
     avatar: visual.portrait,
     clanName: clan.name,
     clanIconType: clan.type,
-    points: Math.round(entry.score).toLocaleString(),
+    score: Math.round(entry.score).toLocaleString(),
+    kultPoints: Math.round(entry.kultPoints ?? 0).toLocaleString(),
+    points: Math.round(entry.kultPoints ?? 0).toLocaleString(),
     wins,
     winRate,
     battles,

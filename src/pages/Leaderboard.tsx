@@ -80,7 +80,7 @@ const Leaderboard = () => {
   }, [kultRows, kultTableRows, walletAddress]);
   const kultProfile = kultProfileQ.data;
   const kultSidebarRank = kultProfile?.kultPointsRank ?? kultProfile?.rank ?? kultUserRow?.rank;
-  const kultSidebarPoints = kultProfile?.kultPoints ?? kultProfile?.totalScore ?? Number(kultUserRow?.points.replace(/,/g, "") ?? 0);
+  const kultSidebarPoints = kultProfile?.kultPoints ?? Number(kultUserRow?.kultPoints?.replace(/,/g, "") ?? 0);
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
   const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });
@@ -339,7 +339,7 @@ const Leaderboard = () => {
               </div>
             ) : activeMode === "KULT_POINTS" && activeKultTab === "MY RANK" ? (
               <>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {[
                     {
                       label: "KP RANK",
@@ -350,10 +350,16 @@ const Leaderboard = () => {
                           : "UNRANKED",
                     },
                     {
+                      label: "SCORE",
+                      value: kultProfileQ.isLoading
+                        ? null
+                        : (kultProfile?.totalScore ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 }),
+                    },
+                    {
                       label: "KULT POINTS",
                       value: kultProfileQ.isLoading
                         ? null
-                        : (kultProfile?.kultPoints ?? kultProfile?.totalScore ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 }),
+                        : (kultProfile?.kultPoints ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 }),
                     },
                     {
                       label: "GAMES RANKED",
@@ -379,7 +385,7 @@ const Leaderboard = () => {
             ) : activeMode === "KULT_POINTS" ? (
               <>
                 {kultPage === 1 && kultTop3 ? (
-                  <LeaderboardPodium top3={kultTop3} pointLabel="KP" showLeagueBadge={false} />
+                  <LeaderboardPodium top3={kultTop3} pointLabel="KP" showLeagueBadge={false} showKultScoreColumns />
                 ) : null}
 
                 <LeaderboardTablePanel
@@ -392,6 +398,7 @@ const Leaderboard = () => {
                   pointLabel="KP"
                   showPerformanceColumns={false}
                   showLeagueColumn={false}
+                  showKultScoreColumns
                 />
               </>
             ) : activeArenaTab === "MY RANK" && !isAuthenticated ? (
@@ -581,7 +588,7 @@ const Leaderboard = () => {
             }
             aboutText={
               activeMode === "KULT_POINTS"
-                ? "Your KULT Points reflect game contribution from the backend leaderboard, updated from verified activity. No token conversion, cash value, or guaranteed reward is implied."
+                ? "Score reflects weighted game contribution across KULT titles. Kult Points (KP) are ledger-backed balances from verified activity. No token conversion, cash value, or guaranteed reward is implied."
                 : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
             }
           />
