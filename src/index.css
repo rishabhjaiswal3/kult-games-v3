@@ -2750,3 +2750,26 @@ button[aria-label="close modal"]:hover {
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 0 28px color-mix(in srgb, var(--toast-accent) 36%, transparent);
 }
+
+/* Home AI Arena section — tablet-only (md) reflow.
+   Dissolves the desktop 2-column wrapper via display:contents so the
+   heading + subtitle sit full-width on top and the pillars / agent image /
+   live feed line up in a single 3-column row. Mobile and desktop untouched. */
+@media (min-width: 768px) and (max-width: 1189px) {
+  .home-arena-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "head  head  head"
+      "cards image feed"
+      "btn   image feed";
+  }
+  .home-arena-grid > .ha-colA,
+  .home-arena-grid > .ha-colB {
+    display: contents;
+  }
+  .home-arena-grid .ha-head  { grid-area: head;  align-self: start; }
+  .home-arena-grid .ha-cards { grid-area: cards; align-self: start; }
+  .home-arena-grid .ha-btn   { grid-area: btn;   align-self: start; }
+  .home-arena-grid .ha-image { grid-area: image; }
+  .home-arena-grid .ha-feed  { grid-area: feed; }
+}
