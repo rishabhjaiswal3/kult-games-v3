@@ -215,12 +215,12 @@ function AgentLoadingCard({
 const PRE_MATCH_DURATION = 10;
 const ACCENT = "#ffc000";
 const HH_CARS = [
-  "/HighwayHustle/car1.png",
-  "/HighwayHustle/car2.png",
-  "/HighwayHustle/car3.png",
-  "/HighwayHustle/car4.png",
-  "/HighwayHustle/car5.png",
-  "/HighwayHustle/car6.png",
+  "/HighwayHustle/car1.webp",
+  "/HighwayHustle/car2.webp",
+  "/HighwayHustle/car3.webp",
+  "/HighwayHustle/car4.webp",
+  "/HighwayHustle/car5.webp",
+  "/HighwayHustle/car6.webp",
 ];
 
 function PreMatchOverlay({
@@ -250,7 +250,7 @@ function PreMatchOverlay({
     >
       {/* ── Full-bleed background image ── */}
       <img
-        src="/HighwayHustle/bg.png"
+        src="/HighwayHustle/bg.webp"
         alt="Highway"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.9 }}

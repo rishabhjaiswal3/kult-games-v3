@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => ({
             return "vendor-query";
           }
 
-          if (id.includes("framer-motion") || id.includes("/gsap/")) {
+          if (id.includes("framer-motion")) {
             return "vendor-motion";
           }
 

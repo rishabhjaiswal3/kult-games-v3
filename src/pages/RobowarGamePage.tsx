@@ -213,6 +213,260 @@ function AgentLoadingCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Pre-match overlay
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PRE_MATCH_DURATION = 10;
+
+function PreMatchOverlay({
+  myAgent,
+  opponent,
+  mode,
+  countdown,
+}: {
+  myAgent: AiArenaAgent | null;
+  opponent: AiArenaAgent | null;
+  mode: string;
+  countdown: number;
+}) {
+  const pct = Math.max(0, (countdown / PRE_MATCH_DURATION) * 100);
+
+  return (
+    <div
+      className="absolute inset-0 z-50 flex flex-col overflow-hidden"
+      style={{ background: "#080202" }}
+    >
+      {/* Full-bleed background */}
+      <img
+        src="/Robowar/bg.webp"
+        alt="Robowar arena"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0.9 }}
+        draggable={false}
+      />
+
+      {/* Dark tint */}
+      <div className="absolute inset-0" style={{ background: "rgba(8,2,2,0.72)" }} />
+
+      {/* 3-row layout */}
+      <div className="relative z-10 flex h-full flex-col">
+
+        {/* ROW 1: header */}
+        <div
+          className="flex items-center justify-between px-6 py-3 shrink-0"
+          style={{ background: "rgba(8,2,2,0.85)", borderBottom: `2px solid ${ACCENT}` }}
+        >
+          <div className="flex items-center gap-2">
+            <Bot className="h-3.5 w-3.5" style={{ color: ACCENT }} />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold" style={{ color: ACCENT }}>
+              Robowar · {mode}
+            </span>
+          </div>
+          <div className="font-display text-base font-black text-white tracking-widest uppercase">
+            The Crush Pit
+          </div>
+          <div className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>
+            Battle Starting
+          </div>
+        </div>
+
+        {/* ROW 2: fighters */}
+        <div className="flex flex-1 min-h-0 items-stretch">
+
+          {/* Left fighter panel */}
+          <div
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: "linear-gradient(to right, rgba(8,2,2,0.75) 0%, transparent 100%)" }}
+          >
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {myAgent?.name ?? "Agent A"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {myAgent?.archetype ?? "FIGHTER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {myAgent?.eloRating ? `${myAgent.eloRating} ELO` : ""}
+          </span>
+              </div>
+            </div>
+            <img
+              src="/Robowar/bot1.webp"
+              alt="Bot A"
+              className="object-contain object-bottom drop-shadow-2xl"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
+        </div>
+
+          {/* Centre VS */}
+          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
+            <div
+              className="font-display text-5xl font-black"
+              style={{
+                color: "#fff",
+                textShadow: `0 0 40px ${ACCENT}, 0 0 80px ${ACCENT}80`,
+                WebkitTextStroke: `2px ${ACCENT}`,
+              }}
+            >
+              VS
+            </div>
+          </div>
+
+          {/* Right fighter panel */}
+          <div
+            className="flex flex-col items-center justify-end gap-0 flex-1"
+            style={{ background: "linear-gradient(to left, rgba(8,2,2,0.75) 0%, transparent 100%)" }}
+          >
+            <div className="text-center mb-2 px-4">
+              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+                {opponent?.name ?? "Agent B"}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <span className="font-tech text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                  {opponent?.archetype ?? "FIGHTER"}
+                </span>
+                <span className="font-mono text-[10px] text-white/40">
+                  {opponent?.eloRating ? `${opponent.eloRating} ELO` : ""}
+                </span>
+              </div>
+            </div>
+            <img
+              src="/Robowar/bot2.webp"
+              alt="Bot B"
+              className="object-contain object-bottom drop-shadow-2xl -scale-x-100"
+              style={{ maxHeight: "55%", width: "auto" }}
+              draggable={false}
+            />
+      </div>
+
+        </div>
+
+        {/* ROW 3: footer */}
+        <div
+          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
+          style={{ background: "rgba(8,2,2,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
+            🤖 <span className="text-white font-bold">The Crush Pit</span> — last bot standing wins ·
+            Your agent fights based on <span className="font-bold" style={{ color: ACCENT }}>trained behaviour</span> ·
+            Winner earns <span className="text-white font-bold">ARENA rewards</span>
+          </p>
+          <div className="w-full max-w-sm">
+            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+              <div
+                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${pct}%`, background: `linear-gradient(to right, ${ACCENT}, #8b6dff)` }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ background: ACCENT }} />
+            <span className="font-tech text-[10px] uppercase tracking-[0.35em] text-white font-bold">
+              Syncing with 0G Network...
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Unity loading screen
+// ─────────────────────────────────────────────────────────────────────────────
+
+function UnityLoadingScreen({
+  progress,
+  myAgent,
+  opponent,
+  mode,
+}: {
+  progress: number;
+  myAgent: AiArenaAgent | null;
+  opponent: AiArenaAgent | null;
+  mode: string;
+}) {
+  const myColor  = myAgent  ? clanColor(myAgent.clan)  : "#8b6dff";
+  const oppColor = opponent ? clanColor(opponent.clan) : "#06b6d4";
+
+  return (
+    <div className="absolute inset-0 z-20 overflow-hidden">
+      <video
+        src="/videos/SC_2-3.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0.55 }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to bottom, rgba(3,7,16,0.55) 0%, rgba(3,7,16,0.45) 50%, rgba(3,7,16,0.75) 100%)", backdropFilter: "blur(2px)" }}
+      />
+
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
+        <div className="text-center">
+          <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
+            🤖 &nbsp;Robowar&nbsp; ⚙️
+          </div>
+          <div className="font-display text-3xl font-black tracking-[0.1em] text-gradient drop-shadow-[0_0_24px_rgba(139,92,246,0.8)] sm:text-4xl">
+            AI ARENA
+          </div>
+        </div>
+
+        <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
+          <AgentLoadingCard agent={myAgent} side="left" />
+
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
+              style={{
+                background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
+                boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
+              }}
+            >
+              <Swords className="h-5 w-5 text-primary sm:h-7 sm:w-7" />
+            </div>
+            <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
+            <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
+              {mode}
+            </span>
+          </div>
+
+          <AgentLoadingCard agent={opponent} side="right" />
+        </div>
+
+        <div className="w-[420px] max-w-[90vw]">
+          <div className="flex justify-between font-tech text-[10px] text-white/40 mb-2 uppercase tracking-wider">
+            <span>{progress < 100 ? "Loading the crush pit…" : "Launching…"}</span>
+            <span className="font-mono">{progress}%</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-300 ease-out"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(90deg, ${myColor}, #8b5cf6 50%, ${oppColor})`,
+                boxShadow: progress > 0 ? "0 0 14px rgba(139,92,246,0.8)" : "none",
+              }}
+            />
+          </div>
+          <p className="text-center font-mono text-[9px] text-white/25 mt-2">
+            {progress === 0
+              ? "Connecting to 0G network…"
+              : `Loading the crush pit — ${progress}%`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // AgentCard
 // ─────────────────────────────────────────────────────────────────────────────
 

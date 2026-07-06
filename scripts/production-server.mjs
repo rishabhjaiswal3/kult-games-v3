@@ -16,6 +16,8 @@ import { createServer } from "http";
 import { createReadStream, existsSync, readFileSync, statSync } from "fs";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
+import { createGzip, createBrotliCompress, constants as zlibConstants } from "zlib";
+import { pipeline } from "stream";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "../dist");
@@ -57,6 +59,31 @@ const MIME = {
   ".woff": "font/woff",
   ".txt": "text/plain; charset=utf-8",
 };
+
+// Text-ish formats compress well (70-80% smaller); images/video/fonts are
+// already compressed and gzip/brotli would just waste CPU for ~0 gain.
+const COMPRESSIBLE_EXT = new Set([".html", ".js", ".css", ".json", ".svg", ".txt"]);
+
+/**
+ * Vite hashes filenames under /assets/ (e.g. index-B8tud8Y.js), so those can be
+ * cached forever — a new deploy always produces a new filename. Everything else
+ * (favicon, /videos/*, /Warzone/*, /ranks/*, etc.) keeps a stable filename across
+ * deploys, so it only gets a short cache window to avoid serving stale content
+ * after those files are updated.
+ */
+function cacheControlFor(filePath) {
+  if (filePath.startsWith(join(DIST, "assets") + "/")) {
+    return "public, max-age=31536000, immutable";
+  }
+  return "public, max-age=86400";
+}
+
+function pickEncoding(req) {
+  const acceptEncoding = String(req.headers["accept-encoding"] || "");
+  if (/\bbr\b/.test(acceptEncoding)) return "br";
+  if (/\bgzip\b/.test(acceptEncoding)) return "gzip";
+  return null;
+}
 
 function requestOrigin(req) {
   const proto = String(req.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
@@ -116,15 +143,54 @@ function trySendStatic(req, res) {
   }
 
   const ext = extname(filePath);
-  res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-  createReadStream(filePath).pipe(res);
+  const headers = {
+    "Content-Type": MIME[ext] || "application/octet-stream",
+    "Cache-Control": cacheControlFor(filePath),
+  };
+
+  const encoding = COMPRESSIBLE_EXT.has(ext) ? pickEncoding(req) : null;
+  if (!encoding) {
+    res.writeHead(200, headers);
+    createReadStream(filePath).pipe(res);
+    return true;
+  }
+
+  headers["Content-Encoding"] = encoding;
+  headers.Vary = "Accept-Encoding";
+  res.writeHead(200, headers);
+  const compressor =
+    encoding === "br"
+      ? createBrotliCompress({
+          params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5 },
+        })
+      : createGzip();
+  pipeline(createReadStream(filePath), compressor, res, (err) => {
+    if (err) console.error("[production-server] compression stream failed", { filePath, err: String(err) });
+  });
   return true;
 }
 
-function sendSpaIndex(res) {
+function sendSpaIndex(req, res) {
   const indexPath = join(DIST, "index.html");
-  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
-  res.end(readFileSync(indexPath));
+  const html = readFileSync(indexPath);
+  const headers = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" };
+
+  const encoding = pickEncoding(req);
+  if (!encoding) {
+    res.writeHead(200, headers);
+    res.end(html);
+    return;
+  }
+
+  headers["Content-Encoding"] = encoding;
+  headers.Vary = "Accept-Encoding";
+  res.writeHead(200, headers);
+  const compressor =
+    encoding === "br"
+      ? createBrotliCompress({ params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5 } })
+      : createGzip();
+  compressor.end(html);
+  compressor.pipe(res);
 }
 
 createServer((req, res) => {
@@ -175,7 +241,7 @@ createServer((req, res) => {
   if (trySendStatic(req, res)) return;
 
   // ── SPA fallback ──────────────────────────────────────────────────────────────
-  sendSpaIndex(res);
+  sendSpaIndex(req, res);
 }).listen(PORT, () => {
   console.log(`[production-server] listening on :${PORT} (API ${API_ORIGIN})`);
 });

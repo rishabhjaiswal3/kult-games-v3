@@ -511,6 +511,8 @@ export function HomePage() {
                           <img
                             src={image}
                             alt={getGameName(game.name)}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-cover object-top brightness-125 saturate-130 contrast-105 transition duration-500 group-hover:scale-105 group-hover:brightness-135 group-hover:saturate-150"
                           />
                         ) : null}
@@ -594,6 +596,8 @@ function HomeFeaturedExperiencesSection({
                     <img
                       src={card.image}
                       alt={card.title.replaceAll("\n", " ")}
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover object-[68%_center] transition duration-700 group-hover:scale-105 group-hover:brightness-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#060914]/96 via-[#060914]/88 via-45% to-[#060914]/24" />
@@ -788,6 +792,8 @@ function HomeAIArenaSection() {
                 key={activeAgent.name}
                 src={activeAgent.img}
                 alt={activeAgent.name}
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             )}
@@ -1067,6 +1073,8 @@ function HomeMomentsSection() {
                       <img
                         src={moment.assetUrl}
                         alt={moment.title}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     )

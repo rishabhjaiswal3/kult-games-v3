@@ -233,9 +233,9 @@ function AgentLoadingCard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MAP_META: Record<string, { bg: string; name: string; accentColor: string }> = {
-  "1": { bg: "/Warzone/Desert_Storm.png",      name: "Desert Storm",      accentColor: "#f59e0b" },
-  "2": { bg: "/Warzone/Research_Facility.png", name: "Research Facility", accentColor: "#06b6d4" },
-  "3": { bg: "/Warzone/Mystical_Forest.png",   name: "Mystical Forest",   accentColor: "#10b981" },
+  "1": { bg: "/Warzone/Desert_Storm.webp",      name: "Desert Storm",      accentColor: "#f59e0b" },
+  "2": { bg: "/Warzone/Research_Facility.webp", name: "Research Facility", accentColor: "#06b6d4" },
+  "3": { bg: "/Warzone/Mystical_Forest.webp",   name: "Mystical Forest",   accentColor: "#10b981" },
 };
 
 function PreMatchOverlay({
@@ -313,13 +313,13 @@ function PreMatchOverlay({
                 {myAgentName || "Agent A"}
               </div>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
+                <img src="/Warzone/Uzi.webp" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
                 <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
             </div>
             {/* Character */}
             <img
-              src="/Warzone/Character1-A.png"
+              src="/Warzone/Character1-A.webp"
               alt="Fighter A"
               className="object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
@@ -363,12 +363,12 @@ function PreMatchOverlay({
                 {opponentName || "Agent B"}
               </div>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <img src="/Warzone/Uzi.png" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
+                <img src="/Warzone/Uzi.webp" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
                 <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
             </div>
             <img
-              src="/Warzone/Character1-B.png"
+              src="/Warzone/Character1-B.webp"
               alt="Fighter B"
               className="object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
