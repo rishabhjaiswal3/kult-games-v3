@@ -997,7 +997,7 @@ function HowItWorks() {
                       loading="lazy"
                       // width={400}
                       height={200}
-                      style={{ width: "100%", height: "100%",background:"green" }}
+                      style={{ width: "100%", height: "100%" }}
                       className="w-full h-full object-cover"
                     />
                   </div>
