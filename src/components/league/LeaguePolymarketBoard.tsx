@@ -23,7 +23,7 @@ import {
 import {
   fetchEventComments,
   fetchFootballEvents,
-  fetchFootballMarkets,
+  fetchWorldCupMarkets,
   fetchPriceHistory,
   fetchUserPositions,
   type PolyComment,
@@ -249,7 +249,7 @@ function useLiveMarketData() {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const real: PolyMarket[] = await fetchFootballMarkets(200);
+      const real: PolyMarket[] = await fetchWorldCupMarkets(200);
       if (cancelled || real.length === 0) return;
       marketsRef.current = real;
       setMarkets(real);
