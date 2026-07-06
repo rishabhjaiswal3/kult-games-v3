@@ -197,6 +197,65 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
   }
 }
 
+// ── Strict FIFA World Cup filter ────────────────────────────────────────────
+// A market counts as World Cup ONLY when a World-Cup/FIFA anchor is present in
+// its slug, tags, or question. Generic football terms (goals, top scorer,
+// golden boot, "reach quarterfinals", player names, kit brands) are deliberately
+// NOT include-doors — on their own they also match Champions League, domestic
+// leagues and transfer markets, so using them would leak non–World-Cup questions.
+const WORLD_CUP_ANCHOR = /world\s*cup|fifa/i;
+
+// Other-sport "World Cups" (cricket/rugby/etc.) must not slip through.
+const NON_FOOTBALL_TERMS = ["cricket", "rugby", "t20", "hockey", "nba", "nfl", "mlb", "nhl", "tennis"];
+
+function worldCupHaystack(raw: RawMarket): string {
+  const q = typeof raw.question === "string" ? raw.question : "";
+  const slug = typeof raw.slug === "string" ? raw.slug : "";
+  const tags = Array.isArray(raw.tags)
+    ? (raw.tags as Array<Record<string, unknown>>)
+        .map((t) => `${String(t.label ?? "")} ${String(t.slug ?? "")}`)
+        .join(" ")
+    : "";
+  return `${q} ${slug} ${tags}`.toLowerCase();
+}
+
+function isWorldCup(raw: RawMarket): boolean {
+  const hay = worldCupHaystack(raw);
+  if (NON_FOOTBALL_TERMS.some((t) => hay.includes(t))) return false;
+  return WORLD_CUP_ANCHOR.test(hay);
+}
+
+/**
+ * Fetch strictly FIFA World Cup markets — active, open (not resolved/closed),
+ * newest-first. Ranked from the 7-day (1-week) volume pool, then narrowed to
+ * markets carrying a World-Cup/FIFA anchor. Returns [] on any failure.
+ */
+export async function fetchWorldCupMarkets(limit = 60): Promise<PolyMarket[]> {
+  try {
+    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume1wk&ascending=false`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const json: unknown = await res.json();
+    const list: RawMarket[] = Array.isArray(json)
+      ? (json as RawMarket[])
+      : Array.isArray((json as { data?: unknown })?.data)
+        ? ((json as { data: RawMarket[] }).data)
+        : [];
+
+    const worldCup = list
+      .filter(isWorldCup)
+      .map(normalizeMarket)
+      .filter((m): m is PolyMarket => m !== null);
+
+    // Newest markets first (markets missing a timestamp sink to the bottom).
+    worldCup.sort((a, b) => b.createdAt - a.createdAt);
+
+    return worldCup.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
 export type ResolvedMarket = {
   id: string;
   question: string;
