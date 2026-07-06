@@ -50,19 +50,26 @@ async function copyText(label: string, value: string) {
 function TraitBar({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[10px]">
-        <span className="capitalize text-white/60">{label}</span>
-        <span className="font-mono font-bold text-white/80">{value}</span>
+      <div className="mb-1 flex items-center justify-between text-[11px]">
+        <span className="capitalize text-white/70">{label}</span>
+        <span className="font-tech font-bold text-white">{value}</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06] shadow-[inset_0_1px_1px_rgba(0,0,0,0.4)]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#9a35ff] to-[#00d4ff]"
+          className="h-full rounded-full bg-gradient-to-r from-[#9a35ff] via-[#7c6bff] to-[#00d4ff] shadow-[0_0_10px_rgba(0,212,255,0.55)]"
           style={{ width: `${Math.min(100, value)}%` }}
         />
       </div>
     </div>
   );
 }
+
+const STAT_COLORS = {
+  purple:  { border: "border-[#9a35ff]/30", glow: "154,53,255", text: "text-[#c9a6ff]" },
+  cyan:    { border: "border-[#00d4ff]/30", glow: "0,212,255",  text: "text-[#7fe6ff]" },
+  emerald: { border: "border-[#00f080]/30", glow: "0,240,128",  text: "text-[#6ff0b0]" },
+  amber:   { border: "border-[#ffc42e]/30", glow: "255,196,46", text: "text-[#ffd97a]" },
+} as const;
 
 function StatChip({
   icon: Icon,
@@ -73,19 +80,26 @@ function StatChip({
   icon: React.ElementType;
   label: string;
   value: string | number;
-  color?: "purple" | "cyan" | "emerald" | "amber";
+  color?: keyof typeof STAT_COLORS;
 }) {
-  const colors = {
-    purple: "border-purple-500/20 bg-purple-500/8 text-purple-300",
-    cyan:   "border-cyan-500/20   bg-cyan-500/8   text-cyan-300",
-    emerald:"border-emerald-500/20 bg-emerald-500/8 text-emerald-300",
-    amber:  "border-amber-500/20  bg-amber-500/8  text-amber-300",
-  };
+  const c = STAT_COLORS[color];
   return (
-    <div className={`flex flex-col items-center gap-1 rounded-lg border p-3 ${colors[color]}`}>
-      <Icon className="h-4 w-4 opacity-70" />
-      <span className="font-tech text-[9px] font-bold uppercase tracking-wider opacity-60">{label}</span>
-      <span className="font-tech text-sm font-bold">{value}</span>
+    <div
+      className={`group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-xl border ${c.border} bg-gradient-to-b from-white/[0.05] to-black/30 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] transition duration-300 hover:-translate-y-0.5`}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+        style={{ background: `radial-gradient(circle at 50% 0%, rgba(${c.glow},0.16), transparent 65%)` }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, rgba(${c.glow},0.85), transparent)` }}
+      />
+      <Icon className={`relative h-4 w-4 ${c.text}`} />
+      <span className="relative font-tech text-[9px] font-bold uppercase tracking-wider text-white/45">{label}</span>
+      <span className={`relative font-tech text-lg font-black ${c.text}`} style={{ textShadow: `0 0 14px rgba(${c.glow},0.55)` }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -168,11 +182,11 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
         {/* Header */}
         <ArenaDialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#9a35ff]/30 bg-[#9a35ff]/10">
-              <Brain className="h-5 w-5 text-[#9a35ff]" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#9a35ff]/40 bg-gradient-to-br from-[#9a35ff]/25 to-[#9a35ff]/5 shadow-[0_0_18px_rgba(154,53,255,0.35)]">
+              <Brain className="h-5 w-5 text-[#c9a6ff]" />
             </div>
             <div className="min-w-0">
-              <ArenaDialogTitle className="truncate font-tech text-base font-bold uppercase tracking-wide text-white">
+              <ArenaDialogTitle className="truncate bg-gradient-to-r from-white to-[#c9a6ff] bg-clip-text font-tech text-lg font-black uppercase tracking-wide text-transparent">
                 {profile.name}
               </ArenaDialogTitle>
               <ArenaDialogDescription className="flex items-center gap-2 text-[10px] text-white/40">
@@ -200,28 +214,29 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
           </div>
 
           {/* ── Battle record ─────────────────────────────────────────── */}
-          <section className="rounded-xl border border-white/8 bg-[#04080f]/60 p-4">
-            <h4 className="mb-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Battle Record</h4>
+          <section className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-black/30 p-4">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <h4 className="mb-4 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/55">Battle Record</h4>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <div className="font-tech text-xl font-bold text-emerald-400">{profile.wins}</div>
-                <div className="font-tech text-[9px] uppercase text-white/30">Wins</div>
+              <div className="rounded-lg border border-emerald-500/15 bg-emerald-500/[0.06] py-2.5">
+                <div className="font-tech text-2xl font-black text-emerald-400 [text-shadow:0_0_16px_rgba(0,240,128,0.5)]">{profile.wins}</div>
+                <div className="mt-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">Wins</div>
               </div>
-              <div>
-                <div className="font-tech text-xl font-bold text-rose-400">{profile.losses}</div>
-                <div className="font-tech text-[9px] uppercase text-white/30">Losses</div>
+              <div className="rounded-lg border border-rose-500/15 bg-rose-500/[0.06] py-2.5">
+                <div className="font-tech text-2xl font-black text-rose-400 [text-shadow:0_0_16px_rgba(244,63,94,0.5)]">{profile.losses}</div>
+                <div className="mt-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">Losses</div>
               </div>
-              <div>
-                <div className="font-tech text-xl font-bold text-amber-400">{profile.draws ?? 0}</div>
-                <div className="font-tech text-[9px] uppercase text-white/30">Draws</div>
+              <div className="rounded-lg border border-amber-500/15 bg-amber-500/[0.06] py-2.5">
+                <div className="font-tech text-2xl font-black text-amber-400 [text-shadow:0_0_16px_rgba(255,196,46,0.5)]">{profile.draws ?? 0}</div>
+                <div className="mt-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">Draws</div>
               </div>
             </div>
           </section>
 
           {/* ── Traits ───────────────────────────────────────────────── */}
           {traitKeys.length > 0 && (
-            <section className="rounded-xl border border-white/8 bg-[#04080f]/60 p-4">
-              <h4 className="mb-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Traits</h4>
+            <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.045] to-black/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <h4 className="mb-3 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Traits</h4>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {traitKeys.map((k) => (
                   <TraitBar key={k} label={k} value={Number(traits[k])} />
@@ -232,8 +247,8 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
 
           {/* ── Evolution ────────────────────────────────────────────── */}
           {evolutionQ.data && (
-            <section className="rounded-xl border border-white/8 bg-[#04080f]/60 p-4">
-              <h4 className="mb-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Evolution</h4>
+            <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.045] to-black/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <h4 className="mb-2 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Evolution</h4>
               <div className="flex flex-wrap gap-4 text-[11px]">
                 <span className="text-white/40">Stage <span className="font-bold text-white">{evolutionQ.data.currentStage}</span></span>
                 <span className="text-white/40">Battles <span className="font-bold text-white">{evolutionQ.data.totalBattles}</span></span>
@@ -246,9 +261,9 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
           )}
 
           {/* ── Training ─────────────────────────────────────────────── */}
-          <section className="rounded-xl border border-white/8 bg-[#04080f]/60 p-4">
+          <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.045] to-black/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="mb-3 flex items-center justify-between">
-              <h4 className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Training</h4>
+              <h4 className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Training</h4>
               {trainingQ.isFetching && <Loader2 className="h-3 w-3 animate-spin text-white/30" />}
             </div>
             {trainingQ.isLoading ? (
@@ -433,8 +448,8 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
 
           {/* ── Wallet ───────────────────────────────────────────────── */}
           {walletQ.data?.wallet && (
-            <section className="rounded-xl border border-white/8 bg-[#04080f]/60 p-4">
-              <h4 className="mb-3 font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Custodial Wallet</h4>
+            <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.045] to-black/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <h4 className="mb-3 font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Custodial Wallet</h4>
               <div className="space-y-2 text-[11px]">
                 {walletQ.data.wallet.solanaAddress && (
                   <div className="flex flex-wrap items-center gap-2">

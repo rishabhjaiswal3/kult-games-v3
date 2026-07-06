@@ -588,7 +588,6 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
 function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) {
   const {
     buttonLabel,
-    helperText,
     queuedAgent,
     startButtonDisabled,
     startMatchmaking,
@@ -672,15 +671,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
             Open live match status
           </button>
         </div>
-      ) : (
-        <p
-          className={`font-medium leading-relaxed text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.85)] ${
-            compact ? "max-w-[260px] text-center text-[13px] max-[380px]:text-[11px]" : "col-span-2 max-w-md text-left text-sm xl:col-span-1"
-          }`}
-        >
-          {helperText}
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
