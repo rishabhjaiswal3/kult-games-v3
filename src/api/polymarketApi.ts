@@ -20,6 +20,8 @@ export type PolyMarket = {
   tokenId: string;
   /** CLOB token id for the NO outcome (used for buying NO) -- undefined if the market has no distinct NO leg. */
   noTokenId?: string;
+  /** Creation time (epoch ms) used to sort newest-first; 0 when the API omits it. */
+  createdAt: number;
 };
 
 // ── Football filtering ──────────────────────────────────────────────────────
@@ -130,6 +132,11 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
   const noTokenId = noIdx >= 0 ? tokenIds[noIdx] : undefined;
 
   const volumeNum = toNumber(raw.volumeNum ?? raw.volume);
+  const createdRaw =
+    (typeof raw.createdAt === "string" && raw.createdAt) ||
+    (typeof raw.startDate === "string" && raw.startDate) ||
+    "";
+  const createdAt = createdRaw ? Date.parse(createdRaw) || 0 : 0;
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
@@ -139,6 +146,7 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
     yes,
     volume: formatVolume(volumeNum),
     tokenId,
+    createdAt,
     ...(noTokenId && { noTokenId }),
   };
 }
@@ -146,7 +154,9 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
 /** Fetch the top football markets by volume. Returns [] on any failure. */
 export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
   try {
-    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=300&order=volume24hr&ascending=false`;
+    // Pull a broad, volume-ranked pool (reliably contains the football markets),
+    // then sort those newest-first below so brand-new markets surface at the top.
+    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume24hr&ascending=false`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });
     if (!res.ok) return [];
     const json: unknown = await res.json();
@@ -164,6 +174,9 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
       })
       .map(normalizeMarket)
       .filter((m): m is PolyMarket => m !== null);
+
+    // Newest markets first (markets missing a timestamp sink to the bottom).
+    football.sort((a, b) => b.createdAt - a.createdAt);
 
     return football.slice(0, limit);
   } catch {
