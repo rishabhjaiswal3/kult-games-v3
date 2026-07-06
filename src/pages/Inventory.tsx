@@ -252,22 +252,30 @@ const Inventory = () => {
 
   return (
     <ArenaPageLayout contentClassName="max-w-none">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6" data-tour="inventory-summary">
-        <div className="min-w-0 shrink-0 lg:max-w-[45%] xl:max-w-[40%]">
-          <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
-            Inventory
-          </h1>
-          <p className="mt-1 text-[11px] font-medium text-white/55 sm:text-sm">
-            Browse on-chain assets, preview listings, and purchase for your agents and games.
-          </p>
+      <div className="inventory-hero-panel p-5 sm:p-6" data-tour="inventory-summary">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/70 to-transparent" aria-hidden />
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+          <div className="min-w-0 shrink-0 lg:max-w-[42%] xl:max-w-[40%]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.22em] text-[#d6acff]">
+              <Package className="h-3 w-3" />
+              Marketplace
+            </div>
+            <h1 className="mt-3 font-tech text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+              Inventory
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+              Browse on-chain assets, preview listings, and purchase gear for your agents and games.
+            </p>
+          </div>
+          <InventoryStatsRail
+            className="lg:ml-auto"
+            listingsCount={listingsCount}
+            categoriesCount={categoriesCount}
+            gamesCount={uniqueGames || games.length}
+            activeGameLabel={activeGameLabel}
+            isLoading={inventoryBootstrapping}
+          />
         </div>
-        <InventoryStatsRail
-          listingsCount={listingsCount}
-          categoriesCount={categoriesCount}
-          gamesCount={uniqueGames || games.length}
-          activeGameLabel={activeGameLabel}
-          isLoading={inventoryBootstrapping}
-        />
       </div>
 
       <div className="w-full space-y-4">
@@ -288,16 +296,21 @@ const Inventory = () => {
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/6 pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-2.5">
           <div>
-            <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white">Available items</h2>
-            <p className="text-[9px] text-white/40">
+            <h2 className="font-tech text-xs font-semibold uppercase tracking-[0.18em] text-white/88">Available items</h2>
+            <p className="mt-1 text-[10px] text-white/42">
               {inventoryBootstrapping
                 ? "Loading listings…"
                 : `${listingsCount} listing${listingsCount === 1 ? "" : "s"}`}
               {!inventoryBootstrapping && itemSearch.trim() ? ` · “${itemSearch.trim()}”` : ""}
             </p>
           </div>
+          {!inventoryBootstrapping && filteredListings.length > 0 ? (
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wide text-white/50">
+              {displayListings.length} shown
+            </span>
+          ) : null}
         </div>
 
         <div className="pb-6" data-tour="inventory-grid">{itemsGrid}</div>
@@ -327,12 +340,16 @@ const Inventory = () => {
 function InventoryEmpty({ message, error }: { message: string; error?: boolean }) {
   return (
     <div
-      className={`flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-10 text-center ${
-        error ? "border-red-500/30 bg-red-950/15" : "border-white/12 bg-[#04080f]/40"
+      className={`flex min-h-[260px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-10 text-center ${
+        error
+          ? "border-red-500/30 bg-[radial-gradient(circle_at_50%_0%,rgba(239,68,68,0.12),transparent_55%),#14080c]"
+          : "border-white/12 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.08),transparent_55%)] bg-[#04080f]/80"
       }`}
     >
-      <Package className={`h-10 w-10 ${error ? "text-red-400/60" : "text-white/20"}`} />
-      <p className="max-w-sm text-sm leading-relaxed text-white/50">{message}</p>
+      <div className={`grid h-12 w-12 place-items-center rounded-xl border ${error ? "border-red-400/30 bg-red-950/30" : "border-white/10 bg-white/[0.03]"}`}>
+        <Package className={`h-6 w-6 ${error ? "text-red-400/70" : "text-white/25"}`} />
+      </div>
+      <p className="max-w-sm text-sm leading-relaxed text-white/52">{message}</p>
     </div>
   );
 }

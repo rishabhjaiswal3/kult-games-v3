@@ -193,7 +193,7 @@ export function LeagueTodayPredictions({ className }: LeagueTodayPredictionsProp
                 <div className="flex min-w-0 flex-1 flex-col justify-between p-2">
                   <div>
                     <p className="font-tech text-[10px] font-black uppercase text-white">{agent.name}</p>
-                    <p className="text-[10px] leading-snug text-white/50 line-clamp-2">
+                    <p className="text-[10px] leading-snug text-white/90 line-clamp-2">
                       &ldquo;{prediction.quote}&rdquo;
                     </p>
                   </div>

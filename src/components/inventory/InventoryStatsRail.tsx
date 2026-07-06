@@ -1,4 +1,4 @@
-import { Coins, FileBox, Layers, Package } from "lucide-react";
+import { FileBox, Layers, Package, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type InventoryStatsRailProps = {
@@ -19,38 +19,39 @@ export function InventoryStatsRail({
   className,
 }: InventoryStatsRailProps) {
   const stats = [
-    { label: "Assets", value: isLoading ? "…" : String(listingsCount), icon: Package, color: "#9a35ff" },
-    { label: "Categories", value: isLoading ? "…" : String(categoriesCount), icon: Coins, color: "#ffc000" },
-    { label: "Games", value: isLoading ? "…" : String(gamesCount), icon: FileBox, color: "#00f080" },
-    { label: "Filter", value: isLoading ? "Loading…" : activeGameLabel, icon: Layers, color: "#0089ff", truncate: true },
+    { label: "Assets", value: isLoading ? "…" : String(listingsCount), icon: Package, color: "#9a35ff", glow: "rgba(154,53,255,0.28)" },
+    { label: "Categories", value: isLoading ? "…" : String(categoriesCount), icon: Tags, color: "#ffc42e", glow: "rgba(255,196,46,0.24)" },
+    { label: "Games", value: isLoading ? "…" : String(gamesCount), icon: FileBox, color: "#00f080", glow: "rgba(0,240,128,0.22)" },
+    { label: "Active filter", value: isLoading ? "Loading…" : activeGameLabel, icon: Layers, color: "#11a7ff", glow: "rgba(17,167,255,0.22)" },
   ] as const;
 
   return (
     <div
       className={cn(
-        "arena-panel grid w-full grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-md xl:grid-cols-4 lg:min-w-0 lg:flex-1",
-        className
+        "grid w-full grid-cols-2 gap-2 sm:gap-3 lg:min-w-[min(100%,420px)] lg:max-w-[460px] lg:flex-1",
+        className,
       )}
     >
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="flex min-w-0 items-center gap-2.5 bg-[#060b16]/60 px-3 py-2.5 transition-colors hover:bg-[#0a1222]/80 sm:px-3.5"
+          className="inventory-stat-tile flex min-h-[72px] min-w-0 items-center gap-2.5 rounded-xl border border-white/8 px-3 py-2.5 sm:min-h-[76px] sm:px-3.5"
+          style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 24px ${stat.glow}` }}
         >
           <div
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/10 bg-white/[0.05]"
-            style={{ boxShadow: `0 0 20px ${stat.color}40` }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10"
+            style={{
+              background: `linear-gradient(145deg, ${stat.color}22, rgba(255,255,255,0.03))`,
+              boxShadow: `0 0 18px ${stat.glow}`,
+            }}
           >
-            <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
+            <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-tech text-[9px] uppercase tracking-wider text-white/45">{stat.label}</div>
+            <div className="font-tech text-[8px] uppercase tracking-[0.18em] text-white/42">{stat.label}</div>
             <div
-              className={cn(
-                "mt-0.5 font-tech text-sm font-bold leading-none text-white sm:text-base",
-                "truncate" in stat && stat.truncate && "truncate"
-              )}
-              title={"truncate" in stat && stat.truncate ? stat.value : undefined}
+              className="mt-0.5 line-clamp-2 font-tech text-sm font-bold leading-tight text-white sm:text-[15px]"
+              title={stat.value}
             >
               {stat.value}
             </div>
