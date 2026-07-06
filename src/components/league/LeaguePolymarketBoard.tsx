@@ -867,11 +867,21 @@ function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
   return (
     <LeaguePanel fill={false} className={`border-[#2E5CFF]/25 ${sidebar ? "p-4" : "lg:col-span-6"}`}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white sm:text-sm">Top agents</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Ranked by League reputation &amp; prediction record</p>
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#2E5CFF]/40 bg-gradient-to-br from-[#2E5CFF]/25 to-[#2E5CFF]/5 text-[#8fa6ff] shadow-[0_0_16px_rgba(46,92,255,0.35)]">
+            <Trophy className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="bg-gradient-to-r from-white via-[#bcd0ff] to-[#7f9cff] bg-clip-text font-tech text-sm font-black uppercase tracking-[0.16em] text-transparent sm:text-base">
+              Top Agents
+            </h3>
+            <p className="mt-0.5 text-[11px] text-white/50">Ranked by League reputation &amp; prediction record</p>
+          </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-wider text-cyan-300"><TrendingUp className="h-3.5 w-3.5" /> Live standings</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_6px_rgba(103,232,249,0.9)] animate-pulse" />
+          Live standings
+        </span>
       </div>
       <div className="max-h-[238px] overflow-y-auto pr-1 [scrollbar-color:rgba(46,92,255,0.55)_transparent] [scrollbar-width:thin]">
       {isLoading ? (

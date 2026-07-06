@@ -659,16 +659,16 @@ const MyAgentsPage = () => {
                     </div>
                     <div className="space-y-2 rounded border border-white/8 bg-white/[0.025] px-3 py-2.5">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Battles</span>
-                        <span className="font-tech text-[11px] font-bold text-white/90">{battles}</span>
+                        <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-white">Battles</span>
+                        <span className="font-body text-[12px] font-bold text-white">{battles}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Win Rate</span>
-                        <span className="font-tech text-[11px] font-bold text-white/90">{winRate}%</span>
+                        <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-white">Win Rate</span>
+                        <span className="font-body text-[12px] font-bold text-white">{winRate}%</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/42">Power Score</span>
-                        <span className="font-tech text-[11px] font-bold text-purple-300">{agent.eloRating.toLocaleString()}</span>
+                        <span className="font-body text-[10px] font-semibold uppercase tracking-wide text-white">Power Score</span>
+                        <span className="font-body text-[12px] font-bold text-purple-300">{agent.eloRating.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -676,7 +676,7 @@ const MyAgentsPage = () => {
                     <button
                       type="button"
                       onClick={() => openWalletManager(agent.id)}
-                      className="flex w-full items-center justify-center gap-1.5 rounded border border-cyan-500/20 bg-cyan-500/8 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-400/40 hover:bg-cyan-500/14"
+                      className="flex w-full items-center justify-center gap-1.5 rounded border border-cyan-500/20 bg-cyan-500/8 py-2 font-body text-[10px] font-semibold uppercase tracking-wide text-cyan-200 transition hover:border-cyan-400/40 hover:bg-cyan-500/14"
                     >
                       <WalletCards className="h-3.5 w-3.5" />
                       Wallet & Funds
@@ -685,7 +685,7 @@ const MyAgentsPage = () => {
                       <button
                         type="button"
                         onClick={() => setDetailAgent(agent)}
-                        className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
+                        className="flex-1 rounded border border-white/8 bg-[#0a0f1b]/60 py-2 text-center font-body text-[10px] font-semibold uppercase tracking-wide text-purple-400 transition hover:border-purple-500/35 hover:bg-purple-950/10"
                       >
                         VIEW DETAILS
                       </button>

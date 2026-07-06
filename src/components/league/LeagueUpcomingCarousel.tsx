@@ -33,7 +33,7 @@ function UpcomingMatchCard({
   const countdown = useCountdown(match.kickoffAt);
 
   return (
-    <article className="w-[min(100%,210px)] shrink-0 snap-center rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-3.5 sm:w-[190px]">
+    <article className="w-[min(100%,240px)] shrink-0 snap-center rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-3.5 sm:w-[230px]">
       <div className="flex items-center justify-center gap-2">
         <TeamFlagHex teamName={match.home} size="md" />
         <span className="font-tech text-[10px] font-bold uppercase text-white/45">vs</span>
@@ -139,7 +139,7 @@ export function LeagueUpcomingCarousel() {
       {isLoadingMatches ? (
         <div className="flex gap-3 overflow-x-auto pb-1">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-48 w-[190px] shrink-0 rounded-xl" />
+            <div key={i} className="skeleton h-48 w-[230px] shrink-0 rounded-xl" />
           ))}
         </div>
       ) : matches.length === 0 ? (

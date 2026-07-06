@@ -49,16 +49,6 @@ export function LeagueTodayPredictions({ className }: LeagueTodayPredictionsProp
               >
                 <div className="relative h-[88px] w-[72px] shrink-0 overflow-hidden bg-black/40 sm:h-[96px] sm:w-[80px]">
                   <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" className="object-top" />
-                  <span
-                    className="absolute left-1 top-1 rounded border px-1 py-px font-tech text-[7px] font-bold uppercase"
-                    style={{
-                      borderColor: `${agent.accentHex}66`,
-                      color: agent.accentHex,
-                      backgroundColor: `${agent.accentHex}22`,
-                    }}
-                  >
-                    {agent.tier}
-                  </span>
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col justify-between p-2">

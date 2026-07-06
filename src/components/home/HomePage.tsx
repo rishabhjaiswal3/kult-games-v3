@@ -233,26 +233,28 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-5 sm:px-6 sm:py-6">
+      <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-4 sm:px-6 sm:py-5">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(0,137,255,0.16),transparent_40%),radial-gradient(circle_at_6%_16%,rgba(154,53,255,0.16),transparent_38%)]" />
-        <div className="relative flex flex-col gap-4">
+        <div className="relative flex flex-col gap-3">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[#bd6cff]/30 bg-[#bd6cff]/[0.08] px-3 py-1 font-tech text-[10px] font-bold uppercase tracking-[0.26em] text-[#c98bff]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#bd6cff] shadow-[0_0_8px_rgba(189,108,255,0.9)]" />
               Your KULT ID
             </div>
-            <h2 className="mt-3 font-tech text-2xl font-black uppercase leading-[1.05] text-white sm:text-3xl lg:text-[2.25rem]">
+            <h2 className="mt-2.5 font-tech text-2xl font-black uppercase leading-[1.02] text-white sm:text-3xl lg:text-[2rem]">
               One Identity
               <br />
               <span className="text-gradient-arena">Every Battle Every Prediction</span>
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/60 sm:text-[15px]">
-              One identity. Every world you play in — Arena, League, and beyond. Your AI agents, reputation, and progress evolve with every match.
+            <p className="mt-1.5 max-w-xl text-sm leading-snug text-white/60 sm:text-[15px]">
+              One identity. Every world you play in — Arena, League, and beyond.
+              <br />
+              Your AI agents, reputation, and progress evolve with every match
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:items-stretch lg:gap-6">
-            <div className="grid content-start gap-2 lg:auto-rows-fr">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:items-stretch lg:gap-6">
+            <div className="grid content-start gap-1.5 lg:content-between">
               {[
                 {
                   emoji: "⚔️",
@@ -279,29 +281,66 @@ export function HomePage() {
                   accent: "0,137,255",
                 },
               ].map(({ emoji, title, desc, accent }) => (
-                <div
-                  key={title}
-                  className="group/kid relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 transition duration-300 hover:-translate-y-0.5 hover:border-white/20"
-                >
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/45 via-black/15 to-transparent" />
+                <div key={title} className="group/kid relative">
+                  <div className="relative cursor-default overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3.5 transition duration-300 group-hover/kid:-translate-y-0.5 group-hover/kid:border-white/20">
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/45 via-black/15 to-transparent" />
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/kid:opacity-100"
+                      style={{ background: `radial-gradient(circle at 22% 0%, rgba(${accent},0.16), transparent 60%)` }}
+                    />
+                    <div className="relative flex items-center gap-3">
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base leading-none"
+                        style={{
+                          background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.05))`,
+                          boxShadow: `0 0 16px rgba(${accent},0.28)`,
+                        }}
+                      >
+                        {emoji}
+                      </span>
+                      <div className="min-w-0 font-tech text-[13px] font-bold leading-tight text-white">{title}</div>
+                    </div>
+                  </div>
+
+                  {/* Description popover — hidden until hover */}
                   <div
-                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/kid:opacity-100"
-                    style={{ background: `radial-gradient(circle at 22% 0%, rgba(${accent},0.16), transparent 60%)` }}
-                  />
-                  <div className="relative flex items-center gap-3">
-                    <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg leading-none"
+                    role="tooltip"
+                    className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2.5 w-64 max-w-[85vw] -translate-x-1/2 translate-y-1.5 scale-95 opacity-0 transition-all duration-200 ease-out group-hover/kid:translate-y-0 group-hover/kid:scale-100 group-hover/kid:opacity-100"
+                  >
+                    <div
+                      className="relative rounded-2xl p-px"
                       style={{
-                        background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.05))`,
-                        boxShadow: `0 0 16px rgba(${accent},0.28)`,
+                        background: `linear-gradient(135deg, rgba(${accent},0.75), rgba(${accent},0.12) 55%, rgba(255,255,255,0.08))`,
+                        boxShadow: `0 18px 48px rgba(0,0,0,0.72), 0 0 26px rgba(${accent},0.24)`,
                       }}
                     >
-                      {emoji}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="font-tech text-[13px] font-bold leading-tight text-white">{title}</div>
-                      <p className="mt-1 text-xs leading-relaxed text-white/52">{desc}</p>
+                      <div
+                        className="relative overflow-hidden rounded-[15px] bg-[#0a0e1c] px-4 py-3.5"
+                        style={{ backgroundImage: `radial-gradient(circle at 16% 0%, rgba(${accent},0.20), transparent 62%)` }}
+                      >
+                        <div
+                          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                          style={{ background: `linear-gradient(90deg, transparent, rgba(${accent},0.95), transparent)` }}
+                        />
+                        <div className="mb-1.5 flex items-center gap-2">
+                          <span className="text-sm leading-none">{emoji}</span>
+                          <span
+                            className="font-tech text-[9px] font-bold uppercase tracking-[0.22em]"
+                            style={{ color: `rgba(${accent},1)` }}
+                          >
+                            {title}
+                          </span>
+                        </div>
+                        <p className="text-[12.5px] leading-relaxed text-white/85">{desc}</p>
+                      </div>
                     </div>
+                    <span
+                      className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[3px] bg-[#0a0e1c]"
+                      style={{
+                        borderRight: `1px solid rgba(${accent},0.55)`,
+                        borderBottom: `1px solid rgba(${accent},0.55)`,
+                      }}
+                    />
                   </div>
                 </div>
               ))}
@@ -310,7 +349,7 @@ export function HomePage() {
             {canViewAiArena ? (
               <Link
                 to="/dashboard"
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-cyan-300/25 bg-[#06101d]/80 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-cyan-300/25 bg-[#06101d]/80 p-3.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#49c8ff]/60 hover:bg-[#082039] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#49c8ff]"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(73,200,255,0.18),transparent_55%)]" />
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#49c8ff]/80 to-transparent" />
@@ -321,33 +360,33 @@ export function HomePage() {
                     </div>
                     <div className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#bd6cff]">Identity Card</div>
                   </div>
-                  <div className="mt-2.5 font-tech text-lg font-black leading-tight text-white sm:text-xl">
+                  <div className="mt-2 font-tech text-base font-black leading-tight text-white sm:text-lg">
                     One profile across <span className="text-gradient-arena">KULT</span>
                   </div>
-                  <p className="mt-1.5 text-[13px] leading-snug text-white/58">
+                  <p className="mt-1 text-xs leading-snug text-white/58">
                     Wallet, agents, progress, reputation — all in one place.
                   </p>
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center justify-between rounded-lg border border-[#49c8ff]/20 bg-[#49c8ff]/[0.05] px-3 py-2">
-                      <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">Rank</span>
-                      <span className="font-tech text-base font-black text-[#66d5ff]">
+                  <div className="mt-2.5 grid grid-cols-2 gap-2">
+                    <div className="flex items-center justify-between gap-1.5 rounded-lg border border-[#49c8ff]/20 bg-[#49c8ff]/[0.05] px-2.5 py-2">
+                      <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">Rank</span>
+                      <span className="font-tech text-sm font-black text-[#66d5ff]">
                         {profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—"}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg border border-[#bd6cff]/20 bg-[#bd6cff]/[0.05] px-3 py-2">
-                      <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">Level</span>
-                      <span className="font-tech text-base font-black text-[#c98bff]">
+                    <div className="flex items-center justify-between gap-1.5 rounded-lg border border-[#bd6cff]/20 bg-[#bd6cff]/[0.05] px-2.5 py-2">
+                      <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">Level</span>
+                      <span className="font-tech text-sm font-black text-[#c98bff]">
                         {profile?.level ?? "—"}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="relative mt-3">
-                  <div className="flex items-center justify-between rounded-lg border border-[#00f080]/25 bg-[#00f080]/[0.06] px-3 py-2">
-                    <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">KP earned</span>
+                <div className="relative mt-2">
+                  <div className="flex items-center justify-between rounded-lg border border-[#00f080]/25 bg-[#00f080]/[0.06] px-2.5 py-1.5">
+                    <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-white/55">KP earned</span>
                     <span className="font-tech text-base font-black text-[#00f080] [text-shadow:0_0_12px_rgba(0,240,128,0.45)]">{profile ? `${formatKultPoints(profile.kultPoints)} KP` : "— KP"}</span>
                   </div>
-                  <div className="mt-3 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#66d5ff] transition group-hover:gap-2.5">
+                  <div className="mt-2.5 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#66d5ff] transition group-hover:gap-2.5">
                     Open your ID
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </div>
@@ -364,12 +403,29 @@ export function HomePage() {
           <h2 className="shrink-0 font-tech text-lg font-black uppercase leading-[1.25] text-white sm:text-xl">
               Everything you do keeps building
           </h2>
-          <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.07em] text-white/80 sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
-            {["Play", "Create", "Compete", "Build", "Persist"].map((step, index) => (
-              <div key={step} className="flex items-center gap-2 md:shrink-0">
-                <span className="flex-1 rounded-md border border-[#b766ff]/35 bg-[#7c3aed]/[0.07] px-2.5 py-1.5 text-center text-[#f1e6ff] shadow-[inset_0_0_20px_rgba(196,126,255,0.08),0_0_14px_rgba(154,53,255,0.12)] [text-shadow:0_0_10px_rgba(222,184,255,0.7)] md:flex-none md:text-left">{step}</span>
+          <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.08em] sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
+            {[
+              { label: "Play", accent: "154,53,255" },
+              { label: "Create", accent: "0,137,255" },
+              { label: "Compete", accent: "82,203,255" },
+              { label: "Build", accent: "255,196,46" },
+              { label: "Persist", accent: "0,240,128" },
+            ].map(({ label, accent }, index) => (
+              <div key={label} className="flex items-center gap-1.5 md:shrink-0">
+                <span
+                  className="flex-1 rounded-full border px-3.5 py-1.5 text-center text-white transition duration-300 hover:-translate-y-0.5 md:flex-none"
+                  style={{
+                    borderColor: `rgba(${accent},0.55)`,
+                    background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.04))`,
+                    boxShadow: `0 0 16px rgba(${accent},0.28), inset 0 1px 0 rgba(255,255,255,0.08)`,
+                    textShadow: `0 0 10px rgba(${accent},0.6)`,
+                  }}
+                >
+                  {label}
+                </span>
                 <ArrowRight
-                  className={`h-3 w-3 shrink-0 text-[#a747ff] ${index === 4 ? "invisible md:hidden" : index === 2 ? "invisible md:visible" : ""}`}
+                  className={`h-3.5 w-3.5 shrink-0 ${index === 4 ? "invisible md:hidden" : index === 2 ? "invisible md:visible" : ""}`}
+                  style={{ color: `rgba(${accent},0.85)` }}
                   aria-hidden
                 />
               </div>
@@ -709,7 +765,7 @@ function HomeAIArenaSection() {
     <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 p-4 sm:p-5 lg:p-6">
       <div className="pointer-events-none absolute inset-0 arena-rain opacity-35" />
       <div className="pointer-events-none absolute inset-0 hero-hologram-overlay opacity-50" />
-      <div className="relative grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
+      <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-stretch">
         <div className="flex flex-col justify-between gap-5">
           <div>
             <div className="mb-3 flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.22em] text-[#9a35ff]">
@@ -754,7 +810,7 @@ function HomeAIArenaSection() {
                 >
                   {emoji}
                 </span>
-                <div className="relative min-w-0 whitespace-nowrap font-tech text-[11.5px] font-bold uppercase leading-tight tracking-tight text-[#8fddff] [text-shadow:0_0_10px_rgba(82,203,255,0.55)]">
+                <div className="relative min-w-0 whitespace-nowrap font-tech text-[11.5px] font-bold uppercase leading-tight tracking-[0.08em] text-[#dcf4ff] [text-shadow:0_1px_2px_rgba(0,0,0,0.75),0_0_12px_rgba(82,203,255,0.6)]">
                   {label}
                 </div>
               </div>
@@ -987,7 +1043,7 @@ function HomeLiveLeaguesSection() {
                   {leaders.map(([rank, agent, power]) => (
                     <div key={agent} className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2 transition hover:border-[#ffc42e]/35 hover:bg-[#ffc42e]/[0.06]">
                       <span className={`grid h-5 w-5 place-items-center rounded font-tech text-[10px] font-black ${rank === "01" ? "bg-[#ffc42e]/20 text-[#ffc42e]" : "bg-white/8 text-white/55"}`}>{rank}</span>
-                      <span className="flex-1 font-tech text-xs font-bold uppercase text-white/85">{agent}</span>
+                      <span className="flex-1 font-tech text-xs font-bold uppercase tracking-wider text-white/85">{agent}</span>
                       <span className="font-tech text-[10px] text-white/45">{power} power</span>
                     </div>
                   ))}
@@ -1002,7 +1058,7 @@ function HomeLiveLeaguesSection() {
                   ["BERSERKER", "Argentina win", "20%"],
                 ].map(([agent, call, confidence]) => (
                   <div key={agent} className="flex items-center gap-3 rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2 transition hover:border-[#7f9cff]/35 hover:bg-[#7f9cff]/[0.06]">
-                    <span className="flex-1 font-tech text-[10px] font-bold uppercase text-white/85">{agent}</span>
+                    <span className="flex-1 font-tech text-xs font-bold uppercase tracking-wider text-white/85">{agent}</span>
                     <span className="text-[10px] text-white/45">{call}</span>
                     <span className="font-tech text-[10px] font-bold text-[#9db0ff]">{confidence}</span>
                   </div>

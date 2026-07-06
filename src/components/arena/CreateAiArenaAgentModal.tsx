@@ -21,6 +21,17 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import zeroGLogo from "@/assets/0G Logo.png";
+import baseLogo from "@/assets/Base Logo.png";
+import solanaLogo from "@/assets/solana-sol-logo.png";
+import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
+
+const CLAN_LOGOS: Record<string, string> = {
+  ZEROG: zeroGLogo,
+  BASE: baseLogo,
+  SOLANA: solanaLogo,
+  OKX: okxLogo,
+};
 
 export type CreateAiArenaAgentModalProps = {
   open: boolean;
@@ -92,6 +103,7 @@ export function CreateAiArenaAgentModal({
       await onCreated?.(agent);
       onOpenChange(false);
     } catch (e) {
+      console.error("Failed to create AI Arena agent", e);
     } finally {
       setSubmitting(false);
     }
@@ -111,9 +123,11 @@ export function CreateAiArenaAgentModal({
 
         <ArenaDialogBody className="space-y-4">
           {selectedCard ? (
-            <div className="overflow-hidden rounded-xl border border-white/[0.12] bg-[hsl(268_32%_8%/0.85)]">
-              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-                <div className="relative mx-auto h-36 w-36 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[hsl(268_32%_6%/0.9)] sm:mx-0 sm:h-32 sm:w-32">
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[hsl(268_40%_11%/0.9)] to-[hsl(268_32%_6%/0.92)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(154,53,255,0.20),transparent_55%),radial-gradient(circle_at_0%_100%,rgba(0,137,255,0.12),transparent_50%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/80 to-transparent" />
+              <div className="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5">
+                <div className="relative mx-auto h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-white/12 bg-[hsl(268_32%_6%/0.9)] shadow-[0_0_28px_rgba(154,53,255,0.22)] ring-1 ring-white/[0.06] sm:mx-0 sm:h-28 sm:w-28">
                   {selectedCard.image.endsWith(".mp4") ? (
                     <video
                       src={selectedCard.image}
@@ -121,24 +135,36 @@ export function CreateAiArenaAgentModal({
                       loop
                       muted
                       playsInline
-                      className="h-full w-full object-contain p-2"
+                      className="h-full w-full object-cover object-top"
                     />
                   ) : (
                     <img
                       src={selectedCard.image}
                       alt={`${selectedCard.codename} — ${selectedCard.archetype}`}
-                      className="h-full w-full object-contain p-2"
+                      className="h-full w-full object-cover object-top"
                     />
                   )}
                 </div>
                 <div className="min-w-0 flex-1 text-center sm:text-left">
-                  <p className="font-display text-[10px] tracking-[0.22em] text-muted-foreground">SELECTED ARCHETYPE</p>
-                  <p className={cn("mt-1 font-display text-lg font-bold tracking-wide", selectedCard.accent)}>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 font-display text-[9px] tracking-[0.22em] text-muted-foreground">
+                    <span className="h-1 w-1 rounded-full bg-[#c084fc] shadow-[0_0_6px_rgba(192,132,252,0.9)]" />
+                    SELECTED ARCHETYPE
+                  </span>
+                  <p className={cn("mt-2 font-display text-xl font-bold tracking-wide", selectedCard.accent)}>
                     {selectedCard.archetype}
                   </p>
-                  <p className="font-display text-sm font-semibold text-foreground">{selectedCard.codename}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{selectedCard.tagline}</p>
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground/80">{selectedCard.role}</p>
+                  <p className="font-display text-sm font-semibold text-foreground/90">{selectedCard.codename}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{selectedCard.tagline}</p>
+                  <div className="mt-2.5 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+                    {selectedCard.role.split("·").map((r) => (
+                      <span
+                        key={r}
+                        className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-muted-foreground/90"
+                      >
+                        {r.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,13 +181,22 @@ export function CreateAiArenaAgentModal({
                   className={cn(
                     "arena-chip",
                     clan === c.value &&
-                      (c.value === "OKX"
+                      ((c.value as string) === "OKX"
                         ? "border-[#e0a528] bg-gradient-to-br from-[#f7d774]/20 via-[#e0a528]/15 to-[#9a6b12]/10 text-[#f7d774] shadow-[0_0_10px_rgba(224,165,40,0.4)]"
                         : "arena-chip-active-cyan"),
                   )}
                 >
-                  <div className="font-display text-[11px] font-bold">{c.label}</div>
-                  <div className="text-[9px] opacity-80">{c.hint}</div>
+                  <div className="flex items-center justify-center gap-1.5">
+                    {CLAN_LOGOS[c.value] && (
+                      <img
+                        src={CLAN_LOGOS[c.value]}
+                        alt=""
+                        aria-hidden
+                        className="h-5 w-5 shrink-0 object-contain"
+                      />
+                    )}
+                    <span className="font-display text-[13px] font-bold">{c.label}</span>
+                  </div>
                 </button>
               ))}
             </div>
