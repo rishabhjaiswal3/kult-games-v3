@@ -23,7 +23,6 @@ export const PRIVY_WALLET_SORT_ALIASES: Record<string, readonly string[]> = {
 };
 
 export const PRIVY_NAMED_ZERO_G_WALLETS = [
-  // 0G-documented / exchange-native — order = display order in Privy modal
   "bitget_wallet",
   "okx_wallet",
   "metamask",
@@ -38,6 +37,15 @@ export const PRIVY_NAMED_ZERO_G_WALLETS = [
   "uniswap",
   "safe",
   "universal_profile",
+  // Catch-all: Bitget (and any other injected wallet) is sometimes detected via a
+  // generic/legacy provider path instead of announcing itself as "bitget_wallet"
+  // (EIP-6963 name mismatch, provider-injection race with other extensions, etc.).
+  // Privy's connector-name allow-list silently drops an unmatched provider instead
+  // of falling back to the named entry — this is why the button flickers in and
+  // out. `detected_ethereum_wallets` is a documented Privy sentinel that surfaces
+  // any detected EVM extension not already matched by name, so it always renders
+  // (named wallets above still keep their configured position/branding).
+  "detected_ethereum_wallets",
 ] as const satisfies readonly WalletListEntry[];
 
 /**

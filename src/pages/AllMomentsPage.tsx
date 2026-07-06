@@ -8,23 +8,21 @@ import {
   ChevronDown,
   Search,
   SlidersHorizontal,
-  Flame,
   Zap,
   Trophy,
   Swords,
   Target,
   Shield,
-  Eye,
   Heart,
   Bookmark,
-  Share2,
   Play,
   Plus,
   Clock,
   Hexagon,
   Video,
-  Image as ImageIcon,
   Loader2,
+  MessageCircle,
+  TrendingUp,
 } from "lucide-react";
 import { momentsApi } from "@/api/momentsApi";
 import {
@@ -153,8 +151,14 @@ function seededAvatar(seed: string) {
 }
 
 function compactMetric(value: number | null | undefined) {
-  if (!value || value <= 0) return "—";
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+  if (!value || value <= 0) return "0";
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: value >= 10_000 ? 0 : 1,
+  })
+    .format(value)
+    .replace(/\s+/g, "")
+    .toUpperCase();
 }
 
 function parseDurationValue(value: string | number | undefined): number | null {
@@ -374,11 +378,6 @@ function sortMomentCards(cards: MomentCard[], selectedBestOf: string, creatorCou
   });
 }
 
-function pickFeaturedMoment(cards: MomentCard[]) {
-  if (cards.length === 0) return null;
-  return [...cards].sort((a, b) => (b.raw.aiRankScore ?? 0) - (a.raw.aiRankScore ?? 0) || b.likeCount - a.likeCount)[0]!;
-}
-
 function averageDurationLabel(cards: MomentCard[]) {
   const durations = cards.map((c) => c.durationSeconds).filter((v): v is number => typeof v === "number" && v > 0);
   if (durations.length === 0) return "—";
@@ -401,43 +400,89 @@ function ClanIconBadge({ type }: { type: string }) {
   return <span className={`${base} bg-gray-500/20 text-gray-400`}>A</span>;
 }
 
+function CreatorRankBadge({ rank }: { rank: number }) {
+  const styles =
+    rank === 1
+      ? "border-amber-400/60 bg-amber-400/15 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.35)]"
+      : rank === 2
+        ? "border-slate-300/50 bg-slate-300/10 text-slate-200"
+        : rank === 3
+          ? "border-orange-500/50 bg-orange-500/15 text-orange-300"
+          : "border-white/10 bg-white/5 text-white/45";
+  return (
+    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border font-tech text-[10px] font-black ${styles}`}>
+      {rank}
+    </span>
+  );
+}
+
 function GameBadge({ game, size = "sm" }: { game: string; size?: "sm" | "xs" }) {
   const text = size === "xs" ? "font-tech text-[8px] font-black uppercase tracking-wide" : "font-tech text-[9px] font-black uppercase tracking-wide";
-  if (game === "ROBOWARS") return <div className={`rounded border border-sky-500/35 bg-sky-950/80 px-2 py-0.5 text-sky-400 select-none ${text}`}>{game}</div>;
-  if (game === "HIGHWAY HUSTLE") return <div className={`rounded border border-amber-500/35 bg-amber-950/80 px-2 py-0.5 text-amber-300 select-none ${text}`}>{game}</div>;
-  return <div className={`rounded border border-purple-500/35 bg-purple-950/80 px-2 py-0.5 text-[#d6acff] select-none ${text}`}>{game}</div>;
+  if (game === "ROBOWARS") return <div className={`inline-flex max-w-full rounded border border-sky-500/35 bg-sky-950/80 px-2 py-0.5 text-sky-400 select-none ${text}`}><span className="truncate">{game}</span></div>;
+  if (game === "HIGHWAY HUSTLE") return <div className={`inline-flex max-w-full rounded border border-amber-500/35 bg-amber-950/80 px-2 py-0.5 text-amber-300 select-none ${text}`}><span className="truncate">{game}</span></div>;
+  return <div className={`inline-flex max-w-full rounded border border-purple-500/35 bg-purple-950/80 px-2 py-0.5 text-[#d6acff] select-none ${text}`}><span className="truncate">{game}</span></div>;
 }
 
-function MediaTypeBadge({ contentType, size = "sm" }: { contentType: "image" | "video"; size?: "sm" | "xs" }) {
-  const text = size === "xs" ? "font-tech text-[8px] font-black tracking-wide" : "font-tech text-[9px] font-black tracking-wide";
-  if (contentType === "video") return (
-    <div className={`flex items-center gap-1 rounded border border-sky-400/30 bg-sky-950/80 px-1.5 py-0.5 text-sky-300 ${text}`}>
-      <Video className="h-2.5 w-2.5" /><span>VID</span>
-    </div>
-  );
-  return (
-    <div className={`flex items-center gap-1 rounded border border-emerald-400/30 bg-emerald-950/80 px-1.5 py-0.5 text-emerald-300 ${text}`}>
-      <ImageIcon className="h-2.5 w-2.5" /><span>IMG</span>
-    </div>
-  );
-}
+function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void }) {
+  const hasDuration = item.duration !== "—";
+  const likeCount = item.likes;
+  const commentCount = compactMetric(item.raw.numComments);
 
-function MomentFeedCard({ item, onOpen, onBookmarkToggle, isAuthenticated }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void; isAuthenticated: boolean }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
-      <button type="button" onClick={() => onOpen(item)} className="group relative aspect-[16/8.7] cursor-pointer overflow-hidden bg-black/40 text-left">
-        <img src={item.thumbnail} alt={item.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
-        <div className="absolute left-3 top-3"><GameBadge game={item.game} /></div>
-        <div className="absolute right-3 top-3 flex items-center gap-1.5"><MediaTypeBadge contentType={item.contentType} /><div className="rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">{item.duration}</div></div>
-        {item.contentType === "video" && <div className="absolute inset-0 flex items-center justify-center"><div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]"><Play className="ml-0.5 h-5 w-5 fill-white text-white" /></div></div>}
-      </button>
-      <div className="flex flex-1 flex-col justify-between p-2.5">
-        <div>
-          <h3 onClick={() => onOpen(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">{item.title}</h3>
-          <div className="mt-1 flex items-center justify-between"><div className="flex items-center gap-1.5 text-[11px] text-white/50"><span>by {item.creator}</span><Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" /></div><div className="flex items-center gap-1.5 text-[10px] text-white/40"><ClanIconBadge type={item.clanIconType} /><span className="max-w-[90px] truncate">{item.clanName}</span></div></div>
+      <button type="button" onClick={() => onOpen(item)} className="group relative aspect-video cursor-pointer bg-black/20 p-2 text-left">
+        <div className="relative h-full w-full overflow-hidden rounded-md bg-black/40">
+          <img src={item.thumbnail} alt={item.title} loading="lazy" className="h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.02]" />
+          {item.contentType === "video" && <div className="absolute inset-0 flex items-center justify-center"><div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]"><Play className="ml-0.5 h-5 w-5 fill-white text-white" /></div></div>}
         </div>
-        <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45"><div className="flex items-center gap-3"><span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span></div><div className="flex items-center gap-2">{isAuthenticated && <div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}><MomentShareDialog moment={item.raw} triggerVariant="icon" /></div>}<button type="button" onClick={() => onBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400"><Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} /></button></div></div>
+      </button>
+      <div className="flex flex-1 flex-col justify-between p-3 sm:p-3.5">
+        <div>
+          <h3 onClick={() => onOpen(item)} className="line-clamp-2 cursor-pointer text-[15px] font-semibold leading-snug text-white/90 transition hover:text-purple-400 sm:text-sm">{item.title}</h3>
+          <div className="mt-1.5 flex flex-col gap-1.5 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+            <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/50">
+              <span className="truncate">by {item.creator}</span>
+              <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+              <ClanIconBadge type={item.clanIconType} />
+              <span className="max-w-[110px] truncate">{item.clanName}</span>
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {hasDuration ? (
+              <span className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-[8px] font-black uppercase tracking-wide text-white/65">
+                <Clock className="h-2.5 w-2.5" />
+                {item.duration}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <div className="mt-3 flex min-w-0 items-center justify-between gap-2 border-t border-white/6 pt-2 text-xs font-semibold text-white/45">
+          <div className="min-w-0 max-w-[42%] shrink truncate">
+            <GameBadge game={item.game} size="xs" />
+          </div>
+          <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 sm:gap-1">
+            <span className="inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-white/45 sm:px-2">
+              <Heart className="h-4 w-4" />
+              <span className="font-tech text-[10px] font-bold tracking-wide">{likeCount}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onOpen(item)}
+              className="inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-white/45 transition hover:bg-white/5 hover:text-purple-300 sm:px-2"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="font-tech text-[10px] font-bold tracking-wide">{commentCount}</span>
+            </button>
+            <div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}>
+              <MomentShareDialog moment={item.raw} triggerVariant="icon" />
+            </div>
+            <button type="button" onClick={() => onBookmarkToggle(item.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/30 transition hover:bg-white/5 hover:text-purple-400">
+              <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
+            </button>
+          </div>
+        </div>
       </div>
     </article>
   );
@@ -453,7 +498,7 @@ function FilterDropdown({ label, options, value, onSelect, activeDropdown, name,
     <div className="relative">
       <button
         onClick={() => onToggle(name)}
-        className="flex h-[34px] max-w-[9.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white [text-shadow:0_0_10px_rgba(255,255,255,0.35)] transition hover:border-white/20 hover:text-white sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
+        className="flex h-[34px] min-w-[8.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white [text-shadow:0_0_10px_rgba(255,255,255,0.35)] transition hover:border-white/20 hover:text-white sm:min-w-0 sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
       >
         <span className="truncate">{value}</span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/70" />
@@ -677,7 +722,21 @@ export function AllMomentsPage() {
   }, [allKnownMoments]);
 
   const discoverCards = useMemo(() => discoverMoments.map((m) => deriveMomentCard(m, bookmarkedIds)), [discoverMoments, bookmarkedIds]);
-  const featuredMoment = useMemo(() => pickFeaturedMoment(discoverCards), [discoverCards]);
+
+  const trendingGames = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const m of allKnownMoments) {
+      const game = deriveGame(m);
+      counts.set(game, (counts.get(game) ?? 0) + 1);
+    }
+    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const max = entries[0]?.[1] ?? 1;
+    return entries.map(([game, count]) => ({
+      game,
+      count,
+      pct: Math.max(10, Math.round((count / max) * 100)),
+    }));
+  }, [allKnownMoments]);
 
   const sourceCards = useMemo(() => {
     if (activeTab === "MY MOMENTS") {
@@ -796,52 +855,40 @@ export function AllMomentsPage() {
   }, [activeTab, discoverQuery.isError, isAuthenticated]);
 
   return (
-    <div className="min-h-full text-white" style={{ backgroundColor: "#03070d" }}>
+    <div className={isBrowseAll ? "min-h-full text-white" : "moments-page-root flex min-h-0 flex-1 flex-col text-white"} style={{ backgroundColor: "#03070d" }}>
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
-      <section className="w-full px-4 py-5 sm:px-6 lg:px-8">
-        <div className="space-y-4">
+      <section className={isBrowseAll ? "w-full px-3 py-4 sm:px-6 sm:py-5 lg:px-8" : "moments-page-shell flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-6 sm:py-5 lg:px-8"}>
+        {isBrowseAll ? (
+          <Link
+            to="/moments"
+            className="mb-4 inline-flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Moments
+          </Link>
+        ) : null}
 
-          <div className="min-w-0 space-y-4">
-            {isBrowseAll ? (
-              <Link
-                to="/moments"
-                className="inline-flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/55 transition hover:text-white"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Back to Moments
-              </Link>
-            ) : null}
+        <div className={isBrowseAll ? "space-y-4" : "moments-sticky-header shrink-0 space-y-4"}>
 
-            <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#04080f]/80 px-4 py-4 sm:px-5 sm:py-5">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(154,53,255,0.18),transparent_45%),radial-gradient(circle_at_4%_100%,rgba(33,144,255,0.12),transparent_42%)]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/70 to-transparent" />
-              <div className="relative flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/[0.07] px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.3em] text-cyan-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)]" />
-                    One feed · every world
-                  </div>
-                  <h1 className="mt-3 flex items-center gap-2.5 font-tech text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#9a35ff]/40 bg-[#9a35ff]/[0.12] text-[#c98bff] shadow-[0_0_16px_rgba(154,53,255,0.28)]">
-                      <Video className="h-5 w-5" />
-                    </span>
-                    <span className="text-gradient-arena">Moments</span>
-                  </h1>
-                  <p className="mt-2.5 max-w-xl text-[13px] font-medium leading-relaxed text-white/80">
-                    Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleCreateOpenChange(true)}
-                  data-tour="moments-create"
-                  className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:-translate-y-0.5 hover:bg-[#8525eb] hover:shadow-[0_0_24px_rgba(154,53,255,0.55)]"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Create Moment</span>
-                </button>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
+                  Moments
+                </h1>
+                <p className="mt-1.5 max-w-xl text-sm text-white/55">
+                  Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => handleCreateOpenChange(true)}
+                data-tour="moments-create"
+                className="flex h-10 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#9a35ff] px-4 font-tech text-[11px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:-translate-y-0.5 hover:bg-[#8525eb] hover:shadow-[0_0_24px_rgba(154,53,255,0.55)] sm:w-auto"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Moment</span>
+              </button>
             </div>
 
             <div className="-mx-1 flex items-center gap-4 overflow-x-auto border-b border-white/8 px-1 font-tech text-xs font-bold tracking-wide scrollbar-none select-none sm:gap-6" data-tour="moments-tabs">
@@ -856,20 +903,15 @@ export function AllMomentsPage() {
                 </button>
               ))}
             </div>
-          </div>
 
-          <div className={isBrowseAll ? "min-w-0 space-y-4" : "moments-page-grid grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
-            <div className={isBrowseAll ? "min-w-0 space-y-4" : "moments-main-column flex min-w-0 min-h-0 flex-col"}>
-            <div className={isBrowseAll ? "space-y-4" : "shrink-0 space-y-4"}>
-
-            <div className="relative z-30 flex min-w-0 flex-wrap items-center gap-2" data-tour="moments-filters">
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div className="relative z-30 flex min-w-0 flex-col gap-2 sm:gap-3 xl:flex-row xl:items-center" data-tour="moments-filters">
+              <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 scrollbar-none sm:flex-wrap sm:overflow-visible sm:pb-0">
                 <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
                 <FilterDropdown label="Mode" options={["ALL MODES", "AI ARENA", "TRASH TALK", "LEAGUE"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
                 <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
                 <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>
-              <div className="flex min-w-[10rem] flex-1 basis-[10rem] items-center gap-2">
+              <div className="flex w-full min-w-0 items-center gap-2 xl:max-w-[26rem] xl:flex-1">
                 <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/55" />
                   <input
@@ -919,7 +961,13 @@ export function AllMomentsPage() {
             </div>
             */}
 
-            <div className="flex items-center justify-between gap-3 pt-3">
+        </div>
+
+        <div className={isBrowseAll ? "space-y-4" : "moments-page-scroll min-h-0 flex-1"}>
+          <div className={isBrowseAll ? "space-y-4" : "moments-page-grid grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
+            <div className={isBrowseAll ? "space-y-4" : "moments-main-column min-w-0 space-y-4"}>
+
+            <div className="flex items-center justify-between gap-3 pt-1">
               <h2 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">MOMENTS</h2>
               {showViewMore ? (
                 <Link
@@ -931,19 +979,15 @@ export function AllMomentsPage() {
                 </Link>
               ) : null}
             </div>
-            </div>
 
-            <div
-              ref={isBrowseAll ? undefined : feedScrollRef}
-              className={isBrowseAll ? "space-y-4" : "moments-feed-scroll xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-0.5 xl:pt-1"}
-            >
+            <div className="space-y-4">
 
             {(discoverQuery.isLoading
               || (activeTab === "MY MOMENTS" && myMomentsQuery.isLoading)
               || (activeTab === "BOOKMARKS" && bookmarksQuery.isLoading)
               || (activeTab === "RECENTLY WATCHED" && recentlyWatchedQuery.isLoading)
             ) ? (
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-2"}`} data-tour="moments-grid">
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
                     <div className="aspect-[16/8.7] bg-white/5" />
@@ -969,76 +1013,16 @@ export function AllMomentsPage() {
               </div>
             ) : (
               <>
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-2"}`}>
+              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`}>
                 {displayMoments.slice(0, isBrowseAll ? undefined : 6).map((item) => (
-                  <article key={item.id} className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
-                    <button
-                      type="button"
-                      onClick={() => openMoment(item)}
-                      className="group relative aspect-[16/8.7] cursor-pointer overflow-hidden bg-black/40 text-left"
-                    >
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-all duration-300 group-hover:via-black/30" />
-                      <div className="absolute left-3 top-3"><GameBadge game={item.game} /></div>
-                      <div className="absolute right-3 top-3 flex items-center gap-1.5">
-                        <MediaTypeBadge contentType={item.contentType} />
-                        <div className="rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[9px] font-black tracking-wide text-white">{item.duration}</div>
-                      </div>
-                      {item.contentType === "video" && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]">
-                            <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
-                          </div>
-                        </div>
-                      )}
-                    </button>
-
-                    <div className="flex flex-1 flex-col justify-between p-2.5">
-                      <div>
-                        <h3 onClick={() => openMoment(item)} className="cursor-pointer truncate text-sm font-semibold leading-snug text-white/90 transition hover:text-purple-400">
-                          {item.title}
-                        </h3>
-                        <div className="mt-1 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-[11px] text-white/50">
-                            <span>by {item.creator}</span>
-                            <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-white/40">
-                            <ClanIconBadge type={item.clanIconType} />
-                            <span className="max-w-[90px] truncate">{item.clanName}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between border-t border-white/6 pt-2 text-xs font-semibold text-white/45">
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1"><Heart className="h-4 w-4 text-white/30" />{item.likes}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {isAuthenticated && <div
-                            className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            <MomentShareDialog moment={item.raw} triggerVariant="icon" />
-                          </div>}
-                          <button type="button" onClick={() => handleBookmarkToggle(item.id)} className="cursor-pointer text-white/30 transition hover:text-purple-400">
-                            <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
+                  <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} />
                 ))}
               </div>
 
               {!isBrowseAll && displayMoments.length > 6 ? (
-                <div className="grid gap-4 pt-1 sm:grid-cols-2 lg:grid-cols-2">
+                <div className="grid gap-4 pt-1 sm:grid-cols-2 lg:grid-cols-3">
                   {displayMoments.slice(6).map((item) => (
-                    <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} isAuthenticated={isAuthenticated} />
+                    <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} />
                   ))}
                 </div>
               ) : null}
@@ -1061,7 +1045,7 @@ export function AllMomentsPage() {
           </div>
 
           {!isBrowseAll ? (
-          <aside className="moments-sidebar-column space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)] xl:sticky xl:top-0 xl:max-h-[calc(100dvh-11rem)] xl:overflow-y-auto xl:overscroll-contain xl:pr-0.5">
+          <aside className="moments-sidebar-column space-y-3 rounded-xl border border-purple-500/15 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.09),transparent_34%)] p-2 shadow-[0_0_30px_rgba(154,53,255,0.06)]">
 
             {/* <section className="arena-panel relative overflow-hidden border-white/8 bg-[#04080f]/95 p-3 text-center">
               <div className="mx-auto grid h-10 w-10 place-items-center rounded-md border border-purple-400/20 bg-purple-500/10 text-purple-300">
@@ -1080,65 +1064,63 @@ export function AllMomentsPage() {
               </button>
             </section> */}
 
-            {/* Featured moment */}
-            <div className="arena-panel relative space-y-2.5 overflow-hidden border-white/8 bg-[#04080f]/95 p-3">
-              <h3 className="font-tech text-xs font-semibold uppercase tracking-wider text-white/86">FEATURED MOMENT</h3>
-
-              <button
-                type="button"
-                onClick={() => openMoment(featuredMoment)}
-                className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded border border-white/8 bg-black/40 text-left"
-              >
-                <img
-                  src={featuredMoment?.thumbnail ?? momentFeatured}
-                  alt={featuredMoment?.title ?? "Featured Moment"}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute left-3 top-3"><GameBadge game={featuredMoment?.game ?? "ARENA HIGHLIGHTS"} size="xs" /></div>
-                <div className="absolute right-3 top-3 flex items-center gap-1.5">
-                  <MediaTypeBadge contentType={featuredMoment?.contentType ?? "image"} size="xs" />
-                  <div className="rounded border border-white/10 bg-[#03070d]/80 px-1.5 py-0.5 font-tech text-[8px] font-black tracking-wide text-white">{featuredMoment?.duration ?? "—"}</div>
-                </div>
-                {featuredMoment?.contentType === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.5)]">
-                      <Play className="ml-0.5 h-4.5 w-4.5 fill-white text-white" />
-                    </div>
+            {/* Trending games */}
+            <div className="arena-panel relative space-y-3 overflow-hidden border-white/8 bg-[#04080f]/95 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-1.5 font-tech text-xs font-semibold uppercase tracking-wider text-white/86">
+                  <TrendingUp className="h-3.5 w-3.5 text-[#c98bff]" />
+                  TRENDING GAMES
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {discoverQuery.isLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="animate-pulse space-y-1.5 py-0.5">
+                        <div className="h-3 w-2/3 rounded bg-white/10" />
+                        <div className="h-1 w-full rounded-full bg-white/5" />
+                      </div>
+                    ))}
                   </div>
+                ) : trendingGames.length === 0 ? (
+                  <div className="rounded border border-white/8 bg-white/[0.02] px-3 py-4 text-center text-[11px] text-white/45">
+                    Trending games appear once moments start rolling in.
+                  </div>
+                ) : (
+                  trendingGames.map((entry, index) => (
+                    <Link
+                      key={entry.game}
+                      to={buildMomentsBrowseHref({
+                        category: "TRENDING",
+                        game: entry.game,
+                        mode: "ALL MODES",
+                        bestOf: "BEST OF",
+                        time: "ANY TIME",
+                        q: "",
+                        tab: "DISCOVER",
+                      })}
+                      className="group flex items-center gap-3 rounded-lg px-1 py-0.5 transition hover:bg-white/5"
+                    >
+                      <span className="w-3 shrink-0 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-semibold text-white/90 transition group-hover:text-purple-300">{entry.game}</span>
+                          <span className="shrink-0 font-tech text-[10px] text-white/50">
+                            {entry.count} {entry.count === 1 ? "Moment" : "Moments"}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/5">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#9a35ff] to-[#52cbff] transition-all"
+                            style={{ width: `${entry.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-white/25 transition group-hover:text-purple-300" />
+                    </Link>
+                  ))
                 )}
-              </button>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <h4 className="cursor-pointer text-sm font-bold text-white transition hover:text-purple-400">
-                    {featuredMoment?.title ?? "No featured moment yet"}
-                  </h4>
-                  <div className="flex shrink-0 items-center gap-1 text-[10px] text-white/50">
-                    <span>by {featuredMoment?.creator ?? "ARENA"}</span>
-                    <Hexagon className="h-3 w-3 fill-[#9a35ff] text-[#9a35ff]" />
-                  </div>
-                </div>
-                <p className="line-clamp-2 text-[11px] font-medium leading-relaxed text-white/55">
-                  {featuredMoment?.description ?? "As soon as fresh moments land in the feed, the best-performing clip shows up here."}
-                </p>
               </div>
-
-              <div className="flex items-center justify-between border-t border-white/6 pt-2.5 text-[10px] font-semibold text-white/45">
-                <span className="flex items-center gap-1.5"><Eye className="h-4 w-4 text-white/30" />{featuredMoment?.views ?? "—"}</span>
-                <span className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-white/30" />{featuredMoment?.likes ?? "—"}</span>
-                <span className="flex items-center gap-1.5"><Share2 className="h-4 w-4 text-white/30" />{featuredMoment ? featuredMoment.raw.numComments.toLocaleString() : "—"}</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => openMoment(featuredMoment)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-[#9a35ff] py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(154,53,255,0.3)] transition hover:bg-[#8525eb] hover:shadow-[0_0_20px_rgba(154,53,255,0.5)]"
-              >
-                <span>WATCH NOW</span>
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </button>
             </div>
 
             {/* Top creators */}
@@ -1162,7 +1144,7 @@ export function AllMomentsPage() {
                 ) : (topCreatorsQuery.data ?? []).map((creator, index) => (
                   <div key={creator.walletAddress} className="flex items-center justify-between py-0.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="w-3 shrink-0 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
+                      <CreatorRankBadge rank={index + 1} />
                       <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
                         <img src={seededAvatar(creator.walletAddress)} alt="" className="h-full w-full object-cover" />
                       </div>
@@ -1180,7 +1162,7 @@ export function AllMomentsPage() {
             </div>
           </aside>
           ) : null}
-        </div>
+          </div>
         </div>
       </section>
 

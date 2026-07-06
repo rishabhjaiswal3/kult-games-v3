@@ -2600,52 +2600,83 @@ button[aria-label="close modal"]:hover {
 
 .moments-feed-scroll {
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+}
+
+.moments-page-scroll {
+  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
 }
 
-.moments-sidebar-column {
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(154, 53, 255, 0.25) transparent;
-}
-
-.moments-sidebar-column::-webkit-scrollbar {
-  width: 4px;
-}
-
-.moments-sidebar-column::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background: rgba(154, 53, 255, 0.25);
-}
-
-.moments-feed-scroll::-webkit-scrollbar {
+.moments-page-scroll::-webkit-scrollbar {
   width: 6px;
 }
 
-.moments-feed-scroll::-webkit-scrollbar-thumb {
+.moments-page-scroll::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background: rgba(154, 53, 255, 0.35);
 }
 
+.moments-sticky-header {
+  background: rgba(3, 7, 13, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.moments-sidebar-column {
+  overscroll-behavior: contain;
+}
+
 @media (min-width: 1280px) {
+  .moments-page-root {
+    height: calc(100dvh - 5.5rem);
+    max-height: calc(100dvh - 5.5rem);
+    overflow: hidden;
+  }
+
+  .moments-page-shell {
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .moments-page-scroll {
+    overflow-y: auto;
+    padding-bottom: 2.5rem;
+  }
+
   .moments-page-grid {
     align-items: start;
-    height: calc(100dvh - 11rem);
-    max-height: calc(100dvh - 11rem);
   }
 
-  .moments-main-column {
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
+  .moments-sidebar-column {
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
+}
+
+@media (max-width: 1279px) {
+  .moments-page-root {
+    overflow: visible;
+    height: auto;
+    max-height: none;
   }
 
-  .moments-feed-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
+  .moments-page-scroll {
+    overflow: visible;
+    padding-bottom: 2rem;
+  }
+
+  .moments-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding-bottom: 0.5rem;
+  }
+
+  .moments-sidebar-column {
+    position: static;
   }
 }
 

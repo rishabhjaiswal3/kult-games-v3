@@ -79,9 +79,11 @@ export function AppShell() {
             >
               {showDashboardTopbar ? <DashboardTopbar /> : null}
               {showTopbar ? <AppTopbar /> : null}
-              <Suspense fallback={<PageRouteFallback />}>
-                <Outlet context={shellOutletContext} />
-              </Suspense>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <Suspense fallback={<PageRouteFallback />}>
+                  <Outlet context={shellOutletContext} />
+                </Suspense>
+              </div>
             </div>
           ) : (
             <div ref={mainScrollRef} className="arena-scroll mx-auto min-h-0 w-full max-w-full flex-1 flex-col overflow-y-auto overflow-x-hidden pb-32 sm:pb-0">
