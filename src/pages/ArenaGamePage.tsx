@@ -35,6 +35,8 @@ import {
   Shield,
   Zap,
   MessageSquare,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -666,17 +668,8 @@ function AgentBanner({
         />
 
         <div className="flex shrink-0 flex-col items-center justify-center px-2 sm:px-4">
-          <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center">
-            <span className="absolute inset-0 animate-ping rounded-full bg-primary/10" />
-            <div className="relative flex h-full w-full items-center justify-center rounded-full border border-primary/50 bg-primary/15 shadow-[0_0_20px_hsl(268_100%_70%/0.3)]">
-              <Swords className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-          </div>
-          <span className="font-display text-base sm:text-xl font-black mt-1 text-gradient">
+          <span className="font-display text-2xl font-black text-gradient sm:text-4xl">
             VS
-          </span>
-          <span className="font-tech text-[8px] uppercase tracking-widest text-white/30 mt-0.5">
-            {mode}
           </span>
         </div>
 
@@ -1005,18 +998,35 @@ function BattleResultOverlay({
   result,
   commentary,
   storageHashes,
+  myAgent,
+  opponent,
   onHome,
   onShareMoment,
 }: {
   result: UnityBattleResult;
   commentary?: string | null;
   storageHashes?: string[];
+  myAgent?: AiArenaAgent | null;
+  opponent?: AiArenaAgent | null;
   onHome: () => void;
   onShareMoment?: () => void;
 }) {
-  const winnerColor = clanColor(result.winnerClan);
-  const loserColor  = clanColor(result.loserClan);
-
+  const winnerAgent =
+    (result.myAgentWon ? myAgent : opponent) ??
+    [myAgent, opponent].find((agent) => agent?.id === result.winnerId);
+  const loserAgent =
+    (result.myAgentWon ? opponent : myAgent) ??
+    [myAgent, opponent].find((agent) => agent?.id === result.loserId);
+  const winnerClan = result.winnerClan || winnerAgent?.clan || "";
+  const loserClan = result.loserClan || loserAgent?.clan || "";
+  const winnerName = result.winnerName || winnerAgent?.name || shortId(result.winnerId);
+  const loserName = result.loserName || loserAgent?.name || shortId(result.loserId);
+  const winnerArchetype = result.winnerArchetype || winnerAgent?.archetype || "Agent";
+  const loserArchetype = result.loserArchetype || loserAgent?.archetype || "Agent";
+  const winnerColor = clanColor(winnerClan);
+  const loserColor  = clanColor(loserClan);
+  const winnerRank = getRankFromElo(result.winnerElo);
+  const loserRank = getRankFromElo(result.loserElo);
   const durationMin = Math.floor(result.durationSeconds / 60);
   const durationSec = result.durationSeconds % 60;
   const durationStr = `${String(durationMin).padStart(2, "0")}:${String(durationSec).padStart(2, "0")}`;
@@ -1079,87 +1089,127 @@ function BattleResultOverlay({
         <div className="grid grid-cols-2 gap-2.5 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3">
           {/* Winner */}
           <div
-            className="rounded-xl border p-2 sm:rounded-2xl sm:p-3.5"
-            style={{ borderColor: `${winnerColor}35`, background: `${winnerColor}09` }}
+            className="relative overflow-hidden rounded-xl border p-2 shadow-[0_0_34px_rgba(154,53,255,0.16),inset_0_1px_0_rgba(255,255,255,0.14)] sm:rounded-2xl sm:p-3"
+            style={{ borderColor: `${winnerColor}80`, background: `radial-gradient(circle at 18% 12%, ${winnerColor}38, transparent 40%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.10), transparent 36%), linear-gradient(135deg, ${winnerColor}18, rgba(255,255,255,0.055))` }}
           >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Crown className="h-3 w-3 text-yellow-400 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/65">
-                Winner
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${winnerColor}, rgba(255,255,255,0.85), ${winnerColor}, transparent)` }} />
+            <div className="pointer-events-none absolute inset-x-4 top-0 h-16 bg-gradient-to-b from-white/10 to-transparent" />
+            <div className="mb-2 flex items-center gap-2">
+              <ArenaAgentThumbnail
+                agent={{
+                  id: result.winnerId,
+                  name: winnerName,
+                  archetype: winnerArchetype,
+                }}
+                size="md"
+                className="h-12 w-12 rounded-xl border-primary/70 shadow-[0_0_24px_rgba(154,53,255,0.35)]"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center gap-1.5">
+                  <Crown className="h-3 w-3 shrink-0 text-yellow-400" />
+                  <span className="font-tech text-[8px] uppercase tracking-widest text-white/90">
+                    Winner
+                  </span>
+                </div>
+                <div
+                  className="font-display text-[13px] font-bold leading-tight truncate drop-shadow-[0_0_12px_rgba(255,255,255,0.18)] sm:text-sm"
+                  style={{ color: "#ffffff" }}
+                >
+                  {winnerName}
+                </div>
+                <div className="truncate font-tech text-[8px] uppercase tracking-wider text-white/75">
+                  {winnerArchetype}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="rounded-full border px-2 py-0.5 font-tech text-[7px] uppercase tracking-widest shadow-[0_0_12px_rgba(255,255,255,0.08)]"
+                style={{
+                  borderColor: `${winnerRank.color}70`,
+                  background: `${winnerRank.color}20`,
+                  color: winnerRank.color,
+                }}
+              >
+                {winnerRank.shortName}
               </span>
             </div>
-            <div
-              className="font-display text-sm font-bold leading-tight truncate"
-              style={{ color: winnerColor }}
-            >
-              {result.winnerName}
-            </div>
-            <div className="font-tech text-[9px] text-white/60 uppercase tracking-wider mt-0.5">
-              {result.winnerArchetype}
-            </div>
-            {result.winnerClan && (
-              <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-0.5"
-                style={{ color: winnerColor }}
-              >
-                {result.winnerClan}
-              </div>
-            )}
-            <div className="mt-1.5 space-y-0.5">
+            <div className="mt-1.5 space-y-0.5 rounded-lg border border-white/14 bg-white/[0.07] px-2 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/55">HP</span>
+                <span className="text-white/80">HP</span>
                 <span style={{ color: winnerColor }}>{result.winnerHpPercent}%</span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/18">
                 <div
-                  className="h-full rounded-full"
-                  style={{ width: `${result.winnerHpPercent}%`, background: winnerColor }}
+                  className="h-full rounded-full shadow-[0_0_12px_currentColor]"
+                  style={{ width: `${result.winnerHpPercent}%`, background: winnerColor, color: winnerColor }}
                 />
               </div>
-              <div className="font-mono text-[9px] text-white/50 text-right">
-                {result.winnerElo.toLocaleString()} ELO
+              <div className="flex items-center justify-between font-mono text-[9px] text-white/72">
+                <span>{winnerRank.name}</span>
+                <span>{result.winnerElo.toLocaleString()} ELO</span>
               </div>
             </div>
           </div>
 
           {/* Loser */}
           <div
-            className="rounded-xl border p-2 sm:rounded-2xl sm:p-3.5"
-            style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+            className="relative overflow-hidden rounded-xl border p-2 shadow-[0_0_30px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] sm:rounded-2xl sm:p-3"
+            style={{ borderColor: "rgba(255,255,255,0.24)", background: "radial-gradient(circle at 18% 12%, rgba(255,255,255,0.14), transparent 40%), radial-gradient(circle at 82% 0%, rgba(154,53,255,0.10), transparent 38%), linear-gradient(135deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028))" }}
           >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Shield className="h-3 w-3 text-white/20 shrink-0" />
-              <span className="font-tech text-[9px] uppercase tracking-widest text-white/65">
-                Loser
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-4 top-0 h-16 bg-gradient-to-b from-white/8 to-transparent" />
+            <div className="mb-2 flex items-center gap-2">
+              <ArenaAgentThumbnail
+                agent={{
+                  id: result.loserId,
+                  name: loserName,
+                  archetype: loserArchetype,
+                }}
+                size="md"
+                className="h-12 w-12 rounded-xl opacity-95 grayscale-[0.1] shadow-[0_0_20px_rgba(255,255,255,0.14)]"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center gap-1.5">
+                  <Shield className="h-3 w-3 shrink-0 text-white/45" />
+                  <span className="font-tech text-[8px] uppercase tracking-widest text-white/85">
+                    Loser
+                  </span>
+                </div>
+                <div className="font-display text-[13px] font-bold leading-tight truncate text-white/95 drop-shadow-[0_0_10px_rgba(255,255,255,0.14)] sm:text-sm">
+                  {loserName}
+                </div>
+                <div className="truncate font-tech text-[8px] uppercase tracking-wider text-white/72">
+                  {loserArchetype}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="rounded-full border px-2 py-0.5 font-tech text-[7px] uppercase tracking-widest shadow-[0_0_12px_rgba(255,255,255,0.06)]"
+                style={{
+                  borderColor: `${loserRank.color}55`,
+                  background: `${loserRank.color}18`,
+                  color: loserRank.color,
+                }}
+              >
+                {loserRank.shortName}
               </span>
             </div>
-            <div className="font-display text-sm font-bold leading-tight truncate text-white/80">
-              {result.loserName}
-            </div>
-            <div className="font-tech text-[9px] text-white/60 uppercase tracking-wider mt-0.5">
-              {result.loserArchetype}
-            </div>
-            {result.loserClan && (
-              <div
-                className="font-tech text-[8px] uppercase tracking-widest mt-0.5"
-                style={{ color: `${loserColor}60` }}
-              >
-                {result.loserClan}
-              </div>
-            )}
-            <div className="mt-1.5 space-y-0.5">
+            <div className="mt-1.5 space-y-0.5 rounded-lg border border-white/14 bg-white/[0.06] px-2 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
               <div className="flex justify-between font-mono text-[9px]">
-                <span className="text-white/55">HP</span>
-                <span className="text-white/30">{result.loserHpPercent}%</span>
+                <span className="text-white/75">HP</span>
+                <span className="text-white/65">{result.loserHpPercent}%</span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-white/8">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/16">
                 <div
-                  className="h-full rounded-full bg-white/20"
+                  className="h-full rounded-full bg-white/45 shadow-[0_0_10px_rgba(255,255,255,0.25)]"
                   style={{ width: `${result.loserHpPercent}%` }}
                 />
               </div>
-              <div className="font-mono text-[9px] text-white/50 text-right">
-                {result.loserElo.toLocaleString()} ELO
+              <div className="flex items-center justify-between font-mono text-[9px] text-white/68">
+                <span>{loserRank.name}</span>
+                <span>{result.loserElo.toLocaleString()} ELO</span>
               </div>
             </div>
           </div>
@@ -1268,6 +1318,7 @@ export default function ArenaGamePage() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [unityLoaded, setUnityLoaded] = useState(false);
   const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Battle result — populated when Unity fires arenaBattleEnd CustomEvent
   const [battleResult, setBattleResult] = useState<UnityBattleResult | null>(null);
@@ -1291,6 +1342,7 @@ export default function ArenaGamePage() {
   const prevStatusRef = useRef<string | null>(null);
   const resultPostedRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const trackedAudioContextsRef = useRef<Set<AudioContext>>(new Set());
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
@@ -1372,6 +1424,84 @@ export default function ArenaGamePage() {
       console.warn('[Unity warning]', msg);
     }
   };
+
+  useEffect(() => {
+    const win = window as any;
+    if (win.__kultAudioContextPatched) return;
+
+    const contexts = trackedAudioContextsRef.current;
+    const patchAudioContext = (key: "AudioContext" | "webkitAudioContext") => {
+      const Original = win[key];
+      if (!Original) return;
+
+      function PatchedAudioContext(this: AudioContext, ...args: unknown[]) {
+        const context = new Original(...args) as AudioContext;
+        contexts.add(context);
+        return context;
+      }
+
+      PatchedAudioContext.prototype = Original.prototype;
+      Object.setPrototypeOf(PatchedAudioContext, Original);
+      win[key] = PatchedAudioContext;
+    };
+
+    patchAudioContext("AudioContext");
+    patchAudioContext("webkitAudioContext");
+    win.__kultAudioContextPatched = true;
+    win.__kultAudioContexts = contexts;
+  }, []);
+
+  const applyAudioMute = useCallback((muted: boolean) => {
+    document.querySelectorAll<HTMLMediaElement>("audio, video").forEach((el) => {
+      el.muted = muted;
+      el.volume = muted ? 0 : 1;
+    });
+
+    const unity = unityInstanceRef.current;
+    const win = window as any;
+    const possibleContexts = [
+      unity?.Module?.SDL2?.audioContext,
+      unity?.Module?.audioContext,
+      unity?.Module?.WEBAudio?.audioContext,
+      win.unityAudioContext,
+      win.WEBAudio?.audioContext,
+      win.Module?.SDL2?.audioContext,
+      win.Module?.audioContext,
+      win.Module?.WEBAudio?.audioContext,
+      ...(Array.from(win.__kultAudioContexts ?? []) as AudioContext[]),
+      ...(Array.from(trackedAudioContextsRef.current) as AudioContext[]),
+    ].filter(Boolean) as AudioContext[];
+
+    for (const audioContext of new Set(possibleContexts)) {
+      if (muted && audioContext.state === "running") {
+        void audioContext.suspend();
+      } else if (!muted && audioContext.state === "suspended") {
+        void audioContext.resume();
+      }
+    }
+
+    [
+      ["GameManager", "SetMuted", muted ? "1" : "0"],
+      ["GameManager", "SetMute", muted ? "1" : "0"],
+      ["GameManager", "SetMasterVolume", muted ? "0" : "1"],
+      ["AudioManager", "SetMuted", muted ? "1" : "0"],
+      ["AudioManager", "SetMasterVolume", muted ? "0" : "1"],
+    ].forEach(([objectName, methodName, value]) => {
+      try {
+        unity?.SendMessage?.(objectName, methodName, value);
+      } catch (_err) {
+        // Unity builds without these hooks still mute through WebAudio/media handling above.
+      }
+    });
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted((current) => {
+      const next = !current;
+      applyAudioMute(next);
+      return next;
+    });
+  }, [applyAudioMute]);
 
   // Load Unity once both agents are resolved (so we can write full data to localStorage)
   useEffect(() => {
@@ -1510,6 +1640,12 @@ export default function ArenaGamePage() {
       localStorage.removeItem('arenaBattlePayload');
     };
   }, []);
+
+  useEffect(() => {
+    if (unityLoaded) {
+      applyAudioMute(isMuted);
+    }
+  }, [applyAudioMute, isMuted, unityLoaded]);
 
   // Listen for Unity's battle-end CustomEvent ("arenaBattleEnd")
   // When received:
@@ -1824,10 +1960,10 @@ export default function ArenaGamePage() {
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[9px] text-white/25 hidden sm:block">
+          <span className="hidden font-mono text-[9px] text-emerald-400 sm:block">
             BATTLE
           </span>
-          <span className="font-mono text-[10px] text-white/50">
+          <span className="font-mono text-[10px] text-sky-400">
             {shortId(battleId)}
           </span>
 
@@ -1838,7 +1974,7 @@ export default function ArenaGamePage() {
             </span>
           )}
           {gamePhase === "ended" && (
-            <span className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/40">
+            <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/12 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
               ENDED
             </span>
           )}
@@ -1881,6 +2017,15 @@ export default function ArenaGamePage() {
 
         {/* Canvas area */}
         <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="arena-game-canvas">
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={isMuted ? "Unmute battle sound" : "Mute battle sound"}
+            title={isMuted ? "Unmute" : "Mute"}
+            className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white/75 shadow-[0_0_22px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-primary/55 hover:bg-primary/15 hover:text-white"
+          >
+            {isMuted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
+          </button>
 
           {/* Error state — centred */}
           {isError && (
@@ -2031,6 +2176,8 @@ export default function ArenaGamePage() {
                   result={battleResult}
                   commentary={battleCommentary}
                   storageHashes={memoryRootHashes}
+                  myAgent={myAgent}
+                  opponent={opponent}
                   onHome={() => navigate(-1)}
                   onShareMoment={shareMomentHandler}
                 />

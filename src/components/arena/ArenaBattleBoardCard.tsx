@@ -1,11 +1,22 @@
 import { Link } from "react-router-dom";
-import { Loader2, Search } from "lucide-react";
+import { ArrowUpRight, Loader2, Search, Swords } from "lucide-react";
+import { ClanIcon } from "@/components/arena/ClanIcon";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { leaderboardElo, leaderboardName } from "@/hooks/useEnrichedArenaLeaderboard";
 import type { ArenaBattleBoardItem } from "@/hooks/useArenaBattleBoard";
 
 function formatLobbyMode(mode?: string | null) {
   return mode ? mode.replaceAll("_", " ") : "Open Lobby";
+}
+
+function clanIconType(clan?: string | null) {
+  const normalized = clan?.trim().toLowerCase();
+  if (!normalized) return null;
+  if (normalized === "0g" || normalized === "og" || normalized === "zerog") return "zerog";
+  if (normalized === "base") return "base";
+  if (normalized === "solana") return "solana";
+  if (normalized === "okx") return "okx";
+  return null;
 }
 
 function Fighter({
@@ -16,6 +27,8 @@ function Fighter({
   align?: "left" | "right";
 }) {
   const isRight = align === "right";
+  const iconType = clanIconType(agent.clan);
+  const clanLabel = agent.clan ?? agent.archetype ?? "AI Arena";
 
   return (
     <div className={`flex min-w-0 flex-col items-center ${isRight ? "text-right" : "text-left"}`}>
@@ -23,23 +36,26 @@ function Fighter({
         {isRight ? null : (
           <ArenaAgentThumbnail
             agent={{ id: agent.id, archetype: agent.archetype ?? undefined, name: agent.name ?? undefined }}
-            className="h-14 w-14 rounded-xl transition duration-500 group-hover:scale-105 group-hover:shadow-[0_0_18px_rgba(154,53,255,0.3)]"
+            className="h-14 w-14 rounded-xl border border-white/10 transition duration-500 group-hover:scale-105 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.3)] sm:h-16 sm:w-16"
             size="md"
           />
         )}
         <div className="min-w-0">
-          <div className="truncate font-tech text-[11px] sm:text-xs">{agent.name ?? "Unknown agent"}</div>
-          <div className="truncate text-[10px] text-muted-foreground">{agent.clan ?? agent.archetype ?? "AI Arena"}</div>
+          <div className="truncate font-tech text-[11px] text-white sm:text-xs">{agent.name ?? "Unknown agent"}</div>
+          <div className={`flex items-center gap-0.5 text-[10px] text-muted-foreground ${isRight ? "justify-end" : "justify-start"}`}>
+            {iconType ? <ClanIcon type={iconType} className={iconType === "zerog" ? "h-2.5 w-3.5" : "h-3 w-3"} /> : null}
+            <span className="truncate">{clanLabel}</span>
+          </div>
         </div>
         {isRight ? (
           <ArenaAgentThumbnail
             agent={{ id: agent.id, archetype: agent.archetype ?? undefined, name: agent.name ?? undefined }}
-            className="h-14 w-14 rounded-xl transition duration-500 group-hover:scale-105 group-hover:shadow-[0_0_18px_rgba(154,53,255,0.3)]"
+            className="h-14 w-14 rounded-xl border border-white/10 transition duration-500 group-hover:scale-105 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.3)] sm:h-16 sm:w-16"
             size="md"
           />
         ) : null}
       </div>
-      <div className="mt-2 w-full text-[10px] text-muted-foreground">ELO {Math.round(agent.elo ?? 0)}</div>
+      <div className="mt-1.5 w-full font-tech text-[10px] text-muted-foreground">ELO {Math.round(agent.elo ?? 0).toLocaleString()}</div>
     </div>
   );
 }
@@ -55,6 +71,49 @@ function FindingOpponent({ waitLabel, modeLabel }: { waitLabel: string; modeLabe
       <div className="mt-2 inline-flex items-center gap-1 text-[10px] text-accent">
         <Search className="h-3 w-3" />
         Waiting {waitLabel}
+      </div>
+    </div>
+  );
+}
+
+function AgentStatPanel({
+  title,
+  rank,
+  elo,
+  wins,
+  losses,
+  draws,
+  align = "left",
+}: {
+  title: string;
+  rank: number;
+  elo: number;
+  wins?: number;
+  losses?: number;
+  draws?: number;
+  align?: "left" | "right";
+}) {
+  const totalBattles = (wins ?? 0) + (losses ?? 0) + (draws ?? 0);
+
+  return (
+    <div className={`rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.018] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition duration-300 group-hover:border-accent/25 ${align === "right" ? "text-right" : "text-left"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="truncate font-tech text-[9px] uppercase tracking-[0.14em] text-accent/75">{title}</div>
+        <div className="rounded-full border border-white/10 bg-black/20 px-2 py-0.5 font-tech text-[8px] text-white/55">Rank #{rank}</div>
+      </div>
+      <div className="mt-1.5 grid grid-cols-3 gap-2 text-center">
+        <div>
+          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">ELO</div>
+          <div className="mt-0.5 font-tech text-[11px] text-white/78">{Math.round(elo).toLocaleString()}</div>
+        </div>
+        <div>
+          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">Wins</div>
+          <div className="mt-0.5 font-tech text-[11px] text-white/78">{(wins ?? 0).toLocaleString()}</div>
+        </div>
+        <div>
+          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">Battles</div>
+          <div className="mt-0.5 font-tech text-[11px] text-white/78">{totalBattles.toLocaleString()}</div>
+        </div>
       </div>
     </div>
   );
@@ -82,10 +141,11 @@ function CardAction({
         type="button"
         onClick={onAction}
         disabled={actionDisabled || actionLoading}
-        className="inline-flex items-center gap-1.5 text-xs text-accent transition hover:underline disabled:cursor-not-allowed disabled:opacity-60 font-tech"
+        className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
         <span>{actionLabel}</span>
+        <ArrowUpRight className="h-3.5 w-3.5" />
       </button>
     );
   }
@@ -93,8 +153,9 @@ function CardAction({
   if (!actionTo) return null;
 
   return (
-    <Link to={actionTo} className="text-xs text-accent hover:underline font-tech">
-      {actionLabel}
+    <Link to={actionTo} className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white">
+      <span>{actionLabel}</span>
+      <ArrowUpRight className="h-3.5 w-3.5" />
     </Link>
   );
 }
@@ -156,23 +217,20 @@ export function ArenaBattleBoardCard({
     );
   }
 
+  const leftElo = leaderboardElo(item.left);
+  const rightElo = leaderboardElo(item.right);
+
   return (
-    <article className="card-glass group relative overflow-hidden rounded-xl border border-white/10 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-red-400/45 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(239,68,68,0.16)] sm:p-5">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(239,68,68,0.12),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <article className="card-glass group relative overflow-hidden rounded-2xl border border-red-400/20 p-3.5 shadow-[0_18px_50px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-500 hover:-translate-y-1.5 hover:border-red-400/55 hover:shadow-[0_26px_65px_rgba(0,0,0,0.46),0_0_34px_rgba(239,68,68,0.18)] sm:p-4">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(239,68,68,0.16),transparent_32%),radial-gradient(circle_at_10%_18%,rgba(154,53,255,0.16),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.045),transparent_42%)] opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-red-300/60 to-transparent" />
       <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
       <div className="relative z-10">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-center sm:text-left">
-        <div className="flex items-center gap-2">
+      <div className="mb-3.5 flex justify-center text-center">
+        <div className="flex items-center justify-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-3 py-1 shadow-[0_0_18px_rgba(239,68,68,0.12)]">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           <span className="font-tech text-xs tracking-wider text-red-400">LIVE</span>
         </div>
-        <div className="text-center sm:text-right min-w-0">
-          <div className="text-xs">Ranked Battle</div>
-          <div className="text-[10px] text-muted-foreground">
-            #{item.left.rank} vs #{item.right.rank}
-          </div>
-        </div>
-        <div className="font-tech text-sm text-accent">LIVE</div>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
@@ -185,7 +243,12 @@ export function ArenaBattleBoardCard({
             elo: leaderboardElo(item.left),
           }}
         />
-        <span className="font-display text-2xl text-muted-foreground">VS</span>
+        <div className="flex flex-col items-center gap-1">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/25 bg-black/30 shadow-[0_0_22px_rgba(154,53,255,0.14)]">
+            <Swords className="h-4 w-4 text-accent" />
+          </span>
+          <span className="font-display text-base text-muted-foreground">VS</span>
+        </div>
         <Fighter
           align="right"
           agent={{
@@ -198,7 +261,26 @@ export function ArenaBattleBoardCard({
         />
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+      <div className="mt-3.5 grid grid-cols-1 gap-2.5 border-t border-white/10 pt-3 sm:grid-cols-2">
+        <AgentStatPanel
+          title={leaderboardName(item.left)}
+          rank={item.left.rank}
+          elo={leftElo}
+          wins={item.left.wins}
+          losses={item.left.losses}
+          draws={item.left.draws}
+        />
+        <AgentStatPanel
+          title={leaderboardName(item.right)}
+          rank={item.right.rank}
+          elo={rightElo}
+          wins={item.right.wins}
+          losses={item.right.losses}
+          draws={item.right.draws}
+          align="right"
+        />
+      </div>
+      <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3">
         <CardAction
           actionLabel={actionLabel}
           actionTo={actionTo}
@@ -206,7 +288,7 @@ export function ArenaBattleBoardCard({
           actionDisabled={actionDisabled}
           actionLoading={actionLoading}
         />
-        <span className="text-xs text-muted-foreground">{item.watchLabel}</span>
+        {item.watchLabel ? <span className="text-xs text-muted-foreground">{item.watchLabel}</span> : null}
       </div>
       </div>
     </article>

@@ -19,7 +19,7 @@ export type ArenaRankedBattleItem = {
   id: string;
   left: AiArenaLeaderboardEntry;
   right: AiArenaLeaderboardEntry;
-  watchLabel: string;
+  watchLabel?: string;
 };
 
 export type ArenaBattleBoardItem = ArenaOpenLobbyItem | ArenaRankedBattleItem;
@@ -39,13 +39,11 @@ function buildRankedBattleItems(entries: AiArenaLeaderboardEntry[], maxPairs: nu
     const left = entries[i];
     const right = entries[i + 1];
     if (!left || !right) continue;
-    const watchBase = Math.max(120, Math.round(((left.wins ?? 0) + (right.wins ?? 0)) * 4 + (leaderboardElo(left) + leaderboardElo(right)) / 20));
     items.push({
       kind: "ranked",
       id: `ranked-${left.agentId}-${right.agentId}`,
       left,
       right,
-      watchLabel: `${watchBase.toLocaleString()} watching`,
     });
   }
   return items;

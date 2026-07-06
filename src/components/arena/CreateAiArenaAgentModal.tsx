@@ -112,16 +112,23 @@ export function CreateAiArenaAgentModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <ArenaDialogContent size="md">
+        {/* Decorative background */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_86%_-6%,rgba(154,53,255,0.20),transparent_46%),radial-gradient(circle_at_-4%_104%,rgba(0,137,255,0.16),transparent_46%),radial-gradient(circle_at_50%_120%,rgba(0,240,128,0.06),transparent_40%)]" />
+          <div className="absolute inset-0 ai-grid-overlay opacity-[0.05]" />
+          <div className="absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#9a35ff]/12 blur-3xl" />
+          <div className="absolute -right-20 bottom-8 h-56 w-56 rounded-full bg-[#0089ff]/10 blur-3xl" />
+        </div>
         <ArenaDialogHeader>
           <ArenaDialogTitle className="font-display text-xl tracking-tight sm:text-2xl">
             Create <span className="text-gradient-hero">AI Agent</span>
           </ArenaDialogTitle>
-          <ArenaDialogDescription className="text-xs sm:text-sm">
+          <ArenaDialogDescription className="text-xs text-white/90 sm:text-sm">
             One step creates your arena agent and its custodial hot wallet. Choose clan, archetype, name, and backstory.
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
-        <ArenaDialogBody className="space-y-4">
+        <ArenaDialogBody className="space-y-4 scrollbar-none">
           {selectedCard ? (
             <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[hsl(268_40%_11%/0.9)] to-[hsl(268_32%_6%/0.92)]">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(154,53,255,0.20),transparent_55%),radial-gradient(circle_at_0%_100%,rgba(0,137,255,0.12),transparent_50%)]" />
@@ -146,20 +153,19 @@ export function CreateAiArenaAgentModal({
                   )}
                 </div>
                 <div className="min-w-0 flex-1 text-center sm:text-left">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 font-display text-[9px] tracking-[0.22em] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 font-display text-[9px] tracking-[0.22em] text-white/80">
                     <span className="h-1 w-1 rounded-full bg-[#c084fc] shadow-[0_0_6px_rgba(192,132,252,0.9)]" />
                     SELECTED ARCHETYPE
                   </span>
                   <p className={cn("mt-2 font-display text-xl font-bold tracking-wide", selectedCard.accent)}>
                     {selectedCard.archetype}
                   </p>
-                  <p className="font-display text-sm font-semibold text-foreground/90">{selectedCard.codename}</p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{selectedCard.tagline}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/85">{selectedCard.tagline}</p>
                   <div className="mt-2.5 flex flex-wrap justify-center gap-1.5 sm:justify-start">
                     {selectedCard.role.split("·").map((r) => (
                       <span
                         key={r}
-                        className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-muted-foreground/90"
+                        className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-white/80"
                       >
                         {r.trim()}
                       </span>
@@ -171,7 +177,7 @@ export function CreateAiArenaAgentModal({
           ) : null}
 
           <div className="space-y-2">
-            <Label className="arena-label">Clan</Label>
+            <Label className="arena-label flex items-center gap-2 text-white"><span className="h-3 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#c084fc] to-[#7f9cff] shadow-[0_0_6px_rgba(192,132,252,0.6)]" />Clan</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {AI_ARENA_CLAN_OPTIONS.filter((c) => c.value !== "OKX").map((c) => (
                 <button
@@ -180,10 +186,11 @@ export function CreateAiArenaAgentModal({
                   onClick={() => setClan(c.value)}
                   className={cn(
                     "arena-chip",
-                    clan === c.value &&
-                      ((c.value as string) === "OKX"
+                    clan === c.value
+                      ? (c.value as string) === "OKX"
                         ? "border-[#e0a528] bg-gradient-to-br from-[#f7d774]/20 via-[#e0a528]/15 to-[#9a6b12]/10 text-[#f7d774] shadow-[0_0_10px_rgba(224,165,40,0.4)]"
-                        : "arena-chip-active-cyan"),
+                        : "arena-chip-active-cyan"
+                      : "bg-gradient-to-b from-white/[0.06] to-transparent text-white",
                   )}
                 >
                   <div className="flex items-center justify-center gap-1.5">
@@ -203,7 +210,7 @@ export function CreateAiArenaAgentModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="arena-label">Archetype</Label>
+            <Label className="arena-label flex items-center gap-2 text-white"><span className="h-3 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#c084fc] to-[#7f9cff] shadow-[0_0_6px_rgba(192,132,252,0.6)]" />Archetype</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {AI_ARENA_ARCHETYPE_OPTIONS.map((a) => (
                 <button
@@ -212,7 +219,7 @@ export function CreateAiArenaAgentModal({
                   onClick={() => setArchetype(a)}
                   className={cn(
                     "arena-chip font-display text-[10px] font-semibold tracking-wide sm:text-[11px]",
-                    archetype === a && "arena-chip-active-purple"
+                    archetype === a ? "arena-chip-active-purple" : "bg-gradient-to-b from-white/[0.06] to-transparent text-white"
                   )}
                 >
                   {a}
@@ -222,8 +229,8 @@ export function CreateAiArenaAgentModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="arena-agent-name" className="arena-label">
-              Name
+            <Label htmlFor="arena-agent-name" className="arena-label flex items-center gap-2 text-white">
+              <span className="h-3 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#c084fc] to-[#7f9cff] shadow-[0_0_6px_rgba(192,132,252,0.6)]" />Name
             </Label>
             <input
               id="arena-agent-name"
@@ -237,8 +244,8 @@ export function CreateAiArenaAgentModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="arena-agent-backstory" className="arena-label">
-              Backstory
+            <Label htmlFor="arena-agent-backstory" className="arena-label flex items-center gap-2 text-white">
+              <span className="h-3 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#c084fc] to-[#7f9cff] shadow-[0_0_6px_rgba(192,132,252,0.6)]" />Backstory
             </Label>
             <Textarea
               id="arena-agent-backstory"
