@@ -9,6 +9,7 @@ import { LeaguePageHeader } from "@/components/league/LeaguePageHeader";
 import { LeaguePolymarketBoard } from "@/components/league/LeaguePolymarketBoard";
 import { LeagueQuestionsCarousel } from "@/components/league/LeagueQuestionsCarousel";
 import { LeagueRecentPicks } from "@/components/league/LeagueRecentPicks";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LeagueRivalries } from "@/components/league/LeagueRivalries";
 import { LeagueStatsSidebar } from "@/components/league/LeagueStatsSidebar";
 import { LeagueTodayPredictions } from "@/components/league/LeagueTodayPredictions";
@@ -175,7 +176,14 @@ function LeagueAgentDesk() {
       {isLoading ? (
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-24 w-full rounded" />
+            <div key={i} className="space-y-2 rounded-none border border-white/10 bg-black/40 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <Skeleton className="h-3 w-16 bg-white/10" />
+                <Skeleton className="h-3 w-8 bg-white/10" />
+              </div>
+              <Skeleton className="h-3 w-20 bg-white/8" />
+              <Skeleton className="h-3 w-full bg-white/6" />
+            </div>
           ))}
         </div>
       ) : calls.length === 0 ? (

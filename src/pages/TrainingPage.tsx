@@ -6,6 +6,7 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
+import { TrainingJobListSkeleton } from "@/components/skeleton/TrainingJobRowSkeleton";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
   trainingBoosts,
@@ -441,10 +442,7 @@ const TrainingPage = () => {
 
             <div className="space-y-4 divide-y divide-white/6 p-5">
               {trainingJobsQ.isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-white/55">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading training jobs…
-                </div>
+                <TrainingJobListSkeleton />
               ) : filteredJobs.length > 0 ? (
                 filteredJobs.map((job, index) => (
                   <div
@@ -530,10 +528,7 @@ const TrainingPage = () => {
 
             <div className="space-y-3 p-5">
               {globalJobsQ.isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-white/55">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading global training jobs…
-                </div>
+                <TrainingJobListSkeleton count={3} />
               ) : visibleGlobalJobs.length > 0 ? (
                 visibleGlobalJobs.map((job) => (
                   <div

@@ -23,6 +23,8 @@ import {
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { AgentTableSkeletonRows } from "@/components/skeleton/AgentTableRowSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { AiArenaAgent, AiArenaBattle } from "@/types/aiArenaGateway";
 
 // Asset Imports
@@ -589,11 +591,7 @@ const AutonomousPage = () => {
                   </thead>
                   <tbody className="divide-y divide-white/6 font-medium">
                     {myAgentsQ.isLoading ? (
-                      <tr>
-                        <td colSpan={6} className="px-5 py-10 text-center">
-                          <Loader2 className="mx-auto h-5 w-5 animate-spin text-purple-400" />
-                        </td>
-                      </tr>
+                      <AgentTableSkeletonRows />
                     ) : tableAgents.length > 0 ? (
                       tableAgents.map((agent: AiArenaAgent) => (
                         <AgentRow key={agent.id} agent={agent} trainingJobs={allJobs} />
@@ -849,11 +847,21 @@ const AutonomousPage = () => {
                   })}
                 </div>
               ) : recentBattles.length === 0 ? (
-                <p className="text-[10px] text-white/40 font-semibold text-center py-4">
-                  {allJobsQ.isLoading || battlesQ.isLoading
-                    ? "Loading activity..."
-                    : "No recent activity. Enable autonomous mode to begin."}
-                </p>
+                allJobsQ.isLoading || battlesQ.isLoading ? (
+                  <div className="space-y-2.5">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-2.5">
+                        <Skeleton className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/10" />
+                        <Skeleton className="h-2.5 w-32 bg-white/6" />
+                        <Skeleton className="ml-auto h-2.5 w-10 bg-white/6" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-white/40 font-semibold text-center py-4">
+                    No recent activity. Enable autonomous mode to begin.
+                  </p>
+                )
               ) : null}
 
               <button className="w-full bg-[#0a0f1b]/60 border border-white/8 hover:border-purple-500/35 hover:bg-purple-950/10 text-purple-400 text-[10px] font-tech font-bold uppercase tracking-wider py-2.5 rounded transition flex items-center justify-center gap-1.5 cursor-pointer">

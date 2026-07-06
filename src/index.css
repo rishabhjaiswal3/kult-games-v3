@@ -1088,6 +1088,12 @@ button[aria-label="close modal"]:hover {
 }
 
 @layer utilities {
+  /* Generic loading placeholder — sized/shaped per call site via width/height utilities. */
+  .skeleton {
+    background-color: hsl(0 0% 100% / 0.06);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;

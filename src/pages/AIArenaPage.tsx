@@ -1560,10 +1560,7 @@ function MyBattleSection() {
       </div>
 
       {myAgentsQ.isLoading || memoriesQ.isLoading ? (
-        <div className="card-glass flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-8 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading your battles...
-        </div>
+        <ArenaBattleBoardGridSkeleton count={3} className="flex-1" />
       ) : memoriesQ.isError || memories.length === 0 ? (
         <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
           No completed or cancelled battles are available yet. Start matchmaking to enter the arena.

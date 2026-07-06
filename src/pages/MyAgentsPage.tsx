@@ -27,6 +27,8 @@ import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailMo
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
+import { AgentCardSkeletonGrid } from "@/components/skeleton/AgentCardSkeleton";
+import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton/ArenaBattleBoardSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { ClanIcon } from "@/components/arena/ClanIcon";
@@ -251,10 +253,7 @@ function BattlesCarouselSection({
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center gap-2 py-10 text-sm text-white/50">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading your battles...
-        </div>
+        <ArenaBattleBoardGridSkeleton count={3} className="mt-4" />
       ) : isError ? (
         <div className="py-10 text-center text-sm text-amber-100/80">
           Could not load your battles right now.
@@ -579,9 +578,7 @@ const MyAgentsPage = () => {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" data-tour="my-agents-grid">
         {myAgentsQ.isLoading || waitingForArenaSession ? (
-          <div className="arena-panel col-span-full border-white/8 bg-[#04080f]/95 px-5 py-10 text-center text-sm text-white/55">
-            {waitingForArenaSession ? "Connecting to AI Arena…" : "Loading your agents…"}
-          </div>
+          <AgentCardSkeletonGrid />
         ) : agents.length === 0 ? (
           <div className="arena-panel col-span-full border-dashed border-white/12 bg-[#04080f]/95 px-5 py-10 text-center">
             <p className="text-sm text-white/60">No AI Arena agents found for this wallet yet.</p>

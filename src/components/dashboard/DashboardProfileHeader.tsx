@@ -1,6 +1,7 @@
 import { Copy, Wallet } from "lucide-react";
 import type { FullPlayerProfile } from "@/types/api";
 import { initialsFromName, shortWallet } from "@/components/dashboard/profileAvatars";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type DashboardProfileHeaderProps = {
   profile: FullPlayerProfile | undefined;
@@ -47,9 +48,13 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
             <div className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-[#a84cff]">
               {isLoading ? "Loading KULT ID…" : "KULT ID // Shared profile"}
             </div>
-            <h1 className="mt-0.5 max-w-full break-words font-tech text-2xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 [overflow-wrap:anywhere] sm:text-3xl drop-shadow-sm">
-              {displayName}
-            </h1>
+            {isLoading ? (
+              <Skeleton className="mt-1 h-7 w-40 bg-white/10 sm:h-8" />
+            ) : (
+              <h1 className="mt-0.5 max-w-full break-words font-tech text-2xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 [overflow-wrap:anywhere] sm:text-3xl drop-shadow-sm">
+                {displayName}
+              </h1>
+            )}
             <p className="mt-1 max-w-full text-sm text-white/55">Your command center — agents, battles, and arena progress.</p>
             {walletAddress ? (
               <button
@@ -75,7 +80,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
                 {stat.label}
               </div>
               <div className="mt-1 text-sm font-black text-white tabular-nums drop-shadow-sm">
-                {stat.value}
+                {isLoading ? <Skeleton className="mx-auto h-3.5 w-8 bg-white/10" /> : stat.value}
               </div>
             </div>
           ))}

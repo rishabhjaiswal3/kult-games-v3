@@ -23,6 +23,7 @@ import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton/ArenaBattleBoardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
   AI_ARENA_DEFAULT_GAME_ID,
@@ -598,10 +599,7 @@ function MyBattlesCarouselSection({
       </div>
 
       {loading || memoriesQ.isLoading ? (
-        <div className="arena-panel flex items-center gap-2 px-5 py-8 text-sm text-white/55">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading your battles...
-        </div>
+        <ArenaBattleBoardGridSkeleton count={3} />
       ) : memoriesQ.isError || memories.length === 0 ? (
         <div className="arena-panel px-5 py-8 text-center">
           <Swords className="mx-auto h-7 w-7 text-white/20" />
@@ -728,6 +726,22 @@ function PerformerCard({ agent }: { agent: AiArenaAgent }) {
             <div className="text-[10px] text-white/45">Battles</div>
             <div className="text-lg font-semibold">{performerBattleCount(agent)}</div>
           </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function PerformerCardSkeleton() {
+  return (
+    <article className="arena-panel flex items-center gap-3 p-3" aria-hidden>
+      <Skeleton className="h-[86px] w-[70px] rounded bg-white/8" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <Skeleton className="h-3 w-2/3 bg-white/10" />
+        <Skeleton className="h-2.5 w-1/2 bg-white/6" />
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Skeleton className="h-5 w-10 bg-white/8" />
+          <Skeleton className="h-5 w-10 bg-white/8" />
         </div>
       </div>
     </article>
@@ -1672,10 +1686,10 @@ const BattlesPage = () => {
             <SectionTitle className="mt-0">YOUR TOP PERFORMERS</SectionTitle>
             <div className="mt-3 grid gap-3">
               {myAgentsQ.isLoading ? (
-                <div className="arena-panel flex items-center gap-2 p-4 text-sm text-white/55">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading your AI Arena agents…
-                </div>
+                <>
+                  <PerformerCardSkeleton />
+                  <PerformerCardSkeleton />
+                </>
               ) : topPerformerAgents.length > 0 ? (
                 topPerformerAgents.map((agent) => <PerformerCard key={agent.id} agent={agent} />)
               ) : (

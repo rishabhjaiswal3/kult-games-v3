@@ -8,6 +8,7 @@ import { playerApi } from "@/api/playerApi";
 import { LeaderboardPodium } from "@/components/leaderboard/LeaderboardPodium";
 import { LeaderboardSidebar } from "@/components/leaderboard/LeaderboardSidebar";
 import { LeaderboardTablePanel } from "@/components/leaderboard/LeaderboardTablePanel";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   arenaEntriesToDisplayPlayers,
   arenaEntryToDisplayPlayer,
@@ -343,7 +344,7 @@ const Leaderboard = () => {
                     {
                       label: "KP RANK",
                       value: kultProfileQ.isLoading
-                        ? "Loading..."
+                        ? null
                         : (kultProfile?.kultPointsRank ?? kultProfile?.rank) != null
                           ? `#${(kultProfile?.kultPointsRank ?? kultProfile?.rank)!.toLocaleString()}`
                           : "UNRANKED",
@@ -351,17 +352,19 @@ const Leaderboard = () => {
                     {
                       label: "KULT POINTS",
                       value: kultProfileQ.isLoading
-                        ? "Loading..."
+                        ? null
                         : (kultProfile?.kultPoints ?? kultProfile?.totalScore ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 }),
                     },
                     {
                       label: "GAMES RANKED",
-                      value: kultProfileQ.isLoading ? "Loading..." : (kultProfile?.gameScoresList.length ?? 0).toLocaleString(),
+                      value: kultProfileQ.isLoading ? null : (kultProfile?.gameScoresList.length ?? 0).toLocaleString(),
                     },
                   ].map((stat) => (
                     <div key={stat.label} className="arena-panel border border-white/8 bg-[#04080f]/95 p-4">
                       <div className="font-tech text-[9px] uppercase tracking-wider text-white/42">{stat.label}</div>
-                      <div className="mt-2 text-2xl font-bold text-white">{stat.value}</div>
+                      <div className="mt-2 text-2xl font-bold text-white">
+                        {stat.value ?? <Skeleton className="h-7 w-16 bg-white/8" />}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -404,7 +407,7 @@ const Leaderboard = () => {
                     {
                       label: "GLOBAL RANK",
                       value: myAgentsQ.isLoading || rankQ.isLoading
-                        ? "Loading..."
+                        ? null
                         : !firstAgent
                           ? "NO AGENT"
                           : myRank != null ? `#${myRank.toLocaleString()}` : "UNRANKED",
@@ -412,19 +415,21 @@ const Leaderboard = () => {
                     {
                       label: "ELO RATING",
                       value: myAgentsQ.isLoading
-                        ? "Loading..."
+                        ? null
                         : !firstAgent ? "-" : myElo.toLocaleString(),
                     },
                     {
                       label: "TOTAL BATTLES",
                       value: myAgentsQ.isLoading
-                        ? "Loading..."
+                        ? null
                         : !firstAgent ? "-" : myBattles.toLocaleString(),
                     },
                   ].map((stat) => (
                     <div key={stat.label} className="arena-panel border border-white/8 bg-[#04080f]/95 p-4">
                       <div className="font-tech text-[9px] uppercase tracking-wider text-white/42">{stat.label}</div>
-                      <div className="mt-2 text-2xl font-bold text-white">{stat.value}</div>
+                      <div className="mt-2 text-2xl font-bold text-white">
+                        {stat.value ?? <Skeleton className="h-7 w-16 bg-white/8" />}
+                      </div>
                     </div>
                   ))}
                 </div>

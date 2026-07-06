@@ -3,6 +3,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { Metric } from "@/components/dashboard/Metric";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 type DashboardLiveAgentPanelProps = {
@@ -39,8 +40,34 @@ export function DashboardLiveAgentPanel({
 }: DashboardLiveAgentPanelProps) {
   if (isLoading) {
     return (
-      <section data-tour="dashboard-agent" className="arena-panel flex min-h-[200px] items-center justify-center border-white/8 bg-[#04080f]/95 p-8">
-        <span className="font-tech text-[10px] uppercase tracking-wider text-white/40">Loading agent…</span>
+      <section
+        data-tour="dashboard-agent"
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60"
+        aria-busy="true"
+        aria-label="Loading agent"
+      >
+        <div className="grid lg:grid-cols-[280px_minmax(0,1fr)]">
+          <Skeleton className="h-[280px] rounded-none bg-white/8 lg:h-auto" />
+          <div className="space-y-4 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20 rounded bg-white/8" />
+                <Skeleton className="h-7 w-40 bg-white/10" />
+                <Skeleton className="h-3 w-28 bg-white/6" />
+              </div>
+              <Skeleton className="h-11 w-full max-w-[320px] rounded-md bg-white/8" />
+            </div>
+            <Skeleton className="h-1.5 w-full rounded-full bg-white/6" />
+            <div className="grid grid-cols-2 gap-0 rounded-md border border-white/10 bg-[#0a0f1b]/50 sm:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1.5 p-4">
+                  <Skeleton className="h-2.5 w-12 bg-white/6" />
+                  <Skeleton className="h-4 w-8 bg-white/8" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
     );
   }

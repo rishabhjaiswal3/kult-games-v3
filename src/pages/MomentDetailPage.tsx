@@ -22,6 +22,7 @@ import { MomentEngagementBar } from "@/components/moments/MomentEngagementBar";
 import { MomentGameBadge, deriveMomentGameLabel } from "@/components/moments/MomentGameBadge";
 import MomentThreadPanel from "@/components/moments/MomentThreadPanel";
 import { EditMomentDialog } from "@/components/moments/EditMomentDialog";
+import { MomentDetailSkeleton } from "@/components/skeleton/MomentDetailSkeleton";
 import { isMomentOwner } from "@/lib/momentOwnership";
 import type { Moment } from "@/types/api";
 
@@ -251,9 +252,7 @@ export function MomentDetailPage() {
           >
             <ArrowLeft className="h-4 w-4" /> Back to Moments
           </button>
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-[#9a35ff]" />
-          </div>
+          <MomentDetailSkeleton />
         </div>
       </div>
     );

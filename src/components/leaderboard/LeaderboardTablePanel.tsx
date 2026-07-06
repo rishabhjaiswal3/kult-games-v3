@@ -5,6 +5,39 @@ import { Button } from "@/components/ui/button";
 import AutoPlayVideo from "@/components/AutoPlayVideo";
 import leaderboardBackgroundVideo from "@/assets/leaderboard_background.mp4";
 import { getRankFromElo } from "@/utils/rankSystem";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function TableRowSkeleton({
+  showPerformanceColumns,
+  showLeagueColumn,
+}: {
+  showPerformanceColumns: boolean;
+  showLeagueColumn: boolean;
+}) {
+  return (
+    <tr aria-hidden>
+      <td className="px-5 py-4"><Skeleton className="h-3 w-6 bg-white/8" /></td>
+      <td className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 shrink-0 rounded bg-white/8" />
+          <Skeleton className="h-3 w-28 bg-white/8" />
+        </div>
+      </td>
+      <td className="px-5 py-4"><Skeleton className="h-3 w-16 bg-white/6" /></td>
+      {showPerformanceColumns ? (
+        <>
+          <td className="px-5 py-4 text-center"><Skeleton className="mx-auto h-3 w-6 bg-white/6" /></td>
+          <td className="px-5 py-4 text-center"><Skeleton className="mx-auto h-3 w-10 bg-white/6" /></td>
+          <td className="px-5 py-4 text-center"><Skeleton className="mx-auto h-3 w-6 bg-white/6" /></td>
+        </>
+      ) : null}
+      <td className="px-5 py-4 text-right"><Skeleton className="ml-auto h-3 w-16 bg-white/8" /></td>
+      {showLeagueColumn ? (
+        <td className="px-3 py-4 text-center"><Skeleton className="mx-auto h-7 w-7 rounded bg-white/8" /></td>
+      ) : null}
+    </tr>
+  );
+}
 
 function AgentThumb({ src, className }: { src: string; className: string }) {
   if (src.endsWith(".mp4")) {
@@ -148,11 +181,13 @@ export function LeaderboardTablePanel({
           </thead>
           <tbody className="divide-y divide-white/6 font-medium text-white/86">
             {isLoading ? (
-              <tr>
-                <td colSpan={columnCount} className="px-5 py-16 text-center font-tech text-white/45">
-                  LOADING RANKINGS…
-                </td>
-              </tr>
+              Array.from({ length: 8 }).map((_, i) => (
+                <TableRowSkeleton
+                  key={i}
+                  showPerformanceColumns={showPerformanceColumns}
+                  showLeagueColumn={showLeagueColumn}
+                />
+              ))
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columnCount} className="px-5 py-16 text-center font-tech text-white/45">
