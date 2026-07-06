@@ -32,10 +32,12 @@ import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
+import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
+import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -132,6 +134,15 @@ const agents = [
   },
 ];
 
+const topAgentRankColors = [
+  "var(--neon)",
+  "var(--lime)",
+  "var(--cyan)",
+  "var(--neon-2)",
+  "var(--amber)",
+  "var(--magenta)",
+];
+
 function ZeroGLogo({ className = "h-4 w-auto" }: { className?: string }) {
   return (
     <img
@@ -195,15 +206,17 @@ function ChainLogo({
   name,
   className = "h-3.5 w-auto",
   useLogosForChains = false,
+  zeroGClassName,
 }: {
   name: string;
   className?: string;
   useLogosForChains?: boolean;
+  zeroGClassName?: string;
 }) {
   const lower = name.toLowerCase();
   if (useLogosForChains) {
     if (lower === "0g" || lower === "og" || lower === "zerog") {
-      return <ZeroGLogo className={className} />;
+      return <ZeroGLogo className={zeroGClassName ?? className} />;
     }
     if (lower === "base") {
       return <BaseLogo className={className} />;
@@ -223,6 +236,12 @@ function shortBattleId(value?: string | null) {
   if (!value) return "—";
   if (value.length <= 14) return value;
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
+}
+
+function compactAgentName(name: string) {
+  const trimmed = name.trim();
+  if (trimmed.length <= 5) return trimmed;
+  return `${trimmed.slice(0, 3)}..${trimmed.slice(-2)}`;
 }
 
 type AiArenaMatchmakingContextValue = {
@@ -526,10 +545,10 @@ function Logo({
       <div
         className={`mt-1 flex-nowrap items-center gap-3 md:flex-col md:items-start md:gap-0 ${hideAttributionOnMobile ? "hidden md:flex" : "flex"}`}
       >
-        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-muted-foreground font-tech sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
+        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-white font-tech sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
           PRESENTED BY <KultLogo className="h-3.5 w-auto shrink-0" />
         </span>
-        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-muted-foreground font-tech md:mt-1 sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
+        <span className="flex shrink-0 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[8px] tracking-[0.18em] text-white font-tech md:mt-1 sm:gap-2 sm:text-[9px] sm:tracking-[0.3em]">
           POWERED BY <ZeroGLogo className="h-3.5 w-auto shrink-0" />
         </span>
       </div>
@@ -540,9 +559,6 @@ function Logo({
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? "mx-auto max-w-sm pt-80 text-center" : "max-w-xl md:max-w-sm xl:max-w-xl"}>
-      <span className={`${compact ? "hidden" : "inline-block"} px-2.5 py-0.5 text-[8px] sm:text-[9px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-3 md:hidden md:mb-5 xl:inline-block`}>
-        BUILT FOR WEB3
-      </span>
       <h1
         className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
           compact ? "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_28px_rgba(154,53,255,0.5)]" : "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl"
@@ -698,7 +714,7 @@ function Hero() {
       <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
         <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
         <div className="relative z-10 px-4 sm:px-6 pt-5">
-          <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white/50 min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
+          <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
             <span className="flex shrink-0 items-center gap-1">
               Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
             </span>
@@ -710,7 +726,7 @@ function Hero() {
         </div>
       </div>
       <div className="relative mx-auto hidden px-6 pt-8 pb-32 md:absolute md:inset-0 md:flex md:min-h-0 md:flex-col md:justify-end md:pb-6 xl:relative xl:min-h-[680px] xl:justify-center xl:pb-32">
-        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white/50 xl:mb-8">
+        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white xl:mb-8">
           <span className="flex items-center gap-1.5">
             Presented by <KultLogo className="h-4 w-auto" />
           </span>
@@ -1014,7 +1030,7 @@ const competeGames: CompeteGame[] = [
     video: warzoneVideo,
     image: heroTrio,
     tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
-    color: "#ff7a3c",
+    color: "#22c55e",
   },
   {
     title: "HIGHWAY HUSTLE",
@@ -1080,14 +1096,20 @@ function WhereAgentsCompete() {
                 className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
             )}
-            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-75 transition-opacity duration-500 group-hover:opacity-55`} />
+            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-85 transition-opacity duration-500 group-hover:opacity-65`} />
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/72 via-black/42 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#070910]/15 to-transparent transition duration-500 group-hover:from-[#070910]/85" />
             <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5 transition duration-500 group-hover:ring-[#c268ff]/45" />
             <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
 
             <span
-              className="absolute left-4 top-4 z-10 inline-flex w-fit rounded border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm"
-              style={{ color: game.color, borderColor: `${game.color}80`, background: `${game.color}26` }}
+              className="absolute left-4 top-4 z-10 inline-flex w-fit rounded-md border px-3 py-1.5 font-tech text-[9px] font-black uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.14)]"
+              style={{
+                color: game.color,
+                borderColor: `${game.color}cc`,
+                background: `linear-gradient(135deg, rgba(5,8,16,0.96), ${game.color}26)`,
+                textShadow: "none",
+              }}
             >
               {game.reputation}
             </span>
@@ -1120,11 +1142,17 @@ function WhereAgentsCompete() {
             className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/74 via-black/42 to-transparent" />
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 20% 0%, rgba(179,56,255,0.16), transparent 55%)" }} />
 
           <span
-            className="absolute left-4 top-4 z-10 inline-flex w-fit rounded border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wide backdrop-blur-sm"
-            style={{ color: "#d08bff", borderColor: "#b338ff80", background: "#b338ff26" }}
+            className="absolute left-4 top-4 z-10 inline-flex w-fit rounded-md border px-3 py-1.5 font-tech text-[9px] font-black uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-md"
+            style={{
+              color: "#e0a8ff",
+              borderColor: "#c65cffcc",
+              background: "linear-gradient(135deg, rgba(5,8,16,0.92), rgba(179,56,255,0.28))",
+              textShadow: "0 0 12px rgba(198,92,255,0.75)",
+            }}
           >
             Forecasting reputation
           </span>
@@ -1284,6 +1312,23 @@ function RankProgressionTimeline() {
 
 function TopAgents() {
   const ref = useRef<HTMLDivElement>(null);
+  const leaderboardQ = useAiArenaGlobalLeaderboard();
+  const liveAgents = useMemo(
+    () =>
+      (leaderboardQ.data?.entries ?? []).slice(0, 6).map((entry, index) => ({
+        rank: String(entry.rank ?? index + 1).padStart(2, "0"),
+        name: compactAgentName(entry.name?.trim() || `Agent ${entry.agentId.slice(0, 8)}`),
+        chain: entry.clan?.trim() || "AI Arena",
+        tier: entry.archetype?.trim() || "Agent",
+        lvl: Math.max(1, Math.round((entry.eloRating ?? entry.score ?? 0) / 100)),
+        power: (entry.eloRating ?? entry.score ?? 0).toLocaleString(),
+        img: getArenaAgentPortrait({ id: entry.agentId, archetype: entry.archetype }),
+        color: topAgentRankColors[index] ?? "var(--cyan)",
+      })),
+    [leaderboardQ.data?.entries]
+  );
+  const displayedAgents = liveAgents.length > 0 ? liveAgents : agents;
+
   const scroll = (dir: number) => {
     const scroller = ref.current;
     if (!scroller) return;
@@ -1344,9 +1389,9 @@ function TopAgents() {
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-none"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        {agents.map((a) => (
+        {displayedAgents.map((a) => (
           <div
-            key={a.name}
+            key={`${a.rank}-${a.name}`}
             className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -1397,8 +1442,19 @@ function TopAgents() {
                   {a.tier}
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground">
-                <ChainLogo name={a.chain} className="h-3.5 w-auto" />
+              <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:justify-start">
+                <span>Clan:</span>
+                <span className="inline-flex items-center gap-0.5">
+                  <span className="flex h-4 w-fit items-center justify-center">
+                    <ChainLogo
+                      name={a.chain}
+                      className="max-h-4 max-w-8 object-contain"
+                      zeroGClassName="max-h-3 max-w-6 object-contain"
+                      useLogosForChains
+                    />
+                  </span>
+                  <span>{a.chain}</span>
+                </span>
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs font-tech">
                 <span className="text-muted-foreground">LV. {a.lvl}</span>
@@ -1514,7 +1570,7 @@ function MyBattleSection() {
   const canNextBattle = battlePage < totalBattlePages - 1;
 
   return (
-    <div id="my-battles" className="flex h-full min-h-[420px] flex-col scroll-mt-24">
+    <div id="my-battles" className="flex h-full min-h-[360px] flex-col scroll-mt-24">
       <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">MY BATTLES</h3>
@@ -1582,49 +1638,61 @@ function MyBattleSection() {
                     return (
                       <div
                         key={memory.id}
-                        className="card-glass group relative h-full overflow-hidden rounded-xl border border-primary/20 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_22px_55px_rgba(0,0,0,0.42),0_0_30px_rgba(154,53,255,0.2)] lg:p-4 xl:p-5"
+                        className="card-glass group relative h-full overflow-hidden rounded-2xl border border-primary/25 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/70 hover:shadow-[0_26px_65px_rgba(0,0,0,0.46),0_0_34px_rgba(154,53,255,0.22)] lg:p-3.5 xl:p-4"
                       >
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.18),transparent_34%),radial-gradient(circle_at_8%_12%,rgba(34,211,238,0.10),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.045),transparent_42%)] opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
                         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
                         <div className="relative z-10">
                         <div className="flex items-center justify-between gap-3">
-                          <span className={`rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase ${
+                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase shadow-[0_0_18px_rgba(154,53,255,0.08)] ${
                             isCancelled
                               ? "border-white/20 bg-white/5 text-white/55"
                               : isWin
                               ? "border-emerald-400/35 bg-emerald-500/10 text-emerald-300"
                               : "border-rose-400/35 bg-rose-500/10 text-rose-300"
                           }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${isCancelled ? "bg-white/35" : isWin ? "bg-emerald-300" : "bg-rose-300"}`} />
                             {isCancelled ? "Cancelled" : isWin ? "Win" : "Loss"}
                           </span>
-                          <span className="font-tech text-[9px] uppercase text-accent">Battle Memory</span>
+                          <span className="inline-flex items-center gap-1.5 font-tech text-[9px] uppercase tracking-[0.16em] text-accent">
+                            <Sparkles className="h-3 w-3" />
+                            Battle Memory
+                          </span>
                         </div>
-                        <div className="mt-4 flex items-center justify-center gap-3 lg:mt-3">
+                        <div className="mt-3.5 flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                           {participants.map((agent, index) => (
                             <div key={agent.id} className="flex items-center gap-3">
-                              {index > 0 ? <span className="font-display text-sm font-bold text-primary">VS</span> : null}
+                              {index > 0 ? (
+                                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary shadow-[0_0_18px_rgba(154,53,255,0.16)]">
+                                  <Swords className="h-3.5 w-3.5" />
+                                </span>
+                              ) : null}
                               <div className="text-center">
                                 <ArenaAgentThumbnail
                                   agent={agent}
                                   size="md"
-                                  className="h-20 w-20 rounded-xl border-2 border-primary/25 transition duration-500 group-hover:scale-105 group-hover:border-primary/65 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.28)] lg:h-16 lg:w-16 xl:h-20 xl:w-20"
+                                  className="h-16 w-16 rounded-2xl border-2 border-primary/25 transition duration-500 group-hover:scale-105 group-hover:border-primary/70 group-hover:shadow-[0_0_22px_rgba(154,53,255,0.28)] xl:h-18 xl:w-18"
                                 />
-                                <p className="mt-1 max-w-20 truncate font-tech text-[8px] text-white/55">{agent.name}</p>
+                                <p className="mt-1.5 max-w-20 truncate font-tech text-[9px] text-white/65">{agent.name}</p>
                               </div>
                             </div>
                           ))}
                         </div>
-                        <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65 lg:mt-3 lg:text-[10px]">{memory.content}</p>
-                        <p className="mt-2 font-mono text-[10px] text-white/40 lg:mt-1.5">
-                          {new Date(memory.createdAt).toLocaleString()}
-                        </p>
+                        <div className="mt-3 rounded-xl border border-white/8 bg-white/[0.025] px-3.5 py-2.5">
+                          <p className="font-mono text-[11px] italic leading-relaxed text-white/70 lg:text-[10px]">{memory.content}</p>
+                          <p className="mt-2 font-mono text-[10px] text-white/40">
+                            {new Date(memory.createdAt).toLocaleString()}
+                          </p>
+                        </div>
                         {battleId ? (
                           <Link
                             to={`/arena/game/${battleId}`}
-                            className="mt-4 inline-flex items-center gap-2 font-tech text-[9px] font-bold uppercase text-primary hover:text-white lg:mt-3"
+                            className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1.5 font-tech text-[9px] font-bold uppercase text-primary shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-primary/70 hover:bg-primary/20 hover:text-white"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             Open Battle {shortBattleId(battleId)}
+                            <ArrowUpRight className="h-3.5 w-3.5" />
                           </Link>
                         ) : null}
                         </div>
@@ -1662,7 +1730,7 @@ function LiveBattles() {
   const previewItems = battleBoardQ.items.slice(0, 1);
 
   return (
-    <div className="flex h-full min-h-[420px] flex-col">
+    <div className="flex h-full min-h-[360px] flex-col">
       <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">LIVE BATTLES</h3>
@@ -1680,7 +1748,7 @@ function LiveBattles() {
             <ArenaBattleBoardCard
               key={item.id}
               item={item}
-              actionLabel={item.kind === "ranked" ? "Watch Live" : "View Battle"}
+              actionLabel={item.kind === "ranked" ? "Join Battle" : "View Battle"}
               actionTo={item.kind === "ranked" ? `/arena/game/${item.id}` : "/battles"}
             />
           ))}
