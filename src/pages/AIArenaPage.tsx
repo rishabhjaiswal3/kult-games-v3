@@ -1227,7 +1227,7 @@ function RankProgressionTimeline() {
                 <img
                   src={rank.image}
                   alt={rank.name}
-                  className="h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] lg:h-[60px] lg:w-[60px] xl:h-[76px] xl:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="p-1 h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] lg:h-[60px] lg:w-[60px] xl:h-[76px] xl:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
                   style={{ filter: `drop-shadow(0 0 8px ${rank.color}55)` }}
                 />
                 {/* Tier number badge */}
