@@ -111,6 +111,20 @@ function toNumber(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Parse a Polymarket timestamp to epoch ms. Handles ISO strings and numeric
+ *  epochs (seconds or ms). Returns 0 when absent/unparseable so such rows sink
+ *  to the bottom of a newest-first sort rather than jumping to the top. */
+function parseTimestamp(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value < 1e12 ? value * 1000 : value; // seconds → ms
+  }
+  if (typeof value === "string" && value) {
+    const ms = Date.parse(value);
+    return Number.isFinite(ms) ? ms : 0;
+  }
+  return 0;
+}
+
 type RawMarket = Record<string, unknown>;
 
 function normalizeMarket(raw: RawMarket): PolyMarket | null {
@@ -132,11 +146,8 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
   const noTokenId = noIdx >= 0 ? tokenIds[noIdx] : undefined;
 
   const volumeNum = toNumber(raw.volumeNum ?? raw.volume);
-  const createdRaw =
-    (typeof raw.createdAt === "string" && raw.createdAt) ||
-    (typeof raw.startDate === "string" && raw.startDate) ||
-    "";
-  const createdAt = createdRaw ? Date.parse(createdRaw) || 0 : 0;
+  // Prefer explicit creation time; fall back to startDate. Robust to string or numeric epochs.
+  const createdAt = parseTimestamp(raw.createdAt) || parseTimestamp(raw.startDate);
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
@@ -154,9 +165,11 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
 /** Fetch the top football markets by volume. Returns [] on any failure. */
 export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
   try {
-    // Pull a broad, volume-ranked pool (reliably contains the football markets),
-    // then sort those newest-first below so brand-new markets surface at the top.
-    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume24hr&ascending=false`;
+    // Pull a broad pool ranked by 7-day (1-week) volume — a wider window than 24h
+    // so football markets that traded any time this week surface, not just today's
+    // hot ones — then sort those newest-first below so brand-new markets lead.
+    // active=true&closed=false already excludes resolved/closed markets.
+    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume1wk&ascending=false`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });
     if (!res.ok) return [];
     const json: unknown = await res.json();
