@@ -13,15 +13,10 @@ import {
   Swords,
   Target,
   Shield,
-  Heart,
-  Bookmark,
-  Play,
   Plus,
-  Clock,
   Hexagon,
   Video,
   Loader2,
-  MessageCircle,
   TrendingUp,
 } from "lucide-react";
 import { momentsApi } from "@/api/momentsApi";
@@ -40,11 +35,17 @@ import type { Moment, MomentsFeedResponse } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { CreateMomentDialog } from "@/components/moments/CreateMomentDialog";
-import MomentShareDialog from "@/components/moments/MomentShareDialog";
+import { MomentFeedCard } from "@/components/moments/MomentFeedCard";
+import {
+  deriveCreator,
+  deriveGame,
+  deriveMomentCard,
+  formatDuration,
+  seededAvatar,
+  shortWallet,
+  type MomentCard,
+} from "@/lib/momentCard";
 
-import momentWarzone from "@/assets/moment-warzone.png";
-import momentRobowars from "@/assets/moment-robowars.png";
-import momentFeatured from "@/assets/moment-featured.png";
 type MainTab = "DISCOVER" | "MY MOMENTS" | "BOOKMARKS" | "RECENTLY WATCHED";
 type SubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
 
@@ -82,272 +83,8 @@ function buildMomentsBrowseHref(filters: {
   return query ? `/moments/browse?${query}` : "/moments/browse";
 }
 
-type MomentCard = {
-  id: string;
-  title: string;
-  game: string;
-  mode: string;
-  duration: string;
-  durationSeconds: number | null;
-  creator: string;
-  creatorAvatar: string;
-  clanName: string;
-  clanIconType: string;
-  views: string;
-  viewCount: number;
-  likes: string;
-  likeCount: number;
-  isBookmarked: boolean;
-  categories: Set<SubCategory>;
-  thumbnail: string;
-  description: string;
-  contentType: "image" | "video";
-  mediaUrl: string | undefined;
-  raw: Moment;
-};
-
 const PAGE_SIZE = 9;
-const CREATOR_AVATARS = [momentWarzone, momentRobowars, momentFeatured, momentWarzone, momentRobowars, momentFeatured];
 const NOW_MS = () => Date.now();
-
-function metadataRecord(moment: Moment): Record<string, unknown> | null {
-  return moment.assetMetadata && typeof moment.assetMetadata === "object" ? moment.assetMetadata : null;
-}
-
-function metadataString(moment: Moment, keys: string[]): string | undefined {
-  const metadata = metadataRecord(moment);
-  if (!metadata) return undefined;
-  for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return undefined;
-}
-
-function metadataNumber(moment: Moment, keys: string[]): number | undefined {
-  const metadata = metadataRecord(moment);
-  if (!metadata) return undefined;
-  for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string") {
-      const n = Number(value);
-      if (Number.isFinite(n)) return n;
-    }
-  }
-  return undefined;
-}
-
-function shortWallet(value?: string) {
-  if (!value) return "UNKNOWN";
-  if (value.length <= 12) return value.toUpperCase();
-  return `${value.slice(0, 6)}…${value.slice(-4)}`.toUpperCase();
-}
-
-function seededAvatar(seed: string) {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) % 1_000_003;
-  return CREATOR_AVATARS[Math.abs(hash) % CREATOR_AVATARS.length]!;
-}
-
-function compactMetric(value: number | null | undefined) {
-  if (!value || value <= 0) return "0";
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: value >= 10_000 ? 0 : 1,
-  })
-    .format(value)
-    .replace(/\s+/g, "")
-    .toUpperCase();
-}
-
-function parseDurationValue(value: string | number | undefined): number | null {
-  if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
-  if (typeof value !== "string" || !value.trim()) return null;
-  if (/^\d+$/.test(value.trim())) {
-    const s = Number(value.trim());
-    return Number.isFinite(s) && s > 0 ? s : null;
-  }
-  if (value.includes(":")) {
-    const parts = value.split(":").map(Number);
-    if (parts.some((p) => !Number.isFinite(p))) return null;
-    return parts.reduce((t, p) => t * 60 + p, 0);
-  }
-  return null;
-}
-
-function formatDuration(value: string | number | undefined) {
-  if (typeof value === "string" && value.includes(":")) return value;
-  const total = parseDurationValue(value);
-  if (!total) return "—";
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = Math.floor(total % 60);
-  if (h > 0) return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-}
-
-function matchKnownGameLabel(value: string) {
-  const n = value.toLowerCase();
-  if (n.includes("robo")) return "ROBOWARS";
-  if (n.includes("highway")) return "HIGHWAY HUSTLE";
-  if (n.includes("warzone")) return "WARZONE WARRIORS";
-  return null;
-}
-
-function deriveGame(moment: Moment) {
-  const candidates = [
-    metadataString(moment, ["game", "gameName", "gameTitle"]),
-    ...moment.relatedGames,
-    ...moment.tags,
-    moment.aiMomentType,
-    moment.title,
-  ].filter((v): v is string => Boolean(v));
-
-  for (const c of candidates) {
-    const matched = matchKnownGameLabel(c);
-    if (matched) return matched;
-  }
-
-  const fallback = moment.relatedGames[0]?.replace(/[_-]/g, " ").trim();
-  return fallback ? fallback.toUpperCase() : "ARENA HIGHLIGHTS";
-}
-
-function deriveMode(moment: Moment) {
-  const hay = [
-    metadataString(moment, ["mode", "matchMode", "playlist"]),
-    ...moment.tags,
-    ...moment.relatedGames,
-    moment.title,
-    moment.description,
-  ].filter((v): v is string => Boolean(v)).join(" ").toLowerCase();
-
-  if (hay.includes("trash talk") || hay.includes("trashtalk")) return "TRASH TALK";
-  if (hay.includes("robowars") || hay.includes("ai arena") || hay.includes("aiarena") || hay.includes("guesstheai") || hay.includes("guess the ai")) return "AI ARENA";
-  if (hay.includes("league")) return "LEAGUE";
-  if (hay.includes("autonomous")) return "AUTONOMOUS";
-  if (hay.includes("5v5") || hay.includes("squad")) return "5V5 SHOWDOWN";
-  if (hay.includes("1v1") || hay.includes("duel") || hay.includes("arena")) return "1V1 ARENA";
-  return "ALL MODES";
-}
-
-function deriveClan(moment: Moment) {
-  const hay = [
-    metadataString(moment, ["clan", "chain", "network", "creatorClan"]),
-    ...moment.tags,
-    ...moment.relatedGames,
-    moment.aiRarity,
-  ].filter((v): v is string => Boolean(v)).join(" ").toLowerCase();
-
-  if (hay.includes("solana")) return { clanName: "Solana", clanIconType: "solana" };
-  if (hay.includes("base")) return { clanName: "Base", clanIconType: "base" };
-  if (hay.includes("0g") || hay.includes("zerog")) return { clanName: "0G", clanIconType: "arena" };
-  if (hay.includes("kult")) return { clanName: "Kult", clanIconType: "arena" };
-  if (hay.includes("shadow")) return { clanName: "Shadow", clanIconType: "shadow" };
-  if (hay.includes("rebel") || hay.includes("berserker")) return { clanName: "Rebel", clanIconType: "rebel" };
-  return { clanName: "Arena", clanIconType: "mecha" };
-}
-
-function deriveCategories(moment: Moment): Set<SubCategory> {
-  const memberships = new Set<SubCategory>(["TRENDING", "EPIC PLAYS"]);
-  const hay = [moment.aiMomentType, moment.aiCaption, moment.title, moment.description, ...moment.tags, ...moment.aiHighlights]
-    .filter((v): v is string => Boolean(v)).join(" ").toLowerCase();
-
-  if (/(kill|eliminat|frag|headshot|multi[- ]?kill)/.test(hay)) memberships.add("KILLS");
-  if (/(clutch|1v|last stand|comeback|surviv)/.test(hay)) memberships.add("CLUTCH");
-  if (/(victory|win|champion|dominance|capture|defeat)/.test(hay)) memberships.add("VICTORIES");
-
-  const engagement = (moment.numLikes ?? 0) + (moment.numComments ?? 0);
-  if ((moment.aiRankScore ?? 0) >= 85 || engagement >= 3 || /(top play|highlight|mvp|perfect)/.test(hay)) {
-    memberships.add("TOP PLAYS");
-  }
-  return memberships;
-}
-
-const VIDEO_EXT = /\.(mp4|webm|mov|m4v|avi|mkv|ogv|m3u8)(?:\?.*)?$/i;
-const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif|svg|bmp)(?:\?.*)?$/i;
-
-function isVideoMediaUrl(url: string | undefined) {
-  return Boolean(url && VIDEO_EXT.test(url));
-}
-
-function gamePlaceholderThumbnail(game: string) {
-  if (game === "ROBOWARS") return momentRobowars;
-  if (game === "HIGHWAY HUSTLE") return momentFeatured;
-  return momentWarzone;
-}
-
-function deriveContentType(moment: Moment): "image" | "video" {
-  const ft = metadataString(moment, ["fileType", "mimeType", "contentType", "type"]);
-  if (ft) {
-    const n = ft.toLowerCase();
-    if (n.startsWith("video/")) return "video";
-    if (n.startsWith("image/")) return "image";
-  }
-  const url = moment.assetZgUrl ?? moment.assetUrl ?? "";
-  if (VIDEO_EXT.test(url)) return "video";
-  if (IMAGE_EXT.test(url)) return "image";
-  return "image";
-}
-
-function deriveThumbnail(moment: Moment, game: string) {
-  const explicit = metadataString(moment, ["thumbnailUrl", "thumbnail", "posterUrl", "poster", "coverImage", "imageUrl", "previewImage"]);
-  if (explicit && !isVideoMediaUrl(explicit)) return explicit;
-  if (moment.assetZgUrl && !isVideoMediaUrl(moment.assetZgUrl)) return moment.assetZgUrl;
-  if (moment.assetUrl && IMAGE_EXT.test(moment.assetUrl)) return moment.assetUrl;
-  return gamePlaceholderThumbnail(game);
-}
-
-function deriveViewCount(moment: Moment) {
-  return metadataNumber(moment, ["views", "viewCount", "view_count", "impressions", "playCount"]) ?? 0;
-}
-
-function deriveCreator(moment: Moment) {
-  return (metadataString(moment, ["creator", "creatorName", "playerName", "agentName"]) ?? shortWallet(moment.playerWalletAddress)).toUpperCase();
-}
-
-function deriveMomentDescription(moment: Moment) {
-  return (
-    moment.description?.trim() ??
-    moment.aiCaption?.trim() ??
-    (moment.aiHighlights.length > 0 ? moment.aiHighlights.join(" • ") : undefined) ??
-    "Fresh arena footage pulled from the live Kult moments feed."
-  );
-}
-
-function deriveMomentCard(moment: Moment, bookmarkedIds: Set<string>): MomentCard {
-  const game = deriveGame(moment);
-  const creator = deriveCreator(moment);
-  const clan = deriveClan(moment);
-  const durationSource = metadataString(moment, ["duration", "clipDuration", "videoDuration"]) ??
-    metadataNumber(moment, ["durationSeconds", "clipDurationSeconds", "lengthSeconds"]);
-  const durationSeconds = parseDurationValue(durationSource);
-  const viewCount = deriveViewCount(moment);
-
-  return {
-    id: moment.momentId,
-    title: (moment.title || moment.aiCaption || "Untitled Moment").trim(),
-    game,
-    mode: deriveMode(moment),
-    duration: formatDuration(durationSource),
-    durationSeconds,
-    creator,
-    creatorAvatar: seededAvatar(moment.momentId || creator),
-    clanName: clan.clanName,
-    clanIconType: clan.clanIconType,
-    views: compactMetric(viewCount),
-    viewCount,
-    likes: compactMetric(moment.numLikes),
-    likeCount: moment.numLikes,
-    isBookmarked: bookmarkedIds.has(moment.momentId),
-    categories: deriveCategories(moment),
-    thumbnail: deriveThumbnail(moment, game),
-    description: deriveMomentDescription(moment),
-    contentType: deriveContentType(moment),
-    mediaUrl: moment.assetZgUrl ?? moment.assetUrl,
-    raw: moment,
-  };
-}
 
 function dedupeMoments(moments: Moment[]) {
   const byId = new Map<string, Moment>();
@@ -391,15 +128,6 @@ function feedHasMore(lastPage: MomentsFeedResponse, allPages: MomentsFeedRespons
   return lastPage.moments.length >= lastPage.perPage;
 }
 
-function ClanIconBadge({ type }: { type: string }) {
-  const base = "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold";
-  if (type === "solana") return <span className={`${base} bg-teal-400/20 text-teal-400`}>S</span>;
-  if (type === "base") return <span className={`${base} bg-blue-500/20 text-blue-400`}>B</span>;
-  if (type === "shadow") return <span className={`${base} bg-red-500/20 text-red-500`}>S</span>;
-  if (type === "rebel") return <span className={`${base} bg-amber-400/20 text-amber-400`}>R</span>;
-  return <span className={`${base} bg-gray-500/20 text-gray-400`}>A</span>;
-}
-
 function CreatorRankBadge({ rank }: { rank: number }) {
   const styles =
     rank === 1
@@ -413,78 +141,6 @@ function CreatorRankBadge({ rank }: { rank: number }) {
     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border font-tech text-[10px] font-black ${styles}`}>
       {rank}
     </span>
-  );
-}
-
-function GameBadge({ game, size = "sm" }: { game: string; size?: "sm" | "xs" }) {
-  const text = size === "xs" ? "font-tech text-[8px] font-black uppercase tracking-wide" : "font-tech text-[9px] font-black uppercase tracking-wide";
-  if (game === "ROBOWARS") return <div className={`inline-flex max-w-full rounded border border-sky-500/35 bg-sky-950/80 px-2 py-0.5 text-sky-400 select-none ${text}`}><span className="truncate">{game}</span></div>;
-  if (game === "HIGHWAY HUSTLE") return <div className={`inline-flex max-w-full rounded border border-amber-500/35 bg-amber-950/80 px-2 py-0.5 text-amber-300 select-none ${text}`}><span className="truncate">{game}</span></div>;
-  return <div className={`inline-flex max-w-full rounded border border-purple-500/35 bg-purple-950/80 px-2 py-0.5 text-[#d6acff] select-none ${text}`}><span className="truncate">{game}</span></div>;
-}
-
-function MomentFeedCard({ item, onOpen, onBookmarkToggle }: { item: MomentCard; onOpen: (item: MomentCard) => void; onBookmarkToggle: (id: string) => void }) {
-  const hasDuration = item.duration !== "—";
-  const likeCount = item.likes;
-  const commentCount = compactMetric(item.raw.numComments);
-
-  return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition hover:border-purple-500/30">
-      <button type="button" onClick={() => onOpen(item)} className="group relative aspect-video cursor-pointer bg-black/20 p-2 text-left">
-        <div className="relative h-full w-full overflow-hidden rounded-md bg-black/40">
-          <img src={item.thumbnail} alt={item.title} loading="lazy" className="h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.02]" />
-          {item.contentType === "video" && <div className="absolute inset-0 flex items-center justify-center"><div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:border-purple-400 group-hover:bg-[#9a35ff] group-hover:shadow-[0_0_15px_rgba(154,53,255,0.45)]"><Play className="ml-0.5 h-5 w-5 fill-white text-white" /></div></div>}
-        </div>
-      </button>
-      <div className="flex flex-1 flex-col justify-between p-3 sm:p-3.5">
-        <div>
-          <h3 onClick={() => onOpen(item)} className="line-clamp-2 cursor-pointer text-[15px] font-semibold leading-snug text-white/90 transition hover:text-purple-400 sm:text-sm">{item.title}</h3>
-          <div className="mt-1.5 flex flex-col gap-1.5 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
-            <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/50">
-              <span className="truncate">by {item.creator}</span>
-              <Hexagon className="h-3 w-3 shrink-0 fill-[#9a35ff] text-[#9a35ff]" />
-            </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-white/40">
-              <ClanIconBadge type={item.clanIconType} />
-              <span className="max-w-[110px] truncate">{item.clanName}</span>
-            </div>
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {hasDuration ? (
-              <span className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-[8px] font-black uppercase tracking-wide text-white/65">
-                <Clock className="h-2.5 w-2.5" />
-                {item.duration}
-              </span>
-            ) : null}
-          </div>
-        </div>
-        <div className="mt-3 flex min-w-0 items-center justify-between gap-2 border-t border-white/6 pt-2 text-xs font-semibold text-white/45">
-          <div className="min-w-0 max-w-[42%] shrink truncate">
-            <GameBadge game={item.game} size="xs" />
-          </div>
-          <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 sm:gap-1">
-            <span className="inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-white/45 sm:px-2">
-              <Heart className="h-4 w-4" />
-              <span className="font-tech text-[10px] font-bold tracking-wide">{likeCount}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => onOpen(item)}
-              className="inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-white/45 transition hover:bg-white/5 hover:text-purple-300 sm:px-2"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="font-tech text-[10px] font-bold tracking-wide">{commentCount}</span>
-            </button>
-            <div className="inline-flex h-8 w-8 items-center justify-center text-white/30 transition hover:text-purple-400" onClick={(event) => event.stopPropagation()}>
-              <MomentShareDialog moment={item.raw} triggerVariant="icon" />
-            </div>
-            <button type="button" onClick={() => onBookmarkToggle(item.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/30 transition hover:bg-white/5 hover:text-purple-400">
-              <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
   );
 }
 
@@ -987,7 +643,7 @@ export function AllMomentsPage() {
               || (activeTab === "BOOKMARKS" && bookmarksQuery.isLoading)
               || (activeTab === "RECENTLY WATCHED" && recentlyWatchedQuery.isLoading)
             ) ? (
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`} data-tour="moments-grid">
+              <div className={`grid items-stretch gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
                     <div className="aspect-[16/8.7] bg-white/5" />
@@ -1013,7 +669,7 @@ export function AllMomentsPage() {
               </div>
             ) : (
               <>
-              <div className={`grid gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`}>
+              <div className={`grid items-stretch gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`}>
                 {displayMoments.slice(0, isBrowseAll ? undefined : 6).map((item) => (
                   <MomentFeedCard key={item.id} item={item} onOpen={openMoment} onBookmarkToggle={handleBookmarkToggle} />
                 ))}

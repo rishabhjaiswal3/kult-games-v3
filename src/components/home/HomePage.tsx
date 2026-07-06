@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -20,9 +20,10 @@ import { momentsApi } from "@/api/momentsApi";
 import { playerApi } from "@/api/playerApi";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { MomentGameBadge } from "@/components/moments/MomentGameBadge";
+import { MomentFeedCard } from "@/components/moments/MomentFeedCard";
 import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import type { AccessFeature } from "@/lib/accessControl";
+import { deriveMomentCard } from "@/lib/momentCard";
 import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
 import heroVideo from "@/assets/homebkg.mp4";
 import mobileHeroVideo from "@/assets/mobile_home_video.mp4";
@@ -1140,81 +1141,65 @@ function HomeLiveLeaguesSection() {
 }
 
 function HomeMomentsSection() {
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({
     queryKey: ["moments", "home", 4],
     queryFn: () => momentsApi.list({ perPage: 4 }),
     staleTime: 3 * 60_000,
   });
 
-  const moments = data?.moments?.slice(0, 4) ?? [];
+  const momentCards = useMemo(
+    () => (data?.moments?.slice(0, 4) ?? []).map((moment) => deriveMomentCard(moment, new Set())),
+    [data?.moments],
+  );
 
   return (
     <section className="arena-panel space-y-3 border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Moments</h2>
-          <p className="mt-1 text-sm leading-relaxed text-white/58">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
+          <Link
+            to="/moments"
+            className="shrink-0 whitespace-nowrap font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
+          >
+            View moments →
+          </Link>
         </div>
-        <Link
-          to="/moments"
-          className="font-tech text-[10px] font-bold uppercase tracking-wider text-purple-400 hover:text-purple-300"
-        >
-          View moments →
-        </Link>
+        <p className="text-sm leading-relaxed text-white/58">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
       </div>
-      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-3 md:overflow-visible md:pb-0 lg:grid-cols-4">
+      <div
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-4 lg:items-stretch lg:gap-4 lg:overflow-visible lg:pb-0"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="w-full min-w-full snap-start animate-pulse overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 md:min-w-0"
+                className="flex h-full w-[85vw] min-w-[85vw] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 animate-pulse sm:w-[320px] sm:min-w-[320px] md:w-[340px] md:min-w-[340px] lg:w-auto lg:min-w-0"
               >
-                <div className="aspect-[16/9] bg-white/5" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 w-3/4 rounded bg-white/10" />
-                  <div className="h-2.5 w-1/2 rounded bg-white/6" />
+                <div className="h-[152px] shrink-0 bg-black/40 sm:h-[160px]">
+                  <div className="h-full w-full bg-white/5" />
+                </div>
+                <div className="space-y-2 p-3.5">
+                  <div className="h-4 w-3/4 rounded bg-white/10" />
+                  <div className="h-3 w-full rounded bg-white/6" />
+                  <div className="mt-3 border-t border-white/6 pt-2">
+                    <div className="h-8 w-full rounded bg-white/5" />
+                  </div>
                 </div>
               </div>
             ))
-          : moments.map((moment) => (
-              <Link
-                key={moment.momentId}
-                to={`/moments/${moment.momentId}`}
-                className="group w-full min-w-full snap-start overflow-hidden rounded-lg border border-[#5d6d8c]/45 bg-[#04080f]/95 shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-[#a855f7]/70 hover:shadow-[0_12px_34px_rgba(133,49,235,0.26)] md:min-w-0"
+          : momentCards.map((card) => (
+              <div
+                key={card.id}
+                className="flex h-full w-[85vw] min-w-[85vw] shrink-0 snap-start flex-col sm:w-[320px] sm:min-w-[320px] md:w-[340px] md:min-w-[340px] lg:w-auto lg:min-w-0"
               >
-                <div className="relative aspect-[16/9] overflow-hidden bg-[#0a0f18]">
-                  {moment.assetUrl && (
-                    (moment.assetMetadata as { mediaType?: string } | undefined)?.mediaType === "video" ? (
-                      <video
-                        src={moment.assetUrl}
-                        muted
-                        loop
-                        playsInline
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <img
-                        src={moment.assetUrl}
-                        alt={moment.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                    )
-                  )}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(164,105,255,0.18),transparent_48%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent opacity-70" />
-                  <div className="absolute left-3 top-3 z-10">
-                    <MomentGameBadge moment={moment} size="xs" />
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="text-xs font-semibold text-white/90 group-hover:text-[#c78aff]">{moment.title}</p>
-                  <p className="mt-1 line-clamp-1 text-[10px] text-white/42">
-                    {moment.aiCaption ?? moment.description ?? ""}
-                  </p>
-                </div>
-              </Link>
+                <MomentFeedCard
+                  item={card}
+                  onOpen={(item) => navigate(`/moments/${item.id}`)}
+                  onBookmarkToggle={() => navigate("/moments")}
+                />
+              </div>
             ))}
       </div>
     </section>
