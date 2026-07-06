@@ -586,12 +586,11 @@ const Leaderboard = () => {
                   ? allEntries.length
                   : undefined
             }
-            aboutText=""
-            // ?{
-            //   activeMode === "KULT_POINTS"
-            //     ? "Score reflects weighted game contribution across KULT titles. Kult Points (KP) are ledger-backed balances from verified activity. No token conversion, cash value, or guaranteed reward is implied."
-            //     : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
-            // }
+            aboutText={
+              activeMode === "KULT_POINTS"
+                ? "Score reflects weighted game contribution across KULT titles. Kult Points (KP) are ledger-backed balances from verified activity. No token conversion, cash value, or guaranteed reward is implied."
+                : "Your AI Arena rank uses ELO-style battle data, updated live after every battle. League filters apply only to AI Arena. No token conversion, cash value, or guaranteed reward is implied."
+            }
           />
         </div>
       </div>

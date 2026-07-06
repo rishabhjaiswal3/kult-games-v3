@@ -23,7 +23,8 @@ export const RANKS: RankInfo[] = [
     shortName: "INITIATE",
     minElo: 0,
     maxElo: 1499,
-    image: "/ranks/initiate_1_cropped.webp",
+    // image: "/ranks/initiate_1_cropped.webp",
+    image: "/ai_arena_icons/initiate.png",
     color: "#22c55e",
   },
   {
@@ -32,7 +33,8 @@ export const RANKS: RankInfo[] = [
     shortName: "CORPORAL",
     minElo: 1500,
     maxElo: 2999,
-    image: "/ranks/corporal_2_cropped.webp",
+    // image: "/ranks/corporal_2_cropped.webp",
+    image: "/ai_arena_icons/corporal.png",
     color: "#f97316",
   },
   {
@@ -41,7 +43,8 @@ export const RANKS: RankInfo[] = [
     shortName: "CYBER LT.",
     minElo: 3000,
     maxElo: 4999,
-    image: "/ranks/cyber_lieutenant_3_cropped.webp",
+    // image: "/ranks/cyber_lieutenant_3_cropped.webp",
+    image: "/ai_arena_icons/cyber_lt.png",
     color: "#06b6d4",
   },
   {
@@ -50,7 +53,8 @@ export const RANKS: RankInfo[] = [
     shortName: "QUANTUM MAJ.",
     minElo: 5000,
     maxElo: 7499,
-    image: "/ranks/quantum_major_4_cropped.webp",
+    // image: "/ranks/quantum_major_4_cropped.webp",
+    image: "/ai_arena_icons/quantam_maj.png",
     color: "#eab308",
   },
   {
@@ -59,7 +63,8 @@ export const RANKS: RankInfo[] = [
     shortName: "NEURAL CAPT.",
     minElo: 7500,
     maxElo: 9999,
-    image: "/ranks/neural_captain_5_cropped.webp",
+    // image: "/ranks/neural_captain_5_cropped.webp",
+    image: "/ai_arena_icons/neural_capt.png",
     color: "#a855f7",
   },
   {
@@ -68,7 +73,8 @@ export const RANKS: RankInfo[] = [
     shortName: "PROTO CMD.",
     minElo: 10000,
     maxElo: 14999,
-    image: "/ranks/protocol_commander_6_cropped.webp",
+    // image: "/ranks/protocol_commander_6_cropped.webp",
+    image: "/ai_arena_icons/proto_cmo.png",
     color: "#8b5cf6",
   },
   {
@@ -77,7 +83,8 @@ export const RANKS: RankInfo[] = [
     shortName: "GENESIS OVL.",
     minElo: 15000,
     maxElo: 24999,
-    image: "/ranks/genesis_overlord_7_cropped.webp",
+    // image: "/ranks/genesis_overlord_7_cropped.webp",
+    image: "/ai_arena_icons/genesis_ovl.png",
     color: "#f59e0b",
   },
   {
@@ -86,7 +93,8 @@ export const RANKS: RankInfo[] = [
     shortName: "SINGULARITY",
     minElo: 25000,
     maxElo: null,
-    image: "/ranks/singularity_prime_8_cropped.webp",
+    // image: "/ranks/singularity_prime_8_cropped.webp",
+    image: "/ai_arena_icons/singularity.png",
     color: "#818cf8",
   },
 ];
