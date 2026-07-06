@@ -11,7 +11,9 @@ import {
   Radio,
   Sparkles,
   Swords,
+  Trophy,
   Video,
+  Wallet,
 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
 import { momentsApi } from "@/api/momentsApi";
@@ -97,6 +99,33 @@ const homeArenaAgents = [
   { name: "ASSASSIN", img: agentLumen, stat: "new tactic" },
 ];
 
+const homeHeroActionBase =
+  "min-w-0 rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] w-full h-9 px-[10px] text-[9px] tracking-[0.13em] gap-2 sm:h-10 sm:text-[10px]";
+
+const homeHeroActionStyles = {
+  games:
+    "border-purple-300/50 bg-[linear-gradient(135deg,rgba(122,34,232,0.88),rgba(154,53,255,0.72),rgba(4,8,15,0.92))] text-white hover:border-purple-200/80 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.95),rgba(168,85,247,0.78),rgba(4,8,15,0.94))]",
+  arena:
+    "border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]",
+  league:
+    "border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white",
+} as const;
+
+function homeHeroCtaGridClass(count: number) {
+  const desktopColumn = "lg:grid-cols-1 lg:w-[208px] lg:max-w-[208px]";
+  if (count <= 1) return `grid w-full max-w-[760px] grid-cols-1 gap-2 ${desktopColumn}`;
+  if (count === 2) {
+    return `grid w-full max-w-[760px] grid-cols-1 gap-2 min-[480px]:grid-cols-2 ${desktopColumn}`;
+  }
+  return `grid w-full max-w-[760px] grid-cols-1 gap-2 min-[480px]:grid-cols-2 md:grid-cols-3 ${desktopColumn}`;
+}
+
+function homeHeroCtaItemClass(count: number, index: number) {
+  if (count === 3 && index === 2) {
+    return "min-[480px]:col-span-2 md:col-span-1 lg:col-span-1";
+  }
+  return "";
+}
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -169,6 +198,51 @@ export function HomePage() {
     navigate("/ai-arena");
   };
 
+  const handleEnterLeague = () => {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+
+    navigate("/league");
+  };
+
+  const heroCtaActions = [
+    canViewGames
+      ? {
+          key: "games",
+          label: "Explore Games",
+          icon: <Joystick className="h-4 w-4 shrink-0 text-purple-200" aria-hidden />,
+          onClick: handleExploreGames,
+          variant: "games" as const,
+        }
+      : null,
+    isAuthenticated && !canViewAiArena
+      ? null
+      : {
+          key: "arena",
+          label: isAuthenticated ? "Enter AI Arena" : "Connect Wallet",
+          icon: isAuthenticated ? (
+            <Swords className="h-4 w-4 shrink-0 text-cyan-100" aria-hidden />
+          ) : (
+            <Wallet className="h-4 w-4 shrink-0 text-cyan-100" aria-hidden />
+          ),
+          onClick: handlePrimaryCta,
+          variant: "arena" as const,
+        },
+    isAuthenticated && canViewLeague
+      ? {
+          key: "league",
+          label: "Enter League",
+          icon: <Trophy className="h-4 w-4 shrink-0 text-amber-200" aria-hidden />,
+          onClick: handleEnterLeague,
+          variant: "league" as const,
+        }
+      : null,
+  ].filter(Boolean);
+
+  const heroCtaCount = heroCtaActions.length;
+
   return (
     <div className="home-page space-y-6 pb-10">
       <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
@@ -181,7 +255,7 @@ export function HomePage() {
         <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
         <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-12 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-          <div className="absolute left-5 right-5 top-5 flex flex-nowrap items-center gap-1.5 whitespace-nowrap text-[9px] font-tech uppercase tracking-[0.16em] text-white/50 sm:static sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
+          <div className="absolute left-5 right-5 top-5 flex flex-nowrap items-center gap-1.5 whitespace-nowrap text-[9px] font-tech font-bold uppercase tracking-[0.16em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
             <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
@@ -207,27 +281,19 @@ export function HomePage() {
               <br />
               and live battles that never stop.
             </p>
-            <div className="flex flex-nowrap gap-1.5 sm:flex-wrap sm:gap-3">
-              {canViewGames ? (
+            <div className={homeHeroCtaGridClass(heroCtaCount)}>
+              {heroCtaActions.map((action, index) => (
                 <button
+                  key={action.key}
                   type="button"
-                  onClick={handleExploreGames}
-                  className="btn-primary inline-flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wide sm:min-h-0 sm:flex-none sm:gap-2 sm:px-6 sm:py-2.5 sm:text-xs sm:tracking-wider"
+                  onClick={action.onClick}
+                  className={`${homeHeroActionBase} ${homeHeroActionStyles[action.variant]} ${homeHeroCtaItemClass(heroCtaCount, index)}`}
                 >
-                  Explore games
-                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                  {action.icon}
+                  <span className="min-w-0 px-1 leading-tight">{action.label}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
                 </button>
-              ) : null}
-              {isAuthenticated && !canViewAiArena ? null : (
-                <button
-                  type="button"
-                  onClick={handlePrimaryCta}
-                  className="inline-flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-md border border-purple-300/60 bg-gradient-to-r from-purple-500/30 to-fuchsia-500/25 px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wide text-white shadow-[0_0_18px_rgba(154,53,255,0.28)] transition hover:border-purple-200/90 hover:from-purple-500/45 hover:to-fuchsia-500/40 hover:text-white hover:shadow-[0_0_32px_rgba(154,53,255,0.55)] sm:min-h-0 sm:flex-none sm:gap-2 sm:px-6 sm:py-2.5 sm:text-xs sm:tracking-wider"
-                >
-                  {isAuthenticated ? "Enter AI Arena" : "Connect wallet"}
-                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-                </button>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -824,6 +890,7 @@ function HomeAIArenaSection() {
             Enter AI Arena
             <ArrowUpRight className="h-4 w-4" />
           </Link>
+          
         </div>
 
         <div className="grid gap-3 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)]">
