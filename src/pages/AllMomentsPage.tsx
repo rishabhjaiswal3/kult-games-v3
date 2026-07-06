@@ -1,7 +1,8 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { createPortal } from "react-dom";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -145,36 +146,123 @@ function CreatorRankBadge({ rank }: { rank: number }) {
 }
 
 // ── Dropdown ──────────────────────────────────────────────────────────────────
-function FilterDropdown({ label, options, value, onSelect, activeDropdown, name, onToggle }: {
-  label: string; options: string[]; value: string;
+type FilterMenuPosition = {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+};
+
+function computeFilterMenuPosition(button: HTMLButtonElement, optionCount: number): FilterMenuPosition {
+  const rect = button.getBoundingClientRect();
+  const viewportPadding = 8;
+  const width = Math.min(Math.max(rect.width, 176), window.innerWidth - viewportPadding * 2);
+  let left = rect.left;
+  left = Math.min(left, window.innerWidth - width - viewportPadding);
+  left = Math.max(viewportPadding, left);
+
+  const estimatedMenuHeight = Math.min(optionCount * 34 + 8, 320);
+  const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+  const spaceAbove = rect.top - viewportPadding;
+  const openAbove = spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow;
+  const maxHeight = Math.max(120, Math.min(320, openAbove ? spaceAbove : spaceBelow));
+
+  if (openAbove) {
+    return {
+      bottom: window.innerHeight - rect.top + 4,
+      left,
+      width,
+      maxHeight,
+    };
+  }
+
+  return {
+    top: rect.bottom + 4,
+    left,
+    width,
+    maxHeight,
+  };
+}
+
+function FilterDropdown({ options, value, onSelect, activeDropdown, name, onToggle }: {
+  options: string[]; value: string;
   onSelect: (v: string) => void;
   activeDropdown: string | null; name: string; onToggle: (n: string) => void;
 }) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const isOpen = activeDropdown === name;
+  const [menuPosition, setMenuPosition] = useState<FilterMenuPosition | null>(null);
+
+  const updateMenuPosition = useCallback(() => {
+    const button = buttonRef.current;
+    if (!button) return;
+    setMenuPosition(computeFilterMenuPosition(button, options.length));
+  }, [options.length]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setMenuPosition(null);
+      return;
+    }
+    updateMenuPosition();
+  }, [isOpen, updateMenuPosition, value]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleReposition = () => updateMenuPosition();
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+    return () => {
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [isOpen, updateMenuPosition]);
+
+  const menu = useMemo(() => {
+    if (!isOpen || !menuPosition || typeof document === "undefined") return null;
+
+    return createPortal(
+      <>
+        <div className="fixed inset-0 z-[120]" onClick={() => onToggle(name)} aria-hidden />
+        <div
+          className="fixed z-[130] overflow-y-auto rounded border border-white/10 bg-[#080d19] p-1 shadow-xl"
+          style={{
+            top: menuPosition.top,
+            bottom: menuPosition.bottom,
+            left: menuPosition.left,
+            width: menuPosition.width,
+            maxHeight: menuPosition.maxHeight,
+          }}
+        >
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => { onSelect(opt); onToggle(name); }}
+              className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${value === opt ? "bg-white/[0.02] text-purple-400" : "text-white/60"}`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </>,
+      document.body,
+    );
+  }, [isOpen, menuPosition, name, onSelect, onToggle, options, value]);
+
   return (
-    <div className="relative">
+    <div className="relative shrink-0">
       <button
+        ref={buttonRef}
+        type="button"
         onClick={() => onToggle(name)}
         className="flex h-[34px] min-w-[8.5rem] cursor-pointer items-center justify-between gap-1.5 rounded border border-white/8 bg-[#0a0f1b]/60 px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase text-white [text-shadow:0_0_10px_rgba(255,255,255,0.35)] transition hover:border-white/20 hover:text-white sm:min-w-0 sm:max-w-[10.5rem] sm:px-3 sm:text-[10px]"
       >
         <span className="truncate">{value}</span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/70" />
       </button>
-      {activeDropdown === name && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => onToggle(name)} />
-          <div className="absolute left-0 z-50 mt-1 w-44 rounded border border-white/10 bg-[#080d19] p-1 shadow-xl">
-            {options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => { onSelect(opt); onToggle(name); }}
-                className={`w-full rounded px-2.5 py-1.5 text-left font-tech text-[10px] font-bold uppercase transition hover:bg-white/5 hover:text-white ${value === opt ? "bg-white/[0.02] text-purple-400" : "text-white/60"}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      {menu}
     </div>
   );
 }
@@ -501,6 +589,15 @@ export function AllMomentsPage() {
 
   const toggleDropdown = (name: string) => setActiveDropdown((cur) => cur === name ? null : name);
 
+  const applyTrendingGameFilter = useCallback((game: string) => {
+    setActiveTab("DISCOVER");
+    setActiveCategory("TRENDING");
+    setSelectedGame(game);
+    setActiveDropdown(null);
+    feedScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   const emptyState = useMemo(() => {
     if (activeTab === "MY MOMENTS" && !isAuthenticated) return { title: "Connect your wallet to view your moments", action: "Your personal clips will appear here once you sign in." };
     if (discoverQuery.isError) return { title: "Could not load moments right now", action: "Please try again in a moment." };
@@ -525,7 +622,7 @@ export function AllMomentsPage() {
           </Link>
         ) : null}
 
-        <div className={isBrowseAll ? "space-y-4" : "moments-sticky-header shrink-0 space-y-4"}>
+        <div className={isBrowseAll ? "relative z-40 space-y-4" : "moments-sticky-header relative z-40 shrink-0 space-y-4"}>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -560,12 +657,12 @@ export function AllMomentsPage() {
               ))}
             </div>
 
-            <div className="relative z-30 flex min-w-0 flex-col gap-2 sm:gap-3 xl:flex-row xl:items-center" data-tour="moments-filters">
+            <div className="relative z-40 flex min-w-0 flex-col gap-2 sm:gap-3 xl:flex-row xl:items-center" data-tour="moments-filters">
               <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 scrollbar-none sm:flex-wrap sm:overflow-visible sm:pb-0">
-                <FilterDropdown label="Game" options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
-                <FilterDropdown label="Mode" options={["ALL MODES", "AI ARENA", "TRASH TALK", "LEAGUE"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
-                <FilterDropdown label="Best of" options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
-                <FilterDropdown label="Time" options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
+                <FilterDropdown options={["ALL GAMES", ...KNOWN_MOMENT_GAME_LABELS]} value={selectedGame} onSelect={setSelectedGame} activeDropdown={activeDropdown} name="game" onToggle={toggleDropdown} />
+                <FilterDropdown options={["ALL MODES", "AI ARENA", "TRASH TALK", "LEAGUE"]} value={selectedMode} onSelect={setSelectedMode} activeDropdown={activeDropdown} name="mode" onToggle={toggleDropdown} />
+                <FilterDropdown options={["BEST OF", "MOST VIEWS", "MOST LIKES", "TOP CREATORS"]} value={selectedBestOf} onSelect={setSelectedBestOf} activeDropdown={activeDropdown} name="bestOf" onToggle={toggleDropdown} />
+                <FilterDropdown options={["ANY TIME", "LAST 24 HOURS", "THIS WEEK", "THIS MONTH"]} value={selectedTime} onSelect={setSelectedTime} activeDropdown={activeDropdown} name="time" onToggle={toggleDropdown} />
               </div>
               <div className="flex w-full min-w-0 items-center gap-2 xl:max-w-[26rem] xl:flex-1">
                 <div className="relative min-w-0 flex-1">
@@ -744,24 +841,19 @@ export function AllMomentsPage() {
                   </div>
                 ) : (
                   trendingGames.map((entry, index) => (
-                    <Link
+                    <button
                       key={entry.game}
-                      to={buildMomentsBrowseHref({
-                        category: "TRENDING",
-                        game: entry.game,
-                        mode: "ALL MODES",
-                        bestOf: "BEST OF",
-                        time: "ANY TIME",
-                        q: "",
-                        tab: "DISCOVER",
-                      })}
-                      className="group flex items-center gap-3 rounded-lg px-1 py-0.5 transition hover:bg-white/5"
+                      type="button"
+                      onClick={() => applyTrendingGameFilter(entry.game)}
+                      className={`group flex w-full items-center gap-3 rounded-lg px-1 py-0.5 text-left transition hover:bg-white/5 ${
+                        selectedGame === entry.game ? "bg-white/[0.06] ring-1 ring-purple-500/35" : ""
+                      }`}
                     >
                       <span className="w-3 shrink-0 text-center font-tech text-[10px] font-black text-white/45">{index + 1}</span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate text-xs font-semibold text-white/90 transition group-hover:text-purple-300">{entry.game}</span>
-                          <span className="shrink-0 font-tech text-[10px] text-white/50">
+                          <span className="shrink-0 font-tech text-[10px] text-white">
                             {entry.count} {entry.count === 1 ? "Moment" : "Moments"}
                           </span>
                         </div>
@@ -772,8 +864,7 @@ export function AllMomentsPage() {
                           />
                         </div>
                       </div>
-                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-white/25 transition group-hover:text-purple-300" />
-                    </Link>
+                    </button>
                   ))
                 )}
               </div>

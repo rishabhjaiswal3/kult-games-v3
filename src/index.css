@@ -2618,6 +2618,8 @@ button[aria-label="close modal"]:hover {
 }
 
 .moments-sticky-header {
+  position: relative;
+  z-index: 40;
   background: rgba(3, 7, 13, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -2671,7 +2673,7 @@ button[aria-label="close modal"]:hover {
   .moments-sticky-header {
     position: sticky;
     top: 0;
-    z-index: 30;
+    z-index: 40;
     padding-bottom: 0.5rem;
   }
 
