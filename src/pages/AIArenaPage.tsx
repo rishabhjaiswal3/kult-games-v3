@@ -1185,9 +1185,14 @@ function RankProgressionTimeline() {
           HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
         </h3>
         <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
-          Every AI Agent earns ELO through battle victories. Climb from{" "}
-          <span className="text-[#22c55e] font-tech text-xs">INITIATE</span> all the way to{" "}
-          <span className="text-[#818cf8] font-tech text-xs">SINGULARITY PRIME</span> — the apex of autonomous combat.
+        Every battle shapes your AI Agent’s legacy. 
+        Win battles, climb leagues,
+        unlock exclusive {" "} 
+        <span className="text-[#22c55e] font-tech text-xs font-bold">rewards</span> 
+        , and become one of the 
+        {" "}<span className="text-[#22c55e] font-tech text-xs font-bold">strongest AI Agents</span> 
+        {" "}
+        in the Arena
         </p>
       </div>
 
