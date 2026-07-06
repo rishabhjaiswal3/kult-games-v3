@@ -57,7 +57,7 @@ const CATEGORY_META: CategoryMeta[] = [
 type RarityStyle = { iconBg: string; border: string; textColor: string };
 
 const RARITY_STYLES: Record<AchievementRarity, RarityStyle> = {
-  COMMON:    { iconBg: "from-white/5 to-white/10",             border: "border-white/20",        textColor: "text-white/70"    },
+  COMMON:    { iconBg: "from-white/5 to-white/10",             border: "border-white/20",        textColor: "text-white"    },
   RARE:      { iconBg: "from-blue-500/20 to-blue-950/40",      border: "border-blue-500/40",     textColor: "text-blue-400"    },
   EPIC:      { iconBg: "from-purple-500/20 to-purple-950/40",  border: "border-purple-500/40",   textColor: "text-purple-400"  },
   LEGENDARY: { iconBg: "from-amber-500/20 to-amber-950/40",    border: "border-amber-500/40",    textColor: "text-amber-400"   },
@@ -219,34 +219,34 @@ function DonutChart({
         </svg>
       </div>
 
-      <div className="space-y-3 pt-4 px-1 text-[11px] font-semibold text-white/80 relative z-10">
+      <div className="space-y-3 pt-4 px-1 text-[11px] font-semibold text-white relative z-10">
         <div className="flex items-center justify-between group cursor-default">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#64748b] border border-[#64748b]/50 shadow-[0_0_8px_rgba(100,116,139,0.3)] transition-transform group-hover:scale-125" />
-            <span className="group-hover:text-white transition drop-shadow-md">Common</span>
+            <span className="text-white/75 group-hover:text-white transition drop-shadow-md">Common</span>
           </div>
-          <span className="font-tech text-white group-hover:text-white transition">{common} <span className="text-white/60">({pctLabel(common, totalCommon)})</span></span>
+          <span className="font-tech text-white group-hover:text-white transition">{common} <span className="text-white/85">({pctLabel(common, totalCommon)})</span></span>
         </div>
         <div className="flex items-center justify-between group cursor-default">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] border border-[#3b82f6]/50 shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform group-hover:scale-125" />
-            <span className="group-hover:text-blue-200 transition drop-shadow-md">Rare</span>
+            <span className="text-white/75 group-hover:text-blue-200 transition drop-shadow-md">Rare</span>
           </div>
-          <span className="font-tech text-white group-hover:text-blue-200 transition">{rare} <span className="text-white/60">({pctLabel(rare, totalRare)})</span></span>
+          <span className="font-tech text-white group-hover:text-blue-200 transition">{rare} <span className="text-white/85">({pctLabel(rare, totalRare)})</span></span>
         </div>
         <div className="flex items-center justify-between group cursor-default">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#9a35ff] to-[#d18eff] border border-[#9a35ff]/50 shadow-[0_0_10px_rgba(154,53,255,0.5)] transition-transform group-hover:scale-125" />
-            <span className="group-hover:text-purple-200 transition drop-shadow-md">Epic</span>
+            <span className="text-white/75 group-hover:text-purple-200 transition drop-shadow-md">Epic</span>
           </div>
-          <span className="font-tech text-white group-hover:text-purple-200 transition">{epic} <span className="text-white/60">({pctLabel(epic, totalEpic)})</span></span>
+          <span className="font-tech text-white group-hover:text-purple-200 transition">{epic} <span className="text-white/85">({pctLabel(epic, totalEpic)})</span></span>
         </div>
         <div className="flex items-center justify-between group cursor-default">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#f59e0b] to-[#fde68a] border border-[#f59e0b]/50 shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-transform group-hover:scale-125" />
-            <span className="group-hover:text-amber-200 transition drop-shadow-md">Legendary</span>
+            <span className="text-white/75 group-hover:text-amber-200 transition drop-shadow-md">Legendary</span>
           </div>
-          <span className="font-tech text-white group-hover:text-amber-200 transition">{legendary} <span className="text-white/60">({pctLabel(legendary, totalLegendary)})</span></span>
+          <span className="font-tech text-white group-hover:text-amber-200 transition">{legendary} <span className="text-white/85">({pctLabel(legendary, totalLegendary)})</span></span>
         </div>
       </div>
     </>
@@ -353,7 +353,7 @@ const AchievementsPage = () => {
         <div className="flex items-start justify-between gap-3" data-tour="achievements-header">
           <div>
             <h1 className="font-tech text-3xl font-bold tracking-tight text-white uppercase">ACHIEVEMENTS</h1>
-            <p className="mt-1 text-[11px] text-white/55 font-medium">
+            <p className="mt-1 text-[11px] text-white/75 font-medium">
               Complete challenges, unlock achievements, and earn exclusive rewards.
             </p>
           </div>
@@ -371,7 +371,7 @@ const AchievementsPage = () => {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 relative z-10" data-tour="achievements-stats">
           <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
             <div className="space-y-1">
-              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">ACHIEVEMENT POINTS</span>
+              <span className="text-[9px] font-tech font-bold uppercase text-white/55 tracking-wider">ACHIEVEMENT POINTS</span>
               <div className="flex items-center gap-1.5">
                 {isLoading ? (
                   <div className="h-7 w-16 animate-pulse rounded bg-white/5" />
@@ -387,14 +387,14 @@ const AchievementsPage = () => {
 
           <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
             <div className="space-y-1">
-              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">ACHIEVEMENTS UNLOCKED</span>
+              <span className="text-[9px] font-tech font-bold uppercase text-white/55 tracking-wider">ACHIEVEMENTS UNLOCKED</span>
               <div className="flex items-baseline gap-1">
                 {isLoading ? (
                   <div className="h-7 w-20 animate-pulse rounded bg-white/5" />
                 ) : (
                   <>
                     <span className="font-tech text-xl font-bold text-white">{unlockedCount} / {totalCount}</span>
-                    <span className="text-[10px] text-white/45">{unlockedPct}%</span>
+                    <span className="text-[10px] text-white/85">{unlockedPct}%</span>
                   </>
                 )}
               </div>
@@ -406,14 +406,14 @@ const AchievementsPage = () => {
 
           <div className="arena-panel p-4 flex items-center justify-between border-white/8 bg-[#04080f]/90">
             <div className="space-y-1">
-              <span className="text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">CATEGORIES ACTIVE</span>
+              <span className="text-[9px] font-tech font-bold uppercase text-white/55 tracking-wider">CATEGORIES ACTIVE</span>
               <div className="flex items-baseline gap-1">
                 {isLoading ? (
                   <div className="h-7 w-14 animate-pulse rounded bg-white/5" />
                 ) : (
                   <>
                     <span className="font-tech text-xl font-bold text-white">{catsCompleted} / {totalCats}</span>
-                    <span className="text-[10px] text-white/45">{catsPct}%</span>
+                    <span className="text-[10px] text-white/85">{catsPct}%</span>
                   </>
                 )}
               </div>
@@ -425,18 +425,18 @@ const AchievementsPage = () => {
 
           {/* Next Reward Progress */}
           <div className="arena-panel p-4 border-white/8 bg-[#04080f]/90 flex flex-col justify-between">
-            <div className="flex justify-between text-[9px] font-tech font-bold uppercase text-white/40 tracking-wider">
+            <div className="flex justify-between text-[9px] font-tech font-bold uppercase text-white/55 tracking-wider">
               <span>NEXT REWARD</span>
-              <span className="text-white/60">{nextMilestone.pts.toLocaleString()} PTS</span>
+              <span className="text-white">{nextMilestone.pts.toLocaleString()} PTS</span>
             </div>
             <div className="space-y-1.5 mt-1.5">
               {isLoading ? (
                 <div className="h-5 animate-pulse rounded bg-white/5" />
               ) : (
                 <>
-                  <div className="flex justify-between items-baseline text-[10px] font-semibold text-white/70">
+                  <div className="flex justify-between items-baseline text-[10px] font-semibold text-white">
                     <span>{nextMilestone.crate}</span>
-                    <span className="font-tech text-[9px]">{totalPoints.toLocaleString()} / {nextMilestone.pts.toLocaleString()}</span>
+                    <span className="font-tech text-[9px] text-white/90">{totalPoints.toLocaleString()} / {nextMilestone.pts.toLocaleString()}</span>
                   </div>
                   <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                     <div className="bg-[#9a35ff] h-full rounded-full transition-all duration-500" style={{ width: `${milestonePct}%` }} />
@@ -458,7 +458,7 @@ const AchievementsPage = () => {
                 className={`px-3 py-1.5 rounded text-[10px] font-tech font-bold uppercase tracking-wider transition ${
                   activeTab === tab
                     ? "bg-[#9a35ff] text-white"
-                    : "text-white/40 hover:text-white hover:bg-white/5"
+                    : "text-white/65 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {tab}
@@ -482,7 +482,7 @@ const AchievementsPage = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-[#03070d]/60 border border-white/8 rounded px-3 py-1.5 text-xs text-white/70 hover:text-white font-semibold outline-none appearance-none pr-8 cursor-pointer"
+                className="bg-[#03070d]/60 border border-white/8 rounded px-3 py-1.5 text-xs text-white hover:text-white font-semibold outline-none appearance-none pr-8 cursor-pointer"
               >
                 <option value="All">All Categories</option>
                 <option value="BATTLES">Battles</option>
@@ -506,7 +506,7 @@ const AchievementsPage = () => {
             {/* Categories progress */}
             <div className="space-y-3" data-tour="achievements-categories">
               <div className="flex items-center justify-between">
-                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                <h3 className="font-tech text-xs uppercase text-white tracking-wider font-semibold">
                   ACHIEVEMENT CATEGORIES
                 </h3>
               </div>
@@ -528,9 +528,9 @@ const AchievementsPage = () => {
                             </div>
                           </div>
                           <div className="space-y-1.5">
-                            <div className="flex justify-between items-baseline text-[10px] font-semibold text-white/50">
-                              <span className="font-tech font-bold text-white/70">{cat.count} / {cat.total}</span>
-                              <span className="font-tech">{pct}%</span>
+                            <div className="flex justify-between items-baseline text-[10px] font-semibold">
+                              <span className="font-tech font-bold text-white">{cat.count} / {cat.total}</span>
+                              <span className="font-tech text-white">{pct}%</span>
                             </div>
                             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                               <div className="bg-[#9a35ff] h-full rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -544,7 +544,7 @@ const AchievementsPage = () => {
 
             {/* Achievements List */}
             <div className="space-y-3" data-tour="achievements-list">
-              <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+              <h3 className="font-tech text-xs uppercase text-white tracking-wider font-semibold">
                 {activeTab === "OVERVIEW" ? "RECENT ACHIEVEMENTS" : activeTab}
               </h3>
 
@@ -555,7 +555,7 @@ const AchievementsPage = () => {
                   ))}
                 </div>
               ) : visibleAchievements.length === 0 ? (
-                <div className="rounded-xl border border-white/8 bg-[#04080f]/80 px-4 py-8 text-center text-sm text-white/35">
+                <div className="rounded-xl border border-white/8 bg-[#04080f]/80 px-4 py-8 text-center text-sm text-white/75">
                   {!firstAgent ? "Create an agent to earn achievements." : "No achievements match your filters."}
                 </div>
               ) : (
@@ -579,7 +579,7 @@ const AchievementsPage = () => {
                           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl pointer-events-none transition group-hover:opacity-100 opacity-50" />
                         )}
                         {!item.unlocked && (
-                          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white/65 text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
+                          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
                             <Lock className="h-3 w-3" />
                             <span>LOCKED</span>
                           </div>
@@ -603,14 +603,14 @@ const AchievementsPage = () => {
                               {item.rarity}
                             </span>
                           </div>
-                          <p className="text-xs text-white/75 leading-relaxed font-medium mb-2">
+                          <p className="text-xs text-white leading-relaxed font-medium mb-2">
                             {item.desc}
                           </p>
 
                           {/* Progress bar (for locked with progress) */}
                           {!item.unlocked && progress && (
                             <div className="mb-2 space-y-1">
-                              <div className="flex justify-between text-[9px] font-tech text-white/60">
+                              <div className="flex justify-between text-[9px] font-tech text-white/90">
                                 <span>{progress.current} / {progress.target}</span>
                                 <span>{progressPct}%</span>
                               </div>
@@ -652,7 +652,7 @@ const AchievementsPage = () => {
 
             {/* ACHIEVEMENT OVERVIEW Donut Chart */}
             <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-overview">
-              <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+              <h3 className="font-tech text-xs uppercase text-white tracking-wider font-semibold">
                 ACHIEVEMENT OVERVIEW
               </h3>
               {isLoading ? (
@@ -674,7 +674,7 @@ const AchievementsPage = () => {
 
             {/* MILESTONE REWARDS */}
             <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-rewards">
-              <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+              <h3 className="font-tech text-xs uppercase text-white tracking-wider font-semibold">
                 MILESTONE REWARDS
               </h3>
               <div className="space-y-3.5">
@@ -696,7 +696,7 @@ const AchievementsPage = () => {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0 space-y-0.5 text-[10px] font-semibold text-white/50">
+                      <div className="flex-1 min-w-0 space-y-0.5 text-[10px] font-semibold">
                         {claimed ? (
                           <div className="flex items-center justify-between">
                             <span className="text-white font-bold leading-none">{m.pts.toLocaleString()} Points</span>
@@ -706,7 +706,7 @@ const AchievementsPage = () => {
                           <>
                             <div className="flex items-center justify-between">
                               <span className="text-white font-bold leading-none">{m.pts.toLocaleString()} Points</span>
-                              <span className={`font-tech font-bold ${isNext ? "text-white/70" : "text-white/30"}`}>
+                              <span className={`font-tech font-bold ${isNext ? "text-white" : "text-white/85"}`}>
                                 {totalPoints.toLocaleString()} / {m.pts.toLocaleString()}
                               </span>
                             </div>
@@ -717,11 +717,11 @@ const AchievementsPage = () => {
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
-                              <span className="leading-none text-[9px] text-white/30 block">{m.crate}</span>
+                              <span className="leading-none text-[9px] text-white/80 block">{m.crate}</span>
                             </div>
                           </>
                         )}
-                        {claimed && <span className="leading-none text-[9px] text-white/30 block">{m.crate}</span>}
+                        {claimed && <span className="leading-none text-[9px] text-white/80 block">{m.crate}</span>}
                       </div>
                     </div>
                   );
@@ -732,7 +732,7 @@ const AchievementsPage = () => {
             {/* RECENTLY UNLOCKED feed */}
             <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="achievements-recent">
               <div className="flex items-center justify-between">
-                <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">
+                <h3 className="font-tech text-xs uppercase text-white tracking-wider font-semibold">
                   RECENTLY UNLOCKED
                 </h3>
               </div>
@@ -743,9 +743,9 @@ const AchievementsPage = () => {
                   ))}
                 </div>
               ) : recentlyUnlocked.length === 0 ? (
-                <p className="text-[10px] text-white/35">No achievements unlocked yet. Win a battle or complete training to get started.</p>
+                <p className="text-[10px] text-white/80">No achievements unlocked yet. Win a battle or complete training to get started.</p>
               ) : (
-                <div className="space-y-3.5 text-[10px] font-semibold text-white/50">
+                <div className="space-y-3.5 text-[10px] font-semibold text-white">
                   {recentlyUnlocked.map((a) => {
                     const Icon = ACHIEVEMENT_ICONS[a.id] ?? Trophy;
                     const style = RARITY_STYLES[a.rarity];
