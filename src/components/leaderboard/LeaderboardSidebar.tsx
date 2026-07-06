@@ -198,12 +198,12 @@ export function LeaderboardSidebar({
       </div>
 
       {/* ── About Reputation ────────────────────────────────────── */}
-      <div className="arena-panel p-5">
+      {/* <div className="arena-panel p-5">
         <p className="text-[12px] leading-relaxed text-white/50">
           <strong className="font-semibold text-white/80">{aboutTitle}</strong>{" "}
           <span className="italic">{aboutText}</span>
         </p>
-      </div>
+      </div> */}
     </aside>
   );
 }
