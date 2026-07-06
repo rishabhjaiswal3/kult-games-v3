@@ -47,14 +47,21 @@ import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxLogo from "@/assets/okx-icon.png";
 import agentNexus from "@/assets/hybrid.mp4";
 import agentShadow from "@/assets/defender.mp4";
+
+import iconTrain from  '@/assets/Train.png'
+import iconBattle from  '@/assets/Battle.png'
+import iconEarn from '@/assets/Earn.png'
+import iconOwn from '@/assets/Own.png'
+
+
 import agentAegis from "@/assets/tactician.mp4";
 import agentVoid from "@/assets/support.mp4";
 import agentRage from "@/assets/berserker.mp4";
 import agentLumen from "@/assets/assassin.gif";
-import iconTrain from "@/assets/icon-train.png";
-import iconBattle from "@/assets/icon-battle.png";
-import iconEarn from "@/assets/icon-earn.png";
-import iconOwn from "@/assets/Own.png";
+// import iconTrain from "@/assets/icon-train.png";
+// import iconBattle from "@/assets/icon-battle.png";
+// import iconEarn from "@/assets/icon-earn.png";
+// import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
 import leagueBackground from "@/assets/league_background.mp4";
 import heroTrio from "@/assets/hero-trio.png";
@@ -972,7 +979,7 @@ function HowItWorks() {
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
             <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
-              <div className="aspect-square overflow-hidden bg-background/50 md:aspect-[6/5]">
+              <div className="aspect-square bg-background/50 p-2" style={{borderRadius:"60px"}}>
                 {s.img.endsWith(".mp4") ? (
                   <video
                     src={s.img}
@@ -983,14 +990,17 @@ function HowItWorks() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
-                    src={s.img}
-                    alt={s.title}
-                    loading="lazy"
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover"
-                  />
+                  <div style={{height:"260px"}}>
+                    <img
+                      src={s.img}
+                      alt={s.title}
+                      loading="lazy"
+                      // width={400}
+                      height={200}
+                      style={{ width: "100%", height: "100%",background:"green" }}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
               </div>
               <div className="p-3 md:p-4 text-center md:text-left">
