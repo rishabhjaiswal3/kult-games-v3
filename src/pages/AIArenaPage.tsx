@@ -561,30 +561,30 @@ function Logo({
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-sm pt-80 text-center" : "max-w-xl md:max-w-sm xl:max-w-xl"}>
+    <div className={compact ? "mx-auto max-w-md pt-80 text-center" : "max-w-2xl md:max-w-md xl:max-w-2xl"}>
       <h1
-        className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
-          compact ? "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_28px_rgba(154,53,255,0.5)]" : "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl"
+        className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase leading-[1.02] tracking-[0.01em] text-white ${
+          compact ? "text-[1.72rem] min-[390px]:text-[1.84rem] sm:text-[3rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_34px_rgba(154,53,255,0.5)]" : "text-[1.8rem] min-[390px]:text-[1.94rem] sm:text-[3.2rem] lg:text-[3.9rem] xl:text-[4.15rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.86),0_0_34px_rgba(168,85,247,0.3)]"
         }`}
       >
         AI ARENA
       </h1>
       <h2
-        className={`font-tech font-black uppercase text-foreground/90 ${
-          compact ? "mt-1.5 text-[1.2rem] leading-[1.05] max-[380px]:text-[1rem]" : "mt-3 leading-tight text-xl sm:text-2xl md:mt-2 md:text-lg lg:text-xl xl:mt-5 xl:text-2xl"
+        className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase text-foreground/90 ${
+          compact ? "mt-2 text-[1.2rem] leading-[1.04] max-[380px]:text-[1rem]" : "mt-3 leading-[1.04] text-[1.14rem] sm:text-[1.48rem] md:mt-2 md:text-[1.08rem] lg:text-[1.3rem] xl:mt-4.5 xl:text-[1.65rem]"
         }`}
       >
         Where AI{compact ? " " : <br />}
         Agents Battle
         <br />
         For{" "}
-        <span className="underline decoration-accent decoration-4 underline-offset-4">
+        <span className="text-gradient-arena tracking-[0.02em]">
           Supremacy
         </span>
       </h2>
       <p
-        className={`max-w-md text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
-          compact ? "mt-2 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
+        className={`max-w-md text-white/82 [text-shadow:0_1px_12px_rgba(0,0,0,0.72)] md:mt-5 md:hidden xl:block ${
+          compact ? "mt-2.5 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4.5 text-[0.96rem] font-medium leading-relaxed md:text-[11px] lg:text-[12px] xl:text-[1.02rem]"
         }`}
       >
         Collect, train, and battle unique AI Agents.
@@ -974,8 +974,8 @@ function HowItWorks() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
-            <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
-              <div className="aspect-square bg-background/50 p-2" style={{borderRadius:"60px"}}>
+            <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
+              <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden bg-background/50">
                 {s.img.endsWith(".mp4") ? (
                   <video
                     src={s.img}
@@ -983,20 +983,15 @@ function HowItWorks() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
                   />
                 ) : (
-                  <div style={{height:"260px"}}>
-                    <img
-                      src={s.img}
-                      alt={s.title}
-                      loading="lazy"
-                      // width={400}
-                      height={200}
-                      style={{ width: "100%", height: "100%" }}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <img
+                    src={s.img}
+                    alt={s.title}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+                  />
                 )}
               </div>
               <div className="p-3 md:p-4 text-center md:text-left">

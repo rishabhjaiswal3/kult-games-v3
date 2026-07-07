@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Orbitron", "sans-serif"],
-        tech: ["Orbitron", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        display: ["Sora", "sans-serif"],
+        tech: ["Sora", "sans-serif"],
+        body: ["Sora", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
         marker: ["Permanent Marker", "cursive"],
       },

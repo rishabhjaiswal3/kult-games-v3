@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -1756,6 +1756,13 @@ button[aria-label="close modal"]:hover {
   animation: hero-title-shimmer 4.5s ease-in-out infinite;
 }
 
+.home-agentic-title {
+  text-shadow:
+    0 2px 18px hsl(0 0% 0% / 0.86),
+    0 0 36px hsl(268 85% 62% / 0.28);
+  animation: hero-title-shimmer 5.2s ease-in-out infinite;
+}
+
 @keyframes hero-title-shimmer {
   0%, 100% { filter: brightness(1) saturate(1); }
   50% { filter: brightness(1.15) saturate(1.2); }
@@ -1789,6 +1796,7 @@ button[aria-label="close modal"]:hover {
   .hero-hologram-overlay,
   .hero-hologram-flicker,
   .hero-gradient-title,
+  .home-agentic-title,
   .arena-rain,
   .arena-scan,
   .arena-neon-reflection,
@@ -1858,11 +1866,11 @@ button[aria-label="close modal"]:hover {
 
 @layer utilities {
   .font-tech {
-    font-family: "Orbitron", sans-serif;
+    font-family: "Sora", sans-serif;
   }
 
   .font-display {
-    font-family: "Orbitron", sans-serif;
+    font-family: "Sora", sans-serif;
   }
 
   .font-display-marker {
@@ -2847,17 +2855,17 @@ button[aria-label="close modal"]:hover {
 
 /* League typography lab — preview font stacks on /league only */
 .league-typography-root {
-  font-family: var(--league-font-body, Inter, sans-serif);
+  font-family: var(--league-font-body, Sora, sans-serif);
   font-size: var(--league-base-size, 16px);
 }
 
 .league-typography-root .font-tech,
 .league-typography-root .font-display {
-  font-family: var(--league-font-tech, Orbitron, sans-serif);
+  font-family: var(--league-font-tech, Sora, sans-serif);
 }
 
 .league-typography-root .font-body {
-  font-family: var(--league-font-body, Inter, sans-serif);
+  font-family: var(--league-font-body, Sora, sans-serif);
 }
 
 .league-typography-root .font-mono {

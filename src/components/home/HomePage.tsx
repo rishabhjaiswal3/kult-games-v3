@@ -267,20 +267,20 @@ export function HomePage() {
               Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
-          <div className="max-w-2xl space-y-2.5 sm:space-y-4">
-            <h1 className="max-w-2xl font-tech text-[1.56rem] font-black uppercase leading-[1.05] tracking-tight text-white min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl">
+          <div className="max-w-[56rem] space-y-3 sm:space-y-5">
+            <h1 className="home-agentic-title max-w-[56rem] font-display [font-family:'Orbitron',sans-serif] text-[1.66rem] font-black uppercase leading-[0.98] tracking-[0.016em] text-white min-[390px]:text-[1.82rem] sm:text-[3.15rem] lg:text-[3.85rem] xl:text-[4.15rem]">
               The Operating
               <br />
               Layer for{" "}
               <br className="xl:hidden" />
-              <span className="text-gradient-arena tracking-wide xl:hidden">Intelligent Gaming</span>
-              <span className="hidden xl:inline text-gradient-arena tracking-wide">
+              <span className="hero-gradient-title tracking-[0.02em] xl:hidden">Intelligent Gaming</span>
+              <span className="hidden xl:inline hero-gradient-title tracking-[0.02em]">
                 Intelligent
                 <br />
                 Gaming
               </span>
             </h1>
-            <p className="max-w-lg text-sm leading-snug text-white/75 sm:leading-relaxed">
+            <p className="max-w-xl text-sm font-medium leading-snug text-white/84 [text-shadow:0_1px_12px_rgba(0,0,0,0.72)] sm:text-[1.02rem] sm:leading-relaxed">
               One browser for games, agents, rivalries,
               <br />
               and live battles that never stop.
