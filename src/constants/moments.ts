@@ -95,6 +95,11 @@ export function isMomentsCreateQueryOpen(value: string | null): boolean {
   return value === "true" || value === "1";
 }
 
+/** `/moments` and `/moments/:id` use a fixed viewport shell with an inner scroll region. */
+export function usesMomentsInternalScroll(pathname: string): boolean {
+  return pathname === "/moments" || /^\/moments\/[^/]+$/.test(pathname);
+}
+
 /** `/moments`, `/moments/browse`, and `/moments/:id` share the same dashboard shell + topbar. */
 export function isMomentsPath(pathname: string): boolean {
   return pathname === "/moments" || pathname === "/moments/browse" || /^\/moments\/[^/]+$/.test(pathname);

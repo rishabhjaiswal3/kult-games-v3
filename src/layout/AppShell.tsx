@@ -6,7 +6,7 @@ import { AppTopbar } from "@/layout/AppTopbar";
 import { MobileBottomNav } from "@/layout/MobileBottomNav";
 import { PageLoginPrompt } from "@/components/LoginPromptToast";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
-import { isMomentsPath } from "@/constants/moments";
+import { isMomentsPath, usesMomentsInternalScroll } from "@/constants/moments";
 import { navLabelForPath } from "@/layout/navConfig";
 import { usesArenaLayout } from "@/layout/arenaRoutes";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ export function AppShell() {
   const [isGameChromeVisible, setIsGameChromeVisible] = useState(true);
   const activeLabel = navLabelForPath(pathname);
   const isMoments = isMomentsPath(pathname);
+  const isMomentsInternalScroll = usesMomentsInternalScroll(pathname);
   const isAIArenaLanding = pathname === "/ai-arena";
   const isArenaLayout = usesArenaLayout(pathname);
   const isHome = pathname === "/";
@@ -74,6 +75,7 @@ export function AppShell() {
               ref={mainScrollRef}
               className={cn(
                 "arena-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden",
+                isMomentsInternalScroll && "xl:overflow-hidden",
                 isGamePlay || isHome ? "pb-0" : isAIArenaLanding ? "pb-32 sm:pb-0" : "pb-24 sm:pb-0"
               )}
             >

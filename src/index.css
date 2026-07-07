@@ -2637,6 +2637,7 @@ button[aria-label="close modal"]:hover {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
+  width: 100%;
 }
 
 .moments-page-scroll::-webkit-scrollbar {
@@ -2646,6 +2647,21 @@ button[aria-label="close modal"]:hover {
 .moments-page-scroll::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background: rgba(154, 53, 255, 0.35);
+}
+
+.moments-page-inner {
+  width: 100%;
+}
+
+.moments-page-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.moments-page-shell {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
 }
 
 .moments-sticky-header {
@@ -2662,8 +2678,10 @@ button[aria-label="close modal"]:hover {
 
 @media (min-width: 1280px) {
   .moments-page-root {
-    height: calc(100dvh - 5.5rem);
-    max-height: calc(100dvh - 5.5rem);
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: none;
     overflow: hidden;
   }
 
@@ -2671,10 +2689,18 @@ button[aria-label="close modal"]:hover {
     min-height: 0;
     flex: 1;
     overflow: hidden;
+    width: 100%;
   }
 
   .moments-page-scroll {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 0;
+  }
+
+  .moments-page-inner {
     padding-bottom: 2.5rem;
   }
 
@@ -2691,13 +2717,27 @@ button[aria-label="close modal"]:hover {
 
 @media (max-width: 1279px) {
   .moments-page-root {
+    flex: none;
+    min-height: auto;
     overflow: visible;
     height: auto;
     max-height: none;
   }
 
-  .moments-page-scroll {
+  .moments-page-shell {
+    flex: none;
+    min-height: auto;
     overflow: visible;
+  }
+
+  .moments-page-scroll {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .moments-page-inner {
     padding-bottom: 2rem;
   }
 

@@ -608,10 +608,10 @@ export function AllMomentsPage() {
   }, [activeTab, discoverQuery.isError, isAuthenticated]);
 
   return (
-    <div className={isBrowseAll ? "min-h-full text-white" : "moments-page-root flex min-h-0 flex-1 flex-col text-white"} style={{ backgroundColor: "#03070d" }}>
+    <div className={isBrowseAll ? "min-h-full text-white" : "moments-page-root text-white"} style={{ backgroundColor: "#03070d" }}>
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.15),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.1),transparent_32%)]" />
 
-      <section className={isBrowseAll ? "w-full px-3 py-4 sm:px-6 sm:py-5 lg:px-8" : "moments-page-shell flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-6 sm:py-5 lg:px-8"}>
+      <section className={isBrowseAll ? "w-full px-3 py-4 sm:px-6 sm:py-5 lg:px-8" : "moments-page-shell py-4 sm:py-5"}>
         {isBrowseAll ? (
           <Link
             to="/moments"
@@ -622,7 +622,7 @@ export function AllMomentsPage() {
           </Link>
         ) : null}
 
-        <div className={isBrowseAll ? "relative z-40 space-y-4" : "moments-sticky-header relative z-40 shrink-0 space-y-4"}>
+        <div className={isBrowseAll ? "relative z-40 space-y-4" : "moments-sticky-header relative z-40 shrink-0 space-y-4 px-3 sm:px-6 lg:px-8"}>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -716,7 +716,8 @@ export function AllMomentsPage() {
 
         </div>
 
-        <div className={isBrowseAll ? "space-y-4" : "moments-page-scroll min-h-0 flex-1"}>
+        <div className={isBrowseAll ? "space-y-4" : "moments-page-scroll"}>
+          <div className={isBrowseAll ? "" : "moments-page-inner px-3 sm:px-6 lg:px-8"}>
           <div className={isBrowseAll ? "space-y-4" : "moments-page-grid grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
             <div className={isBrowseAll ? "space-y-4" : "moments-main-column min-w-0 space-y-4"}>
 
@@ -902,6 +903,7 @@ export function AllMomentsPage() {
             </div>
           </aside>
           ) : null}
+          </div>
           </div>
         </div>
       </section>

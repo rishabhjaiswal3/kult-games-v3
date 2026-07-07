@@ -157,6 +157,7 @@ export function MomentDetailPage() {
   const { isAuthenticated, walletAddress } = useAuth();
   const queryClient = useQueryClient();
   const commentsRef = useRef<HTMLDivElement>(null);
+  const pageScrollRef = useRef<HTMLDivElement>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -239,21 +240,40 @@ export function MomentDetailPage() {
   };
 
   const scrollToComments = () => {
-    commentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const scrollRoot = pageScrollRef.current;
+    const target = commentsRef.current;
+    if (!target) return;
+
+    if (scrollRoot) {
+      const offset = target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top + scrollRoot.scrollTop - 12;
+      scrollRoot.scrollTo({ top: offset, behavior: "smooth" });
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   // ── Loading state ────────────────────────────────────────────────────────────
   if (momentQuery.isLoading) {
     return (
-      <div className="min-h-full bg-[#03070d] text-white">
-        <div className="mx-auto max-w-[1284px] px-4 py-8 sm:px-6 lg:px-8">
-          <button type="button" onClick={() => navigate("/moments")}
-            className="mb-6 flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Moments
-          </button>
-          <MomentDetailSkeleton />
-        </div>
+      <div className="moments-page-root text-white" style={{ backgroundColor: "#03070d" }}>
+        <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.12),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.07),transparent_32%)]" />
+        <section className="moments-page-shell py-6">
+          <div className="moments-sticky-header relative z-40 shrink-0 px-4 pb-4 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-[1284px]">
+            <button type="button" onClick={() => navigate("/moments")}
+              className="flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Moments
+            </button>
+            </div>
+          </div>
+          <div className="moments-page-scroll">
+            <div className="moments-page-inner mx-auto w-full max-w-[1284px] px-4 sm:px-6 lg:px-8">
+            <MomentDetailSkeleton />
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -261,22 +281,31 @@ export function MomentDetailPage() {
   // ── Error / not found ────────────────────────────────────────────────────────
   if (momentQuery.isError || !momentQuery.data) {
     return (
-      <div className="min-h-full bg-[#03070d] text-white">
-        <div className="mx-auto max-w-[1284px] px-4 py-8 sm:px-6 lg:px-8">
-          <button type="button" onClick={() => navigate("/moments")}
-            className="mb-6 flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Moments
-          </button>
-          <div className="arena-panel border-white/8 bg-[#04080f]/80 p-16 text-center">
-            <p className="text-sm font-semibold text-white/60">Moment not found</p>
+      <div className="moments-page-root text-white" style={{ backgroundColor: "#03070d" }}>
+        <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.12),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.07),transparent_32%)]" />
+        <section className="moments-page-shell py-6">
+          <div className="moments-sticky-header relative z-40 shrink-0 px-4 pb-4 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-[1284px]">
             <button type="button" onClick={() => navigate("/moments")}
-              className="mt-4 rounded border border-purple-500/25 px-4 py-2 font-tech text-[10px] font-bold uppercase text-purple-400 transition hover:bg-purple-500/10"
+              className="flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
             >
-              Browse Moments
+              <ArrowLeft className="h-4 w-4" /> Back to Moments
             </button>
+            </div>
           </div>
-        </div>
+          <div className="moments-page-scroll">
+            <div className="moments-page-inner mx-auto w-full max-w-[1284px] px-4 sm:px-6 lg:px-8">
+            <div className="arena-panel border-white/8 bg-[#04080f]/80 p-16 text-center">
+              <p className="text-sm font-semibold text-white/60">Moment not found</p>
+              <button type="button" onClick={() => navigate("/moments")}
+                className="mt-4 rounded border border-purple-500/25 px-4 py-2 font-tech text-[10px] font-bold uppercase text-purple-400 transition hover:bg-purple-500/10"
+              >
+                Browse Moments
+              </button>
+            </div>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -288,21 +317,26 @@ export function MomentDetailPage() {
   const isOwner = isMomentOwner(walletAddress, moment);
 
   return (
-    <div className="min-h-full bg-[#03070d] text-white">
+    <div className="moments-page-root text-white" style={{ backgroundColor: "#03070d" }}>
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_78%_12%,rgba(139,37,255,0.12),transparent_28%),radial-gradient(circle_at_18%_90%,rgba(33,144,255,0.07),transparent_32%)]" />
 
-      <section className="mx-auto max-w-[1284px] px-4 py-6 sm:px-6 lg:px-8">
-        {/* Back nav */}
-        <button type="button" onClick={() => navigate("/moments")}
-          className="mb-5 flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Moments
-        </button>
+      <section className="moments-page-shell py-6">
+        <div className="moments-sticky-header relative z-40 shrink-0 px-4 pb-4 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1284px]">
+          <button type="button" onClick={() => navigate("/moments")}
+            className="flex items-center gap-2 font-tech text-[11px] font-bold uppercase tracking-wider text-white/60 transition hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Moments
+          </button>
+          </div>
+        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div ref={pageScrollRef} className="moments-page-scroll">
+          <div className="moments-page-inner mx-auto w-full max-w-[1284px] px-4 sm:px-6 lg:px-8">
+          <div className="moments-page-grid grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
 
           {/* ── Main column ── */}
-          <div className="min-w-0 space-y-5">
+          <div className="moments-main-column min-w-0 space-y-5">
 
             <div data-tour="moment-detail-media">
               <MomentMediaPlayer moment={moment} />
@@ -411,7 +445,7 @@ export function MomentDetailPage() {
           </div>
 
           {/* ── Sidebar ── */}
-          <aside className="space-y-4">
+          <aside className="moments-sidebar-column space-y-4">
 
             {/* Moment stats */}
             <div className="arena-panel border-white/8 bg-[#04080f]/95 p-5 space-y-4" data-tour="moment-detail-info">
@@ -559,6 +593,8 @@ export function MomentDetailPage() {
               </div>
             )}
           </aside>
+          </div>
+          </div>
         </div>
       </section>
 
