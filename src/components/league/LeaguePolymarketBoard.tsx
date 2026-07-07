@@ -47,6 +47,7 @@ import { usePolymarketPusdBalance } from "@/hooks/usePolymarketPusdBalance";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
+import { PolymarketDepositModal } from "./PolymarketDepositModal";
 import { FlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
 import { PolymarketLogo } from "./PolymarketLogo";
@@ -518,6 +519,7 @@ function PolygonWalletBalance() {
   const { isAuthenticated, walletAddress, login } = useAuth();
   const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
   const { data: pusd, isLoading: pusdLoading } = usePolymarketPusdBalance(walletAddress);
+  const [depositOpen, setDepositOpen] = useState(false);
 
   if (!isAuthenticated) {
     return (
@@ -545,6 +547,14 @@ function PolygonWalletBalance() {
           {pusdLoading ? "…" : pusd != null ? `$${pusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
         </span>
       </div>
+      <button
+        type="button"
+        onClick={() => setDepositOpen(true)}
+        className="mt-1 w-full rounded-lg border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#7c9bff] transition hover:bg-[#2E5CFF]/20"
+      >
+        Fund wallet
+      </button>
+      <PolymarketDepositModal open={depositOpen} onOpenChange={setDepositOpen} walletAddress={walletAddress} />
     </div>
   );
 }
