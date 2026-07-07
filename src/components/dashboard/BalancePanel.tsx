@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { arenaChainApi, zeroGExplorer } from "@/api/arenaChainApi";
+import { useAuth } from "@/contexts/AuthContext";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { getRankFromElo } from "@/utils/rankSystem";
 
@@ -8,16 +10,19 @@ type BalancePanelProps = {
   agent: AiArenaAgent | null;
 };
 
-function formatArenaBalance(value?: number | null) {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatArenaBalance(value?: string | number | null) {
+  const num = typeof value === "string" ? Number.parseFloat(value) : value;
+  if (num == null || !Number.isFinite(num)) return "—";
+  return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function BalancePanel({ agent }: BalancePanelProps) {
+  const { walletAddress } = useAuth();
+
   const walletQ = useQuery({
-    queryKey: ["aiArenaGateway", "dashboard", "walletBalance", agent?.id],
-    queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(agent!.id),
-    enabled: !!agent?.id,
+    queryKey: ["arenaChain", "dashboard", "walletBalance", walletAddress],
+    queryFn: () => arenaChainApi.getWalletBalance(walletAddress!),
+    enabled: !!walletAddress,
     staleTime: 0,
     refetchOnMount: "always",
     retry: false,
@@ -40,8 +45,7 @@ export function BalancePanel({ agent }: BalancePanelProps) {
     retry: 1,
   });
 
-  const balance = walletQ.data?.wallet?.balanceArena;
-  const solanaAddress = walletQ.data?.wallet?.solanaAddress;
+  const balance = walletQ.data?.balanceArena;
   const rank = rankQ.data?.rank;
   const totalAgents = totalAgentsQ.data?.total;
   const topPercent =
@@ -57,28 +61,28 @@ export function BalancePanel({ agent }: BalancePanelProps) {
           <div>
             <div className="font-tech text-[10px] uppercase text-white/45">$Arena Balance</div>
             <div className="mt-1 text-[10px] uppercase tracking-wider text-white/30">
-              {agent ? agent.name : "No agent selected"}
+              {walletAddress ? "Your 0G wallet" : "No wallet connected"}
             </div>
           </div>
           {walletQ.isFetching ? <Loader2 className="h-4 w-4 animate-spin text-white/35" /> : null}
         </div>
         <div className="mt-2 flex items-center gap-4">
-          <span className="text-2xl font-semibold">{agent ? formatArenaBalance(balance) : "—"}</span>
+          <span className="text-2xl font-semibold">{walletAddress ? formatArenaBalance(balance) : "—"}</span>
           <img src="/arena-token-cropped.webp" className="h-9 w-9 object-contain" alt="ARENA" />
         </div>
-        {solanaAddress && !solanaAddress.startsWith("pending_") ? (
+        {walletAddress ? (
           <a
-            href={`https://explorer.solana.com/address/${solanaAddress}?cluster=devnet`}
+            href={zeroGExplorer.address(walletAddress)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono text-white/35 transition hover:text-neon-cyan"
           >
             <ExternalLink className="h-2.5 w-2.5" />
-            View on Solana
+            View on 0G Chain
           </a>
         ) : null}
-        {agent && walletQ.isError ? (
-          <div className="mt-2 text-xs text-white/40">Wallet balance unavailable for this agent right now.</div>
+        {walletAddress && walletQ.isError ? (
+          <div className="mt-2 text-xs text-white/40">Wallet balance unavailable right now.</div>
         ) : null}
       </section>
       <section className="arena-panel flex items-center justify-between p-4">

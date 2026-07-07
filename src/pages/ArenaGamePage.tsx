@@ -1529,7 +1529,7 @@ export default function ArenaGamePage() {
     };
     localStorage.setItem('arenaBattlePayload', JSON.stringify(arenaPayload));
 
-    const buildUrl = `${UNITY_BASE_URL}/Arena1`;
+    const buildUrl = `${UNITY_BASE_URL}/Warzone`;
 
     const script = document.createElement("script");
     script.src = `${buildUrl}/WarzoneV4.loader.js`;
@@ -2150,7 +2150,7 @@ export default function ArenaGamePage() {
                           points to the correct R2 folder and the bucket is public.
                         </p>
                         <p className="font-mono text-[10px] text-white/30 break-all">
-                          Looking for: {UNITY_BASE_URL}/Arena1/WarzoneV4.data
+                          Looking for: {UNITY_BASE_URL}/Warzone/WarzoneV4.data
                         </p>
                       </>
                     )}

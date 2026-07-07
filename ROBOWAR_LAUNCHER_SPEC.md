@@ -40,127 +40,135 @@ Browser (polling every 2s)
 
 ---
 
-## Part 1 — Unreal Engine Changes
+## Part 1 — Unreal Engine Changes (Blueprint-only project)
 
-### 1.1 Read command-line arguments at game start
+This project has no C++ module, so every change below is described as Blueprint nodes/wiring
+to build in the editor. Names below (`WhichStep`, `BP_OrgMenu`, `BP_PlayerRobot`, `BP_EnemyRobot`,
+`Map_RobotWars`, `TriggerVolume_1`) match the pasted `Map_RobotWars` level Blueprint graph.
 
-When the launcher spawns `RoboWars.exe`, it passes three args:
+**Status: not yet built — none of this exists in the project yet.** This is a plan to build, not a
+record of changes already made (I cannot edit `.uasset` Blueprint graphs directly with my tools —
+they're binary, not text files. Everything here has to be wired by hand in the Unreal Editor).
 
-```
-RoboWars.exe -matchId=abc123 -agentA=agent-id-1 -agentB=agent-id-2
-```
+### 1.1 New GameInstance Blueprint — parse command-line args
 
-In your Unreal C++ (GameInstance or GameMode `Init`):
+1. Create `BP_AIArenaGameInstance` (parent class `Game Instance`) if one doesn't already exist.
+   Set it as the project's default GameInstance: **Edit → Project Settings → Maps & Modes → Game Instance Class**.
+2. Add variables: `MatchId` (String), `AgentAId` (String), `AgentBId` (String), `bLaunchedFromArgs` (Boolean).
+3. On `Event Init`:
+   - `Get Command Line` (pure node, `UKismetSystemLibrary::GetCommandLine`) → gives the full command-line string.
+   - `Parse Param Value` (`UKismetSystemLibrary::ParseParamValue`) three times, with `Param` = `"-matchId="`, `"-agentA="`, `"-agentB="` → outputs into `MatchId`/`AgentAId`/`AgentBId`.
+   - `bLaunchedFromArgs` = `Not Equal (String)` on `MatchId` vs empty string (true only when actually launched with args — this is what keeps local in-editor menu testing working, per your "conditional skip" answer).
 
-```cpp
-#include "Misc/CommandLine.h"
-
-FString MatchId, AgentAId, AgentBId;
-
-FParse::Value(FCommandLine::Get(), TEXT("-matchId="), MatchId);
-FParse::Value(FCommandLine::Get(), TEXT("-agentA="),  AgentAId);
-FParse::Value(FCommandLine::Get(), TEXT("-agentB="),  AgentBId);
-
-// Store in GameInstance so all blueprints can access them
-UMyGameInstance* GI = Cast<UMyGameInstance>(GetGameInstance());
-GI->MatchId  = MatchId;
-GI->AgentAId = AgentAId;
-GI->AgentBId = AgentBId;
-```
-
-**Blueprint alternative:** Use `Parse Command Line` node in GameInstance BeginPlay.  
-Both methods work — pick whatever fits your project setup.
+This matches the original spec's "Blueprint alternative: Parse Command Line node" note — `ParseParamValue` is the concrete node for it.
 
 ---
 
-### 1.2 Write result JSON when the match ends
+### 1.2 `Map_RobotWars` — skip Main Menu when launched with args
 
-When the match finishes (bot dies, time up, whatever your win condition is), write a result file **before** quitting.
+**Confirmed via the actual graph** (not a guess): `Event Tick` on `Map_RobotWars` runs a `Sequence`
+with a branch called `Go to GamePlay` that checks `Widget_Menu → Which Step? == "GamePlay"`, guarded
+by `Do Once`. When that condition is true, it automatically: repositions `BP_EnemyRobot` and
+`BP_PlayerRobot` to their arena spawn transforms, resets `Enemy Energy Count`/`Player Health`, hides
+`Widget_Menu`, stops the `MenumasterSequence`, switches the camera to `BP_GameplayCam`, fades in,
+and arms robot physics. This is the exact same thing the in-game "Play" button does — its
+`On Released (Play_Btn)` handler in `BP_OrgMenu` does `SET Which Step? = "GamePlay"`.
 
-**File path (must match launcher exactly):**
-```
-%APPDATA%\AIArena\result_{matchId}.json
-```
-On Windows this resolves to:  
-`C:\Users\{username}\AppData\Roaming\AIArena\result_abc123.json`
+`WhichStep?` is a plain public `String` variable on `BP_OrgMenu`, so it already has an
+auto-generated `Set Which Step?` node — no new function needed.
 
-**File contents:**
-```json
-{
-  "matchId":    "abc123",
-  "winnerId":   "agent-id-1",
-  "loserId":    "agent-id-2",
-  "winnerHp":   72,
-  "loserHp":    0,
-  "rounds":     3,
-  "durationSeconds": 145
-}
-```
+**The entire change**, added to `Map_RobotWars`'s `Event BeginPlay`:
+1. `Get Game Instance` → `Cast to BP_AIArenaGameInstance` → `Get bLaunchedFromArgs` → `Branch`
+2. **True branch:** `Widget_Menu` → `Set Which Step?` = `"GamePlay"`
+3. **False branch:** do nothing — existing behavior untouched for local/in-editor testing.
 
-**Unreal C++ to write the file:**
-
-```cpp
-#include "Misc/Paths.h"
-#include "Misc/FileHelper.h"
-#include "HAL/PlatformFileManager.h"
-
-void WriteResultFile(FString MatchId, FString WinnerId, FString LoserId,
-                     int32 WinnerHp, int32 Rounds, int32 Duration)
-{
-    // Build path: %APPDATA%/AIArena/
-    FString AppData = FPlatformMisc::GetEnvironmentVariable(TEXT("APPDATA"));
-    FString Dir     = AppData / TEXT("AIArena");
-    FString FilePath = Dir / FString::Printf(TEXT("result_%s.json"), *MatchId);
-
-    // Create dir if missing
-    IPlatformFile& PF = FPlatformFileManager::Get().GetPlatformFile();
-    PF.CreateDirectoryTree(*Dir);
-
-    // Build JSON string manually (no extra plugin needed)
-    FString Json = FString::Printf(
-        TEXT("{\n")
-        TEXT("  \"matchId\": \"%s\",\n")
-        TEXT("  \"winnerId\": \"%s\",\n")
-        TEXT("  \"loserId\": \"%s\",\n")
-        TEXT("  \"winnerHp\": %d,\n")
-        TEXT("  \"loserHp\": 0,\n")
-        TEXT("  \"rounds\": %d,\n")
-        TEXT("  \"durationSeconds\": %d\n")
-        TEXT("}"),
-        *MatchId, *WinnerId, *LoserId, WinnerHp, Rounds, Duration
-    );
-
-    FFileHelper::SaveStringToFile(Json, *FilePath);
-}
-```
-
-Call `WriteResultFile(...)` from your game-over / match-end logic **before** calling `FGenericPlatformMisc::RequestExit(false)` or closing the window.
+Because `Event Tick`'s `Go to GamePlay` block already polls `Which Step?` every frame and is
+`Do Once`-guarded, it fires itself on the very next tick once this is set — no duplicated logic,
+no need to call anything else. (Optional/cosmetic: you can also immediately hide/skip the intro
+splash widget from `Event BeginPlay` on the true branch if you don't want the intro to play at all
+before the jump to gameplay — not required for functionality.)
 
 ---
 
-### 1.3 Then quit the game
+### 1.3 Display agent IDs instead of the entered player name
 
-After writing the result file:
+**Confirmed via the actual graph:** `BP_OrgMenu` has a `NameSave` (String) variable that is the
+single source of truth for the player's typed name — set live from `OnTextChanged (Name?)`, then
+validated non-empty on `On Clicked (NameOK_Btn)` before the name-entry window hides.
 
-```cpp
-// Give file a moment to flush, then quit
-FPlatformMisc::RequestExit(false); // false = graceful quit
-```
+**Fix:** in the exact same `Branch` (true branch, `bLaunchedFromArgs`) added to `Map_RobotWars`'s
+`Event BeginPlay` in step 1.2, add one more `Set` call alongside `Set Which Step? = "GamePlay"`:
+- `Widget_Menu` → `Set NameSave` = `AgentAId` (from `BP_AIArenaGameInstance`)
 
-The launcher is watching for the process to exit. Once it exits, it reads the result file.
+This pre-fills the name before anything downstream reads it, and since the whole name-entry screen
+is being bypassed anyway (menu skipped straight to `"GamePlay"`), there's no need to touch
+`BP_OrgMenu`'s own text-input nodes at all.
+
+**Still to confirm:** where `NameSave` is actually *displayed* during gameplay (the HUD) — likely in
+`Event Tick`'s `New User Save Game` (Then 2) block, which probably writes it into the save-game
+object and/or a HUD text widget. If there's a second name field for the opponent (enemy), it needs
+the same treatment with `AgentBId`, but it may turn out the enemy's name isn't shown via `NameSave`
+at all (single-player games usually only capture "your" name) — need to see that block to know for
+sure whether a second widget/variable needs the same override.
 
 ---
 
-### 1.4 Test the Unreal side in isolation
+### 1.4 AI vs AI — possess `BP_PlayerRobot` with an AI Controller instead of a Player Controller
 
-Before building the launcher, verify the file writing works:
+Since `BP_EnemyRobot` already has a working AI Controller/Behavior Tree, reuse it rather than
+rewriting `BP_PlayerRobot`'s combat logic:
 
-1. Run from command line:
-   ```
-   RoboWars.exe -matchId=TEST001 -agentA=agentXXX -agentB=agentYYY
-   ```
-2. Play through a match
-3. Check `C:\Users\{you}\AppData\Roaming\AIArena\result_TEST001.json` exists and is valid JSON
+1. On `BP_PlayerRobot`, add an instance-editable variable `AIControllerOverrideClass`
+   (type `AI Controller` class reference), default = the same AI Controller class already assigned to `BP_EnemyRobot`.
+2. In `BP_PlayerRobot`'s `Event BeginPlay`: `Get Game Instance` → cast → `Get bLaunchedFromArgs` → `Branch`.
+   - **True:** `Get Controller` → `Unpossess` → `Spawn Actor from Class` (`AIControllerOverrideClass`)
+     → `Possess` (self) from that new AI controller. This turns the "player" robot into a second
+     AI agent using the exact same behavior tree logic as the enemy, without touching its movement/combat nodes.
+   - **False:** do nothing — existing Player Controller possession stays intact for local testing.
+3. Where `Map_RobotWars` currently does `Get Player Controller (0)` and possesses `BP_PlayerRobot`
+   directly, gate that call behind the same `bLaunchedFromArgs` branch so it's skipped in the AI-vs-AI case.
+
+---
+
+### 1.5 End screen — Close-only button that writes the result and quits
+
+Find your win/lose end-screen widget (tied into the `TriggerVolume_1` overlap + score logic that
+currently detects `BP_EnemyRobot`/`BP_PlayerRobot` by display name). Remove the "Return to Main Menu"
+button. Keep/add a single **Close** button.
+
+`Close` button `OnClicked`:
+1. Determine winner/loser: whichever robot actor is still alive/undestroyed maps to `AgentAId` or
+   `AgentBId` from the GameInstance (you already have per-robot references from the existing `TriggerVolume_1` logic).
+2. Build the result JSON string (same shape as before: `matchId`, `winnerId`, `loserId`, `rounds`).
+3. Write it to `%APPDATA%\AIArena\result_{matchId}.json` using **Blueprint FileSDK** (installed and
+   enabled). Exact node wiring, in order:
+   - `Get Environment Variable` (`VariableName` = `"APPDATA"`) → gives you `C:\Users\{user}\AppData\Roaming`.
+   - `Append` (string) that with `"\AIArena\result_"` + `MatchId` (from GameInstance) + `".json"` →
+     this is your full `FileName` path.
+   - `Create Directory` (`DirectoryName` = `AppData + "\AIArena"`, `CreateDirectoryTree` = true) —
+     run this before the write in case `%APPDATA%\AIArena` doesn't exist yet. Safe to call even if it
+     already exists.
+   - `Write String to File` (`FileName` = the full path built above, `Content` = your JSON string,
+     `Append` = false, `Encoding` = Auto Detect or Force UTF8) → returns bool, branch on failure if
+     you want an on-screen error instead of silently failing.
+   - Then `Quit Game`.
+
+   All three of these (`Get Environment Variable`, `Create Directory`, `Write String to File`) are
+   real nodes confirmed in the plugin's source (`FileSDKBPLibrary.h`) — no further plugin research needed.
+4. `Quit Game` (`UGameplayStatics::QuitGame`, target = own Player Controller) right after the write —
+   same as spec Part 1.3's `RequestExit`.
+
+---
+
+### 1.6 Test in isolation
+
+1. Run from command line: `RoboWars.exe -matchId=TEST001 -agentA=agentXXX -agentB=agentYYY`
+2. Confirm the game skips straight to battle, both robots fight autonomously, and the HUD shows
+   `agentXXX` / `agentYYY` instead of a typed name.
+3. Let the match resolve, click **Close**, confirm `C:\Users\{you}\AppData\Roaming\AIArena\result_TEST001.json`
+   exists and is valid JSON, and the game process has exited (so the launcher's `proc.on("close")` fires).
+4. Run again with no args (double-click the exe) and confirm the normal menu still works — this is
+   what the `bLaunchedFromArgs` gate is protecting.
 
 ---
 
