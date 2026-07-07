@@ -1,16 +1,30 @@
-import { ClobClient, type ApiKeyCreds } from "@polymarket/clob-client";
+import { ClobClient, Chain, type ApiKeyCreds } from "@polymarket/clob-client-v2";
 import { createWalletClient, custom } from "viem";
 import { polygon } from "viem/chains";
 
 const CLOB_HOST = "https://clob.polymarket.com";
-const POLYGON_CHAIN_ID = 137;
+
+/**
+ * Builder Code (Polymarket's simplest attribution tier — a bare bytes32 code,
+ * no key/secret/passphrase). Set via VITE_POLYMARKET_BUILDER_CODE.
+ *
+ * We use @polymarket/clob-client-v2 (not the older @polymarket/clob-client)
+ * specifically because builderCode is only meaningful there: v2 serializes it
+ * into the actual signed order's `builder` field (see Polymarket's Order
+ * Attribution docs), which the v1 client's order schema has no room for at
+ * all. Our existing direct-EOA signing flow (Privy wallet, plain approve())
+ * needs no changes for this — v2's signatureType defaults to EOA and
+ * funderAddress is only needed for Polymarket's separate "deposit wallet"
+ * onboarding path, which we don't use.
+ */
+const POLYMARKET_BUILDER_CODE: string | undefined = import.meta.env.VITE_POLYMARKET_BUILDER_CODE;
 
 type Eip1193Provider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
 
 function credsStorageKey(address: string): string {
-  return `kult_polymarket_clob_creds_${address.toLowerCase()}`;
+  return `kult_polymarket_clob_creds_v2_${address.toLowerCase()}`;
 }
 
 function loadCachedCreds(address: string): ApiKeyCreds | null {
@@ -31,6 +45,16 @@ export function hasCachedCreds(address: string): boolean {
   return loadCachedCreds(address) !== null;
 }
 
+/** The wallet's cached CLOB API key creds, if already derived. */
+export function getCachedCreds(address: string): ApiKeyCreds | null {
+  return loadCachedCreds(address);
+}
+
+/** The Builder Code attached to every order this app places, if configured. */
+export function getBuilderCode(): string | undefined {
+  return POLYMARKET_BUILDER_CODE;
+}
+
 /**
  * Build a ClobClient wired to the user's own wallet as signer (docs/polymarket
  * §5 Phase 4). Derives (or reuses a cached) per-wallet L2 API key -- this is
@@ -48,11 +72,11 @@ export async function getClobClient(address: string, provider: Eip1193Provider):
 
   const cached = loadCachedCreds(address);
   if (cached) {
-    return new ClobClient(CLOB_HOST, POLYGON_CHAIN_ID, walletClient, cached);
+    return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds: cached });
   }
 
-  const bootstrapClient = new ClobClient(CLOB_HOST, POLYGON_CHAIN_ID, walletClient);
+  const bootstrapClient = new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient });
   const creds = await bootstrapClient.createOrDeriveApiKey();
   saveCachedCreds(address, creds);
-  return new ClobClient(CLOB_HOST, POLYGON_CHAIN_ID, walletClient, creds);
+  return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds });
 }

@@ -43,6 +43,7 @@ import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
+import { usePolymarketPusdBalance } from "@/hooks/usePolymarketPusdBalance";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -505,13 +506,18 @@ function PolymarketComplianceNotice({ source }: { source: "live" | "sim" }) {
 }
 
 /**
- * Read-only USDC-on-Polygon balance readout (docs/polymarket §5 Phase 3).
- * Funding is entirely on the user -- this just confirms what's already
- * there before Phase 4 lets them actually trade against it.
+ * Read-only balance readout (docs/polymarket §5 Phase 3, later migrated to
+ * CTF Exchange V2 + pUSD). Funding is entirely on the user -- this just
+ * confirms what's already there before Phase 4 lets them actually trade
+ * against it. Shows both: plain USDC.e (what's in the wallet) and pUSD (what
+ * CTF Exchange V2 actually trades with -- usePolymarketTrading auto-wraps
+ * USDC.e into pUSD as needed before an order, so pUSD being $0 here is normal
+ * and not an error).
  */
 function PolygonWalletBalance() {
   const { isAuthenticated, walletAddress, login } = useAuth();
-  const { data: usdc, isLoading } = usePolygonUsdcBalance(walletAddress);
+  const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
+  const { data: pusd, isLoading: pusdLoading } = usePolymarketPusdBalance(walletAddress);
 
   if (!isAuthenticated) {
     return (
@@ -526,11 +532,19 @@ function PolygonWalletBalance() {
   }
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-      <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Your Polygon USDC</span>
-      <span className="font-tech text-sm font-bold text-white">
-        {isLoading ? "…" : usdc != null ? `$${usdc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-      </span>
+    <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Your Polygon USDC</span>
+        <span className="font-tech text-sm font-bold text-white">
+          {usdcLoading ? "…" : usdc != null ? `$${usdc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-tech text-[9px] uppercase tracking-wider text-white/35">Tradeable (pUSD)</span>
+        <span className="font-tech text-xs font-semibold text-white/70">
+          {pusdLoading ? "…" : pusd != null ? `$${pusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+        </span>
+      </div>
     </div>
   );
 }
@@ -625,6 +639,7 @@ const SIGNAL_CONFIDENCE_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIG
  */
 const TRADING_STATUS_LABEL: Record<string, string> = {
   "switching-network": "Switching to Polygon…",
+  wrapping: "Funding trade (check your wallet)…",
   approving: "Approving (check your wallet)…",
   "deriving-key": "Setting up trading…",
   "placing-order": "Placing order…",
