@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Swords } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Swords } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LeaguePanel } from "./LeaguePanel";
-import { leagueApi } from "@/api/leagueApi";
+import { leagueApi, type OpenBattle } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
+import { useArenaStaking } from "@/hooks/useArenaStaking";
 import { LeagueFightScene } from "./leagueFightUi";
+
+const STAKING_STATUS_LABEL: Record<string, string> = {
+  "switching-network": "Switching to 0G…",
+  "checking-allowance": "Checking approval…",
+  approving: "Approving $ARENA (check your wallet)…",
+};
 
 /** Real "challenge an agent" flow (docs/league) -- the backend battle system
  * (POST /v1/league/battles, .../accept) existed with zero frontend UI to
@@ -37,6 +44,7 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
   const [stakeArena, setStakeArena] = useState(50);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { status: stakingStatus, ensureStakeApproved, getEscrowAddress } = useArenaStaking();
 
   useEffect(() => {
     if (!challengerAgentId && lineup && lineup.length > 0) {
@@ -51,6 +59,12 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
     setSubmitting(true);
     setError(null);
     try {
+      // Your stake gets pulled from your own wallet when the opponent accepts --
+      // approve the escrow contract now so that doesn't fail later.
+      const escrowAddress = await getEscrowAddress();
+      if (!escrowAddress) throw new Error("$ARENA staking isn't set up yet -- try again shortly.");
+      await ensureStakeApproved(escrowAddress, stakeArena);
+
       await leagueApi.createBattle({ matchId, challengerAgentId, opponentAgentId, stakeArena });
       onCreated();
     } catch (err) {
@@ -128,10 +142,56 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
             onClick={() => void handleSubmit()}
             className="rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? "Sending challenge…" : "Send challenge"}
+            {submitting ? (STAKING_STATUS_LABEL[stakingStatus] ?? "Sending challenge…") : "Send challenge"}
           </button>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A pending battle where one of the current player's own agents is the
+ * opponent needs an explicit accept -- the backend's POST .../accept
+ * endpoint already existed, but until now nothing in the frontend called it,
+ * and it's also the point where the opponent's own wallet must approve the
+ * escrow contract for their stake (their side of the pool is pulled at
+ * accept time, not challenge-creation time).
+ */
+function AcceptBattleButton({ battle, onAccepted }: { battle: OpenBattle; onAccepted: () => void }) {
+  const { status: stakingStatus, ensureStakeApproved, getEscrowAddress } = useArenaStaking();
+  const [accepting, setAccepting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleAccept() {
+    setAccepting(true);
+    setError(null);
+    try {
+      const escrowAddress = await getEscrowAddress();
+      if (!escrowAddress) throw new Error("$ARENA staking isn't set up yet -- try again shortly.");
+      await ensureStakeApproved(escrowAddress, battle.stakeArena);
+
+      await leagueApi.acceptBattle(battle.id);
+      onAccepted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't accept that challenge — try again.");
+    } finally {
+      setAccepting(false);
+    }
+  }
+
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        disabled={accepting}
+        onClick={() => void handleAccept()}
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-[#00f080]/50 bg-[#00f080]/15 px-3 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#00f080] transition hover:bg-[#00f080]/25 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {accepting ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+        {accepting ? (STAKING_STATUS_LABEL[stakingStatus] ?? "Accepting…") : "Accept challenge"}
+      </button>
+      {error ? <p className="mt-1 text-[9px] text-rose-400">{error}</p> : null}
     </div>
   );
 }
@@ -180,6 +240,12 @@ export function LeagueFightCarousel() {
     setShowChallengeForm(false);
     void queryClient.invalidateQueries({ queryKey: ["league", "battles", "open"] });
   }
+
+  function handleAccepted() {
+    void queryClient.invalidateQueries({ queryKey: ["league", "battles", "open"] });
+  }
+
+  const myAgentIds = new Set((lineup ?? []).map((a) => a.agentId));
 
   return (
     <LeaguePanel
@@ -252,6 +318,9 @@ export function LeagueFightCarousel() {
                 rightAgent={battle.opponentAgentName}
                 compact
               />
+              {battle.status === "PENDING" && myAgentIds.has(battle.opponentAgentId) ? (
+                <AcceptBattleButton battle={battle} onAccepted={handleAccepted} />
+              ) : null}
             </div>
           ))}
         </div>
