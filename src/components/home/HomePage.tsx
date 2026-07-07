@@ -104,7 +104,7 @@ const homeArenaAgents = [
 ];
 
 const homeHeroActionBase =
-  "min-w-0 w-full max-w-[200px] rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-3 text-[8px] tracking-[0.12em] gap-1.5 min-[480px]:max-w-none min-[480px]:h-9 min-[480px]:px-[10px] min-[480px]:text-[9px] min-[480px]:tracking-[0.13em] min-[480px]:gap-2 sm:h-10 sm:text-[10px]";
+  "min-w-0 w-full max-w-[190px] rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-2.5 text-[8px] tracking-[0.11em] gap-1 min-[480px]:h-8.5 min-[480px]:px-2.5 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.12em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] min-[480px]:w-auto min-[480px]:min-w-[148px]";
 
 const homeHeroActionStyles = {
   games:
@@ -116,12 +116,13 @@ const homeHeroActionStyles = {
 } as const;
 
 function homeHeroCtaGridClass(count: number) {
-  const desktopColumn = "lg:grid-cols-1 lg:w-[208px] lg:max-w-[208px]";
-  if (count <= 1) return `grid w-full max-w-[760px] grid-cols-1 gap-2 ${desktopColumn}`;
-  if (count === 2) {
-    return `grid w-full max-w-[760px] grid-cols-1 gap-2 min-[480px]:grid-cols-2 ${desktopColumn}`;
+  if (count <= 1) {
+    return "flex w-full max-w-[190px] flex-col gap-1.5";
   }
-  return `grid w-full max-w-[760px] grid-cols-1 gap-2 min-[480px]:grid-cols-2 md:grid-cols-3 ${desktopColumn}`;
+  if (count === 2) {
+    return "flex w-full max-w-full flex-wrap items-center gap-2 min-[480px]:gap-2.5";
+  }
+  return "grid w-full max-w-[620px] grid-cols-1 gap-1.5 min-[480px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
 }
 
 function homeHeroCtaItemClass(count: number, index: number) {
@@ -259,7 +260,7 @@ export function HomePage() {
         <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
         <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-12 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-          <div className="absolute left-5 right-5 top-5 flex flex-nowrap items-center gap-1.5 whitespace-nowrap text-[9px] font-tech font-bold uppercase tracking-[0.16em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
+          <div className="absolute left-5 right-5 top-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-tech font-bold uppercase tracking-[0.14em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:justify-start sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
             <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>

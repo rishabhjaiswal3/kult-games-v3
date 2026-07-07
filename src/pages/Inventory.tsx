@@ -254,8 +254,8 @@ const Inventory = () => {
     <ArenaPageLayout contentClassName="max-w-none">
       <div className="inventory-hero-panel p-5 sm:p-6" data-tour="inventory-summary">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/70 to-transparent" aria-hidden />
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
-          <div className="min-w-0 shrink-0 lg:max-w-[42%] xl:max-w-[40%]">
+        <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.92fr)] lg:items-stretch lg:gap-5">
+          <div className="inventory-stat-tile min-w-0 rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(154,53,255,0.16),transparent_52%),rgba(4,8,15,0.76)] p-4 sm:p-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.22em] text-[#d6acff]">
               <Package className="h-3 w-3" />
               Marketplace
@@ -268,7 +268,7 @@ const Inventory = () => {
             </p>
           </div>
           <InventoryStatsRail
-            className="lg:ml-auto"
+            className="lg:ml-auto lg:max-w-none"
             listingsCount={listingsCount}
             categoriesCount={categoriesCount}
             gamesCount={uniqueGames || games.length}

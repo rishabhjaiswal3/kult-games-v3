@@ -126,7 +126,7 @@ const GamePlay = () => {
               type="button"
               onClick={() => triggerBrowserDownload(href)}
               disabled={!canDownload}
-              className="mx-auto mt-6 flex items-center gap-2 px-8 py-3.5 font-display text-sm font-bold tracking-[0.18em] btn-eye"
+              className="mx-auto mt-6 flex items-center gap-2 whitespace-nowrap px-7 py-3 font-display text-xs font-bold tracking-[0.14em] btn-eye"
             >
               <Download className="h-5 w-5" />
               {canDownload ? "DOWNLOAD" : "DOWNLOAD SOON"}

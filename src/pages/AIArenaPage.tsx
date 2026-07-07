@@ -472,7 +472,7 @@ function AIArenaPageContent() {
       <HowItWorks />
       <WhereAgentsCompete />
       <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
-        <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+        <div className="grid items-stretch gap-5 xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
           <ArenaQuickLinks />
           <TopAgents />
         </div>
@@ -554,21 +554,21 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
     <div className={compact ? "mx-auto w-full max-w-md text-center" : "max-w-2xl md:max-w-md xl:max-w-2xl"}>
       <h1
         className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase leading-[1.02] tracking-[0.01em] text-white ${
-          compact ? "text-[1.72rem] min-[390px]:text-[1.84rem] sm:text-[3rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_34px_rgba(154,53,255,0.5)]" : "text-[1.8rem] min-[390px]:text-[1.94rem] sm:text-[3.2rem] lg:text-[3.9rem] xl:text-[4.15rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.86),0_0_34px_rgba(168,85,247,0.3)]"
+          compact ? "text-[1.72rem] min-[390px]:text-[1.84rem] sm:text-[3rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_34px_rgba(154,53,255,0.5)]" : "text-[1.8rem] min-[390px]:text-[1.94rem] sm:text-[3.2rem] lg:text-[3.1rem] xl:text-[4.15rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.86),0_0_34px_rgba(168,85,247,0.3)]"
         }`}
       >
         AI ARENA
       </h1>
       <h2
         className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase text-foreground/90 ${
-          compact ? "mt-2 text-[1.2rem] leading-[1.04] max-[380px]:text-[1rem]" : "mt-3 leading-[1.04] text-[1.14rem] sm:text-[1.48rem] md:mt-2 md:text-[1.08rem] lg:text-[1.3rem] xl:mt-4.5 xl:text-[1.65rem]"
+          compact ? "mt-2 text-[1.2rem] leading-[1.04] max-[380px]:text-[1rem]" : "mt-2 leading-[1.04] text-[1.14rem] sm:text-[1.48rem] md:mt-2 md:text-[1.08rem] lg:mt-2 lg:text-[1.15rem] xl:mt-4.5 xl:text-[1.65rem]"
         }`}
       >
         Where AI{compact ? " " : <br />}
         Agents Battle
         <br />
         For{" "}
-        <span className="text-gradient-arena tracking-[0.02em]">
+        <span className="inline-block border-b-2 border-[#d946ef] pb-0.5 text-gradient-arena tracking-[0.02em]">
           Supremacy
         </span>
       </h2>
@@ -584,8 +584,8 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <div
         className={
           compact
-            ? "mt-3 mx-auto flex w-full max-w-[350px] flex-col items-center gap-1.5 px-3 py-2 max-[380px]:max-w-[310px] max-[380px]:gap-1 max-[380px]:px-2"
-            : "mt-4 grid w-full max-w-[280px] grid-cols-2 items-start gap-2 xl:flex xl:w-[224px] xl:flex-col"
+            ? "mt-3 mx-auto flex w-auto max-w-[268px] flex-col items-stretch gap-1.5 py-1 max-[380px]:max-w-[248px] max-[380px]:gap-1"
+            : "mt-3 flex w-auto max-w-[288px] flex-col items-stretch gap-1.5 md:max-w-[296px] lg:max-w-[300px] xl:grid xl:w-[224px] xl:max-w-[280px] xl:grid-cols-2 xl:items-start xl:gap-2"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -603,34 +603,41 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     openQueuedMatchStatus,
     openJoinBattle,
   } = useAiArenaMatchmakingFlow();
-  const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.14em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[10px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[10px] tracking-[0.13em] gap-1.5"}`;
+  const actionButtonSize = `w-full shrink-0 ${
+    compact
+      ? "h-8 px-2 text-[9px] tracking-[0.12em] gap-1 max-[380px]:h-7 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.1em]"
+      : "h-8 px-2.5 text-[9px] tracking-[0.12em] gap-1 md:h-9 md:px-2.5 md:text-[10px] md:tracking-[0.13em] xl:h-9 xl:px-3 xl:text-[10px]"
+  }`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center whitespace-nowrap transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+  const pairRowClass = compact
+    ? "grid w-full grid-cols-2 gap-1"
+    : "grid w-full grid-cols-2 gap-1 md:gap-1.5 xl:contents";
 
   return (
-    <div className="contents">
+    <div className={compact ? "contents" : "flex w-full flex-col gap-1.5 xl:contents"}>
       <button
         type="button"
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2 xl:col-span-1" : "w-full xl:col-span-1"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
+          <Loader2 className="h-3 w-3 shrink-0 animate-spin text-cyan-100" />
         ) : (
-          <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
+          <Swords className="h-3 w-3 shrink-0 text-cyan-100" />
         )}
         <span className="leading-tight text-center">{buttonLabel}</span>
       </button>
 
-      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+      <div className={pairRowClass}>
         <button
           type="button"
           onClick={openJoinBattle}
           className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+          <Swords className="h-3 w-3 shrink-0 text-emerald-200" />
           <span>JOIN BATTLE</span>
         </button>
 
@@ -638,18 +645,18 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           to="/my-agents"
           className={`${actionButtonBase} ${actionButtonSize} border-[#0089ff]/50 bg-[linear-gradient(135deg,rgba(0,137,255,0.42),rgba(4,8,15,0.92))] text-sky-50 hover:border-[#38bdf8]/85 hover:bg-[linear-gradient(135deg,rgba(0,137,255,0.55),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <Box className="h-3.5 w-3.5 shrink-0 text-[#7cc9ff]" />
+          <Box className="h-3 w-3 shrink-0 text-[#7cc9ff]" />
           <span>MY AGENTS</span>
         </Link>
       </div>
 
-      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+      <div className={pairRowClass}>
         <a
           href="#my-battles"
           data-tour="ai-arena-my-battle"
           className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.42),rgba(4,8,15,0.92))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.52),rgba(4,8,15,0.94))]`}
         >
-          <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
+          <Eye className="h-3 w-3 shrink-0 text-purple-200" />
           <span>MY BATTLE</span>
         </a>
 
@@ -658,14 +665,14 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           data-tour="ai-arena-enter-league"
           className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
+          <span className="shrink-0 select-none text-xs leading-none" aria-hidden>⚽</span>
           <span>ENTER LEAGUE</span>
         </Link>
       </div>
 
       {queuedAgent ? (
         <div
-          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "col-span-2 max-w-md text-left text-xs xl:col-span-1"}`}
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "w-full max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
             {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
@@ -688,25 +695,24 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 function Hero() {
   return (
     <section
-      className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
+      className="arena-panel relative min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] sm:min-h-[520px] md:aspect-[2.15/1] md:min-h-[460px] lg:aspect-[2.25/1] lg:min-h-[500px] xl:aspect-[2.35/1] xl:min-h-[540px]"
       data-tour="ai-arena-hero"
     >
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}
           desktopSrc={heroVideo}
           breakpoint="md"
-          mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
-          desktopClassName="h-full w-full object-contain object-center xl:object-cover xl:object-right"
+          mobileClassName="absolute inset-y-0 right-0 h-full w-[112%] max-w-none object-cover object-[86%_24%]"
+          desktopClassName="absolute inset-y-0 right-0 h-full w-[118%] max-w-none object-cover object-[88%_32%] lg:object-[90%_34%] xl:object-[92%_36%]"
         />
-        <div className="absolute inset-0 hidden bg-gradient-to-b from-transparent via-transparent to-background/65 md:block" />
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-[#04080f]/95 via-[#04080f]/45 via-[32%] to-transparent md:block" />
+        <div className="absolute inset-0 hidden bg-gradient-to-b from-[#04080f]/55 via-transparent to-background/55 md:block" />
         <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent md:hidden" />
       </div>
-      {/* original line kept — bg-black was added intentionally by another dev, commented out to fix black rectangle artifact */}
-      {/* <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black"> */}
-      <div className="relative md:hidden min-h-[560px] h-[min(165vw,780px)]">
+      <div className="relative md:hidden min-h-[500px] h-[min(155vw,720px)] sm:min-h-[520px]">
         <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
-        <div className="relative z-10 flex min-h-[560px] flex-col justify-end px-4 pb-8 sm:px-6 sm:pb-10">
+        <div className="relative z-10 flex min-h-[500px] flex-col justify-end px-4 pb-8 pt-10 sm:min-h-[520px] sm:px-6 sm:pb-10 sm:pt-12">
           <div className="mb-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
             <span className="flex shrink-0 items-center gap-1">
               Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
@@ -718,8 +724,8 @@ function Hero() {
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative mx-auto hidden px-6 pt-8 pb-32 md:absolute md:inset-0 md:flex md:min-h-0 md:flex-col md:justify-end md:pb-6 xl:relative xl:min-h-[680px] xl:justify-center xl:pb-32">
-        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white xl:mb-8">
+      <div className="relative z-10 mx-auto hidden w-full px-6 pt-7 pb-10 md:absolute md:inset-0 md:flex md:flex-col md:justify-start md:px-6 md:pt-7 md:pb-10 lg:px-8 lg:pt-8 lg:pb-12 xl:relative xl:flex xl:min-h-[540px] xl:justify-start xl:px-8 xl:pb-14 xl:pt-9">
+        <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white lg:mb-4">
           <span className="flex items-center gap-1.5">
             Presented by <KultLogo className="h-4 w-auto" />
           </span>
@@ -961,7 +967,7 @@ function HowItWorks() {
         <h3 className="font-tech text-2xl font-black uppercase leading-tight text-center sm:text-3xl">HOW IT WORKS</h3>
         <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-stretch">
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
             <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
@@ -1062,7 +1068,7 @@ function WhereAgentsCompete() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {competeGames.map((game) => (
           <button
             type="button"
@@ -1170,8 +1176,10 @@ function RankProgressionTimeline() {
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
           COMPETITIVE PROGRESSION
         </span>
-        <h3 className="font-tech text-2xl font-black uppercase leading-tight mt-2 sm:text-3xl">
-          HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
+        <h3 className="mt-2 flex flex-wrap items-baseline justify-center gap-x-2 font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">
+          <span>HOW A</span>
+          <span className="text-gradient glow-text">LEAGUE</span>
+          <span>WORKS</span>
         </h3>
         <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
         Every battle shapes your AI Agent’s legacy. 
@@ -1187,21 +1195,21 @@ function RankProgressionTimeline() {
 
       {/* Connector line (desktop only) */}
       <div className="relative">
-        <div className="absolute top-[52px] left-[6%] right-[6%] h-px hidden md:block lg:top-[44px] xl:top-[52px]"
+        <div className="absolute top-[50px] left-[4%] right-[4%] hidden h-px xl:block"
           style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.25) 15%, rgba(139,92,246,0.4) 50%, rgba(129,140,248,0.25) 85%, transparent)" }}
         />
 
         {/* Rank cards grid */}
-        <div className="grid grid-cols-2 min-[500px]:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4 lg:gap-2 xl:gap-4">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4 sm:gap-x-6 sm:gap-y-8 md:grid-cols-4 md:gap-x-7 xl:grid-cols-8 xl:gap-x-4 xl:gap-y-8">
           {RANKS.map((rank, i) => (
             <div
               key={rank.tier}
-              className="group relative flex flex-col items-center text-center"
+              className="group relative flex min-w-0 flex-col items-center px-1 text-center"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               {/* Tier node */}
               <div
-                className="relative z-10 flex h-[100px] w-[100px] sm:h-[108px] sm:w-[108px] lg:h-[88px] lg:w-[88px] xl:h-[108px] xl:w-[108px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
+                className="relative z-10 mx-auto flex h-[92px] w-[92px] sm:h-[100px] sm:w-[100px] xl:h-[96px] xl:w-[96px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
                 style={{
                   background: `radial-gradient(circle at 40% 35%, ${rank.color}22, ${rank.color}08 60%, transparent)`,
                   border: `1px solid ${rank.color}35`,
@@ -1216,7 +1224,7 @@ function RankProgressionTimeline() {
                 <img
                   src={rank.image}
                   alt={rank.name}
-                  className="p-1 h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] lg:h-[60px] lg:w-[60px] xl:h-[76px] xl:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="h-[60px] w-[60px] object-contain p-1 drop-shadow-lg transition-transform duration-300 group-hover:scale-110 sm:h-[68px] sm:w-[68px] xl:h-[64px] xl:w-[64px]"
                   style={{ filter: `drop-shadow(0 0 8px ${rank.color}55)` }}
                 />
                 {/* Tier number badge */}
@@ -1228,20 +1236,10 @@ function RankProgressionTimeline() {
                 </div>
               </div>
 
-              {/* Arrow connector (desktop) */}
-              {i < RANKS.length - 1 && (
-                <div
-                  className="absolute top-[50px] -right-2 z-20 hidden md:flex h-5 w-4 items-center justify-center text-white/20 group-hover:text-white/45 transition-colors duration-300 lg:top-[42px] xl:top-[50px]"
-                  style={{ fontSize: "10px" }}
-                >
-                  ›
-                </div>
-              )}
-
               {/* Name & ELO */}
-              <div className="mt-3 space-y-0.5 lg:mt-2 xl:mt-3">
+              <div className="mt-3 space-y-0.5">
                 <div
-                  className="font-tech text-[9px] sm:text-[10px] font-bold tracking-widest uppercase leading-tight lg:text-[8px] lg:tracking-[0.12em] xl:text-[10px] xl:tracking-widest"
+                  className="font-tech text-[9px] font-bold uppercase leading-tight tracking-[0.14em] sm:text-[10px] sm:tracking-widest"
                   style={{ color: rank.color, textShadow: `0 0 8px ${rank.color}60` }}
                 >
                   {rank.shortName}
@@ -1478,7 +1476,7 @@ function TopAgents() {
 function BattlesRow() {
   return (
     <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
-      <div className="grid items-stretch gap-6 lg:grid-cols-2">
+      <div className="grid items-stretch gap-6 xl:grid-cols-2">
         <LiveBattles />
         <MyBattleSection />
       </div>

@@ -87,8 +87,8 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(278_100%_70%/0.12),transparent_34%),linear-gradient(180deg,rgba(7,10,22,0.92),rgba(2,5,12,0.98))]" />
 
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="grid gap-6 py-7 text-center sm:grid-cols-2 sm:gap-10 sm:py-10 sm:text-left lg:grid-cols-[1.15fr_0.7fr_0.7fr_1fr] lg:gap-8 lg:py-12">
-          <div className="mx-auto max-w-[310px] sm:mx-0 sm:max-w-[290px]">
+        <div className="grid min-w-0 gap-8 py-8 text-center sm:py-10 sm:text-left md:grid-cols-2 md:gap-x-10 md:gap-y-10 xl:grid-cols-[minmax(240px,1.15fr)_minmax(150px,0.75fr)_minmax(150px,0.75fr)_minmax(240px,1fr)] xl:items-start xl:gap-8 xl:py-12">
+          <div className="mx-auto min-w-0 max-w-[340px] md:mx-0 md:max-w-none">
             <div className="flex items-center justify-center gap-2.5 sm:justify-start sm:gap-3">
               <img src={kultLogo} alt="Kult Games" className="h-8 w-auto max-w-[124px] object-contain sm:h-10 sm:max-w-[145px]" />
               <span className="h-7 w-px bg-white/15 sm:h-8" />
@@ -96,7 +96,9 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
             </div>
             {isArena ? (
               <>
-                <h2 className="mt-4 font-tech text-[11px] font-black uppercase leading-relaxed tracking-[0.14em] text-white/90 sm:mt-6 sm:text-[13px] sm:tracking-[0.18em]">The Operating layer for <span className="text-[#c084fc]">intelligent gaming.</span></h2>
+                <h2 className="mt-4 font-tech text-[11px] font-black uppercase leading-relaxed tracking-[0.14em] text-white/90 sm:mt-6 sm:text-[13px] sm:tracking-[0.18em]">
+                  The Operating Layer for <span className="text-[#c084fc]">Intelligent Gaming.</span>
+                </h2>
                 <p className="mt-2 text-xs leading-relaxed text-white/55 sm:mt-3 sm:text-sm">Autonomous agents. Persistent identities. Connected worlds.</p>
               </>
             ) : (
@@ -107,20 +109,28 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
             )}
           </div>
 
-          <nav aria-label="Footer navigation">
+          <nav aria-label="Footer navigation" className="min-w-0">
             <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Explore</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:block sm:space-y-3">
-              {footerLinks.map((link, index) => {
+            <div className="mt-3 flex flex-col items-center gap-2.5 sm:mt-4 sm:items-start sm:gap-3">
+              {footerLinks.map((link) => {
                 const Icon = link.icon;
-                const isLoneLast = footerLinks.length % 2 === 1 && index === footerLinks.length - 1;
-                return <Link key={link.href} to={link.href} className={`flex items-center justify-center gap-1.5 rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm ${isLoneLast ? "max-sm:col-span-2 max-sm:w-1/2 max-sm:justify-self-center" : ""}`}><Icon className="h-3.5 w-3.5 text-[#a855f7]" />{link.label}</Link>;
+                return (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className="flex items-center justify-center gap-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:text-sm"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-[#a855f7]" />
+                    {link.label}
+                  </Link>
+                );
               })}
             </div>
           </nav>
 
-          <div>
+          <div className="min-w-0">
             <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Community</p>
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4 sm:block sm:space-y-3">
+            <div className="mt-3 flex flex-col items-center gap-2.5 sm:mt-4 sm:items-start sm:gap-3">
               {socials.map((social) => (
                 <a
                   key={social.key}
@@ -128,21 +138,21 @@ const Footer = ({ variant = "home" }: { variant?: "home" | "arena" }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="flex min-h-10 items-center justify-center rounded-md border border-white/8 bg-white/[0.025] px-2 py-2 text-xs text-white/60 transition hover:text-white sm:min-h-0 sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm"
+                  className="flex items-center justify-center gap-2 text-xs text-white/60 transition hover:text-white sm:justify-start sm:text-sm"
                 >
                   <span className="text-[#a855f7]">{social.icon}</span>
-                  <span className="sr-only sm:not-sr-only">{social.label}</span>
+                  {social.label}
                 </a>
               ))}
             </div>
           </div>
 
           {showStartLink ? (
-            <div className="mx-auto w-full max-w-[320px] sm:mx-0">
+            <div className="mx-auto min-w-0 w-full max-w-[320px] md:col-span-2 md:mx-0 xl:col-span-1 xl:ml-auto">
               <p className="font-tech text-[10px] font-bold uppercase tracking-[0.24em] text-[#c084fc] sm:text-[11px] sm:tracking-[0.28em]">Start playing</p>
               <Link
                 to={startLink.href}
-                className="footer-enter-cta mt-3 mx-auto w-[min(190px,100%)] sm:mx-0 sm:mt-4 sm:w-[245px]"
+                className="footer-enter-cta mt-3 mx-auto w-full max-w-[245px] sm:mx-0 sm:mt-4"
               >
                 <img src={football} alt="" aria-hidden className="footer-enter-cta__ball" />
                 <span>{startLink.label} »</span>

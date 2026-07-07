@@ -1554,7 +1554,7 @@ button[aria-label="close modal"]:hover {
   cursor: pointer;
 
   font-family: var(--font-tech, inherit);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 900;
   font-style: italic;
   letter-spacing: 1px;
@@ -1874,6 +1874,33 @@ button[aria-label="close modal"]:hover {
   )
   :where([class*="text-[8px]"], [class*="text-[9px]"]) {
   font-size: var(--kult-min-label-size, 10px) !important;
+}
+
+/* Page shells — prevent horizontal bleed on small viewports */
+.home-page,
+.ai-arena-page,
+.league-typography-root,
+.moments-page-root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Keep grid/flex children from forcing page wider than viewport */
+.arena-scroll > *,
+.home-page > *,
+.ai-arena-page > * {
+  min-width: 0;
+}
+
+@media (max-height: 700px) {
+  .kult-ai-fab {
+    bottom: 0.75rem;
+  }
+
+  .kult-ai-panel {
+    bottom: 0.5rem;
+    max-height: min(560px, calc(100vh - 1rem)) !important;
+  }
 }
 
 @layer utilities {

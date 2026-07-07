@@ -267,7 +267,7 @@ const Games = () => {
               <stat.icon className="h-4.5 w-4.5 lg:h-5 lg:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="break-words font-tech text-[9px] font-semibold leading-tight text-white/72 sm:text-[10px] lg:text-sm">{stat.label}</div>
+              <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-white/72 sm:text-[9px] lg:text-[10px]">{stat.label}</div>
               <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">{stat.value}</div>
             </div>
           </div>
