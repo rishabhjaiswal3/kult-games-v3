@@ -1622,7 +1622,10 @@ function MyBattleSection() {
       </div>
 
       {myAgentsQ.isLoading || memoriesQ.isLoading ? (
-        <ArenaBattleBoardGridSkeleton count={3} className="flex-1" />
+        <ArenaBattleBoardGridSkeleton
+          count={1}
+          className="flex-1 grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
+        />
       ) : memoriesQ.isError || memories.length === 0 ? (
         <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
           No completed or cancelled battles are available yet. Start matchmaking to enter the arena.
@@ -1756,7 +1759,10 @@ function LiveBattles() {
         </Link>
       </div>
       {battleBoardQ.isLoading && previewItems.length === 0 ? (
-        <ArenaBattleBoardGridSkeleton count={1} className="flex-1" />
+        <ArenaBattleBoardGridSkeleton
+          count={1}
+          className="flex-1 grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
+        />
       ) : previewItems.length > 0 ? (
         <div className="grid flex-1 grid-cols-1 gap-4">
           {previewItems.map((item) => (
