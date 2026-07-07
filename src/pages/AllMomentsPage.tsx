@@ -36,7 +36,7 @@ import type { Moment, MomentsFeedResponse } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { CreateMomentDialog } from "@/components/moments/CreateMomentDialog";
-import { MomentFeedCard } from "@/components/moments/MomentFeedCard";
+import { MomentFeedCard, MomentFeedCardSkeleton } from "@/components/moments/MomentFeedCard";
 import {
   deriveCreator,
   deriveGame,
@@ -742,14 +742,7 @@ export function AllMomentsPage() {
             ) ? (
               <div className={`grid items-stretch gap-4 sm:grid-cols-2 ${isBrowseAll ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "lg:grid-cols-3"}`} data-tour="moments-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95">
-                    <div className="aspect-[16/8.7] bg-white/5" />
-                    <div className="space-y-2.5 p-3">
-                      <div className="h-4 w-2/3 rounded bg-white/5" />
-                      <div className="h-3 w-1/2 rounded bg-white/5" />
-                      <div className="h-4 w-full border-t border-white/6 pt-3" />
-                    </div>
-                  </div>
+                  <MomentFeedCardSkeleton key={i} />
                 ))}
               </div>
             ) : filteredMoments.length === 0 ? (

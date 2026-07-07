@@ -1,6 +1,7 @@
 import { Bookmark, Clock, Heart, Hexagon, MessageCircle, Play } from "lucide-react";
 import MomentShareDialog from "@/components/moments/MomentShareDialog";
 import { compactMetric, type MomentCard } from "@/lib/momentCard";
+import { cn } from "@/lib/utils";
 
 function ClanIconBadge({ type }: { type: string }) {
   const base = "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold";
@@ -61,7 +62,7 @@ export function MomentFeedCard({
           src={item.thumbnail}
           alt={item.title}
           loading="lazy"
-          className="h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.02]"
+          className="block w-full max-w-full h-auto origin-top transition duration-500 group-hover:scale-[1.03]"
         />
         {item.contentType === "video" ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -129,6 +130,44 @@ export function MomentFeedCard({
             >
               <Bookmark className={`h-4 w-4 ${item.isBookmarked ? "fill-purple-500 text-purple-500" : ""}`} />
             </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function MomentFeedCardSkeleton({ className }: { className?: string }) {
+  return (
+    <article
+      className={cn(
+        "flex h-full animate-pulse flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95",
+        className,
+      )}
+    >
+      <div className="h-[152px] w-full shrink-0 bg-black/40 sm:h-[160px]">
+        <div className="h-full w-full bg-white/5" />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col p-3 sm:p-3.5">
+        <div className="min-h-[2.75rem] space-y-2 sm:min-h-[2.5rem]">
+          <div className="h-3.5 w-full rounded bg-white/8" />
+          <div className="h-3.5 w-[88%] rounded bg-white/6" />
+        </div>
+        <div className="mt-1 h-[1.125rem] w-[62%] rounded bg-white/5" />
+        <div className="mt-1.5 flex min-h-[2.25rem] flex-col justify-center gap-1.5 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+          <div className="h-3 w-[48%] rounded bg-white/5" />
+          <div className="h-3 w-[34%] rounded bg-white/5 min-[420px]:w-[28%]" />
+        </div>
+        <div className="mt-2 flex h-6 items-center">
+          <div className="h-5 w-14 rounded border border-white/6 bg-white/[0.03]" />
+        </div>
+        <div className="mt-auto flex min-w-0 items-center justify-between gap-2 border-t border-white/6 pt-2">
+          <div className="h-5 w-[38%] max-w-[5.5rem] rounded bg-white/5" />
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
+            <div className="h-8 w-10 rounded-md bg-white/5" />
+            <div className="h-8 w-10 rounded-md bg-white/5" />
+            <div className="h-8 w-8 rounded-md bg-white/5" />
+            <div className="h-8 w-8 rounded-md bg-white/5" />
           </div>
         </div>
       </div>

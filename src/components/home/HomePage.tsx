@@ -23,7 +23,7 @@ import { fetchFootballMarkets } from "@/api/polymarketApi";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { MomentFeedCard } from "@/components/moments/MomentFeedCard";
+import { MomentFeedCard, MomentFeedCardSkeleton } from "@/components/moments/MomentFeedCard";
 import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import type { AccessFeature } from "@/lib/accessControl";
 import { deriveMomentCard } from "@/lib/momentCard";
@@ -104,7 +104,7 @@ const homeArenaAgents = [
 ];
 
 const homeHeroActionBase =
-  "min-w-0 rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] w-full h-9 px-[10px] text-[9px] tracking-[0.13em] gap-2 sm:h-10 sm:text-[10px]";
+  "min-w-0 w-full max-w-[200px] rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-3 text-[8px] tracking-[0.12em] gap-1.5 min-[480px]:max-w-none min-[480px]:h-9 min-[480px]:px-[10px] min-[480px]:text-[9px] min-[480px]:tracking-[0.13em] min-[480px]:gap-2 sm:h-10 sm:text-[10px]";
 
 const homeHeroActionStyles = {
   games:
@@ -711,7 +711,7 @@ function HomeFeaturedExperiencesSection({
                   <Link
                     key={card.path}
                     to={card.path}
-                    className="group relative min-h-[250px] overflow-hidden rounded-[24px] border border-white/10 bg-[#050712] transition duration-300 hover:-translate-y-1 hover:border-[var(--feature-accent)] hover:shadow-[0_0_38px_var(--feature-glow),0_18px_48px_rgba(0,0,0,0.42)] sm:min-h-[320px]"
+                    className="group relative min-h-[220px] overflow-hidden rounded-[20px] border border-white/10 bg-[#050712] transition duration-300 hover:-translate-y-1 hover:border-[var(--feature-accent)] hover:shadow-[0_0_38px_var(--feature-glow),0_18px_48px_rgba(0,0,0,0.42)] sm:min-h-[320px] sm:rounded-[24px]"
                     style={
                       {
                         "--feature-accent": card.accent,
@@ -729,7 +729,7 @@ function HomeFeaturedExperiencesSection({
                     <div className="absolute inset-0 bg-gradient-to-r from-[#060914]/96 via-[#060914]/88 via-45% to-[#060914]/24" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_52%,var(--feature-glow),transparent_34%)] opacity-80" />
                     <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent opacity-70" />
-                    <div className="relative z-10 flex h-full flex-col justify-start gap-4 p-4 sm:gap-6 sm:p-6">
+                    <div className="relative z-10 flex h-full flex-col justify-start gap-3 p-3.5 sm:gap-6 sm:p-6">
                       <div className="flex items-start justify-between gap-3">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.18em] sm:px-2.5 sm:text-[9px] sm:tracking-[0.22em] ${isLiveCard ? "season-live-badge" : ""}`}
@@ -780,11 +780,11 @@ function HomeFeaturedExperiencesSection({
                         </p>
                       </div>
                       <span
-                        className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-md border px-4 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
+                        className="mt-auto inline-flex w-full max-w-[11.5rem] items-center justify-center gap-1 rounded-md border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:w-fit sm:max-w-none sm:justify-start sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
                         style={buttonStyle}
                       >
                         {card.cta}
-                        <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                       </span>
                     </div>
                   </Link>
@@ -1178,18 +1178,9 @@ function HomeMomentsSection() {
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="flex h-full w-[85vw] min-w-[85vw] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 animate-pulse sm:w-[320px] sm:min-w-[320px] md:w-[340px] md:min-w-[340px] lg:w-auto lg:min-w-0"
+                className="flex h-full w-[85vw] min-w-[85vw] shrink-0 snap-start sm:w-[320px] sm:min-w-[320px] md:w-[340px] md:min-w-[340px] lg:w-auto lg:min-w-0"
               >
-                <div className="h-[152px] shrink-0 bg-black/40 sm:h-[160px]">
-                  <div className="h-full w-full bg-white/5" />
-                </div>
-                <div className="space-y-2 p-3.5">
-                  <div className="h-4 w-3/4 rounded bg-white/10" />
-                  <div className="h-3 w-full rounded bg-white/6" />
-                  <div className="mt-3 border-t border-white/6 pt-2">
-                    <div className="h-8 w-full rounded bg-white/5" />
-                  </div>
-                </div>
+                <MomentFeedCardSkeleton className="w-full" />
               </div>
             ))
           : momentCards.map((card) => (
