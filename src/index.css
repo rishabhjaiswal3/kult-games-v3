@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -2843,4 +2843,30 @@ button[aria-label="close modal"]:hover {
   .home-arena-grid .ha-btn   { grid-area: btn;   align-self: start; }
   .home-arena-grid .ha-image { grid-area: image; }
   .home-arena-grid .ha-feed  { grid-area: feed; }
+}
+
+/* League typography lab — preview font stacks on /league only */
+.league-typography-root {
+  font-family: var(--league-font-body, Inter, sans-serif);
+  font-size: var(--league-base-size, 16px);
+}
+
+.league-typography-root .font-tech,
+.league-typography-root .font-display {
+  font-family: var(--league-font-tech, Orbitron, sans-serif);
+}
+
+.league-typography-root .font-body {
+  font-family: var(--league-font-body, Inter, sans-serif);
+}
+
+.league-typography-root .font-mono {
+  font-family: var(--league-font-mono, "JetBrains Mono", monospace);
+}
+
+/* Bump tiny league labels when testing readability (8–10px utility classes) */
+.league-typography-root [class*="text-[8px]"],
+.league-typography-root [class*="text-[9px]"],
+.league-typography-root [class*="text-[10px]"] {
+  font-size: max(var(--league-min-label-size, 11px), 1em) !important;
 }
