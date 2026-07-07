@@ -1945,7 +1945,7 @@ function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
         <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
       </div>
       {live ? (
-        <div className="space-y-2">
+        <div className="max-h-[640px] space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.5)_transparent] [scrollbar-width:thin] sm:max-h-[770px]">
           {news.map((item) => (
             <a
               key={item.id}
@@ -1969,7 +1969,7 @@ function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="max-h-[640px] space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.5)_transparent] [scrollbar-width:thin] sm:max-h-[770px]">
           {MATCH_NEWS.map((item) => (
             <article key={item.id} className="rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30">
               <div className="flex items-center justify-between gap-2">

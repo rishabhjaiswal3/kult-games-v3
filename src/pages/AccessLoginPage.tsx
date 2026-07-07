@@ -6,11 +6,22 @@ import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
 
 function errorMessage(error: unknown) {
+  const normalizeMessage = (raw: string) => {
+    const cleaned = raw.replace(/^\s*\[Input error\]\s*/i, "").trim();
+    if (/verification code must have 6 digits/i.test(cleaned)) {
+      return "Please enter a valid 6-digit access code.";
+    }
+    if (/^code\b/i.test(cleaned)) {
+      return "Please enter a valid access code.";
+    }
+    return cleaned || "Could not verify the access code";
+  };
+
   if (typeof error === "object" && error !== null && "response" in error) {
     const response = (error as { response?: { data?: { message?: string } } }).response;
-    if (response?.data?.message) return response.data.message;
+    if (response?.data?.message) return normalizeMessage(response.data.message);
   }
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) return normalizeMessage(error.message);
   return "Could not verify the access code";
 }
 
