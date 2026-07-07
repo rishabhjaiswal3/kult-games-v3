@@ -46,6 +46,34 @@ export interface BridgeDepositStatus {
   [key: string]: unknown;
 }
 
+/**
+ * The /supported-assets response doesn't tag each entry with the address
+ * type ("evm"/"svm"/"btc"/"tvm") our /deposit response uses -- it groups by
+ * chainId/chainName instead. Map the two together so the UI can show an
+ * accurate minimum deposit per tab rather than one number for every chain
+ * (verified from a live response: Polygon USDC has minCheckoutUsd=2, most
+ * Ethereum assets are minCheckoutUsd=5 -- these genuinely differ).
+ */
+const CHAIN_ID_TO_ADDRESS_TYPE: Record<string, BridgeAddressType> = {
+  "1": "evm", // Ethereum
+  "10": "evm", // Optimism
+  "56": "evm", // BNB Smart Chain
+  "137": "evm", // Polygon
+  "143": "evm", // Monad
+  "8453": "evm", // Base
+  "42161": "evm", // Arbitrum
+  "57073": "evm", // Ink
+  "999": "evm", // HyperEVM
+  "4663": "evm", // Robinhood
+  "1151111081099710": "svm", // Solana
+  "728126428": "tvm", // Tron
+  "8253038": "btc", // Bitcoin
+};
+
+export function addressTypeForChainId(chainId: string): BridgeAddressType | null {
+  return CHAIN_ID_TO_ADDRESS_TYPE[chainId] ?? null;
+}
+
 async function bridgeFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const builderCode = getBuilderCode();
   const res = await fetch(`${BRIDGE_HOST}${path}`, {

@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   polymarketBridgeApi,
+  addressTypeForChainId,
   type BridgeAddressType,
-  type BridgeDepositAddresses,
 } from "@/api/polymarketBridgeApi";
 
 type PolymarketDepositModalProps = {
@@ -56,6 +56,32 @@ export function PolymarketDepositModal({ open, onOpenChange, walletAddress }: Po
     staleTime: Infinity, // same address every time for a given wallet
     retry: 1,
   });
+
+  const { data: supportedAssets } = useQuery({
+    queryKey: ["polymarket", "bridge", "supported-assets"],
+    queryFn: () => polymarketBridgeApi.getSupportedAssets(),
+    enabled: open,
+    staleTime: 10 * 60_000,
+    retry: 1,
+  });
+
+  /**
+   * Minimum USDC deposit for the active tab, per-chain -- these genuinely
+   * differ (Polygon USDC is $2, most Ethereum assets are $5). Prefers the
+   * USDC-symbol entry for each chain since that's what most people will
+   * actually send; falls back to the cheapest asset on that chain if no
+   * USDC variant is listed there.
+   */
+  const minimumsForActiveTab = (supportedAssets ?? [])
+    .filter((a) => addressTypeForChainId(a.chainId) === activeTab)
+    .reduce<Map<string, { min: number; isUsdc: boolean }>>((byChain, asset) => {
+      const isUsdc = asset.token.symbol.toUpperCase().includes("USDC");
+      const current = byChain.get(asset.chainName);
+      if (!current || (isUsdc && !current.isUsdc) || (isUsdc === current.isUsdc && asset.minCheckoutUsd < current.min)) {
+        byChain.set(asset.chainName, { min: asset.minCheckoutUsd, isUsdc });
+      }
+      return byChain;
+    }, new Map());
 
   const activeAddress: string | null = addresses
     ? activeTab === "tvm"
@@ -131,6 +157,22 @@ export function PolymarketDepositModal({ open, onOpenChange, walletAddress }: Po
                   <p className="text-xs text-muted-foreground">
                     {CHAIN_TABS.find((t) => t.key === activeTab)?.hint}
                   </p>
+
+                  {minimumsForActiveTab.size > 0 ? (
+                    <div className="rounded-xl border border-rose-500/30 bg-rose-500/[0.08] px-4 py-3">
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-rose-300">
+                        ⚠ Minimum deposit -- sending less will not be processed
+                      </div>
+                      <ul className="mt-1.5 space-y-0.5 text-xs text-rose-100/90">
+                        {[...minimumsForActiveTab.entries()].map(([chainName, { min }]) => (
+                          <li key={chainName}>
+                            {chainName}: <span className="font-bold">${min.toLocaleString()}</span> minimum
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
                   <div className="rounded-xl border border-white/10 bg-[#05070d]/95 p-3.5">
                     <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-neon-cyan">
                       Send To This Address
