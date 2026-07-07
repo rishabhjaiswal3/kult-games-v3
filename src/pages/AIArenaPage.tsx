@@ -585,7 +585,7 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
         className={
           compact
             ? "mt-3 mx-auto flex w-auto max-w-[268px] flex-col items-stretch gap-1.5 py-1 max-[380px]:max-w-[248px] max-[380px]:gap-1"
-            : "mt-3 flex w-auto max-w-[288px] flex-col items-stretch gap-1.5 md:max-w-[296px] lg:max-w-[300px] xl:grid xl:w-[224px] xl:max-w-[280px] xl:grid-cols-2 xl:items-start xl:gap-2"
+            : "mt-3 flex w-full max-w-[360px] flex-col items-stretch gap-1.5 md:max-w-[372px] lg:max-w-[390px]"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -606,22 +606,22 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
   const actionButtonSize = `w-full shrink-0 ${
     compact
       ? "h-8 px-2 text-[9px] tracking-[0.12em] gap-1 max-[380px]:h-7 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.1em]"
-      : "h-8 px-2.5 text-[9px] tracking-[0.12em] gap-1 md:h-9 md:px-2.5 md:text-[10px] md:tracking-[0.13em] xl:h-9 xl:px-3 xl:text-[10px]"
+      : "h-8 px-2.5 text-[8.5px] tracking-[0.11em] gap-1 md:h-9 md:px-2.5 md:text-[9px] md:tracking-[0.12em] lg:text-[9.5px]"
   }`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center whitespace-nowrap transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
   const pairRowClass = compact
     ? "grid w-full grid-cols-2 gap-1"
-    : "grid w-full grid-cols-2 gap-1 md:gap-1.5 xl:contents";
+    : "grid w-full grid-cols-2 gap-1 md:gap-1.5";
 
   return (
-    <div className={compact ? "contents" : "flex w-full flex-col gap-1.5 xl:contents"}>
+    <div className="flex w-full flex-col gap-1.5">
       <button
         type="button"
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2 xl:col-span-1" : "w-full xl:col-span-1"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3 w-3 shrink-0 animate-spin text-cyan-100" />
@@ -695,23 +695,21 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 function Hero() {
   return (
     <section
-      className="arena-panel relative min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] sm:min-h-[520px] md:aspect-[2.15/1] md:min-h-[460px] lg:aspect-[2.25/1] lg:min-h-[500px] xl:aspect-[2.35/1] xl:min-h-[540px]"
+      className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f]"
       data-tour="ai-arena-hero"
     >
-      <div className="absolute inset-0 overflow-hidden">
-        <ResponsiveBackgroundVideo
-          mobileSrc={mobileHeroVideo}
-          desktopSrc={heroVideo}
-          breakpoint="md"
-          mobileClassName="absolute inset-y-0 right-0 h-full w-[112%] max-w-none object-cover object-[86%_24%]"
-          desktopClassName="absolute inset-y-0 right-0 h-full w-[118%] max-w-none object-cover object-[88%_32%] lg:object-[90%_34%] xl:object-[92%_36%]"
-        />
-        <div className="absolute inset-0 hidden bg-gradient-to-r from-[#04080f]/95 via-[#04080f]/45 via-[32%] to-transparent md:block" />
-        <div className="absolute inset-0 hidden bg-gradient-to-b from-[#04080f]/55 via-transparent to-background/55 md:block" />
-        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent md:hidden" />
-      </div>
-      <div className="relative md:hidden min-h-[500px] h-[min(155vw,720px)] sm:min-h-[520px]">
-        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
+      {/* Mobile — cropped cover inside a fixed hero height */}
+      <div className="relative min-h-[500px] h-[min(155vw,720px)] sm:min-h-[520px] md:hidden">
+        <div className="absolute inset-0">
+          <ResponsiveBackgroundVideo
+            mobileSrc={mobileHeroVideo}
+            desktopSrc={heroVideo}
+            breakpoint="md"
+            mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
+            desktopClassName="hidden"
+          />
+          <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
+        </div>
         <div className="relative z-10 flex min-h-[500px] flex-col justify-end px-4 pb-8 pt-10 sm:min-h-[520px] sm:px-6 sm:pb-10 sm:pt-12">
           <div className="mb-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
             <span className="flex shrink-0 items-center gap-1">
@@ -724,16 +722,29 @@ function Hero() {
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative z-10 mx-auto hidden w-full px-6 pt-7 pb-10 md:absolute md:inset-0 md:flex md:flex-col md:justify-start md:px-6 md:pt-7 md:pb-10 lg:px-8 lg:pt-8 lg:pb-12 xl:relative xl:flex xl:min-h-[540px] xl:justify-start xl:px-8 xl:pb-14 xl:pt-9">
-        <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white lg:mb-4">
-          <span className="flex items-center gap-1.5">
-            Presented by <KultLogo className="h-4 w-auto" />
-          </span>
-          <span className="flex items-center gap-1.5">
-            Powered by <ZeroGLogo className="h-4 w-auto" />
-          </span>
+
+      {/* Desktop — height follows the 16:9 video so the full frame stays visible */}
+      <div className="relative hidden md:block">
+        <ResponsiveBackgroundVideo
+          mobileSrc={mobileHeroVideo}
+          desktopSrc={heroVideo}
+          breakpoint="md"
+          mobileClassName="hidden"
+          desktopClassName="relative z-0 block h-auto w-full"
+        />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/90 via-[#04080f]/34 via-[42%] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#04080f]/35" />
+        <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 py-6 lg:px-8 lg:py-8">
+          <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white lg:mb-4">
+            <span className="flex items-center gap-1.5">
+              Presented by <KultLogo className="h-4 w-auto" />
+            </span>
+            <span className="flex items-center gap-1.5">
+              Powered by <ZeroGLogo className="h-4 w-auto" />
+            </span>
+          </div>
+          <HeroCopy />
         </div>
-        <HeroCopy />
       </div>
     </section>
   );
