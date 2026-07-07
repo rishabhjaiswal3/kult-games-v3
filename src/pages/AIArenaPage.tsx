@@ -48,23 +48,19 @@ import okxLogo from "@/assets/okx-icon.png";
 import agentNexus from "@/assets/hybrid.mp4";
 import agentShadow from "@/assets/defender.mp4";
 
-import iconTrain from  '@/assets/Train.png'
-import iconBattle from  '@/assets/Battle.png'
-import iconEarn from '@/assets/Earn.png'
-import iconOwn from '@/assets/Own.png'
+import iconTrain from "@/assets/Train.webp";
+import iconBattle from "@/assets/Battle.webp";
+import iconEarn from "@/assets/Earn.webp";
+import iconOwn from "@/assets/Own.webp";
 
 
 import agentAegis from "@/assets/tactician.mp4";
 import agentVoid from "@/assets/support.mp4";
 import agentRage from "@/assets/berserker.mp4";
 import agentLumen from "@/assets/assassin.mp4";
-// import iconTrain from "@/assets/icon-train.png";
-// import iconBattle from "@/assets/icon-battle.png";
-// import iconEarn from "@/assets/icon-earn.png";
-// import iconOwn from "@/assets/Own.png";
 import sceneVideo from "@/assets/Scene 1.mp4";
 import leagueBackground from "@/assets/league_background.mp4";
-import heroTrio from "@/assets/hero-trio.png";
+import heroTrio from "@/assets/hero-trio.webp";
 import warzoneVideo from "@/assets/IMG_9260.mp4";
 import battleStep3 from "@/assets/step3.mp4";
 import battleStep5 from "@/assets/step5.mp4";
