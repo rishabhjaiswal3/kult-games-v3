@@ -1,6 +1,6 @@
 import warzoneTrashTalkImageUrl from "@/assets/trash-talk.webp";
-import robowarTrashTalkImageUrl from "@/assets/trash-talk-robowar.png";
-import highwayTrashTalkImageUrl from "@/assets/trash-talk-highway-hustle.png";
+import robowarTrashTalkImageUrl from "@/assets/trash-talk-robowar.webp";
+import highwayTrashTalkImageUrl from "@/assets/trash-talk-highway-hustle.webp";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import type { AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import {
@@ -52,7 +52,7 @@ const ARENA_TRASH_TALK_GAMES: Record<AiArenaGameId, ArenaTrashTalkGameConfig> = 
     title: "Robowars Trash Talk",
     relatedGameSlug: "robowars",
     imageUrl: robowarTrashTalkImageUrl,
-    imageFileName: "trash-talk-robowar.png",
+    imageFileName: "trash-talk-robowar.webp",
     gameName: "Robowar",
     endReason: "robowar-battle-end",
     clashNoun: "Robowar duel",
@@ -62,7 +62,7 @@ const ARENA_TRASH_TALK_GAMES: Record<AiArenaGameId, ArenaTrashTalkGameConfig> = 
     title: "Highway Hustle Trash Talk",
     relatedGameSlug: "highwayhustle",
     imageUrl: highwayTrashTalkImageUrl,
-    imageFileName: "trash-talk-highway-hustle.png",
+    imageFileName: "trash-talk-highway-hustle.webp",
     gameName: "Highway Hustle",
     endReason: "highway-hustle-crash",
     clashNoun: "Highway Hustle race",

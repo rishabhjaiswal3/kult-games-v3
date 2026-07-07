@@ -3,7 +3,7 @@ import defenderPortrait from "@/assets/defender.mp4";
 import tacticianPortrait from "@/assets/tactician.mp4";
 import supportPortrait from "@/assets/support.mp4";
 import berserkerPortrait from "@/assets/berserker.mp4";
-import assassinPortrait from "@/assets/assassin.gif";
+import assassinPortrait from "@/assets/assassin.mp4";
 
 /** Same roster + media as `AIArenaPage` top agents. */
 export type LeagueArenaAgent = {

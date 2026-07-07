@@ -57,7 +57,7 @@ import iconOwn from '@/assets/Own.png'
 import agentAegis from "@/assets/tactician.mp4";
 import agentVoid from "@/assets/support.mp4";
 import agentRage from "@/assets/berserker.mp4";
-import agentLumen from "@/assets/assassin.gif";
+import agentLumen from "@/assets/assassin.mp4";
 // import iconTrain from "@/assets/icon-train.png";
 // import iconBattle from "@/assets/icon-battle.png";
 // import iconEarn from "@/assets/icon-earn.png";
@@ -1498,20 +1498,23 @@ function BattlesRow() {
 }
 
 function MyBattleSection() {
+  const PREVIEW_AGENT_LIMIT = 8;
+  const PREVIEW_MEMORIES_PER_AGENT = 12;
   const myAgentsQ = useMyArenaAgents(1, 50);
   const ownedAgents = myAgentsQ.data?.agents ?? [];
+  const previewAgents = useMemo(() => ownedAgents.slice(0, PREVIEW_AGENT_LIMIT), [ownedAgents]);
   type OwnedBattleMemory = AiArenaAgentMemory & { ownerAgentId: string };
   const memoriesQ = useQuery({
-    queryKey: ["aiArenaGateway", "arenaLandingBattleMemories", ownedAgents.map((agent) => agent.id).join(",")],
+    queryKey: ["aiArenaGateway", "arenaLandingBattleMemories", previewAgents.map((agent) => agent.id).join(",")],
     queryFn: async () => {
       const results = await Promise.all(
-        ownedAgents.map((agent) =>
-          aiArenaGatewayApi.getAgentMemories(agent.id, 1, 100)
+        previewAgents.map((agent) =>
+          aiArenaGatewayApi.getAgentMemories(agent.id, 1, PREVIEW_MEMORIES_PER_AGENT)
         )
       );
       const uniqueMemories = new Map<string, OwnedBattleMemory>();
       results.forEach((result, index) => {
-        const ownerAgentId = ownedAgents[index]?.id;
+        const ownerAgentId = previewAgents[index]?.id;
         if (!ownerAgentId) return;
         result.memories.forEach((memory) => {
           const key = memory.metadata?.battleId ?? memory.id;
@@ -1522,7 +1525,7 @@ function MyBattleSection() {
         (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
       );
     },
-    enabled: ownedAgents.length > 0,
+    enabled: previewAgents.length > 0,
     staleTime: 30_000,
   });
   const memories = memoriesQ.data ?? [];
