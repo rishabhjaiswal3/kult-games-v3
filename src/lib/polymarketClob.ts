@@ -70,13 +70,19 @@ export async function getClobClient(address: string, provider: Eip1193Provider):
     transport: custom(provider),
   });
 
+  // throwOnError is required: by default the SDK returns API failures as a
+  // normal resolved { error, status } object instead of throwing, which
+  // meant a rejected/unfilled order looked identical to a successful one to
+  // every caller here -- a real order silently failed to execute once
+  // ("YES ORDER PLACED" shown, zero trades/positions ever appeared on
+  // Polymarket, pUSD balance never moved) before this was caught and fixed.
   const cached = loadCachedCreds(address);
   if (cached) {
-    return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds: cached });
+    return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds: cached, throwOnError: true });
   }
 
-  const bootstrapClient = new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient });
+  const bootstrapClient = new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, throwOnError: true });
   const creds = await bootstrapClient.createOrDeriveApiKey();
   saveCachedCreds(address, creds);
-  return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds });
+  return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds, throwOnError: true });
 }
