@@ -1,9 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import agentNexus from "@/assets/hybrid.mp4";
 import iconTrain from "@/assets/icon-train.png";
-import iconBattle from "@/assets/icon-battle.png";
+import iconBattle from "@/assets/icon-battle.webp";
 import iconEarn from "@/assets/icon-earn.png";
-import iconOwn from "@/assets/Own.png";
+import iconOwn from "@/assets/Own.webp";
 
 export function QuickActions() {
   const steps = [

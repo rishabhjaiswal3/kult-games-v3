@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Lightbulb } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { leagueApi } from "@/api/leagueApi";
@@ -25,7 +25,18 @@ const LeaguePage = () => {
   const [mode, setMode] = useState<"league" | "polymarket">("league");
 
   return (
-    <div className="min-w-0 w-full max-w-full overflow-x-hidden bg-black px-3 py-3 sm:px-6 lg:px-8">
+    <div
+      className="league-typography-root min-w-0 w-full max-w-full overflow-x-hidden bg-black px-3 py-3 sm:px-6 lg:px-8"
+      style={
+        {
+          "--league-font-tech": "Sora, sans-serif",
+          "--league-font-body": "Sora, sans-serif",
+          "--league-font-mono": "\"JetBrains Mono\", monospace",
+          "--league-base-size": "15px",
+          "--league-min-label-size": "10px",
+        } as CSSProperties
+      }
+    >
       <div data-tour="league-header">
         <LeaguePageHeader />
       </div>

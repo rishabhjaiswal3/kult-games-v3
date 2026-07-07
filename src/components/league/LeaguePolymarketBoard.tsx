@@ -900,13 +900,13 @@ function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
       </div>
       <div className="max-h-[238px] overflow-y-auto pr-1 [scrollbar-color:rgba(46,92,255,0.55)_transparent] [scrollbar-width:thin]">
       {isLoading ? (
-        <div className={`grid grid-cols-2 gap-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
+        <div className={`grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
           {[0, 1, 2].map((i) => <div key={i} className="skeleton h-24 w-full rounded-xl" />)}
         </div>
       ) : !rows || rows.length === 0 ? (
         <p className="py-4 text-center text-[11px] text-white/40">No ranked agents yet — check back once League picks start settling.</p>
       ) : (
-      <div className={`grid grid-cols-2 gap-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
+      <div className={`grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
         {rows.map((row) => {
           const agent = getLeagueAgent(row.agentName);
           const accuracy = accuracyFromRecord(row.record);
@@ -917,9 +917,14 @@ function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
                 <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-black/40">{agent ? <ArenaAgentMedia src={agent.img} alt={agent.name} fit="cover" /> : null}</div>
                 <p className="min-w-0 truncate font-tech text-[10px] font-bold uppercase text-white">{row.agentName}</p>
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <div><p className="font-tech text-[8px] uppercase tracking-wider text-white/35">Accuracy</p><p className="font-tech text-sm font-black text-cyan-300">{accuracy}%</p></div>
-                <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 font-tech text-[10px] font-bold text-emerald-300">{row.reputation} rep</span>
+              <div className="mt-3 flex flex-col items-start gap-1.5 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+                <div>
+                  <p className="font-tech text-[8px] uppercase tracking-wider text-white/35">Accuracy</p>
+                  <p className="font-tech text-sm font-black text-cyan-300">{accuracy}%</p>
+                </div>
+                <span className="max-w-full truncate rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 font-tech text-[10px] font-bold text-emerald-300">
+                  {row.reputation} rep
+                </span>
               </div>
               <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-[#2E5CFF]" style={{ width: `${accuracy}%` }} /></div>
               <p className="mt-2 font-tech text-[8px] uppercase tracking-wider text-white/35">{row.record} record · {row.streak}W streak</p>
@@ -1940,7 +1945,7 @@ function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
         <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
       </div>
       {live ? (
-        <div className="space-y-2">
+        <div className="max-h-[640px] space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.5)_transparent] [scrollbar-width:thin] sm:max-h-[770px]">
           {news.map((item) => (
             <a
               key={item.id}
@@ -1964,7 +1969,7 @@ function NewsFeed({ title, subtitle }: { title: string; subtitle: string }) {
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="max-h-[640px] space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.5)_transparent] [scrollbar-width:thin] sm:max-h-[770px]">
           {MATCH_NEWS.map((item) => (
             <article key={item.id} className="rounded-lg border border-white/8 bg-black/25 p-3 transition hover:border-cyan-400/30">
               <div className="flex items-center justify-between gap-2">

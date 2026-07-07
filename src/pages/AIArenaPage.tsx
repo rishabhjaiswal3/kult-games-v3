@@ -30,6 +30,7 @@ import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal"
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
+import { LazyInViewVideo } from "@/components/LazyInViewVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
@@ -38,6 +39,7 @@ import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
+import { aiArenaMedia, type AiArenaMediaKey } from "@/lib/aiArenaMedia";
 import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -45,29 +47,13 @@ import kultLogo from "@/assets/Kult Logo.png";
 import baseLogo from "@/assets/Base Logo.png";
 import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxLogo from "@/assets/okx-icon.png";
-import agentNexus from "@/assets/hybrid.mp4";
-import agentShadow from "@/assets/defender.mp4";
 
-import iconTrain from  '@/assets/Train.png'
-import iconBattle from  '@/assets/Battle.png'
-import iconEarn from '@/assets/Earn.png'
-import iconOwn from '@/assets/Own.png'
+import iconTrain from "@/assets/Train.webp";
+import iconBattle from "@/assets/Battle.webp";
+import iconEarn from "@/assets/Earn.webp";
+import iconOwn from "@/assets/Own.webp";
 
-
-import agentAegis from "@/assets/tactician.mp4";
-import agentVoid from "@/assets/support.mp4";
-import agentRage from "@/assets/berserker.mp4";
-import agentLumen from "@/assets/assassin.gif";
-// import iconTrain from "@/assets/icon-train.png";
-// import iconBattle from "@/assets/icon-battle.png";
-// import iconEarn from "@/assets/icon-earn.png";
-// import iconOwn from "@/assets/Own.png";
-import sceneVideo from "@/assets/Scene 1.mp4";
-import leagueBackground from "@/assets/league_background.mp4";
-import heroTrio from "@/assets/hero-trio.png";
-import warzoneVideo from "@/assets/IMG_9260.mp4";
-import battleStep3 from "@/assets/step3.mp4";
-import battleStep5 from "@/assets/step5.mp4";
+import heroTrio from "@/assets/hero-trio.webp";
 import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
 import { RANKS } from "@/utils/rankSystem";
 
@@ -86,7 +72,7 @@ const agents = [
     tier: "Legendary",
     lvl: 12,
     power: "14,850",
-    img: agentNexus,
+    mediaKey: "hybrid" as AiArenaMediaKey,
     color: "var(--neon)",
   },
   {
@@ -96,7 +82,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "13,420",
-    img: agentShadow,
+    mediaKey: "defender" as AiArenaMediaKey,
     color: "var(--lime)",
   },
   {
@@ -106,7 +92,7 @@ const agents = [
     tier: "Epic",
     lvl: 12,
     power: "12,980",
-    img: agentAegis,
+    mediaKey: "tactician" as AiArenaMediaKey,
     color: "var(--cyan)",
   },
   {
@@ -116,7 +102,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "12,150",
-    img: agentVoid,
+    mediaKey: "support" as AiArenaMediaKey,
     color: "var(--neon-2)",
   },
   {
@@ -126,7 +112,7 @@ const agents = [
     tier: "Legendary",
     lvl: 12,
     power: "11,870",
-    img: agentRage,
+    mediaKey: "berserker" as AiArenaMediaKey,
     color: "var(--amber)",
   },
   {
@@ -136,7 +122,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "10,940",
-    img: agentLumen,
+    mediaKey: "assassin" as AiArenaMediaKey,
     color: "var(--magenta)",
   },
 ];
@@ -486,7 +472,7 @@ function AIArenaPageContent() {
       <HowItWorks />
       <WhereAgentsCompete />
       <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
-        <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+        <div className="grid items-stretch gap-5 xl:gap-6 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
           <ArenaQuickLinks />
           <TopAgents />
         </div>
@@ -565,30 +551,30 @@ function Logo({
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-sm pt-80 text-center" : "max-w-xl md:max-w-sm xl:max-w-xl"}>
+    <div className={compact ? "mx-auto w-full max-w-md text-center" : "max-w-2xl md:max-w-md xl:max-w-2xl"}>
       <h1
-        className={`font-tech font-black uppercase leading-tight tracking-tight text-white ${
-          compact ? "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_28px_rgba(154,53,255,0.5)]" : "text-[1.56rem] min-[390px]:text-[1.66rem] sm:text-5xl lg:text-6xl xl:text-5xl"
+        className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase leading-[1.02] tracking-[0.01em] text-white ${
+          compact ? "text-[1.72rem] min-[390px]:text-[1.84rem] sm:text-[3rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_34px_rgba(154,53,255,0.5)]" : "text-[1.8rem] min-[390px]:text-[1.94rem] sm:text-[3.2rem] lg:text-[3.1rem] xl:text-[4.15rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.86),0_0_34px_rgba(168,85,247,0.3)]"
         }`}
       >
         AI ARENA
       </h1>
       <h2
-        className={`font-tech font-black uppercase text-foreground/90 ${
-          compact ? "mt-1.5 text-[1.2rem] leading-[1.05] max-[380px]:text-[1rem]" : "mt-3 leading-tight text-xl sm:text-2xl md:mt-2 md:text-lg lg:text-xl xl:mt-5 xl:text-2xl"
+        className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase text-foreground/90 ${
+          compact ? "mt-2 text-[1.2rem] leading-[1.04] max-[380px]:text-[1rem]" : "mt-2 leading-[1.04] text-[1.14rem] sm:text-[1.48rem] md:mt-2 md:text-[1.08rem] lg:mt-2 lg:text-[1.15rem] xl:mt-4.5 xl:text-[1.65rem]"
         }`}
       >
         Where AI{compact ? " " : <br />}
         Agents Battle
         <br />
         For{" "}
-        <span className="underline decoration-accent decoration-4 underline-offset-4">
+        <span className="inline-block border-b-2 border-[#d946ef] pb-0.5 text-gradient-arena tracking-[0.02em]">
           Supremacy
         </span>
       </h2>
       <p
-        className={`max-w-md text-white/80 [text-shadow:0_0_14px_rgba(203,213,225,0.2)] md:mt-5 md:hidden xl:block ${
-          compact ? "mt-2 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4 text-sm leading-relaxed md:text-[11px] lg:text-xs xl:text-sm"
+        className={`max-w-md text-white/82 [text-shadow:0_1px_12px_rgba(0,0,0,0.72)] md:mt-5 md:hidden xl:block ${
+          compact ? "mt-2.5 text-[13px] font-semibold leading-snug text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.95),0_0_12px_rgba(255,255,255,0.35)] max-[380px]:text-[11px]" : "mt-4.5 text-[0.96rem] font-medium leading-relaxed md:text-[11px] lg:text-[12px] xl:text-[1.02rem]"
         }`}
       >
         Collect, train, and battle unique AI Agents.
@@ -598,8 +584,8 @@ function HeroCopy({ compact = false }: { compact?: boolean }) {
       <div
         className={
           compact
-            ? "mt-3 mx-auto flex w-full max-w-[350px] flex-col items-center gap-1.5 px-3 py-2 max-[380px]:max-w-[310px] max-[380px]:gap-1 max-[380px]:px-2"
-            : "mt-4 grid w-full max-w-[280px] grid-cols-2 items-start gap-2 xl:flex xl:w-[224px] xl:flex-col"
+            ? "mt-3 mx-auto flex w-auto max-w-[268px] flex-col items-stretch gap-1.5 py-1 max-[380px]:max-w-[248px] max-[380px]:gap-1"
+            : "mt-3 flex w-full max-w-[360px] flex-col items-stretch gap-1.5 md:max-w-[372px] lg:max-w-[390px]"
         }
       >
         <ArenaHeroMatchmakingAction compact={compact} />
@@ -617,34 +603,41 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     openQueuedMatchStatus,
     openJoinBattle,
   } = useAiArenaMatchmakingFlow();
-  const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.16em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
+  const actionButtonSize = `w-full shrink-0 ${
+    compact
+      ? "h-8 px-2 text-[9px] tracking-[0.12em] gap-1 max-[380px]:h-7 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.1em]"
+      : "h-8 px-2.5 text-[8.5px] tracking-[0.11em] gap-1 md:h-9 md:px-2.5 md:text-[9px] md:tracking-[0.12em] lg:text-[9.5px]"
+  }`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+  const pairRowClass = compact
+    ? "grid w-full grid-cols-2 gap-1"
+    : "grid w-full grid-cols-2 gap-1 md:gap-1.5";
 
   return (
-    <div className="contents">
+    <div className="flex w-full flex-col gap-1.5">
       <button
         type="button"
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} col-span-2 xl:col-span-1 border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-100" />
+          <Loader2 className="h-3 w-3 shrink-0 animate-spin text-cyan-100" />
         ) : (
-          <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
+          <Swords className="h-3 w-3 shrink-0 text-cyan-100" />
         )}
-        <span className="leading-tight whitespace-nowrap text-center">{buttonLabel}</span>
+        <span className="leading-tight text-center">{buttonLabel}</span>
       </button>
 
-      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+      <div className={pairRowClass}>
         <button
           type="button"
           onClick={openJoinBattle}
           className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <Swords className="h-3.5 w-3.5 shrink-0 text-emerald-200" />
+          <Swords className="h-3 w-3 shrink-0 text-emerald-200" />
           <span>JOIN BATTLE</span>
         </button>
 
@@ -652,18 +645,18 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           to="/my-agents"
           className={`${actionButtonBase} ${actionButtonSize} border-[#0089ff]/50 bg-[linear-gradient(135deg,rgba(0,137,255,0.42),rgba(4,8,15,0.92))] text-sky-50 hover:border-[#38bdf8]/85 hover:bg-[linear-gradient(135deg,rgba(0,137,255,0.55),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <Box className="h-3.5 w-3.5 shrink-0 text-[#7cc9ff]" />
+          <Box className="h-3 w-3 shrink-0 text-[#7cc9ff]" />
           <span>MY AGENTS</span>
         </Link>
       </div>
 
-      <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
+      <div className={pairRowClass}>
         <a
           href="#my-battles"
           data-tour="ai-arena-my-battle"
           className={`${actionButtonBase} ${actionButtonSize} border-purple-300/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.42),rgba(4,8,15,0.92))] text-white hover:border-purple-200/75 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.52),rgba(4,8,15,0.94))]`}
         >
-          <Eye className="h-3.5 w-3.5 shrink-0 text-purple-200" />
+          <Eye className="h-3 w-3 shrink-0 text-purple-200" />
           <span>MY BATTLE</span>
         </a>
 
@@ -672,14 +665,14 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           data-tour="ai-arena-enter-league"
           className={`${actionButtonBase} ${actionButtonSize} border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white`}
         >
-          <span className="shrink-0 select-none text-sm leading-none" aria-hidden>⚽</span>
+          <span className="shrink-0 select-none text-xs leading-none" aria-hidden>⚽</span>
           <span>ENTER LEAGUE</span>
         </Link>
       </div>
 
       {queuedAgent ? (
         <div
-          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "col-span-2 max-w-md text-left text-xs xl:col-span-1"}`}
+          className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "w-full max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
             {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
@@ -702,26 +695,23 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 function Hero() {
   return (
     <section
-      className="arena-panel relative aspect-auto min-h-[500px] overflow-hidden border border-white/8 bg-[#04080f] md:aspect-video md:min-h-0 xl:aspect-auto xl:min-h-[500px]"
+      className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f]"
       data-tour="ai-arena-hero"
     >
-      <div className="absolute inset-0">
-        <ResponsiveBackgroundVideo
-          mobileSrc={mobileHeroVideo}
-          desktopSrc={heroVideo}
-          breakpoint="md"
-          mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
-          desktopClassName="h-full w-full object-contain object-center xl:object-cover xl:object-right"
-        />
-        <div className="absolute inset-0 hidden bg-gradient-to-b from-transparent via-transparent to-background/65 md:block" />
-        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent md:hidden" />
-      </div>
-      {/* original line kept — bg-black was added intentionally by another dev, commented out to fix black rectangle artifact */}
-      {/* <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black"> */}
-      <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
-        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
-        <div className="relative z-10 px-4 sm:px-6 pt-5">
-          <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
+      {/* Mobile — cropped cover inside a fixed hero height */}
+      <div className="relative min-h-[500px] h-[min(155vw,720px)] sm:min-h-[520px] md:hidden">
+        <div className="absolute inset-0">
+          <ResponsiveBackgroundVideo
+            mobileSrc={mobileHeroVideo}
+            desktopSrc={heroVideo}
+            breakpoint="md"
+            mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
+            desktopClassName="hidden"
+          />
+          <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
+        </div>
+        <div className="relative z-10 flex min-h-[500px] flex-col justify-end px-4 pb-8 pt-10 sm:min-h-[520px] sm:px-6 sm:pb-10 sm:pt-12">
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
             <span className="flex shrink-0 items-center gap-1">
               Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
             </span>
@@ -732,16 +722,29 @@ function Hero() {
           <HeroCopy compact />
         </div>
       </div>
-      <div className="relative mx-auto hidden px-6 pt-8 pb-32 md:absolute md:inset-0 md:flex md:min-h-0 md:flex-col md:justify-end md:pb-6 xl:relative xl:min-h-[680px] xl:justify-center xl:pb-32">
-        <div className="mb-2 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white xl:mb-8">
-          <span className="flex items-center gap-1.5">
-            Presented by <KultLogo className="h-4 w-auto" />
-          </span>
-          <span className="flex items-center gap-1.5">
-            Powered by <ZeroGLogo className="h-4 w-auto" />
-          </span>
+
+      {/* Desktop — height follows the 16:9 video so the full frame stays visible */}
+      <div className="relative hidden md:block">
+        <ResponsiveBackgroundVideo
+          mobileSrc={mobileHeroVideo}
+          desktopSrc={heroVideo}
+          breakpoint="md"
+          mobileClassName="hidden"
+          desktopClassName="relative z-0 block h-auto w-full"
+        />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/90 via-[#04080f]/34 via-[42%] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#04080f]/35" />
+        <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 py-6 lg:px-8 lg:py-8">
+          <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white lg:mb-4">
+            <span className="flex items-center gap-1.5">
+              Presented by <KultLogo className="h-4 w-auto" />
+            </span>
+            <span className="flex items-center gap-1.5">
+              Powered by <ZeroGLogo className="h-4 w-auto" />
+            </span>
+          </div>
+          <HeroCopy />
         </div>
-        <HeroCopy />
       </div>
     </section>
   );
@@ -946,7 +949,7 @@ function HowItWorks() {
       n: "01",
       title: "CREATE",
       desc: "Create your AI Agent and choose its path.",
-      img: agentNexus,
+      mediaKey: "hybrid" as AiArenaMediaKey,
     },
     {
       n: "02",
@@ -975,33 +978,28 @@ function HowItWorks() {
         <h3 className="font-tech text-2xl font-black uppercase leading-tight text-center sm:text-3xl">HOW IT WORKS</h3>
         <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-stretch">
         {steps.map((s, i) => (
           <div key={s.n} className="relative">
-            <div className="card-glass rounded-xl overflow-hidden h-full flex flex-col">
-              <div className="aspect-square bg-background/50 p-2" style={{borderRadius:"60px"}}>
-                {s.img.endsWith(".mp4") ? (
-                  <video
-                    src={s.img}
+            <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
+              <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden bg-background/50">
+                {"mediaKey" in s && s.mediaKey ? (
+                  <LazyInViewVideo
+                    srcLoader={aiArenaMedia[s.mediaKey]}
                     autoPlay
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="object-[center_30%]"
                   />
-                ) : (
-                  <div style={{height:"260px"}}>
-                    <img
-                      src={s.img}
-                      alt={s.title}
-                      loading="lazy"
-                      // width={400}
-                      height={200}
-                      style={{ width: "100%", height: "100%" }}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                ) : "img" in s && s.img ? (
+                  <img
+                    src={s.img}
+                    alt={s.title}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+                  />
+                ) : null}
               </div>
               <div className="p-3 md:p-4 text-center md:text-left">
                 <div className="font-tech text-sm tracking-wider break-words">{s.title}</div>
@@ -1024,7 +1022,7 @@ type CompeteGame = {
   body: string;
   cta: string;
   gameId: AiArenaGameId;
-  video?: string;
+  mediaKey?: AiArenaMediaKey;
   image?: string;
   tone: string;
   color: string;
@@ -1037,7 +1035,7 @@ const competeGames: CompeteGame[] = [
     body: "Deploy your agent into fast-paced 2D combat and earn battle reputation",
     cta: "Enter",
     gameId: "warzone",
-    video: warzoneVideo,
+    mediaKey: "warzone",
     image: heroTrio,
     tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
     color: "#22c55e",
@@ -1048,7 +1046,7 @@ const competeGames: CompeteGame[] = [
     body: "Race through neon highways and build your agent's speed reputation",
     cta: "Race",
     gameId: "highway-hustle",
-    video: battleStep3,
+    mediaKey: "highwayHustle",
     tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
     color: "#ffc000",
   },
@@ -1058,7 +1056,7 @@ const competeGames: CompeteGame[] = [
     body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery",
     cta: "Deploy",
     gameId: "robowar",
-    video: battleStep5,
+    mediaKey: "robowar",
     tone: "from-[#25100d]/10 via-[#170b23]/45 to-[#070910]/95",
     color: "#52cbff",
   },
@@ -1081,7 +1079,7 @@ function WhereAgentsCompete() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {competeGames.map((game) => (
           <button
             type="button"
@@ -1089,23 +1087,22 @@ function WhereAgentsCompete() {
             onClick={() => startMatchmaking(game.gameId)}
             className="arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
           >
-            {game.video ? (
-              <video
-                src={game.video}
+            {game.mediaKey ? (
+              <LazyInViewVideo
+                srcLoader={aiArenaMedia[game.mediaKey]}
                 autoPlay
                 loop
                 muted
-                preload="none"
                 playsInline
-                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
+                className="opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
-            ) : (
+            ) : game.image ? (
               <img
                 src={game.image}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
-            )}
+            ) : null}
             <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-85 transition-opacity duration-500 group-hover:opacity-65`} />
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/72 via-black/42 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#070910]/15 to-transparent transition duration-500 group-hover:from-[#070910]/85" />
@@ -1142,14 +1139,13 @@ function WhereAgentsCompete() {
           to="/league"
           className="arena-panel group relative flex h-[260px] flex-col overflow-hidden rounded-xl border border-[#b338ff]/55 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#b338ff]/80"
         >
-          <video
-            src={leagueBackground}
+          <LazyInViewVideo
+            srcLoader={aiArenaMedia.leagueBackground}
             autoPlay
             loop
             muted
-            preload="none"
             playsInline
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
+            className="pointer-events-none opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/74 via-black/42 to-transparent" />
@@ -1191,8 +1187,10 @@ function RankProgressionTimeline() {
         <span className="inline-block px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] font-tech border border-primary/40 text-primary rounded-sm mb-4">
           COMPETITIVE PROGRESSION
         </span>
-        <h3 className="font-tech text-2xl font-black uppercase leading-tight mt-2 sm:text-3xl">
-          HOW A <span className="text-gradient glow-text">LEAGUE</span> WORKS
+        <h3 className="mt-2 flex flex-wrap items-baseline justify-center gap-x-2 font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">
+          <span>HOW A</span>
+          <span className="text-gradient glow-text">LEAGUE</span>
+          <span>WORKS</span>
         </h3>
         <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
         Every battle shapes your AI Agent’s legacy. 
@@ -1208,21 +1206,21 @@ function RankProgressionTimeline() {
 
       {/* Connector line (desktop only) */}
       <div className="relative">
-        <div className="absolute top-[52px] left-[6%] right-[6%] h-px hidden md:block lg:top-[44px] xl:top-[52px]"
+        <div className="absolute top-[50px] left-[4%] right-[4%] hidden h-px xl:block"
           style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.25) 15%, rgba(139,92,246,0.4) 50%, rgba(129,140,248,0.25) 85%, transparent)" }}
         />
 
         {/* Rank cards grid */}
-        <div className="grid grid-cols-2 min-[500px]:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4 lg:gap-2 xl:gap-4">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4 sm:gap-x-6 sm:gap-y-8 md:grid-cols-4 md:gap-x-7 xl:grid-cols-8 xl:gap-x-4 xl:gap-y-8">
           {RANKS.map((rank, i) => (
             <div
               key={rank.tier}
-              className="group relative flex flex-col items-center text-center"
+              className="group relative flex min-w-0 flex-col items-center px-1 text-center"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               {/* Tier node */}
               <div
-                className="relative z-10 flex h-[100px] w-[100px] sm:h-[108px] sm:w-[108px] lg:h-[88px] lg:w-[88px] xl:h-[108px] xl:w-[108px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
+                className="relative z-10 mx-auto flex h-[92px] w-[92px] sm:h-[100px] sm:w-[100px] xl:h-[96px] xl:w-[96px] items-center justify-center rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105"
                 style={{
                   background: `radial-gradient(circle at 40% 35%, ${rank.color}22, ${rank.color}08 60%, transparent)`,
                   border: `1px solid ${rank.color}35`,
@@ -1237,7 +1235,7 @@ function RankProgressionTimeline() {
                 <img
                   src={rank.image}
                   alt={rank.name}
-                  className="p-1 h-[68px] w-[68px] sm:h-[76px] sm:w-[76px] lg:h-[60px] lg:w-[60px] xl:h-[76px] xl:w-[76px] object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="h-[60px] w-[60px] object-contain p-1 drop-shadow-lg transition-transform duration-300 group-hover:scale-110 sm:h-[68px] sm:w-[68px] xl:h-[64px] xl:w-[64px]"
                   style={{ filter: `drop-shadow(0 0 8px ${rank.color}55)` }}
                 />
                 {/* Tier number badge */}
@@ -1249,20 +1247,10 @@ function RankProgressionTimeline() {
                 </div>
               </div>
 
-              {/* Arrow connector (desktop) */}
-              {i < RANKS.length - 1 && (
-                <div
-                  className="absolute top-[50px] -right-2 z-20 hidden md:flex h-5 w-4 items-center justify-center text-white/20 group-hover:text-white/45 transition-colors duration-300 lg:top-[42px] xl:top-[50px]"
-                  style={{ fontSize: "10px" }}
-                >
-                  ›
-                </div>
-              )}
-
               {/* Name & ELO */}
-              <div className="mt-3 space-y-0.5 lg:mt-2 xl:mt-3">
+              <div className="mt-3 space-y-0.5">
                 <div
-                  className="font-tech text-[9px] sm:text-[10px] font-bold tracking-widest uppercase leading-tight lg:text-[8px] lg:tracking-[0.12em] xl:text-[10px] xl:tracking-widest"
+                  className="font-tech text-[9px] font-bold uppercase leading-tight tracking-[0.14em] sm:text-[10px] sm:tracking-widest"
                   style={{ color: rank.color, textShadow: `0 0 8px ${rank.color}60` }}
                 >
                   {rank.shortName}
@@ -1410,16 +1398,26 @@ function TopAgents() {
             className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden">
-              {a.img.endsWith(".mp4") ? (
+              {"mediaKey" in a && a.mediaKey ? (
+                <LazyInViewVideo
+                  srcLoader={aiArenaMedia[a.mediaKey]}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="object-top transition duration-500 group-hover:scale-105"
+                />
+              ) : "img" in a && typeof a.img === "string" && a.img.endsWith(".mp4") ? (
                 <video
                   src={a.img}
                   autoPlay
                   loop
                   muted
+                  preload="none"
                   playsInline
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
-              ) : (
+              ) : "img" in a && a.img ? (
                 <img
                   src={a.img}
                   alt={a.name}
@@ -1428,7 +1426,7 @@ function TopAgents() {
                   height={800}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
-              )}
+              ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
               <div
                 className="absolute top-3 left-3 px-2.5 py-1 rounded-md font-tech text-xs"
@@ -1489,7 +1487,7 @@ function TopAgents() {
 function BattlesRow() {
   return (
     <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
-      <div className="grid items-stretch gap-6 lg:grid-cols-2">
+      <div className="grid items-stretch gap-6 xl:grid-cols-2">
         <LiveBattles />
         <MyBattleSection />
       </div>
@@ -1498,20 +1496,23 @@ function BattlesRow() {
 }
 
 function MyBattleSection() {
+  const PREVIEW_AGENT_LIMIT = 8;
+  const PREVIEW_MEMORIES_PER_AGENT = 12;
   const myAgentsQ = useMyArenaAgents(1, 50);
   const ownedAgents = myAgentsQ.data?.agents ?? [];
+  const previewAgents = useMemo(() => ownedAgents.slice(0, PREVIEW_AGENT_LIMIT), [ownedAgents]);
   type OwnedBattleMemory = AiArenaAgentMemory & { ownerAgentId: string };
   const memoriesQ = useQuery({
-    queryKey: ["aiArenaGateway", "arenaLandingBattleMemories", ownedAgents.map((agent) => agent.id).join(",")],
+    queryKey: ["aiArenaGateway", "arenaLandingBattleMemories", previewAgents.map((agent) => agent.id).join(",")],
     queryFn: async () => {
       const results = await Promise.all(
-        ownedAgents.map((agent) =>
-          aiArenaGatewayApi.getAgentMemories(agent.id, 1, 100)
+        previewAgents.map((agent) =>
+          aiArenaGatewayApi.getAgentMemories(agent.id, 1, PREVIEW_MEMORIES_PER_AGENT)
         )
       );
       const uniqueMemories = new Map<string, OwnedBattleMemory>();
       results.forEach((result, index) => {
-        const ownerAgentId = ownedAgents[index]?.id;
+        const ownerAgentId = previewAgents[index]?.id;
         if (!ownerAgentId) return;
         result.memories.forEach((memory) => {
           const key = memory.metadata?.battleId ?? memory.id;
@@ -1522,7 +1523,7 @@ function MyBattleSection() {
         (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
       );
     },
-    enabled: ownedAgents.length > 0,
+    enabled: previewAgents.length > 0,
     staleTime: 30_000,
   });
   const memories = memoriesQ.data ?? [];
@@ -1622,7 +1623,10 @@ function MyBattleSection() {
       </div>
 
       {myAgentsQ.isLoading || memoriesQ.isLoading ? (
-        <ArenaBattleBoardGridSkeleton count={3} className="flex-1" />
+        <ArenaBattleBoardGridSkeleton
+          count={1}
+          className="flex-1 grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
+        />
       ) : memoriesQ.isError || memories.length === 0 ? (
         <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-center text-sm text-muted-foreground">
           No completed or cancelled battles are available yet. Start matchmaking to enter the arena.
@@ -1756,7 +1760,10 @@ function LiveBattles() {
         </Link>
       </div>
       {battleBoardQ.isLoading && previewItems.length === 0 ? (
-        <ArenaBattleBoardGridSkeleton count={1} className="flex-1" />
+        <ArenaBattleBoardGridSkeleton
+          count={1}
+          className="flex-1 grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
+        />
       ) : previewItems.length > 0 ? (
         <div className="grid flex-1 grid-cols-1 gap-4">
           {previewItems.map((item) => (
@@ -1956,14 +1963,14 @@ function ArenaLandingFooter() {
             </div>
             
             <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px] mx-auto xl:mx-0">
-              <video
-                src={sceneVideo}
+              <LazyInViewVideo
+                srcLoader={aiArenaMedia.scene}
                 autoPlay
                 loop
                 muted
-                preload="none"
                 playsInline
-                className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
+                wrapperClassName="relative w-full"
+                className="h-auto w-full object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
               />
             </div>
           </div>

@@ -1,7 +1,4 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { AccessProvider, useAccess } from "@/contexts/AccessContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { useState, useCallback, useEffect, Suspense } from "react";
@@ -44,6 +41,7 @@ import { AccessRoute } from "@/components/AccessRoute";
 const TourProvider = lazyWithRetry(() =>
   import("@/tour/TourProvider").then((mod) => ({ default: mod.TourProvider }))
 );
+const AuthenticatedAppProviders = lazyWithRetry(() => import("./providers/AuthenticatedAppProviders"));
 
 function OAuthRedirectLoader() {
   useEffect(() => {
@@ -119,9 +117,8 @@ function BrowserApp() {
   }
 
   return (
-    <AuthProvider>
-      <CreateAgentProvider>
-      <TooltipProvider>
+    <Suspense fallback={<PageRouteFallback />}>
+      <AuthenticatedAppProviders>
         <BrowserRouter>
           <Suspense fallback={null}>
             <TourProvider enabled>
@@ -170,9 +167,8 @@ function BrowserApp() {
           </TourProvider>
           </Suspense>
         </BrowserRouter>
-      </TooltipProvider>
-      </CreateAgentProvider>
-    </AuthProvider>
+      </AuthenticatedAppProviders>
+    </Suspense>
   );
 }
 

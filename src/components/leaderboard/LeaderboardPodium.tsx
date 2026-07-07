@@ -70,7 +70,7 @@ function PodiumCard({
 
   return (
     <div
-      className={`arena-panel relative flex flex-col items-center justify-between overflow-hidden p-5 text-center bg-[#04080f] ${styles.height} ${styles.border} podium-glow-border`}
+      className={`arena-panel relative flex w-full flex-col items-center justify-between overflow-hidden p-4 text-center bg-[#04080f] sm:p-5 ${styles.height} ${styles.border} podium-glow-border`}
       style={{ "--podium-glow-color": styles.glowColor } as React.CSSProperties}
     >
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20">
@@ -158,10 +158,16 @@ export function LeaderboardPodium({
   const [first, second, third] = top3;
 
   return (
-    <div className="grid items-end gap-4 pt-4 sm:grid-cols-3">
-      <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
-      <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
-      <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+    <div className="grid grid-cols-1 items-end gap-4 pt-4 sm:grid-cols-3">
+      <div className="order-2 sm:order-1">
+        <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+      </div>
+      <div className="order-1 sm:order-2">
+        <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+      </div>
+      <div className="order-3">
+        <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+      </div>
     </div>
   );
 }

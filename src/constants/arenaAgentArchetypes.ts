@@ -1,7 +1,7 @@
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import agentsPoster from "@/assets/ai_agents_4k_poster.png";
 import tacticianPortrait from "@/assets/tactician.mp4";
-import assassinPortrait from "@/assets/assassin.gif";
+import assassinPortrait from "@/assets/assassin.mp4";
 import berserkerPortrait from "@/assets/berserker.mp4";
 import defenderPortrait from "@/assets/defender.mp4";
 import hybridPortrait from "@/assets/hybrid.mp4";

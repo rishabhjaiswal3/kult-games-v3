@@ -37,7 +37,7 @@ export function ResponsiveBackgroundVideo({
       loop
       muted
       playsInline
-      preload="metadata"
+      preload={isDesktop ? "auto" : "metadata"}
       src={src}
       className={resolvedClassName}
     />

@@ -69,7 +69,7 @@ const Leaderboard = () => {
   );
   const kultTop3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null =
     kultPage === 1 && kultTop3Rows.length === 3
-      ? [kultTop3Rows[1]!, kultTop3Rows[0]!, kultTop3Rows[2]!]
+      ? [kultTop3Rows[0]!, kultTop3Rows[1]!, kultTop3Rows[2]!]
       : null;
   const kultTableRows = kultPage === 1 ? kultRows.filter((p) => p.rank > 3) : kultRows;
   const kultUserRow = useMemo(() => {
@@ -148,8 +148,8 @@ const Leaderboard = () => {
   const top3: [ReturnType<typeof arenaEntryToDisplayPlayer>, ReturnType<typeof arenaEntryToDisplayPlayer>, ReturnType<typeof arenaEntryToDisplayPlayer>] | null =
     arenaPage === 1 && top3Entries.length === 3
       ? [
-        arenaEntryToDisplayPlayer(top3Entries[1], { isYou: myAgentIds.has(top3Entries[1].agentId) }),
         arenaEntryToDisplayPlayer(top3Entries[0], { isYou: myAgentIds.has(top3Entries[0].agentId) }),
+        arenaEntryToDisplayPlayer(top3Entries[1], { isYou: myAgentIds.has(top3Entries[1].agentId) }),
         arenaEntryToDisplayPlayer(top3Entries[2], { isYou: myAgentIds.has(top3Entries[2].agentId) }),
       ]
       : null;

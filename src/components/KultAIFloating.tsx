@@ -41,7 +41,7 @@ const KultAIFloating = () => {
             whileTap={{ scale: 0.96 }}
             onClick={() => setOpen(true)}
             aria-label="Open KULT AI chat"
-            className="group fixed bottom-28 right-5 z-50 h-16 w-16 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:bottom-6 sm:right-6"
+            className="kult-ai-fab group fixed bottom-24 right-4 z-50 h-14 w-14 outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
           >
             {/* Soft breathing halo */}
             <motion.div
@@ -76,7 +76,7 @@ const KultAIFloating = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.9 }}
             transition={{ type: "spring", damping: 22, stiffness: 280 }}
-            className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] rounded-2xl overflow-hidden border border-primary/20 flex flex-col"
+            className="kult-ai-panel fixed bottom-4 right-3 z-50 w-[400px] max-w-[calc(100vw-1.5rem)] rounded-2xl overflow-hidden border border-primary/20 flex flex-col sm:bottom-6 sm:right-6 sm:max-w-[calc(100vw-3rem)]"
             style={{
               maxHeight: "min(620px, calc(100vh - 6rem))",
               background: "linear-gradient(180deg, hsl(265 48% 10%) 0%, hsl(220 45% 8%) 100%)",
