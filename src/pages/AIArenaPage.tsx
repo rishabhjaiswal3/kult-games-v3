@@ -30,6 +30,7 @@ import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal"
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
+import { LazyInViewVideo } from "@/components/LazyInViewVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
@@ -38,6 +39,7 @@ import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
+import { aiArenaMedia, type AiArenaMediaKey } from "@/lib/aiArenaMedia";
 import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -45,25 +47,13 @@ import kultLogo from "@/assets/Kult Logo.png";
 import baseLogo from "@/assets/Base Logo.png";
 import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxLogo from "@/assets/okx-icon.png";
-import agentNexus from "@/assets/hybrid.mp4";
-import agentShadow from "@/assets/defender.mp4";
 
 import iconTrain from "@/assets/Train.webp";
 import iconBattle from "@/assets/Battle.webp";
 import iconEarn from "@/assets/Earn.webp";
 import iconOwn from "@/assets/Own.webp";
 
-
-import agentAegis from "@/assets/tactician.mp4";
-import agentVoid from "@/assets/support.mp4";
-import agentRage from "@/assets/berserker.mp4";
-import agentLumen from "@/assets/assassin.mp4";
-import sceneVideo from "@/assets/Scene 1.mp4";
-import leagueBackground from "@/assets/league_background.mp4";
 import heroTrio from "@/assets/hero-trio.webp";
-import warzoneVideo from "@/assets/IMG_9260.mp4";
-import battleStep3 from "@/assets/step3.mp4";
-import battleStep5 from "@/assets/step5.mp4";
 import type { AiArenaAgent, AiArenaAgentMemory, AiArenaBattle } from "@/types/aiArenaGateway";
 import { RANKS } from "@/utils/rankSystem";
 
@@ -82,7 +72,7 @@ const agents = [
     tier: "Legendary",
     lvl: 12,
     power: "14,850",
-    img: agentNexus,
+    mediaKey: "hybrid" as AiArenaMediaKey,
     color: "var(--neon)",
   },
   {
@@ -92,7 +82,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "13,420",
-    img: agentShadow,
+    mediaKey: "defender" as AiArenaMediaKey,
     color: "var(--lime)",
   },
   {
@@ -102,7 +92,7 @@ const agents = [
     tier: "Epic",
     lvl: 12,
     power: "12,980",
-    img: agentAegis,
+    mediaKey: "tactician" as AiArenaMediaKey,
     color: "var(--cyan)",
   },
   {
@@ -112,7 +102,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "12,150",
-    img: agentVoid,
+    mediaKey: "support" as AiArenaMediaKey,
     color: "var(--neon-2)",
   },
   {
@@ -122,7 +112,7 @@ const agents = [
     tier: "Legendary",
     lvl: 12,
     power: "11,870",
-    img: agentRage,
+    mediaKey: "berserker" as AiArenaMediaKey,
     color: "var(--amber)",
   },
   {
@@ -132,7 +122,7 @@ const agents = [
     tier: "Epic",
     lvl: 11,
     power: "10,940",
-    img: agentLumen,
+    mediaKey: "assassin" as AiArenaMediaKey,
     color: "var(--magenta)",
   },
 ];
@@ -561,7 +551,7 @@ function Logo({
 
 function HeroCopy({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={compact ? "mx-auto max-w-md pt-80 text-center" : "max-w-2xl md:max-w-md xl:max-w-2xl"}>
+    <div className={compact ? "mx-auto w-full max-w-md text-center" : "max-w-2xl md:max-w-md xl:max-w-2xl"}>
       <h1
         className={`font-display [font-family:'Open Sans',sans-serif] font-black uppercase leading-[1.02] tracking-[0.01em] text-white ${
           compact ? "text-[1.72rem] min-[390px]:text-[1.84rem] sm:text-[3rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_34px_rgba(154,53,255,0.5)]" : "text-[1.8rem] min-[390px]:text-[1.94rem] sm:text-[3.2rem] lg:text-[3.9rem] xl:text-[4.15rem] [text-shadow:0_2px_18px_rgba(0,0,0,0.86),0_0_34px_rgba(168,85,247,0.3)]"
@@ -613,9 +603,9 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     openQueuedMatchStatus,
     openJoinBattle,
   } = useAiArenaMatchmakingFlow();
-  const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.16em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[8px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[9px] tracking-[0.13em] gap-1.5"}`;
+  const actionButtonSize = `w-full ${compact ? "h-9 px-2 text-[10px] tracking-[0.14em] gap-1.5 max-[380px]:h-8 max-[380px]:px-1.5 max-[380px]:text-[10px] max-[380px]:tracking-[0.12em] max-[380px]:gap-1" : "h-9 px-3 text-[10px] tracking-[0.13em] gap-1.5"}`;
   const actionButtonBase =
-    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
+    `min-w-0 rounded-md font-tech font-black uppercase flex items-center justify-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60`;
 
   return (
     <div className="contents">
@@ -631,7 +621,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         ) : (
           <Swords className="h-3.5 w-3.5 shrink-0 text-cyan-100" />
         )}
-        <span className="leading-tight whitespace-nowrap text-center">{buttonLabel}</span>
+        <span className="leading-tight text-center">{buttonLabel}</span>
       </button>
 
       <div className={compact ? "grid w-full grid-cols-2 gap-1.5" : "contents"}>
@@ -714,10 +704,10 @@ function Hero() {
       </div>
       {/* original line kept — bg-black was added intentionally by another dev, commented out to fix black rectangle artifact */}
       {/* <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px] bg-black"> */}
-      <div className="relative md:hidden min-h-[640px] h-[185vw] max-h-[880px]">
+      <div className="relative md:hidden min-h-[560px] h-[min(165vw,780px)]">
         <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
-        <div className="relative z-10 px-4 sm:px-6 pt-5">
-          <div className="mb-8 flex flex-nowrap items-center gap-2 whitespace-nowrap font-tech text-[8px] uppercase tracking-[0.12em] text-white min-[380px]:gap-2.5 min-[380px]:text-[9px] min-[380px]:tracking-[0.16em] sm:text-[11px] sm:tracking-[0.2em]">
+        <div className="relative z-10 flex min-h-[560px] flex-col justify-end px-4 pb-8 sm:px-6 sm:pb-10">
+          <div className="mb-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
             <span className="flex shrink-0 items-center gap-1">
               Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
             </span>
@@ -942,7 +932,7 @@ function HowItWorks() {
       n: "01",
       title: "CREATE",
       desc: "Create your AI Agent and choose its path.",
-      img: agentNexus,
+      mediaKey: "hybrid" as AiArenaMediaKey,
     },
     {
       n: "02",
@@ -976,23 +966,23 @@ function HowItWorks() {
           <div key={s.n} className="relative">
             <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
               <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden bg-background/50">
-                {s.img.endsWith(".mp4") ? (
-                  <video
-                    src={s.img}
+                {"mediaKey" in s && s.mediaKey ? (
+                  <LazyInViewVideo
+                    srcLoader={aiArenaMedia[s.mediaKey]}
                     autoPlay
                     loop
                     muted
                     playsInline
-                    className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+                    className="object-[center_30%]"
                   />
-                ) : (
+                ) : "img" in s && s.img ? (
                   <img
                     src={s.img}
                     alt={s.title}
                     loading="lazy"
                     className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
                   />
-                )}
+                ) : null}
               </div>
               <div className="p-3 md:p-4 text-center md:text-left">
                 <div className="font-tech text-sm tracking-wider break-words">{s.title}</div>
@@ -1015,7 +1005,7 @@ type CompeteGame = {
   body: string;
   cta: string;
   gameId: AiArenaGameId;
-  video?: string;
+  mediaKey?: AiArenaMediaKey;
   image?: string;
   tone: string;
   color: string;
@@ -1028,7 +1018,7 @@ const competeGames: CompeteGame[] = [
     body: "Deploy your agent into fast-paced 2D combat and earn battle reputation",
     cta: "Enter",
     gameId: "warzone",
-    video: warzoneVideo,
+    mediaKey: "warzone",
     image: heroTrio,
     tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
     color: "#22c55e",
@@ -1039,7 +1029,7 @@ const competeGames: CompeteGame[] = [
     body: "Race through neon highways and build your agent's speed reputation",
     cta: "Race",
     gameId: "highway-hustle",
-    video: battleStep3,
+    mediaKey: "highwayHustle",
     tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
     color: "#ffc000",
   },
@@ -1049,7 +1039,7 @@ const competeGames: CompeteGame[] = [
     body: "Outsmart rivals in tactical robotic warfare and prove strategic mastery",
     cta: "Deploy",
     gameId: "robowar",
-    video: battleStep5,
+    mediaKey: "robowar",
     tone: "from-[#25100d]/10 via-[#170b23]/45 to-[#070910]/95",
     color: "#52cbff",
   },
@@ -1080,23 +1070,22 @@ function WhereAgentsCompete() {
             onClick={() => startMatchmaking(game.gameId)}
             className="arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
           >
-            {game.video ? (
-              <video
-                src={game.video}
+            {game.mediaKey ? (
+              <LazyInViewVideo
+                srcLoader={aiArenaMedia[game.mediaKey]}
                 autoPlay
                 loop
                 muted
-                preload="none"
                 playsInline
-                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
+                className="opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
-            ) : (
+            ) : game.image ? (
               <img
                 src={game.image}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
-            )}
+            ) : null}
             <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-85 transition-opacity duration-500 group-hover:opacity-65`} />
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/72 via-black/42 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#070910]/15 to-transparent transition duration-500 group-hover:from-[#070910]/85" />
@@ -1133,14 +1122,13 @@ function WhereAgentsCompete() {
           to="/league"
           className="arena-panel group relative flex h-[260px] flex-col overflow-hidden rounded-xl border border-[#b338ff]/55 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#b338ff]/80"
         >
-          <video
-            src={leagueBackground}
+          <LazyInViewVideo
+            srcLoader={aiArenaMedia.leagueBackground}
             autoPlay
             loop
             muted
-            preload="none"
             playsInline
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
+            className="pointer-events-none opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/74 via-black/42 to-transparent" />
@@ -1401,16 +1389,26 @@ function TopAgents() {
             className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden">
-              {a.img.endsWith(".mp4") ? (
+              {"mediaKey" in a && a.mediaKey ? (
+                <LazyInViewVideo
+                  srcLoader={aiArenaMedia[a.mediaKey]}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="object-top transition duration-500 group-hover:scale-105"
+                />
+              ) : "img" in a && typeof a.img === "string" && a.img.endsWith(".mp4") ? (
                 <video
                   src={a.img}
                   autoPlay
                   loop
                   muted
+                  preload="none"
                   playsInline
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
-              ) : (
+              ) : "img" in a && a.img ? (
                 <img
                   src={a.img}
                   alt={a.name}
@@ -1419,7 +1417,7 @@ function TopAgents() {
                   height={800}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                 />
-              )}
+              ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
               <div
                 className="absolute top-3 left-3 px-2.5 py-1 rounded-md font-tech text-xs"
@@ -1956,14 +1954,14 @@ function ArenaLandingFooter() {
             </div>
             
             <div className="group/video relative overflow-hidden rounded-[1.1rem] border border-[#5a35ff]/30 shadow-[0_0_24px_rgba(104,62,255,0.12)] transition duration-300 hover:border-[#8f73ff]/60 hover:shadow-[0_0_36px_rgba(104,62,255,0.25)] hover:-translate-y-1 mt-2 w-full max-w-[250px] mx-auto xl:mx-0">
-              <video
-                src={sceneVideo}
+              <LazyInViewVideo
+                srcLoader={aiArenaMedia.scene}
                 autoPlay
                 loop
                 muted
-                preload="none"
                 playsInline
-                className="w-full h-auto object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
+                wrapperClassName="relative w-full"
+                className="h-auto w-full object-cover opacity-80 mix-blend-screen transition duration-300 group-hover/video:opacity-100"
               />
             </div>
           </div>

@@ -1862,6 +1862,18 @@ button[aria-label="close modal"]:hover {
   --arena-purple-active: #8f27ff;
   --arena-gold: #ffc000;
   --arena-green: #00f080;
+  --kult-min-label-size: 10px;
+}
+
+/* Bump only 8–9px labels in main content (not heroes / chrome) */
+.arena-app-shell
+  :where(
+    main section:not([data-tour="ai-arena-hero"]):not([data-tour="home-hero"]),
+    main footer,
+    .league-typography-root
+  )
+  :where([class*="text-[8px]"], [class*="text-[9px]"]) {
+  font-size: var(--kult-min-label-size, 10px) !important;
 }
 
 @layer utilities {
@@ -2443,64 +2455,6 @@ button[aria-label="close modal"]:hover {
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
-  .ai-arena-page,
-  .home-page {
-    font-size: 13px;
-  }
-
-  .ai-arena-page > :where(section:not([data-tour="ai-arena-hero"]), div:not([data-tour="ai-arena-hero"])),
-  .home-page > :where(section:not([data-tour="home-hero"]), div:not([data-tour="home-hero"])) {
-    --arena-tablet-heading: 1.25rem;
-    --arena-tablet-subheading: 0.9rem;
-    --arena-tablet-body: 0.75rem;
-    --arena-tablet-label: 0.66rem;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) :where(h2, h3),
-  .home-page :where(section:not([data-tour="home-hero"]), footer) :where(h2, h3) {
-    font-size: var(--arena-tablet-heading, 1.25rem);
-    line-height: 1.12;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) h4,
-  .home-page :where(section:not([data-tour="home-hero"]), footer) h4 {
-    font-size: var(--arena-tablet-subheading, 0.9rem);
-    line-height: 1.2;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) p,
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) a,
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) button,
-  .home-page :where(section:not([data-tour="home-hero"]), footer) p,
-  .home-page :where(section:not([data-tour="home-hero"]), footer) a,
-  .home-page :where(section:not([data-tour="home-hero"]), footer) button {
-    font-size: var(--arena-tablet-body, 0.75rem);
-    line-height: 1.45;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) :where(.font-tech, .font-display),
-  .home-page :where(section:not([data-tour="home-hero"]), footer) :where(.font-tech, .font-display) {
-    letter-spacing: 0.12em;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"]), footer) :where(span.font-tech, p.font-tech, div.font-tech),
-  .home-page :where(section:not([data-tour="home-hero"]), footer) :where(span.font-tech, p.font-tech, div.font-tech) {
-    font-size: var(--arena-tablet-label, 0.66rem);
-    line-height: 1.25;
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"])) :where(.card-glass, .arena-panel),
-  .home-page :where(section:not([data-tour="home-hero"])) :where(.card-glass, .arena-panel) {
-    font-size: var(--arena-tablet-body, 0.75rem);
-  }
-
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"])) img + :where(p, span),
-  .ai-arena-page :where(section:not([data-tour="ai-arena-hero"])) video + :where(p, span),
-  .home-page :where(section:not([data-tour="home-hero"])) img + :where(p, span),
-  .home-page :where(section:not([data-tour="home-hero"])) video + :where(p, span) {
-    font-size: var(--arena-tablet-body, 0.75rem);
-  }
-
   .home-page [data-tour="home-hero"] h1 {
     font-size: 2.25rem;
     line-height: 1.05;
@@ -2853,10 +2807,10 @@ button[aria-label="close modal"]:hover {
   .home-arena-grid .ha-feed  { grid-area: feed; }
 }
 
-/* League typography lab — preview font stacks on /league only */
+/* League page — inherits arena-app-shell typography; mono stack for stats */
 .league-typography-root {
   font-family: var(--league-font-body, Sora, sans-serif);
-  font-size: var(--league-base-size, 16px);
+  font-size: var(--league-base-size, var(--kult-base-size, 15px));
 }
 
 .league-typography-root .font-tech,
@@ -2870,11 +2824,4 @@ button[aria-label="close modal"]:hover {
 
 .league-typography-root .font-mono {
   font-family: var(--league-font-mono, "JetBrains Mono", monospace);
-}
-
-/* Bump tiny league labels when testing readability (8–10px utility classes) */
-.league-typography-root [class*="text-[8px]"],
-.league-typography-root [class*="text-[9px]"],
-.league-typography-root [class*="text-[10px]"] {
-  font-size: max(var(--league-min-label-size, 11px), 1em) !important;
 }

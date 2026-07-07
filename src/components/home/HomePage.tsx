@@ -295,7 +295,7 @@ export function HomePage() {
                 >
                   {action.icon}
                   <span className="min-w-0 px-1 leading-tight">{action.label}</span>
-                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
+                  {/* <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden /> */}
                 </button>
               ))}
             </div>
