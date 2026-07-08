@@ -34,6 +34,8 @@ export const StorageKeys = {
     productTourState: "kult_product_tour_state",
   },
   session: {
+    /** KULT AI chat session id (used for server-side memory). */
+    kultAiSessionId: "kult-ai-session-id",
     /** Wallet address after Warzone agent binding sign. */
     warzoneAgentWalletVerified: "kult_ai_agent_wallet_verified",
     /** Derived Warzone agent id (`address_keccak…`). */

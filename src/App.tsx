@@ -37,6 +37,7 @@ const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating")
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
+import { ActivityTrackerProvider } from "@/analytics/ActivityTrackerProvider";
 
 const TourProvider = lazyWithRetry(() =>
   import("@/tour/TourProvider").then((mod) => ({ default: mod.TourProvider }))
@@ -120,6 +121,7 @@ function BrowserApp() {
     <Suspense fallback={<PageRouteFallback />}>
       <AuthenticatedAppProviders>
         <BrowserRouter>
+          <ActivityTrackerProvider>
           <Suspense fallback={null}>
             <TourProvider enabled>
             <RouteChunkErrorBoundary>
@@ -166,6 +168,7 @@ function BrowserApp() {
             </Suspense>
           </TourProvider>
           </Suspense>
+          </ActivityTrackerProvider>
         </BrowserRouter>
       </AuthenticatedAppProviders>
     </Suspense>

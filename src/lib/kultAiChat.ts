@@ -119,7 +119,7 @@ export const streamKultAIReply = async ({
     throw new Error("KULT AI returned an empty response stream.");
   }
 
-  const nextSessionId = response.headers.get("x-session-id");
+  const nextSessionId = response.headers.get("x-session-id") ?? sessionId ?? null;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let reply = "";

@@ -2,7 +2,7 @@ import { gamesApi } from "@/api/gamesApi";
 import type { Game, GamesResponse, LocalizedString } from "@/types/api";
 
 const CATALOG_PAGE_SIZE = 100;
-const MAX_CONTEXT_GAMES = 4;
+const MAX_CONTEXT_GAMES = 6;
 
 const KNOWN_KULT_GAMES: Game[] = [
   {
@@ -10,6 +10,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "guesstheai",
     name: { en: "Guess the AI" },
     category: "Puzzle",
+    url: "https://guesstheai.xyz/",
     description: {
       en: "A deduction game where players identify AI-generated content across modes like Classic, Card Flip, Duel, Multi-Select, Odd One Out, and Rapid Fire.",
     },
@@ -24,6 +25,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "highwayhustle",
     name: { en: "Highway Hustle" },
     category: "Racing",
+    url: "https://highwayhustle.xyz/",
     description: {
       en: "A high-speed racing game focused on reflexes, fast movement, traffic dodging, power-ups, and quick decision-making.",
     },
@@ -37,6 +39,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "robowars",
     name: { en: "Robo Wars" },
     category: "Action",
+    url: "https://robowarsgame.xyz/",
     description: {
       en: "A robot battle arena game centered on combat, mech/robot clashes, upgrades, weapon choices, and tactical play.",
     },
@@ -50,6 +53,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "warzonewarriors",
     name: { en: "Warzone Warriors" },
     category: "Action",
+    url: "https://warzonewarriors.xyz/",
     description: {
       en: "An action combat game for players who prefer direct battles, survival pressure, and aggressive competitive play.",
     },
@@ -63,6 +67,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "zerogpool",
     name: { en: "ZeroG Pool" },
     category: "Arcade",
+    url: "https://zerogpool.xyz/",
     description: {
       en: "An arcade pool-style game likely focused on aim, angles, precision shots, and quick table control.",
     },
@@ -76,6 +81,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "zerodash",
     name: { en: "ZeroDash" },
     category: "Arcade",
+    url: "https://zerodashgame.xyz/",
     description: {
       en: "A fast arcade dash game likely focused on movement timing, reflexes, obstacle avoidance, and short-session scoring.",
     },
@@ -150,6 +156,11 @@ const wantsCatalogWideComparison = (query: string) => {
   return (
     tokens.length === 0 ||
     /\b(compare|show|list|suggest|recommend|pick)\s+(all\s+)?games\b/.test(normalized) ||
+    /\blist\s+of\s+games\b/.test(normalized) ||
+    /\bgames\s+list\b/.test(normalized) ||
+    /\b(what|which)\s+games\s+(are\s+)?(available|there)\b/.test(normalized) ||
+    /\bgames\s+(are\s+)?available\b/.test(normalized) ||
+    /\bavailable\s+games\b/.test(normalized) ||
     /\ball\s+games\b/.test(normalized) ||
     /\bgames\s+for\s+me\b/.test(normalized)
   );
@@ -265,7 +276,7 @@ const getAccess = (game: Game) => {
   const platforms = Array.isArray(game.platform) ? game.platform.filter(Boolean).join(", ") : "";
   if (platforms) return platforms;
   if (game.isDownloadable || game.is_downloadable) return "downloadable";
-  if (game.url) return "web/playable link";
+  if (game.url) return `web/playable link (${game.url})`;
   return "not specified";
 };
 
@@ -273,6 +284,9 @@ const formatGameForPrompt = (game: Game) =>
   [
     `Game name: ${getGameName(game)}`,
     `Identification: ${getGameId(game)}`,
+    `Detail page: /game/${getGameId(game)}`,
+    `Play page: /game/${getGameId(game)}/play`,
+    `External play link: ${typeof game.url === "string" && game.url.trim() ? game.url.trim() : "not specified"}`,
     `Category: ${game.category || "not specified"}`,
     `Rating: ${game.rating != null ? game.rating : "not specified"}`,
     `Access: ${getAccess(game)}`,
@@ -311,6 +325,7 @@ Instructions for the AI agent:
 - Use the catalog context below as the source of truth for this answer.
 - If the user asks to compare games generally, compare every game listed in this catalog context.
 - Start the answer by naming the exact games being compared: ${gameNames}.
+- When the user asks for the list of games or how to play, include each game's External play link plus the Detail page and Play page routes when available in the context.
 - Do not say "I only have information about one game" when Available game count is greater than 1.
 - Do not redirect the user to search or category filters instead of comparing these games.
 - Do not say "I don't have the full catalog".
