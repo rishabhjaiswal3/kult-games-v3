@@ -257,7 +257,7 @@ function getRadarPoints(stats: number[], scale = 1) {
 const AutonomousPage = () => {
   const [globalAutoMode, setGlobalAutoMode] = useState(true);
   const [logs, setLogs] = useState<string[]>([]);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const terminalScrollRef = useRef<HTMLDivElement>(null);
 
   const myAgentsQ = useMyArenaAgents(1, 20);
   const myAgents: AiArenaAgent[] = myAgentsQ.data?.agents ?? [];
@@ -280,9 +280,11 @@ const AutonomousPage = () => {
     ]);
   }, [myAgents.length, autonomousCount]);
 
-  // Scroll to bottom of terminal when logs update
+  // Scroll terminal feed only — never scroll the page on mount or log updates
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const terminal = terminalScrollRef.current;
+    if (!terminal) return;
+    terminal.scrollTop = terminal.scrollHeight;
   }, [logs]);
 
   // Log simulation effect
@@ -631,7 +633,10 @@ const AutonomousPage = () => {
                   STATUS: {globalAutoMode ? "LOOPING" : "SUSPENDED"}
                 </span>
               </div>
-              <div className="p-4 bg-black/40 font-mono text-[10px] text-cyan-400/90 space-y-1.5 h-[220px] overflow-y-auto arena-scroll select-none">
+              <div
+                ref={terminalScrollRef}
+                className="p-4 bg-black/40 font-mono text-[10px] text-cyan-400/90 space-y-1.5 h-[220px] overflow-y-auto arena-scroll select-none"
+              >
                 {logs.length === 0 ? (
                   <div className="text-white/30 italic">Initializing console feed...</div>
                 ) : (
@@ -650,7 +655,6 @@ const AutonomousPage = () => {
                     );
                   })
                 )}
-                <div ref={terminalEndRef} />
               </div>
             </div>
 

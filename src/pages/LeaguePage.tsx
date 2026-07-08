@@ -54,7 +54,8 @@ function LeagueTipBox() {
       </span>
       <p className="min-w-0 text-[11px] leading-snug text-white/70 sm:text-xs">
         <span className="font-tech font-bold uppercase tracking-wider text-amber-300">Tip:</span>{" "}
-        Picks lock at kickoff — <span className="font-semibold text-white">get yours in early</span> so you don't miss out.
+        {/* Picks lock at kickoff — <span className="font-semibold text-white">get yours in early</span> so you don't miss out. */}
+        For the best AI insights, make your prediction before kickoff. Once the match starts, predictions are locked.
       </p>
     </div>
   );

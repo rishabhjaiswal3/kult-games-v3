@@ -46,21 +46,30 @@ type CategoryMeta = {
 };
 
 const CATEGORY_META: CategoryMeta[] = [
-  { name: "BATTLES",    icon: Swords,   color: "border-purple-500/20 text-[#b85eff] bg-purple-950/10" },
-  { name: "AGENTS",     icon: Hexagon,  color: "border-blue-500/20 text-blue-400 bg-blue-950/10" },
-  { name: "TRAINING",   icon: Zap,      color: "border-emerald-500/20 text-emerald-400 bg-emerald-950/10" },
-  { name: "AUTONOMOUS", icon: Flame,    color: "border-amber-500/20 text-amber-400 bg-amber-950/10" },
-  { name: "COLLECTION", icon: Package,  color: "border-indigo-500/20 text-indigo-400 bg-indigo-950/10" },
-  { name: "SPECIAL",    icon: StarIcon, color: "border-white/10 text-white/40 bg-white/5" },
+  { name: "BATTLES",    icon: Swords,   color: "border-purple-500/30 text-[#d58bff] bg-purple-500/12" },
+  { name: "AGENTS",     icon: Hexagon,  color: "border-cyan-400/30 text-cyan-300 bg-cyan-500/10" },
+  { name: "TRAINING",   icon: Zap,      color: "border-emerald-400/30 text-emerald-300 bg-emerald-500/10" },
+  { name: "AUTONOMOUS", icon: Flame,    color: "border-amber-400/30 text-amber-300 bg-amber-500/10" },
+  { name: "COLLECTION", icon: Package,  color: "border-indigo-400/30 text-indigo-300 bg-indigo-500/10" },
+  { name: "SPECIAL",    icon: StarIcon, color: "border-fuchsia-400/25 text-fuchsia-200 bg-fuchsia-500/10" },
 ];
 
-type RarityStyle = { iconBg: string; border: string; textColor: string };
+const CATEGORY_GLOW: Record<AchievementCategory, string> = {
+  BATTLES: "rgba(154,53,255,0.22)",
+  AGENTS: "rgba(34,211,238,0.18)",
+  TRAINING: "rgba(52,211,153,0.18)",
+  AUTONOMOUS: "rgba(251,191,36,0.18)",
+  COLLECTION: "rgba(129,140,248,0.18)",
+  SPECIAL: "rgba(232,121,249,0.16)",
+};
+
+type RarityStyle = { iconBg: string; border: string; textColor: string; glow: string; accent: string };
 
 const RARITY_STYLES: Record<AchievementRarity, RarityStyle> = {
-  COMMON:    { iconBg: "from-white/5 to-white/10",             border: "border-white/20",        textColor: "text-white"    },
-  RARE:      { iconBg: "from-blue-500/20 to-blue-950/40",      border: "border-blue-500/40",     textColor: "text-blue-400"    },
-  EPIC:      { iconBg: "from-purple-500/20 to-purple-950/40",  border: "border-purple-500/40",   textColor: "text-purple-400"  },
-  LEGENDARY: { iconBg: "from-amber-500/20 to-amber-950/40",    border: "border-amber-500/40",    textColor: "text-amber-400"   },
+  COMMON:    { iconBg: "from-white/10 to-white/5",             border: "border-white/18",        textColor: "text-white/85", glow: "rgba(255,255,255,0.08)", accent: "#cbd5e1" },
+  RARE:      { iconBg: "from-cyan-400/25 to-blue-950/50",    border: "border-cyan-400/35",     textColor: "text-cyan-300", glow: "rgba(34,211,238,0.16)", accent: "#22d3ee" },
+  EPIC:      { iconBg: "from-purple-500/30 to-purple-950/55", border: "border-purple-400/40",   textColor: "text-purple-300", glow: "rgba(168,85,247,0.18)", accent: "#c084fc" },
+  LEGENDARY: { iconBg: "from-amber-400/30 to-amber-950/55",  border: "border-amber-400/45",    textColor: "text-amber-300", glow: "rgba(251,191,36,0.2)", accent: "#fbbf24" },
 };
 
 const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
@@ -519,21 +528,48 @@ const AchievementsPage = () => {
                   : categoriesData.map((cat) => {
                       const Icon = cat.icon as LucideIcon;
                       const pct = cat.total > 0 ? Math.round((cat.count / cat.total) * 100) : 0;
+                      const glow = CATEGORY_GLOW[cat.name];
                       return (
-                        <div key={cat.name} className="arena-panel p-4 border-white/8 bg-[#04080f]/95 flex flex-col justify-between space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="font-tech text-xs font-bold text-white uppercase">{cat.name}</span>
-                            <div className={`w-7 h-7 rounded-full border flex items-center justify-center shrink-0 ${cat.color}`}>
-                              <Icon className="h-3.5 w-3.5 fill-current" />
+                        <div
+                          key={cat.name}
+                          className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0b1220]/95 to-[#04080f]/98 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+                        >
+                          <div
+                            className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-70"
+                            style={{ background: glow }}
+                          />
+                          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                          <div className="relative flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <span className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                                Category
+                              </span>
+                              <div className="mt-1 font-tech text-sm font-black uppercase tracking-wide text-white">
+                                {cat.name}
+                              </div>
+                            </div>
+                            <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border shadow-[0_0_18px_rgba(0,0,0,0.25)] ${cat.color}`}>
+                              <Icon className="h-5 w-5 fill-current" />
                             </div>
                           </div>
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between items-baseline text-[10px] font-semibold">
-                              <span className="font-tech font-bold text-white">{cat.count} / {cat.total}</span>
-                              <span className="font-tech text-white">{pct}%</span>
+                          <div className="relative mt-4 space-y-2">
+                            <div className="flex items-end justify-between gap-2">
+                              <div>
+                                <div className="font-tech text-[10px] uppercase tracking-[0.16em] text-white/40">Unlocked</div>
+                                <div className="mt-0.5 font-tech text-lg font-black text-white">
+                                  {cat.count}
+                                  <span className="text-sm font-semibold text-white/35"> / {cat.total}</span>
+                                </div>
+                              </div>
+                              <div className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 font-tech text-xs font-bold text-white">
+                                {pct}%
+                              </div>
                             </div>
-                            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                              <div className="bg-[#9a35ff] h-full rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                            <div className="h-2 overflow-hidden rounded-full bg-white/6 ring-1 ring-inset ring-white/8">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-[#7a22e8] via-[#9a35ff] to-[#d58bff] shadow-[0_0_14px_rgba(154,53,255,0.45)] transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
                             </div>
                           </div>
                         </div>
@@ -571,60 +607,72 @@ const AchievementsPage = () => {
                     return (
                       <div
                         key={item.id}
-                        className={`rounded-2xl p-5 border bg-gradient-to-br from-[#0a0f1b]/95 to-[#04080f]/95 flex flex-col sm:flex-row items-start gap-4 transition-all duration-300 relative overflow-visible group hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 ${style.border} ${
-                          !item.unlocked ? "opacity-85" : ""
+                        className={`group relative overflow-hidden rounded-2xl border bg-gradient-to-br from-[#0a1020]/96 to-[#04080f]/98 p-4 sm:p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(0,0,0,0.38)] ${style.border} ${
+                          !item.unlocked ? "opacity-90" : ""
                         }`}
+                        style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(255,255,255,0.02)` }}
                       >
-                        {item.unlocked && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl pointer-events-none transition group-hover:opacity-100 opacity-50" />
-                        )}
+                        <div
+                          className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-2xl"
+                          style={{ background: `linear-gradient(180deg, ${style.accent}, transparent)` }}
+                        />
+                        <div
+                          className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full blur-3xl opacity-60 transition-opacity duration-300 group-hover:opacity-100"
+                          style={{ background: style.glow }}
+                        />
+                        {item.unlocked ? (
+                          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_42%)]" />
+                        ) : null}
                         {!item.unlocked && (
-                          <div className="absolute top-3 right-3 bg-black/60 border border-white/10 text-white text-[10px] font-tech font-black px-2 py-1 rounded-md tracking-widest select-none flex items-center gap-1.5 z-10">
+                          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-full border border-white/12 bg-black/55 px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-[0.16em] text-white/75 backdrop-blur-sm">
                             <Lock className="h-3 w-3" />
-                            <span>LOCKED</span>
+                            <span>Locked</span>
                           </div>
                         )}
 
-                        <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shrink-0 relative bg-gradient-to-br shadow-inner ${style.iconBg} ${style.border}`}>
-                          <Icon className={`h-7 w-7 fill-current drop-shadow-md ${style.textColor}`} />
-                          {item.unlocked && (
-                            <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-emerald-500 border-4 border-[#04080f] flex items-center justify-center text-white shadow-sm z-10">
-                              <CheckCircle className="h-3 w-3 fill-current" />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0 flex flex-col h-full justify-center">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <h4 className="font-bold text-sm text-white leading-tight uppercase truncate drop-shadow-sm">
-                              {item.name}
-                            </h4>
-                            <span className={`text-[9px] font-tech font-bold uppercase tracking-wider ${style.textColor} shrink-0`}>
-                              {item.rarity}
-                            </span>
+                        <div className="relative flex items-start gap-4">
+                          <div className={`relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl border bg-gradient-to-br shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${style.iconBg} ${style.border}`}>
+                            <Icon className={`h-7 w-7 fill-current drop-shadow-[0_0_12px_rgba(255,255,255,0.15)] ${style.textColor}`} />
+                            {item.unlocked ? (
+                              <div className="absolute -bottom-1.5 -right-1.5 grid h-6 w-6 place-items-center rounded-full border-2 border-[#04080f] bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.45)]">
+                                <CheckCircle className="h-3.5 w-3.5 fill-current" />
+                              </div>
+                            ) : null}
                           </div>
-                          <p className="text-xs text-white leading-relaxed font-medium mb-2">
-                            {item.desc}
-                          </p>
 
-                          {/* Progress bar (for locked with progress) */}
-                          {!item.unlocked && progress && (
-                            <div className="mb-2 space-y-1">
-                              <div className="flex justify-between text-[9px] font-tech text-white/90">
-                                <span>{progress.current} / {progress.target}</span>
-                                <span>{progressPct}%</span>
-                              </div>
-                              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                <div
-                                  className="bg-[#9a35ff] h-full rounded-full transition-all duration-500"
-                                  style={{ width: `${progressPct}%` }}
-                                />
-                              </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="font-tech text-sm font-black uppercase tracking-wide text-white sm:text-base">
+                                {item.name}
+                              </h4>
+                              <span
+                                className={`rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-[0.14em] ${style.border} ${style.textColor}`}
+                              >
+                                {item.rarity}
+                              </span>
                             </div>
-                          )}
+                            <p className="mt-2 text-xs leading-relaxed text-white/68 sm:text-sm">
+                              {item.desc}
+                            </p>
 
-                          <div className="mt-auto flex items-center gap-1.5 text-[11px] font-bold font-tech text-[#b85eff] bg-[#b85eff]/10 self-start px-2.5 py-1 rounded-md border border-[#b85eff]/20">
-                            <span className="drop-shadow-sm">+{item.points} PTS</span>
+                            {!item.unlocked && progress ? (
+                              <div className="mt-3 space-y-1.5">
+                                <div className="flex justify-between font-tech text-[10px] uppercase tracking-[0.12em] text-white/55">
+                                  <span>Progress</span>
+                                  <span>{progress.current} / {progress.target} · {progressPct}%</span>
+                                </div>
+                                <div className="h-1.5 overflow-hidden rounded-full bg-white/6 ring-1 ring-inset ring-white/8">
+                                  <div
+                                    className="h-full rounded-full bg-gradient-to-r from-[#7a22e8] to-[#d58bff]"
+                                    style={{ width: `${progressPct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ) : null}
+
+                            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#b85eff]/25 bg-[#b85eff]/10 px-3 py-1 font-tech text-[11px] font-bold text-[#dcb6ff] shadow-[0_0_16px_rgba(184,94,255,0.12)]">
+                              +{item.points} PTS
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -255,12 +255,12 @@ export function HomePage() {
           mobileSrc={mobileHeroVideo}
           desktopSrc={heroVideo}
           mobileClassName="absolute inset-0 h-full w-full object-cover sm:hidden"
-          desktopClassName="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[72%_center] scale-100 opacity-100 saturate-125 contrast-110"
+          desktopClassName="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[76%_center] lg:object-[82%_center] xl:object-[88%_center] scale-100 opacity-100 saturate-125 contrast-110"
         />
-        <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/95 via-[#050913]/38 to-transparent sm:block" />
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/96 via-[#050913]/58 via-[42%] to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
-        <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-12 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
-          <div className="absolute left-5 right-5 top-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-tech font-bold uppercase tracking-[0.14em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:justify-start sm:gap-3 sm:text-[11px] sm:tracking-[0.2em]">
+        <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-16 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-end lg:gap-6 xl:grid-cols-[minmax(0,30rem)_1fr] xl:min-h-[660px] 2xl:grid-cols-[minmax(0,34rem)_1fr] 2xl:min-h-[780px]">
+          <div className="absolute left-5 right-5 top-8 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-tech font-bold uppercase tracking-[0.14em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:justify-start sm:gap-3 sm:text-[11px] sm:tracking-[0.2em] lg:col-span-2">
             <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
@@ -268,8 +268,8 @@ export function HomePage() {
               Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
-          <div className="max-w-[56rem] space-y-3 sm:space-y-5">
-            <h1 className="home-agentic-title max-w-[56rem] font-display [font-family:'Orbitron',sans-serif] text-[1.66rem] font-black uppercase leading-[0.98] tracking-[0.016em] text-white min-[390px]:text-[1.82rem] sm:text-[3.15rem] lg:text-[3.85rem] xl:text-[4.15rem]">
+          <div className="w-full max-w-[36rem] space-y-3 sm:max-w-[28rem] sm:space-y-5 lg:max-w-none">
+            <h1 className="home-agentic-title max-w-[22rem] font-display [font-family:'Orbitron',sans-serif] text-[1.66rem] font-black uppercase leading-[0.98] tracking-[0.016em] text-white min-[390px]:max-w-[24rem] min-[390px]:text-[1.82rem] sm:max-w-[26rem] sm:text-[2.5rem] sm:leading-[1.02] lg:max-w-none lg:text-[2.85rem] xl:text-[3.1rem]">
               The Operating
               <br />
               Layer for{" "}
@@ -301,6 +301,7 @@ export function HomePage() {
               ))}
             </div>
           </div>
+          <div className="hidden min-h-0 lg:block" aria-hidden />
         </div>
       </section>
 
@@ -314,7 +315,6 @@ export function HomePage() {
             </div>
             <h2 className="mt-2.5 font-tech text-2xl font-black uppercase leading-[1.02] text-white sm:text-3xl lg:text-[2rem]">
               One Identity
-              <br />
               <span className="text-gradient-arena">Every Battle Every Prediction</span>
             </h2>
             <p className="mt-1.5 max-w-xl text-sm leading-snug text-white/60 sm:text-[15px]">
@@ -687,7 +687,7 @@ function HomeFeaturedExperiencesSection({
         {cards.length > 0 ? (
           <>
             {/* <SectionRibbon label="Featured experiences" accent="#bd6cff" /> */}
-            <div className={`mt-3 grid gap-3 ${cards.length > 1 ? "xl:grid-cols-2" : ""}`}>
+            <div className={`mt-3 grid gap-3 ${cards.length > 1 ? "xl:grid-cols-2 xl:items-stretch" : ""}`}>
               {cards.map((card) => {
                 const titleLines = card.title.split("\n");
                 const isGoldTheme = card.accent === "#ffc42e";
@@ -712,7 +712,7 @@ function HomeFeaturedExperiencesSection({
                   <Link
                     key={card.path}
                     to={card.path}
-                    className="group relative min-h-[220px] overflow-hidden rounded-[20px] border border-white/10 bg-[#050712] transition duration-300 hover:-translate-y-1 hover:border-[var(--feature-accent)] hover:shadow-[0_0_38px_var(--feature-glow),0_18px_48px_rgba(0,0,0,0.42)] sm:min-h-[320px] sm:rounded-[24px]"
+                    className="group relative flex min-h-[220px] flex-col overflow-hidden rounded-[20px] border border-white/10 bg-[#050712] transition duration-300 hover:-translate-y-1 hover:border-[var(--feature-accent)] hover:shadow-[0_0_38px_var(--feature-glow),0_18px_48px_rgba(0,0,0,0.42)] sm:min-h-[320px] sm:rounded-[24px] xl:min-h-[360px]"
                     style={
                       {
                         "--feature-accent": card.accent,
@@ -730,10 +730,10 @@ function HomeFeaturedExperiencesSection({
                     <div className="absolute inset-0 bg-gradient-to-r from-[#060914]/96 via-[#060914]/88 via-45% to-[#060914]/24" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_52%,var(--feature-glow),transparent_34%)] opacity-80" />
                     <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent opacity-70" />
-                    <div className="relative z-10 flex h-full flex-col justify-start gap-3 p-3.5 sm:gap-6 sm:p-6">
-                      <div className="flex items-start justify-between gap-3">
+                    <div className="relative z-10 grid h-full flex-1 grid-rows-[auto_minmax(5.25rem,auto)_minmax(0,1fr)_auto] gap-3 p-3.5 sm:gap-4 sm:p-6">
+                      <div className="flex min-h-[1.75rem] items-start justify-between gap-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.18em] sm:px-2.5 sm:text-[9px] sm:tracking-[0.22em] ${isLiveCard ? "season-live-badge" : ""}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.16em] sm:px-2.5 sm:text-[10px] sm:tracking-[0.2em] ${isLiveCard ? "season-live-badge" : ""}`}
                           style={isLiveCard ? { ...eyebrowStyle, ["--live-glow" as string]: `${card.accent}47` } : eyebrowStyle}
                         >
                           {isLiveCard ? (
@@ -745,14 +745,16 @@ function HomeFeaturedExperiencesSection({
                           {card.eyebrow}
                         </span>
                         {card.statusLabel ? (
-                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/45 bg-emerald-400/12 px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.14em] text-emerald-300 sm:gap-1.5 sm:px-2.5 sm:text-[9px] sm:tracking-[0.18em]">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/45 bg-emerald-400/12 px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.14em] text-emerald-300 sm:gap-1.5 sm:px-2.5 sm:text-[10px] sm:tracking-[0.18em]">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
                             {card.statusLabel}
                           </span>
-                        ) : null}
+                        ) : (
+                          <span className="h-7 w-7 shrink-0" aria-hidden />
+                        )}
                       </div>
-                      <div className="max-w-[14rem] sm:max-w-[18rem]">
-                        <h2 className="font-tech text-[1.45rem] font-black uppercase leading-[0.95] tracking-tight text-white sm:text-[2.15rem] sm:leading-[0.98] xl:flex xl:min-h-[6.3rem] xl:flex-col xl:justify-end">
+                      <div className="max-w-[min(100%,15rem)] sm:max-w-[min(100%,18rem)]">
+                        <h2 className="font-tech text-[1.35rem] font-black uppercase leading-[0.96] tracking-tight text-white sm:text-[1.85rem] sm:leading-[0.98] lg:text-[2rem]">
                           {titleLines.map((line, index) => {
                             const isAccentLine = titleLines.length === 1 || index === titleLines.length - 1;
 
@@ -776,12 +778,13 @@ function HomeFeaturedExperiencesSection({
                             );
                           })}
                         </h2>
-                        <p className="mt-3.5 whitespace-pre-line text-[12px] leading-[1.4] text-white/72 sm:mt-5 sm:text-[15px] sm:leading-relaxed">
+                        <p className="mt-3 whitespace-pre-line text-[12px] leading-[1.45] text-white/72 sm:mt-4 sm:text-[14px] sm:leading-relaxed lg:text-[15px]">
                           {card.description}
                         </p>
                       </div>
+                      <div className="min-h-0" aria-hidden />
                       <span
-                        className="mt-auto inline-flex w-full max-w-[11.5rem] items-center justify-center gap-1 rounded-md border px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:w-fit sm:max-w-none sm:justify-start sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
+                        className="self-start inline-flex w-full max-w-[11.5rem] items-center justify-center gap-1 rounded-md border px-2.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.12em] text-white transition duration-300 group-hover:-translate-y-0.5 group-hover:brightness-110 sm:w-fit sm:max-w-none sm:justify-start sm:gap-2 sm:px-5 sm:py-2 sm:text-xs sm:tracking-wider"
                         style={buttonStyle}
                       >
                         {card.cta}

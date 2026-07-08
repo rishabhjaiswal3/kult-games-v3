@@ -205,7 +205,9 @@ type MatchStatusRow = {
 
 function SectionTitle({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <h2 className={`mt-7 font-tech text-sm uppercase tracking-[0.08em] ${className}`}>{children}</h2>
+    <h2 className={`mt-7 font-tech text-base font-black uppercase leading-tight tracking-[0.06em] text-white sm:text-lg lg:text-xl ${className}`}>
+      {children}
+    </h2>
   );
 }
 
@@ -934,8 +936,8 @@ function BattleDetailPanel({
 function MetaStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/35">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-white">{value}</div>
+      <div className="font-tech text-[10px] uppercase tracking-[0.14em] text-white/40 sm:text-[11px]">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-white sm:text-base">{value}</div>
     </div>
   );
 }

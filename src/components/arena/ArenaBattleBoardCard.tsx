@@ -31,38 +31,31 @@ function Fighter({
   const clanLabel = agent.clan ?? agent.archetype ?? "AI Arena";
 
   return (
-    <div className={`flex min-w-0 flex-col items-center ${isRight ? "text-right" : "text-left"}`}>
-      <div className={`flex w-full items-center gap-2 ${isRight ? "justify-end" : "justify-start"}`}>
-        {isRight ? null : (
-          <ArenaAgentThumbnail
-            agent={{ id: agent.id, archetype: agent.archetype ?? undefined, name: agent.name ?? undefined }}
-            className="h-14 w-14 rounded-xl border border-white/10 transition duration-500 group-hover:scale-105 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.3)] sm:h-16 sm:w-16"
-            size="md"
-          />
-        )}
-        <div className="min-w-0">
-          <div className="truncate font-tech text-[11px] text-white sm:text-xs">{agent.name ?? "Unknown agent"}</div>
-          <div className={`flex items-center gap-0.5 text-[10px] text-muted-foreground ${isRight ? "justify-end" : "justify-start"}`}>
+    <div className={`flex min-h-[5.75rem] min-w-0 flex-col justify-start ${isRight ? "items-end text-right" : "items-start text-left"}`}>
+      <div className={`flex w-full items-center gap-2 sm:gap-2.5 ${isRight ? "flex-row-reverse justify-end" : "justify-start"}`}>
+        <ArenaAgentThumbnail
+          agent={{ id: agent.id, archetype: agent.archetype ?? undefined, name: agent.name ?? undefined }}
+          className="h-14 w-14 shrink-0 rounded-xl border border-white/10 transition duration-500 group-hover:scale-105 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.3)] sm:h-16 sm:w-16"
+          size="md"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-tech text-xs font-semibold text-white sm:text-sm">{agent.name ?? "Unknown agent"}</div>
+          <div className={`mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground sm:text-xs ${isRight ? "justify-end" : "justify-start"}`}>
             {iconType ? <ClanIcon type={iconType} className={iconType === "zerog" ? "h-2.5 w-3.5" : "h-3 w-3"} /> : null}
             <span className="truncate">{clanLabel}</span>
           </div>
         </div>
-        {isRight ? (
-          <ArenaAgentThumbnail
-            agent={{ id: agent.id, archetype: agent.archetype ?? undefined, name: agent.name ?? undefined }}
-            className="h-14 w-14 rounded-xl border border-white/10 transition duration-500 group-hover:scale-105 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(154,53,255,0.3)] sm:h-16 sm:w-16"
-            size="md"
-          />
-        ) : null}
       </div>
-      <div className="mt-1.5 w-full font-tech text-[10px] text-muted-foreground">ELO {Math.round(agent.elo ?? 0).toLocaleString()}</div>
+      <div className={`mt-2 w-full font-tech text-[11px] text-muted-foreground sm:text-xs ${isRight ? "text-right" : "text-left"}`}>
+        ELO {Math.round(agent.elo ?? 0).toLocaleString()}
+      </div>
     </div>
   );
 }
 
 function FindingOpponent({ waitLabel, modeLabel }: { waitLabel: string; modeLabel: string }) {
   return (
-    <div className="flex min-w-0 flex-col items-center text-center">
+    <div className="flex min-h-[5.75rem] min-w-0 flex-col items-end justify-start text-right">
       <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-accent/35 bg-accent/10">
         <Loader2 className="h-5 w-5 animate-spin text-accent" />
       </div>
@@ -96,24 +89,26 @@ function AgentStatPanel({
   const totalBattles = (wins ?? 0) + (losses ?? 0) + (draws ?? 0);
 
   return (
-    <div className={`rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.018] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition duration-300 group-hover:border-accent/25 ${align === "right" ? "text-right" : "text-left"}`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="truncate font-tech text-[9px] uppercase tracking-[0.14em] text-accent/75">{title}</div>
-        <div className="rounded-full border border-white/10 bg-black/20 px-2 py-0.5 font-tech text-[8px] text-white/55">Rank #{rank}</div>
+    <div className="flex min-h-[5.5rem] flex-col rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.018] px-3 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition duration-300 group-hover:border-accent/25 sm:min-h-[6rem] sm:px-3.5 sm:py-3">
+      <div className={`flex min-h-[1.35rem] items-center gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        <div className="min-w-0 flex-1 truncate font-tech text-[10px] font-semibold uppercase tracking-[0.12em] text-accent/80 sm:text-[11px]">
+          {title}
+        </div>
+        <div className="shrink-0 rounded-full border border-white/10 bg-black/20 px-2 py-0.5 font-tech text-[10px] text-white/60 sm:text-[11px]">
+          Rank #{rank}
+        </div>
       </div>
-      <div className="mt-1.5 grid grid-cols-3 gap-2 text-center">
-        <div>
-          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">ELO</div>
-          <div className="mt-0.5 font-tech text-[11px] text-white/78">{Math.round(elo).toLocaleString()}</div>
-        </div>
-        <div>
-          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">Wins</div>
-          <div className="mt-0.5 font-tech text-[11px] text-white/78">{(wins ?? 0).toLocaleString()}</div>
-        </div>
-        <div>
-          <div className="font-tech text-[8px] uppercase tracking-[0.14em] text-white/35">Battles</div>
-          <div className="mt-0.5 font-tech text-[11px] text-white/78">{totalBattles.toLocaleString()}</div>
-        </div>
+      <div className="mt-2 grid flex-1 grid-cols-3 gap-1.5 sm:gap-2">
+        {[
+          { label: "ELO", value: Math.round(elo).toLocaleString() },
+          { label: "Wins", value: (wins ?? 0).toLocaleString() },
+          { label: "Battles", value: totalBattles.toLocaleString() },
+        ].map((stat) => (
+          <div key={stat.label} className="min-w-0">
+            <div className="font-tech text-[10px] uppercase tracking-[0.12em] text-white/40 sm:text-[11px]">{stat.label}</div>
+            <div className="mt-1 font-tech text-xs font-semibold text-white/85 sm:text-sm">{stat.value}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -174,19 +169,19 @@ export function ArenaBattleBoardCard({
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(154,53,255,0.16),transparent_42%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
         <div className="relative z-10">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-center sm:text-left lg:mb-3">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 text-left lg:mb-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="font-tech text-xs tracking-wider text-accent">QUEUE</span>
           </div>
-          <div className="text-center sm:text-right min-w-0">
+          <div className="min-w-0 text-right">
             <div className="text-xs">Open Lobby</div>
             <div className="text-[10px] text-muted-foreground">{formatLobbyMode(item.status.mode)}</div>
           </div>
           <div className="font-tech text-sm text-accent">{item.waitLabel}</div>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 sm:gap-3">
           <Fighter
             agent={{
               id: item.agent.id,
@@ -196,7 +191,7 @@ export function ArenaBattleBoardCard({
               elo: item.agent.eloRating,
             }}
           />
-          <span className="font-display text-2xl text-muted-foreground">VS</span>
+          <span className="self-center font-display text-xl text-muted-foreground sm:text-2xl">VS</span>
           <FindingOpponent waitLabel={item.waitLabel} modeLabel={formatLobbyMode(item.status.mode)} />
         </div>
 
@@ -233,7 +228,7 @@ export function ArenaBattleBoardCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 sm:gap-3">
         <Fighter
           agent={{
             id: item.left.agentId,
@@ -243,11 +238,11 @@ export function ArenaBattleBoardCard({
             elo: leaderboardElo(item.left),
           }}
         />
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-1 self-center">
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/25 bg-black/30 shadow-[0_0_22px_rgba(154,53,255,0.14)]">
             <Swords className="h-4 w-4 text-accent" />
           </span>
-          <span className="font-display text-base text-muted-foreground">VS</span>
+          <span className="font-display text-sm text-muted-foreground sm:text-base">VS</span>
         </div>
         <Fighter
           align="right"
@@ -261,7 +256,7 @@ export function ArenaBattleBoardCard({
         />
       </div>
 
-      <div className="mt-3.5 grid grid-cols-1 gap-2.5 border-t border-white/10 pt-3 sm:grid-cols-2">
+      <div className="mt-3.5 grid grid-cols-1 items-stretch gap-2.5 border-t border-white/10 pt-3 sm:grid-cols-2">
         <AgentStatPanel
           title={leaderboardName(item.left)}
           rank={item.left.rank}
