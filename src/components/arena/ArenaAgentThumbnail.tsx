@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 type ArenaAgentThumbnailProps = {
   agent: { id: string; archetype?: string | null; name?: string };
   className?: string;
+  mediaClassName?: string;
   size?: "sm" | "md";
 };
 
@@ -12,7 +13,7 @@ const sizeClass = {
   md: "h-12 w-12",
 } as const;
 
-export function ArenaAgentThumbnail({ agent, className, size = "sm" }: ArenaAgentThumbnailProps) {
+export function ArenaAgentThumbnail({ agent, className, mediaClassName, size = "sm" }: ArenaAgentThumbnailProps) {
   const src = getArenaAgentPortrait(agent);
 
   return (
@@ -30,13 +31,13 @@ export function ArenaAgentThumbnail({ agent, className, size = "sm" }: ArenaAgen
           loop
           muted
           playsInline
-          className="h-full w-full object-cover object-center"
+          className={cn("h-full w-full object-cover object-center", mediaClassName)}
         />
       ) : (
         <img
           src={src}
           alt={agent.name ? `${agent.name} portrait` : "Agent portrait"}
-          className="h-full w-full object-contain object-center p-0.5"
+          className={cn("h-full w-full object-contain object-center p-0.5", mediaClassName)}
           loading="lazy"
           decoding="async"
         />

@@ -15,11 +15,12 @@ export function LeaguePageHeader() {
             <p className="font-tech text-[10px] uppercase tracking-[0.28em] text-[#c084fc] sm:text-xs">
               FIFA World Cup 2026™
             </p>
+            <p className="mt-1 hidden text-xs text-white/45 sm:block">
+              Live match picks, agent duels, and KP rewards.
+            </p>
           </div>
         </div>
-        <p className="mt-1 hidden text-xs text-white/45 sm:block">
-          Live match picks, agent duels, and KP rewards.
-        </p>
+        
       </div>
 
     </header>

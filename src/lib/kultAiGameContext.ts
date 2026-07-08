@@ -2,7 +2,38 @@ import { gamesApi } from "@/api/gamesApi";
 import type { Game, GamesResponse, LocalizedString } from "@/types/api";
 
 const CATALOG_PAGE_SIZE = 100;
-const MAX_CONTEXT_GAMES = 4;
+const MAX_CONTEXT_GAMES = 6;
+
+/** Only these public websites may be shared to users as play links. */
+const PUBLIC_PLAY_LINKS: Record<string, string> = {
+  guesstheai: "https://guesstheai.xyz",
+  "guess-the-ai": "https://guesstheai.xyz",
+  "guess the ai": "https://guesstheai.xyz",
+  highwayhustle: "https://highwayhustle.xyz",
+  "highway-hustle": "https://highwayhustle.xyz",
+  "highway hustle": "https://highwayhustle.xyz",
+  robowars: "https://robowarsgame.xyz",
+  "robo-wars": "https://robowarsgame.xyz",
+  "robo wars": "https://robowarsgame.xyz",
+  warzonewarriors: "https://warzonewarriors.xyz",
+  "warzone-warriors": "https://warzonewarriors.xyz",
+  "warzone warriors": "https://warzonewarriors.xyz",
+  zerogpool: "https://zerogpool.xyz",
+  "zero-g-pool": "https://zerogpool.xyz",
+  "zero g pool": "https://zerogpool.xyz",
+  zerodash: "https://zerodashgame.xyz",
+  "zero-dash": "https://zerodashgame.xyz",
+  "zero dash": "https://zerodashgame.xyz",
+};
+
+const ALLOWED_PUBLIC_PLAY_HOSTS = new Set([
+  "warzonewarriors.xyz",
+  "highwayhustle.xyz",
+  "zerogpool.xyz",
+  "zerodashgame.xyz",
+  "robowarsgame.xyz",
+  "guesstheai.xyz",
+]);
 
 const KNOWN_KULT_GAMES: Game[] = [
   {
@@ -10,6 +41,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "guesstheai",
     name: { en: "Guess the AI" },
     category: "Puzzle",
+    url: "https://guesstheai.xyz",
     description: {
       en: "A deduction game where players identify AI-generated content across modes like Classic, Card Flip, Duel, Multi-Select, Odd One Out, and Rapid Fire.",
     },
@@ -24,6 +56,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "highwayhustle",
     name: { en: "Highway Hustle" },
     category: "Racing",
+    url: "https://highwayhustle.xyz",
     description: {
       en: "A high-speed racing game focused on reflexes, fast movement, traffic dodging, power-ups, and quick decision-making.",
     },
@@ -37,6 +70,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "robowars",
     name: { en: "Robo Wars" },
     category: "Action",
+    url: "https://robowarsgame.xyz",
     description: {
       en: "A robot battle arena game centered on combat, mech/robot clashes, upgrades, weapon choices, and tactical play.",
     },
@@ -50,6 +84,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "warzonewarriors",
     name: { en: "Warzone Warriors" },
     category: "Action",
+    url: "https://warzonewarriors.xyz",
     description: {
       en: "An action combat game for players who prefer direct battles, survival pressure, and aggressive competitive play.",
     },
@@ -63,6 +98,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "zerogpool",
     name: { en: "ZeroG Pool" },
     category: "Arcade",
+    url: "https://zerogpool.xyz",
     description: {
       en: "An arcade pool-style game likely focused on aim, angles, precision shots, and quick table control.",
     },
@@ -76,6 +112,7 @@ const KNOWN_KULT_GAMES: Game[] = [
     identification: "zerodash",
     name: { en: "ZeroDash" },
     category: "Arcade",
+    url: "https://zerodashgame.xyz",
     description: {
       en: "A fast arcade dash game likely focused on movement timing, reflexes, obstacle avoidance, and short-session scoring.",
     },
@@ -150,6 +187,11 @@ const wantsCatalogWideComparison = (query: string) => {
   return (
     tokens.length === 0 ||
     /\b(compare|show|list|suggest|recommend|pick)\s+(all\s+)?games\b/.test(normalized) ||
+    /\blist\s+of\s+games\b/.test(normalized) ||
+    /\bgames\s+list\b/.test(normalized) ||
+    /\b(what|which)\s+games\s+(are\s+)?(available|there)\b/.test(normalized) ||
+    /\bgames\s+(are\s+)?available\b/.test(normalized) ||
+    /\bavailable\s+games\b/.test(normalized) ||
     /\ball\s+games\b/.test(normalized) ||
     /\bgames\s+for\s+me\b/.test(normalized)
   );
@@ -261,11 +303,44 @@ const fetchDetailedGames = async (games: Game[]) =>
     }),
   );
 
+const isAllowedPublicPlayUrl = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    return ALLOWED_PUBLIC_PLAY_HOSTS.has(host);
+  } catch {
+    return false;
+  }
+};
+
+/** Prefer the hard-coded public .xyz site; never pass CDN/build/zip URLs to the model. */
+export const getPublicPlayLink = (game: Game): string => {
+  const id = compact(getGameId(game));
+  const name = normalizeWords(getGameName(game));
+  const byId = PUBLIC_PLAY_LINKS[id];
+  if (byId) return byId;
+  const byName = PUBLIC_PLAY_LINKS[name];
+  if (byName) return byName;
+
+  for (const [key, link] of Object.entries(PUBLIC_PLAY_LINKS)) {
+    if (id.includes(compact(key)) || compact(key).includes(id) || name.includes(key)) {
+      return link;
+    }
+  }
+
+  if (typeof game.url === "string" && game.url.trim() && isAllowedPublicPlayUrl(game.url.trim())) {
+    return game.url.trim().replace(/\/$/, "");
+  }
+
+  return "not specified";
+};
+
 const getAccess = (game: Game) => {
   const platforms = Array.isArray(game.platform) ? game.platform.filter(Boolean).join(", ") : "";
   if (platforms) return platforms;
   if (game.isDownloadable || game.is_downloadable) return "downloadable";
-  if (game.url) return "web/playable link";
+  const playLink = getPublicPlayLink(game);
+  if (playLink !== "not specified") return `web/playable link (${playLink})`;
   return "not specified";
 };
 
@@ -273,6 +348,7 @@ const formatGameForPrompt = (game: Game) =>
   [
     `Game name: ${getGameName(game)}`,
     `Identification: ${getGameId(game)}`,
+    `Play link: ${getPublicPlayLink(game)}`,
     `Category: ${game.category || "not specified"}`,
     `Rating: ${game.rating != null ? game.rating : "not specified"}`,
     `Access: ${getAccess(game)}`,
@@ -311,6 +387,8 @@ Instructions for the AI agent:
 - Use the catalog context below as the source of truth for this answer.
 - If the user asks to compare games generally, compare every game listed in this catalog context.
 - Start the answer by naming the exact games being compared: ${gameNames}.
+- When sharing how to play or a game link, share ONLY the Play link field (the public .xyz website). Example: https://zerogpool.xyz
+- NEVER share CDN/build/storage links, zip downloads, Detail page routes (/game/...), Play page routes (/play), or auto-login hashes.
 - Do not say "I only have information about one game" when Available game count is greater than 1.
 - Do not redirect the user to search or category filters instead of comparing these games.
 - Do not say "I don't have the full catalog".

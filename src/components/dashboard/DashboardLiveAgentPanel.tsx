@@ -46,8 +46,8 @@ export function DashboardLiveAgentPanel({
         aria-busy="true"
         aria-label="Loading agent"
       >
-        <div className="grid lg:grid-cols-[280px_minmax(0,1fr)]">
-          <Skeleton className="h-[280px] rounded-none bg-white/8 lg:h-auto" />
+        <div className="grid md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+          <Skeleton className="h-[220px] rounded-none bg-white/8 md:h-auto md:min-h-[220px]" />
           <div className="space-y-4 p-5 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-2">
@@ -91,12 +91,13 @@ export function DashboardLiveAgentPanel({
   return (
     <section data-tour="dashboard-agent" className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8b29ff]/40 hover:shadow-[0_8px_40px_rgba(139,41,255,0.15)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_50%,rgba(139,41,255,0.05),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(0,255,128,0.03),transparent_50%)]" />
-      <div className="relative z-10 grid lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="relative h-[280px] overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] lg:h-auto lg:border-b-0 lg:border-r">
+      <div className="relative z-10 grid md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="relative h-[220px] shrink-0 overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] md:h-auto md:min-h-[220px] md:border-b-0 md:border-r">
           <ArenaAgentThumbnail
             agent={agent}
             size="md"
             className="h-full w-full rounded-none border-0 bg-transparent"
+            mediaClassName="object-cover object-top md:object-top"
           />
         </div>
         <div className="p-5 sm:p-6">

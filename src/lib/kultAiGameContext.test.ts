@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { gamesApi } from "@/api/gamesApi";
-import { buildCatalogGroundedPrompt, mergeWithKnownKultGames, selectClosestCatalogGames } from "@/lib/kultAiGameContext";
+import {
+  buildCatalogGroundedPrompt,
+  getPublicPlayLink,
+  mergeWithKnownKultGames,
+  selectClosestCatalogGames,
+} from "@/lib/kultAiGameContext";
 import type { Game } from "@/types/api";
 
 vi.mock("@/api/gamesApi", () => ({
@@ -18,6 +23,8 @@ const highway: Game = {
   category: "Racing",
   rating: 4.8,
   slogan: "Race through neon traffic.",
+  // Backend may store a CDN build URL — chatbot must never surface it.
+  url: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",
 };
 
 const robo: Game = {
@@ -27,6 +34,7 @@ const robo: Game = {
   category: "Arena Combat",
   rating: 4.7,
   slogan: "Build bots and battle.",
+  url: "https://game-build.sfo3.cdn.digitaloceanspaces.com/Robowars.zip",
 };
 
 const mage: Game = {
@@ -46,6 +54,19 @@ const guess: Game = {
 };
 
 describe("kultAiGameContext", () => {
+  it("maps known games to public .xyz play websites only", () => {
+    expect(getPublicPlayLink(highway)).toBe("https://highwayhustle.xyz");
+    expect(getPublicPlayLink(robo)).toBe("https://robowarsgame.xyz");
+    expect(
+      getPublicPlayLink({
+        _id: "z",
+        identification: "zerogpool",
+        name: { en: "Zero G Pool" },
+        url: "https://pub-c57fda34f99145fc8d97b0a6b6faa237.r2.dev/v8/Game/index.html",
+      }),
+    ).toBe("https://zerogpool.xyz");
+  });
+
   it("selects closest catalog games from approximate names", () => {
     const selected = selectClosestCatalogGames("compare highway hustle and robowar", [mage, highway, robo], 2);
 
@@ -76,8 +97,14 @@ describe("kultAiGameContext", () => {
     expect(prompt).toMatch(/^KULT GAME CATALOG CONTEXT/);
     expect(prompt).toContain("Game name: Highway Hustle");
     expect(prompt).toContain("Game name: Robo Wars");
+    expect(prompt).toContain("Play link: https://highwayhustle.xyz");
+    expect(prompt).toContain("Play link: https://robowarsgame.xyz");
+    expect(prompt).not.toContain("r2.dev");
+    expect(prompt).not.toContain("digitaloceanspaces");
+    expect(prompt).not.toContain("Detail page:");
+    expect(prompt).not.toContain("External play link:");
     expect(prompt).toContain("High-speed traffic dodging");
-    expect(prompt).toContain("Do not say \"I don't have the full catalog\"");
+    expect(prompt).toContain("NEVER share CDN/build/storage links");
     expect(prompt).toContain("User question:\nWhich is better Highway Hustle vs Robo Wars?");
   });
 

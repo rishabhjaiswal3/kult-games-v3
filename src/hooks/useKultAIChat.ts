@@ -30,6 +30,21 @@ const getOrCreateUserId = () => {
   return nextId;
 };
 
+const getOrCreateSessionId = () => {
+  if (typeof window === "undefined") {
+    return `kult-ai-${Date.now()}`;
+  }
+
+  const existing = window.sessionStorage.getItem(StorageKeys.session.kultAiSessionId);
+  if (existing) {
+    return existing;
+  }
+
+  const nextId = createId();
+  window.sessionStorage.setItem(StorageKeys.session.kultAiSessionId, nextId);
+  return nextId;
+};
+
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -46,7 +61,7 @@ export const useKultAIChat = () => {
   const [error, setError] = useState<string | null>(null);
 
   const userIdRef = useRef(getOrCreateUserId());
-  const sessionIdRef = useRef<string | null>(null);
+  const sessionIdRef = useRef<string | null>(getOrCreateSessionId());
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -62,6 +77,9 @@ export const useKultAIChat = () => {
 
     if (resetSession) {
       sessionIdRef.current = null;
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(StorageKeys.session.kultAiSessionId);
+      }
     }
   };
 
@@ -74,6 +92,10 @@ export const useKultAIChat = () => {
     setError(null);
     setInput("");
     setIsWaitingForFirstChunk(true);
+
+    if (!sessionIdRef.current) {
+      sessionIdRef.current = getOrCreateSessionId();
+    }
 
     const userMessageId = createId();
     const assistantMessageId = createId();
@@ -109,7 +131,10 @@ export const useKultAIChat = () => {
         },
       });
 
-      sessionIdRef.current = result.sessionId;
+      sessionIdRef.current = result.sessionId ?? sessionIdRef.current;
+      if (typeof window !== "undefined" && sessionIdRef.current) {
+        window.sessionStorage.setItem(StorageKeys.session.kultAiSessionId, sessionIdRef.current);
+      }
 
       if (!result.reply.trim()) {
         setMessages((current) => [

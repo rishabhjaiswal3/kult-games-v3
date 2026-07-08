@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, User, Loader2, Sparkles, MessageSquare, GitCompare, Gamepad2, ArrowRight, Shield } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import KultAIMessageContent from "@/components/KultAIMessageContent";
 import { KultAiBotAvatar } from "@/components/KultAiBotAvatar";
 import { useKultAIChat } from "@/hooks/useKultAIChat";
+import { isGameplayRoute } from "@/lib/gameplayRoutes";
 import chatbotBackgroundVideo from "@/assets/SC_1-3.mp4";
 
 const quickPrompts = [
@@ -14,13 +16,21 @@ const quickPrompts = [
 ];
 
 const KultAIFloating = () => {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { error, input, isStreaming, isWaitingForFirstChunk, messages, sendMessage, setInput, computeSessionId } = useKultAIChat();
+  const hideDuringGameplay = isGameplayRoute(location.pathname);
+
+  useEffect(() => {
+    if (hideDuringGameplay) setOpen(false);
+  }, [hideDuringGameplay]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages]);
+
+  if (hideDuringGameplay) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

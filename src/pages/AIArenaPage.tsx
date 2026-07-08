@@ -11,7 +11,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  ArrowRight,
   Sparkles,
   Loader2,
   BrainCircuit,
@@ -698,39 +697,41 @@ function Hero() {
       className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f]"
       data-tour="ai-arena-hero"
     >
-      {/* Mobile — cropped cover inside a fixed hero height */}
-      <div className="relative min-h-[500px] h-[min(155vw,720px)] sm:min-h-[520px] md:hidden">
-        <div className="absolute inset-0">
+      {/* Mobile — show character faces; content sits low */}
+      <div className="relative min-h-[560px] h-[min(168vw,780px)] md:hidden">
+        <div className="absolute inset-0 overflow-hidden">
           <ResponsiveBackgroundVideo
             mobileSrc={mobileHeroVideo}
             desktopSrc={heroVideo}
             breakpoint="md"
-            mobileClassName="absolute inset-0 h-full w-full object-cover object-top"
+            wrapperClassName="absolute inset-0"
+            mobileClassName="absolute left-1/2 top-0 h-[122%] w-[112%] -translate-x-1/2 object-cover object-top"
             desktopClassName="hidden"
           />
-          <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black/55 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#04080f] via-[#04080f]/88 via-55% to-transparent" />
         </div>
-        <div className="relative z-10 flex min-h-[500px] flex-col justify-end px-4 pb-8 pt-10 sm:min-h-[520px] sm:px-6 sm:pb-10 sm:pt-12">
-          <div className="mb-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
-            <span className="flex shrink-0 items-center gap-1">
-              Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
-            </span>
-            <span className="flex shrink-0 items-center gap-1">
-              Powered by <ZeroGLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
-            </span>
-          </div>
+        <div className="absolute inset-x-0 top-4 z-20 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 px-4 font-tech text-[10px] uppercase tracking-[0.14em] text-white sm:text-[11px] sm:tracking-[0.18em]">
+          <span className="flex shrink-0 items-center gap-1">
+            Presented by <KultLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
+          </span>
+          <span className="flex shrink-0 items-center gap-1">
+            Powered by <ZeroGLogo className="h-3.5 w-auto shrink-0 min-[380px]:h-4" />
+          </span>
+        </div>
+        <div className="relative z-10 flex min-h-[560px] flex-col justify-end px-4 pb-8 pt-[330px] min-[390px]:pt-[360px] [@media(max-height:760px)]:pt-[270px] [@media(max-height:760px)]:pb-12 [@media(max-height:700px)]:pt-[270px] [@media(max-height:700px)]:pb-10 sm:pb-10">
           <HeroCopy compact />
         </div>
       </div>
 
-      {/* Desktop — height follows the 16:9 video so the full frame stays visible */}
-      <div className="relative hidden md:block">
+      {/* Desktop — reserve 16:9 hero frame + skeleton until the video can paint */}
+      <div className="relative hidden aspect-video w-full md:block">
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}
           desktopSrc={heroVideo}
           breakpoint="md"
+          wrapperClassName="absolute inset-0"
           mobileClassName="hidden"
-          desktopClassName="relative z-0 block h-auto w-full"
+          desktopClassName="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/90 via-[#04080f]/34 via-[42%] to-transparent" />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#04080f]/35" />
@@ -979,10 +980,13 @@ function HowItWorks() {
         <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-stretch">
-        {steps.map((s, i) => (
-          <div key={s.n} className="relative">
+        {steps.map((s) => (
+          <div key={s.n}>
             <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
               <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden bg-background/50">
+                <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-[#9a35ff] bg-[#9a35ff] font-tech text-[11px] font-black leading-none tabular-nums text-white sm:left-2.5 sm:top-2.5 sm:h-8 sm:w-8 sm:text-xs md:h-8 md:w-8 md:text-xs lg:left-1.5 lg:top-1.5 lg:h-8 lg:w-8 lg:text-sm xl:left-2 xl:top-2 xl:h-9 xl:w-9 xl:text-base">
+                  {s.n}
+                </span>
                 {"mediaKey" in s && s.mediaKey ? (
                   <LazyInViewVideo
                     srcLoader={aiArenaMedia[s.mediaKey]}
@@ -990,6 +994,7 @@ function HowItWorks() {
                     loop
                     muted
                     playsInline
+                    placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
                     className="object-[center_30%]"
                   />
                 ) : "img" in s && s.img ? (
@@ -1001,14 +1006,11 @@ function HowItWorks() {
                   />
                 ) : null}
               </div>
-              <div className="p-3 md:p-4 text-center md:text-left">
-                <div className="font-tech text-sm tracking-wider break-words">{s.title}</div>
-                <p className="mt-2 text-xs leading-snug text-muted-foreground md:text-xs">{s.desc}</p>
+              <div className="p-3 text-left sm:p-4">
+                <div className="font-tech text-sm tracking-wider break-words sm:text-base">{s.title}</div>
+                <p className="mt-2 text-xs leading-snug text-muted-foreground sm:text-sm">{s.desc}</p>
               </div>
             </div>
-            {i < steps.length - 1 && (
-              <ArrowRight className="hidden md:block absolute top-1/3 -right-2 w-5 h-5 text-primary z-10" />
-            )}
           </div>
         ))}
       </div>
@@ -1094,6 +1096,7 @@ function WhereAgentsCompete() {
                 loop
                 muted
                 playsInline
+                placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
                 className="opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
             ) : game.image ? (
@@ -1145,6 +1148,7 @@ function WhereAgentsCompete() {
             loop
             muted
             playsInline
+            placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
             className="pointer-events-none opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
@@ -1397,7 +1401,7 @@ function TopAgents() {
             key={`${a.rank}-${a.name}`}
             className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
           >
-            <div className="relative aspect-[4/3] overflow-hidden">
+            <div className="relative aspect-[4/5] overflow-hidden bg-background/50 sm:aspect-[3/4]">
               {"mediaKey" in a && a.mediaKey ? (
                 <LazyInViewVideo
                   srcLoader={aiArenaMedia[a.mediaKey]}
@@ -1415,7 +1419,7 @@ function TopAgents() {
                   muted
                   preload="none"
                   playsInline
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
+                  className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
                 />
               ) : "img" in a && a.img ? (
                 <img
@@ -1423,8 +1427,8 @@ function TopAgents() {
                   alt={a.name}
                   loading="lazy"
                   width={640}
-                  height={800}
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
+                  height={980}
+                  className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
                 />
               ) : null}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
@@ -1587,7 +1591,7 @@ function MyBattleSection() {
 
   return (
     <div id="my-battles" className="flex h-full min-h-[360px] flex-col scroll-mt-24">
-      <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+      <div className="mb-6 flex flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">MY BATTLES</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Your completed arena battle history.</p>
@@ -1750,7 +1754,7 @@ function LiveBattles() {
 
   return (
     <div className="flex h-full min-h-[360px] flex-col">
-      <div className="mb-6 flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+      <div className="mb-6 flex flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">LIVE BATTLES</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Watch ranked agents fight in real time.</p>
