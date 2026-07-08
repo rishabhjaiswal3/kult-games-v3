@@ -254,8 +254,9 @@ export function HomePage() {
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}
           desktopSrc={heroVideo}
+          wrapperClassName="absolute inset-0"
           mobileClassName="absolute inset-0 h-full w-full object-cover sm:hidden"
-          desktopClassName="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[76%_center] lg:object-[82%_center] xl:object-[88%_center] scale-100 opacity-100 saturate-125 contrast-110"
+          desktopClassName="absolute inset-0 hidden h-full w-full object-cover object-[88%_center] sm:block sm:object-[76%_center] lg:object-[82%_center] xl:object-[88%_center] scale-100 saturate-125 contrast-110"
         />
         <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/96 via-[#050913]/58 via-[42%] to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />

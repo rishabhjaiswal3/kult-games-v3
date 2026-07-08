@@ -704,6 +704,7 @@ function Hero() {
             mobileSrc={mobileHeroVideo}
             desktopSrc={heroVideo}
             breakpoint="md"
+            wrapperClassName="absolute inset-0"
             mobileClassName="absolute left-1/2 top-0 h-[122%] w-[112%] -translate-x-1/2 object-cover object-top"
             desktopClassName="hidden"
           />
@@ -722,14 +723,15 @@ function Hero() {
         </div>
       </div>
 
-      {/* Desktop — height follows the 16:9 video so the full frame stays visible */}
-      <div className="relative hidden md:block">
+      {/* Desktop — reserve 16:9 hero frame + skeleton until the video can paint */}
+      <div className="relative hidden aspect-video w-full md:block">
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}
           desktopSrc={heroVideo}
           breakpoint="md"
+          wrapperClassName="absolute inset-0"
           mobileClassName="hidden"
-          desktopClassName="relative z-0 block h-auto w-full"
+          desktopClassName="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/90 via-[#04080f]/34 via-[42%] to-transparent" />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#04080f]/35" />
@@ -1094,6 +1096,7 @@ function WhereAgentsCompete() {
                 loop
                 muted
                 playsInline
+                placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
                 className="opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
               />
             ) : game.image ? (
@@ -1145,6 +1148,7 @@ function WhereAgentsCompete() {
             loop
             muted
             playsInline
+            placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
             className="pointer-events-none opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
