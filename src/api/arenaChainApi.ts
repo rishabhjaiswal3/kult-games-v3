@@ -22,6 +22,24 @@ export interface ArenaAllowanceResponse {
   allowance: string;
 }
 
+export interface ArenaPermitDomainResponse {
+  name: string;
+  version: string;
+  chainId: number;
+  verifyingContract: string;
+}
+
+export interface ArenaPermitRequest {
+  owner: string;
+  spender: string;
+  /** Raw uint256 wei string signed into the permit message — not a decimal ARENA amount. */
+  value: string;
+  deadline: number;
+  v: number;
+  r: string;
+  s: string;
+}
+
 export interface ArenaConfigResponse {
   arenaTokenAddress: string;
   treasuryAddress: string;
@@ -88,6 +106,31 @@ export const arenaChainApi = {
     const { data } = await http().get<ArenaAllowanceResponse>(
       `/v1/arena/wallet/${encodeURIComponent(address)}/allowance/${encodeURIComponent(spender)}`
     );
+    return data;
+  },
+
+  /** GET /v1/arena/wallet/:address/nonce — current EIP-2612 permit nonce for this wallet. */
+  getPermitNonce: async (address: string): Promise<string> => {
+    const { data } = await http().get<{ nonce: string }>(
+      `/v1/arena/wallet/${encodeURIComponent(address)}/nonce`
+    );
+    return data.nonce;
+  },
+
+  /** GET /v1/arena/permit/domain — EIP-712 domain for signing an ARENA permit. */
+  getPermitDomain: async (): Promise<ArenaPermitDomainResponse> => {
+    const { data } = await http().get<ArenaPermitDomainResponse>("/v1/arena/permit/domain");
+    return data;
+  },
+
+  /**
+   * POST /v1/wallets/permit (financial-service, not arena-chain-service
+   * directly — that route requires an internal service key the browser
+   * can't hold). Relays a signed permit so the backend relayer can submit
+   * `token.permit()` and pay its own gas -- see useArenaStaking.ts.
+   */
+  submitPermit: async (params: ArenaPermitRequest): Promise<{ txHash: string }> => {
+    const { data } = await http().post<{ txHash: string }>("/v1/wallets/permit", params);
     return data;
   },
 
