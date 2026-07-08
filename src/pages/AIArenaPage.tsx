@@ -992,6 +992,7 @@ function HowItWorks() {
                     loop
                     muted
                     playsInline
+                    placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
                     className="object-[center_30%]"
                   />
                 ) : "img" in s && s.img ? (
