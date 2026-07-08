@@ -16,12 +16,18 @@ export type PolyMarket = {
   yes: number;
   /** Formatted volume, e.g. "$1.2M". */
   volume: string;
+  /** Raw volume in USD, used to rank headline markets above niche ones. */
+  volumeNum: number;
   /** CLOB token id for the YES outcome (used for price history and buying YES). */
   tokenId: string;
   /** CLOB token id for the NO outcome (used for buying NO) -- undefined if the market has no distinct NO leg. */
   noTokenId?: string;
   /** Creation time (epoch ms) used to sort newest-first; 0 when the API omits it. */
   createdAt: number;
+  /** Kickoff time (epoch ms) for match-day markets; 0 for futures/non-match markets. */
+  gameTime: number;
+  /** Parent event / match name, e.g. "France vs. Morocco" (sub-market suffixes stripped). */
+  eventTitle?: string;
 };
 
 // ── Football filtering ──────────────────────────────────────────────────────
@@ -119,7 +125,10 @@ function parseTimestamp(value: unknown): number {
     return value < 1e12 ? value * 1000 : value; // seconds → ms
   }
   if (typeof value === "string" && value) {
-    const ms = Date.parse(value);
+    // Gamma's gameStartTime comes as "2026-07-09 20:00:00+00" — not strict ISO,
+    // which Safari's Date.parse rejects. Normalize to "2026-07-09T20:00:00Z".
+    const iso = value.replace(" ", "T").replace(/\+00(:00)?$/, "Z");
+    const ms = Date.parse(iso);
     return Number.isFinite(ms) ? ms : 0;
   }
   return 0;
@@ -127,7 +136,7 @@ function parseTimestamp(value: unknown): number {
 
 type RawMarket = Record<string, unknown>;
 
-function normalizeMarket(raw: RawMarket): PolyMarket | null {
+function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null {
   const question = typeof raw.question === "string" ? raw.question : "";
   if (!question) return null;
 
@@ -148,6 +157,7 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
   const volumeNum = toNumber(raw.volumeNum ?? raw.volume);
   // Prefer explicit creation time; fall back to startDate. Robust to string or numeric epochs.
   const createdAt = parseTimestamp(raw.createdAt) || parseTimestamp(raw.startDate);
+  const gameTime = parseTimestamp(raw.gameStartTime);
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
@@ -156,9 +166,12 @@ function normalizeMarket(raw: RawMarket): PolyMarket | null {
     short: shorten(question, typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined),
     yes,
     volume: formatVolume(volumeNum),
+    volumeNum,
     tokenId,
     createdAt,
+    gameTime,
     ...(noTokenId && { noTokenId }),
+    ...(eventTitle && { eventTitle }),
   };
 }
 
@@ -185,7 +198,7 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
         const slug = typeof raw.slug === "string" ? raw.slug : "";
         return isFootball(`${q} ${slug}`);
       })
-      .map(normalizeMarket)
+      .map((raw) => normalizeMarket(raw))
       .filter((m): m is PolyMarket => m !== null);
 
     // Newest markets first (markets missing a timestamp sink to the bottom).
@@ -197,58 +210,54 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
   }
 }
 
-// ── Strict FIFA World Cup filter ────────────────────────────────────────────
-// A market counts as World Cup ONLY when a World-Cup/FIFA anchor is present in
-// its slug, tags, or question. Generic football terms (goals, top scorer,
-// golden boot, "reach quarterfinals", player names, kit brands) are deliberately
-// NOT include-doors — on their own they also match Champions League, domestic
-// leagues and transfer markets, so using them would leak non–World-Cup questions.
-const WORLD_CUP_ANCHOR = /world\s*cup|fifa/i;
+// ── Strict FIFA World Cup fetch ─────────────────────────────────────────────
+// Polymarket groups every FIFA World Cup event (match markets, exact scores,
+// team-to-advance, etc.) under the "soccer-fifwc" series. Fetching by series id
+// is exact — no keyword filtering needed, and match-day markets (whose slugs
+// use the "fifwc-" prefix and never say "fifa"/"world cup") are included.
+const WORLD_CUP_SERIES_ID = "11433";
 
-// Other-sport "World Cups" (cricket/rugby/etc.) must not slip through.
-const NON_FOOTBALL_TERMS = ["cricket", "rugby", "t20", "hockey", "nba", "nfl", "mlb", "nhl", "tennis"];
-
-function worldCupHaystack(raw: RawMarket): string {
-  const q = typeof raw.question === "string" ? raw.question : "";
-  const slug = typeof raw.slug === "string" ? raw.slug : "";
-  const tags = Array.isArray(raw.tags)
-    ? (raw.tags as Array<Record<string, unknown>>)
-        .map((t) => `${String(t.label ?? "")} ${String(t.slug ?? "")}`)
-        .join(" ")
-    : "";
-  return `${q} ${slug} ${tags}`.toLowerCase();
-}
-
-function isWorldCup(raw: RawMarket): boolean {
-  const hay = worldCupHaystack(raw);
-  if (NON_FOOTBALL_TERMS.some((t) => hay.includes(t))) return false;
-  return WORLD_CUP_ANCHOR.test(hay);
-}
+// Player-props sub-events carry 200+ single-player markets each; they'd drown
+// the board, so they're skipped.
+const PLAYER_PROPS_SLUG = /-player-props$/;
 
 /**
- * Fetch strictly FIFA World Cup markets — active, open (not resolved/closed),
- * newest-first. Ranked from the 7-day (1-week) volume pool, then narrowed to
- * markets carrying a World-Cup/FIFA anchor. Returns [] on any failure.
+ * Fetch strictly FIFA World Cup markets via the soccer-fifwc series — active,
+ * open (not resolved/closed). Latest matches lead: markets with the soonest
+ * kickoff (gameStartTime) come first; markets without a kickoff (futures) sink
+ * below, newest-first. Returns [] on any failure.
  */
 export async function fetchWorldCupMarkets(limit = 60): Promise<PolyMarket[]> {
   try {
-    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume1wk&ascending=false`;
+    const url = `${GAMMA_BASE}/events?series_id=${WORLD_CUP_SERIES_ID}&active=true&closed=false&order=startDate&ascending=false&limit=30`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });
     if (!res.ok) return [];
     const json: unknown = await res.json();
-    const list: RawMarket[] = Array.isArray(json)
+    const events: RawMarket[] = Array.isArray(json)
       ? (json as RawMarket[])
       : Array.isArray((json as { data?: unknown })?.data)
         ? ((json as { data: RawMarket[] }).data)
         : [];
 
-    const worldCup = list
-      .filter(isWorldCup)
-      .map(normalizeMarket)
+    const worldCup = events
+      .filter((event) => !PLAYER_PROPS_SLUG.test(typeof event.slug === "string" ? event.slug : ""))
+      .flatMap((event) => {
+        // "France vs. Morocco - Exact Score" → "France vs. Morocco"
+        const matchName = typeof event.title === "string" ? event.title.split(" - ")[0].trim() : "";
+        const markets = Array.isArray(event.markets) ? (event.markets as RawMarket[]) : [];
+        return markets
+          .filter((raw) => raw.active !== false && raw.closed !== true)
+          .map((raw) => normalizeMarket(raw, matchName || undefined));
+      })
       .filter((m): m is PolyMarket => m !== null);
 
-    // Newest markets first (markets missing a timestamp sink to the bottom).
-    worldCup.sort((a, b) => b.createdAt - a.createdAt);
+    // Next kickoff first; within the same match, headline (highest-volume)
+    // markets lead. Futures without a kickoff sink below, newest-first.
+    worldCup.sort((a, b) => {
+      if (a.gameTime && b.gameTime) return a.gameTime - b.gameTime || b.volumeNum - a.volumeNum;
+      if (a.gameTime !== b.gameTime) return a.gameTime ? -1 : 1;
+      return b.createdAt - a.createdAt;
+    });
 
     return worldCup.slice(0, limit);
   } catch {

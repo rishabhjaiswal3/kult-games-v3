@@ -190,7 +190,7 @@ const MATCHES: Match[] = [
 
 const TRADER_ADDRESSES = ["0x7a2f…c41", "0x3b9d…e07", "0xf12a…9b4", "0x55c8…1de", "0x9e34…a6f", "0x0b71…d22", "0xc4a0…77e", "0x6df2…334", "0xab19…502", "0x2e8c…f90"];
 
-type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string };
+type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; eventTitle?: string };
 
 type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
 
@@ -718,7 +718,7 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
       </div>
 
       <div className="relative">
-        <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Prediction question</p>
+        <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">{market.eventTitle ?? "Prediction question"}</p>
         <p className="mt-0.5 min-h-9 font-tech text-sm font-bold text-white">{market.question}</p>
 
         {!isRealMarket ? (
@@ -968,7 +968,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
             <button key={market.id} type="button" onClick={() => onSelect(market.id)} className="relative w-full overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.1),transparent_55%),#070911] p-3 text-left transition hover:border-cyan-400/40">
               <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0"><p className="font-tech text-[9px] uppercase tracking-wider text-white/50">⚽ {market.category}</p><p className="mt-1 line-clamp-2 font-tech text-[11px] font-bold leading-snug text-white">{market.question}</p></div>
+                <div className="min-w-0"><p className="truncate font-tech text-[9px] uppercase tracking-wider text-white/50">⚽ {market.eventTitle ?? market.category}</p><p className="mt-1 line-clamp-2 font-tech text-[11px] font-bold leading-snug text-white">{market.question}</p></div>
                 <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 font-tech text-[11px] font-bold ${priceToneClass(sessionDir)}`}>
                   <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢
                 </span>
@@ -1597,7 +1597,7 @@ function LiveMarketChart({ market, markets, onSelect, history }: { market: LiveM
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> Live price</span>
-            <span className="rounded-sm border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/45">{market.category}</span>
+            <span className="max-w-[180px] truncate rounded-sm border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/45">{market.eventTitle ?? market.category}</span>
           </div>
           <p className="mt-2 max-w-md font-tech text-sm font-bold leading-snug text-white sm:text-base">{market.question}</p>
         </div>
