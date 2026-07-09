@@ -339,6 +339,18 @@ export function LeaguePolymarketBoard() {
   const [view, setView] = useState<BoardView>("market");
   const { markets, prices, trades, history, source } = useLiveMarketData();
 
+  // Trending movers → jump to that question's card in the grid below.
+  const [highlightedMarketId, setHighlightedMarketId] = useState<string | null>(null);
+  const highlightTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (highlightTimer.current) window.clearTimeout(highlightTimer.current); }, []);
+  const jumpToQuestion = (id: string) => {
+    setSelectedMarketId(id);
+    setHighlightedMarketId(id);
+    if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
+    highlightTimer.current = window.setTimeout(() => setHighlightedMarketId(null), 2400);
+    document.getElementById(`poly-question-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   const liveMarkets: LiveMarket[] = markets.map((market) => {
     const live = prices[market.id];
     return { ...market, yes: live?.yes ?? market.yes, dir: live?.dir ?? "flat", delta: live?.delta ?? 0, session: live?.session ?? 0 };
@@ -365,10 +377,10 @@ export function LeaguePolymarketBoard() {
       <div className="h-full lg:col-span-6">
         <WorldCupOddsHero />
       </div>
-      <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={setSelectedMarketId} />
+      <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={jumpToQuestion} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
-        {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} />)}
+        {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} highlighted={market.id === highlightedMarketId} />)}
         {liveMarkets.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">No markets in this category yet</div>
         ) : null}
@@ -655,7 +667,7 @@ const TRADING_STATUS_LABEL: Record<string, string> = {
   "placing-order": "Placing order…",
 };
 
-function RealMarketCard({ market }: { market: LiveMarket }) {
+function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; highlighted?: boolean }) {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
   const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
@@ -711,7 +723,12 @@ function RealMarketCard({ market }: { market: LiveMarket }) {
   const agent = signal ? getLeagueAgent(signal.agentName) : null;
 
   return (
-    <article className="relative overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(0,200,83,0.08),transparent_55%),#0b0d12] p-3.5 transition hover:border-[#2E5CFF]/45">
+    <article
+      id={`poly-question-${market.id}`}
+      className={`relative overflow-hidden rounded-xl border bg-[radial-gradient(circle_at_50%_0%,rgba(0,200,83,0.08),transparent_55%),#0b0d12] p-3.5 transition duration-500 hover:border-[#2E5CFF]/45 ${
+        highlighted ? "border-cyan-400/70 shadow-[0_0_28px_rgba(34,211,238,0.3)]" : "border-white/10"
+      }`}
+    >
       <div className="relative mb-2.5 flex items-center justify-between gap-2">
         <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">{market.category}</span>
         <span className="shrink-0 font-mono text-[10px] text-white/40">{market.volume} Vol</span>

@@ -38,9 +38,10 @@ export function LeagueRecentPicks() {
         <p className="mt-3 text-xs text-white/40">No settled predictions yet.</p>
       ) : (
         <div className="relative mt-3">
-          <div className="table-scroll-x pb-1.5">
+          {/* max-h ≈ header + ~6.5 rows; older picks reachable by vertical scroll */}
+          <div className="table-scroll-x max-h-80 overflow-y-auto pb-1.5 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin]">
             <table className="w-full min-w-[560px] text-left">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-[#05050a]">
                 <tr className="border-b border-white/8 font-tech text-[9px] uppercase tracking-wider text-white/40">
                   <th className="pb-2 pr-3">Match</th>
                   <th className="pb-2 pr-3">Agent</th>
