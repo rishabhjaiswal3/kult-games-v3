@@ -37,6 +37,7 @@ import {
   MessageSquare,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -919,7 +920,6 @@ function GameChatPanel({
   onSend,
   chatEndRef,
   myAgent,
-  observerCount,
   onShareMoment,
 }: {
   messages: ChatMsg[];
@@ -928,7 +928,6 @@ function GameChatPanel({
   onSend: () => void;
   chatEndRef: React.RefObject<HTMLDivElement>;
   myAgent: AiArenaAgent | null;
-  observerCount: number;
   onShareMoment?: () => void;
 }) {
   const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -939,20 +938,7 @@ function GameChatPanel({
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col border-t border-white/8 bg-[#04080f]/90 md:border-l md:border-t-0">
-      <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2.5">
-        <MessageSquare className="h-3.5 w-3.5 text-primary/70" />
-        <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">
-          LIVE CHAT
-        </span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-mono text-[9px] text-white/30">
-            {observerCount} watching
-          </span>
-        </div>
-      </div>
-
+    <div className="flex h-full min-h-0 w-full flex-col bg-[#04080f]/95">
       <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
@@ -987,6 +973,124 @@ function GameChatPanel({
         </p>
       </div>
     </div>
+  );
+}
+
+/** Slide-in battle panel: agents on top, chat below. */
+function ArenaBattleDrawer({
+  open,
+  onClose,
+  myAgent,
+  opponent,
+  battle,
+  gamePhase,
+  mode,
+  messages,
+  chatInput,
+  onInputChange,
+  onSend,
+  chatEndRef,
+  observerCount,
+  onShareMoment,
+}: {
+  open: boolean;
+  onClose: () => void;
+  myAgent: AiArenaAgent | null;
+  opponent: AiArenaAgent | null;
+  battle?: AiArenaBattle;
+  gamePhase: GamePhase;
+  mode: string;
+  messages: ChatMsg[];
+  chatInput: string;
+  onInputChange: (v: string) => void;
+  onSend: () => void;
+  chatEndRef: React.RefObject<HTMLDivElement>;
+  observerCount: number;
+  onShareMoment?: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Close battle panel"
+        onClick={onClose}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] transition-opacity duration-300",
+          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+
+      <aside
+        data-tour="arena-game-chat"
+        aria-hidden={!open}
+        className={cn(
+          "fixed inset-y-0 right-0 z-50 flex w-[min(92vw,360px)] flex-col border-l border-white/10 bg-[#04080f]/98 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300 ease-out",
+          open ? "translate-x-0" : "translate-x-full",
+        )}
+      >
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 px-3 py-2.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <MessageSquare className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+            <span className="font-tech text-[10px] uppercase tracking-widest text-white/70 font-bold">
+              Battle info
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="font-mono text-[9px] text-white/35">
+                {observerCount} watching
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close panel"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/60 transition hover:border-white/20 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="shrink-0 border-b border-white/8" data-tour="arena-game-agents">
+          <AgentBanner
+            myAgent={myAgent}
+            opponent={opponent}
+            battle={battle}
+            gamePhase={gamePhase}
+            mode={mode}
+          />
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-3 py-2">
+            <span className="font-tech text-[9px] uppercase tracking-widest text-white/45">
+              Live chat
+            </span>
+            <span className="font-tech text-[9px] uppercase tracking-wider text-white/25">
+              {mode}
+            </span>
+          </div>
+          <GameChatPanel
+            messages={messages}
+            chatInput={chatInput}
+            onInputChange={onInputChange}
+            onSend={onSend}
+            chatEndRef={chatEndRef}
+            myAgent={myAgent}
+            onShareMoment={onShareMoment}
+          />
+        </div>
+      </aside>
+    </>
   );
 }
 
@@ -1311,6 +1415,7 @@ export default function ArenaGamePage() {
     },
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [gamePhase, setGamePhase] = useState<GamePhase>("live");
   const [observerCount] = useState(() => Math.floor(Math.random() * 80) + 12);
 
@@ -1949,129 +2054,142 @@ export default function ArenaGamePage() {
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
 
       {/* ── Top Nav ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5" data-tour="arena-game-topbar">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 rounded-lg border border-white/8 bg-white/[0.03] px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-widest text-white/45 hover:text-white hover:border-white/20 transition"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Back
-        </button>
-
-        <div className="flex items-center gap-2">
-          <span className="hidden font-mono text-[9px] text-emerald-400 sm:block">
-            BATTLE
-          </span>
-          <span className="font-mono text-[10px] text-sky-400">
-            {shortId(battleId)}
-          </span>
-
-          {gamePhase === "live" && (
-            <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
-              LIVE
-            </span>
-          )}
-          {gamePhase === "ended" && (
-            <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/12 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
-              ENDED
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">
-            {mode}
-          </span>
-          {canShareMoment ? (
-            <button
-              type="button"
-              onClick={navigateToTrashTalkMoment}
-              className="flex items-center gap-1.5 rounded-lg border border-[#9a35ff]/40 bg-[#9a35ff]/12 px-2.5 py-1 font-tech text-[8px] uppercase tracking-wider text-[#d6acff] hover:bg-[#9a35ff]/22 transition"
-              title="Share as Kult Moment"
-            >
-              <Share2 className="h-3 w-3" />
-              Kult Moment
-            </button>
-          ) : null}
-          {battleQ.isFetching && (
-            <Loader2 className="h-3 w-3 animate-spin text-white/25" />
-          )}
-        </div>
-      </div>
-
-      {/* ── Agent VS Banner ───────────────────────────────────────────────── */}
-      <div data-tour="arena-game-agents">
-        <AgentBanner
-          myAgent={myAgent}
-          opponent={opponent}
-          battle={battle}
-          gamePhase={gamePhase}
-          mode={mode}
+      <header
+        className="relative z-30 shrink-0 border-b border-white/8 bg-[#04080f]/92 backdrop-blur-xl"
+        data-tour="arena-game-topbar"
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at 18% 0%, rgba(154,53,255,0.14), transparent 42%), radial-gradient(circle at 82% 0%, rgba(0,137,255,0.12), transparent 38%)",
+          }}
         />
-      </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/35 to-transparent" />
 
-      {/* ── Main: Canvas + Chat ───────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
-
-        {/* Canvas area */}
-        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="arena-game-canvas">
+        <div className="relative grid h-12 grid-cols-[auto_1fr_auto] items-center gap-2 px-2 sm:h-14 sm:gap-3 sm:px-4">
           <button
             type="button"
-            onClick={toggleMute}
-            aria-label={isMuted ? "Unmute battle sound" : "Mute battle sound"}
-            title={isMuted ? "Unmute" : "Mute"}
-            className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white/75 shadow-[0_0_22px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-primary/55 hover:bg-primary/15 hover:text-white"
+            onClick={() => navigate(-1)}
+            className="group flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-[0.18em] text-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-white/20 hover:bg-white/[0.07] hover:text-white sm:px-3 sm:py-2"
           >
-            {isMuted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
+            <ArrowLeft className="h-3.5 w-3.5 transition group-hover:-translate-x-0.5" />
+            <span className="hidden sm:inline">Back</span>
           </button>
 
-          {/* Error state — centred */}
-          {isError && (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <div className="font-tech text-sm text-red-400/80 mb-2">
-                  Failed to load battle
+          <div className="flex min-w-0 items-center justify-center">
+            <div className="flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-black/35 px-2.5 py-1 shadow-[0_0_24px_rgba(154,53,255,0.08)] sm:gap-2.5 sm:px-3.5 sm:py-1.5">
+              <Swords className="hidden h-3.5 w-3.5 shrink-0 text-[#c084fc] sm:block" />
+              <span className="hidden font-tech text-[8px] uppercase tracking-[0.22em] text-emerald-300/80 sm:inline">
+                Battle
+              </span>
+              <span className="h-3 w-px bg-white/12" />
+              <span className="truncate font-mono text-[10px] font-medium text-sky-300 sm:text-[11px]">
+                {shortId(battleId)}
+              </span>
+              {gamePhase === "live" ? (
+                <span className="flex shrink-0 items-center gap-1 rounded-full border border-red-400/35 bg-red-500/12 px-2 py-0.5 font-tech text-[8px] uppercase tracking-[0.16em] text-red-300 shadow-[0_0_14px_rgba(248,113,113,0.18)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                  Live
+                </span>
+              ) : (
+                <span className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-white/[0.05] px-2 py-0.5 font-tech text-[8px] uppercase tracking-[0.16em] text-white/45">
+                  Ended
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+            <span className="rounded-full border border-[#0089ff]/25 bg-[#0089ff]/10 px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-[0.18em] text-sky-200/90 sm:px-2.5 sm:text-[9px]">
+              {mode}
+            </span>
+            {canShareMoment ? (
+              <button
+                type="button"
+                onClick={navigateToTrashTalkMoment}
+                className="hidden items-center gap-1.5 rounded-xl border border-[#9a35ff]/40 bg-[linear-gradient(135deg,rgba(154,53,255,0.22),rgba(4,8,15,0.55))] px-2.5 py-1.5 font-tech text-[8px] uppercase tracking-wider text-[#e9d5ff] transition hover:border-[#c084fc]/55 hover:bg-[#9a35ff]/28 sm:flex"
+                title="Share as Kult Moment"
+              >
+                <Share2 className="h-3 w-3" />
+                Moment
+              </button>
+            ) : null}
+            {battleQ.isFetching ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-white/30" />
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      {/* ── Full-screen game canvas ───────────────────────────────────────── */}
+      <div className="relative min-h-0 flex-1 overflow-hidden" data-tour="arena-game-canvas">
+        <button
+          type="button"
+          onClick={toggleMute}
+          aria-label={isMuted ? "Unmute battle sound" : "Mute battle sound"}
+          title={isMuted ? "Unmute" : "Mute"}
+          className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white/75 shadow-[0_0_22px_rgba(0,0,0,0.35)] backdrop-blur transition hover:border-primary/55 hover:bg-primary/15 hover:text-white"
+        >
+          {isMuted ? <VolumeX className="h-[18px] w-[18px]" /> : <Volume2 className="h-[18px] w-[18px]" />}
+        </button>
+
+        {!chatDrawerOpen ? (
+          <button
+            type="button"
+            onClick={() => setChatDrawerOpen(true)}
+            aria-label="Open battle info and chat"
+            className="absolute bottom-5 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#9a35ff]/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.55),rgba(4,8,15,0.92))] text-white shadow-[0_0_28px_rgba(154,53,255,0.35)] transition hover:scale-105 hover:border-[#c084fc]/70 hover:shadow-[0_0_36px_rgba(154,53,255,0.5)]"
+          >
+            <MessageSquare className="h-6 w-6" />
+          </button>
+        ) : null}
+
+        {/* Error state — centred */}
+        {isError && (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <div className="font-tech text-sm text-red-400/80 mb-2">
+                Failed to load battle
+              </div>
+              <button
+                onClick={() => battleQ.refetch()}
+                className="font-tech text-xs text-primary hover:text-primary/80 underline"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* No build URL configured — centred */}
+        {!isError && !UNITY_BASE_URL && (
+          <div className="flex h-full items-center justify-center px-4">
+            <div className="text-center">
+              <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
+                Unity Build URL not configured
+              </p>
+              <p className="font-mono text-[9px] text-white/20 mt-1">
+                Set VITE_UNITY_BUILD_URL in .env to load the game
+              </p>
+              {myAgent && opponent && (
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
+                    {myAgent.name}
+                  </span>
+                  <Swords className="h-3 w-3 text-white/20" />
+                  <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
+                    {opponent.name}
+                  </span>
                 </div>
-                <button
-                  onClick={() => battleQ.refetch()}
-                  className="font-tech text-xs text-primary hover:text-primary/80 underline"
-                >
-                  Retry
-                </button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* No build URL configured — centred */}
-          {!isError && !UNITY_BASE_URL && (
-            <div className="flex h-full items-center justify-center px-4">
-              <div className="text-center">
-                <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
-                  Unity Build URL not configured
-                </p>
-                <p className="font-mono text-[9px] text-white/20 mt-1">
-                  Set VITE_UNITY_BUILD_URL in .env to load the game
-                </p>
-                {myAgent && opponent && (
-                  <div className="flex items-center justify-center gap-3 mt-4">
-                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
-                      {myAgent.name}
-                    </span>
-                    <Swords className="h-3 w-3 text-white/20" />
-                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
-                      {opponent.name}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── Unity canvas — fills entire game area ── */}
-          {!isError && UNITY_BASE_URL && (
-            <div className="absolute inset-0">
+        {/* ── Unity canvas — fills entire game area ── */}
+        {!isError && UNITY_BASE_URL && (
+          <div className="absolute inset-0">
               {/* Unity renders directly into this canvas; CSS fills the space,
                   width/height attrs set the render resolution */}
               <canvas
@@ -2196,37 +2314,39 @@ export default function ArenaGamePage() {
               )}
             </div>
           )}
-        </div>
-
-        {/* Chat panel */}
-        <div data-tour="arena-game-chat" className="flex min-h-[360px] w-full flex-1 flex-col md:h-full md:min-h-0 md:w-[300px] md:flex-none md:shrink-0 lg:w-[320px]">
-          <GameChatPanel
-            messages={messages}
-            chatInput={chatInput}
-            onInputChange={setChatInput}
-            onSend={() => {
-              if (!chatInput.trim()) return;
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: uid(),
-                  kind: "player" as const,
-                  agentId: myAgentId ?? "observer",
-                  agentName: myAgent?.name ?? "Observer",
-                  color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
-                  text: chatInput.trim(),
-                  ts: new Date(),
-                },
-              ]);
-              setChatInput("");
-            }}
-            chatEndRef={chatEndRef}
-            myAgent={myAgent}
-            observerCount={observerCount}
-            onShareMoment={shareMomentHandler}
-          />
-        </div>
       </div>
+
+      <ArenaBattleDrawer
+        open={chatDrawerOpen}
+        onClose={() => setChatDrawerOpen(false)}
+        myAgent={myAgent}
+        opponent={opponent}
+        battle={battle}
+        gamePhase={gamePhase}
+        mode={mode}
+        messages={messages}
+        chatInput={chatInput}
+        onInputChange={setChatInput}
+        onSend={() => {
+          if (!chatInput.trim()) return;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid(),
+              kind: "player" as const,
+              agentId: myAgentId ?? "observer",
+              agentName: myAgent?.name ?? "Observer",
+              color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
+              text: chatInput.trim(),
+              ts: new Date(),
+            },
+          ]);
+          setChatInput("");
+        }}
+        chatEndRef={chatEndRef}
+        observerCount={observerCount}
+        onShareMoment={shareMomentHandler}
+      />
     </div>
   );
 }
