@@ -162,57 +162,6 @@ function attachMainSessionOn401(client: AxiosInstance) {
   );
 }
 
-function attachActivityTracking(client: AxiosInstance, service: ApiServiceId) {
-  client.interceptors.request.use((config) => {
-    (config as typeof config & { metadata?: { start: number } }).metadata = { start: Date.now() };
-    return config;
-  });
-
-  client.interceptors.response.use(
-    (response) => {
-      const cfg = response.config as typeof response.config & { metadata?: { start: number } };
-      const url = `${cfg.baseURL ?? ""}${cfg.url ?? ""}`;
-      if (url.includes("/activity/events")) return response;
-      void import("@/analytics/tracker")
-        .then(({ trackApiActivity }) => {
-          trackApiActivity({
-            method: (cfg.method ?? "get").toUpperCase(),
-            url: cfg.url ?? url,
-            status: response.status,
-            durationMs: cfg.metadata?.start ? Date.now() - cfg.metadata.start : undefined,
-            ok: true,
-            service,
-          });
-        })
-        .catch(() => {
-          /* ignore */
-        });
-      return response;
-    },
-    (error) => {
-      const cfg = error?.config as { url?: string; baseURL?: string; method?: string; metadata?: { start: number } } | undefined;
-      const url = `${cfg?.baseURL ?? ""}${cfg?.url ?? ""}`;
-      if (!url.includes("/activity/events")) {
-        void import("@/analytics/tracker")
-          .then(({ trackApiActivity }) => {
-            trackApiActivity({
-              method: (cfg?.method ?? "get").toUpperCase(),
-              url: cfg?.url ?? url,
-              status: error?.response?.status,
-              durationMs: cfg?.metadata?.start ? Date.now() - cfg.metadata.start : undefined,
-              ok: false,
-              service,
-            });
-          })
-          .catch(() => {
-            /* ignore */
-          });
-      }
-      return Promise.reject(error);
-    },
-  );
-}
-
 function buildClient(service: ApiServiceId): AxiosInstance {
   const instance = axios.create({
     baseURL: SERVICE_BASE_URL[service],
@@ -222,7 +171,6 @@ function buildClient(service: ApiServiceId): AxiosInstance {
   });
 
   attachAuthHeader(instance);
-  attachActivityTracking(instance, service);
 
   if (service === "main") {
     attachMainSessionOn401(instance);

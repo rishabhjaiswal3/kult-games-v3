@@ -770,8 +770,8 @@ function StatsBar() {
           <div className={iconClass}>
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#26e63b] shadow-[0_0_10px_rgba(38,230,59,0.9)] xl:h-2.5 xl:w-2.5" />
           </div>
-          <div className="min-w-0">
-            <div className="font-tech text-xs font-semibold leading-tight text-primary md:text-[11px] xl:text-sm">Beta Live</div>
+            <div className="min-w-0">
+              <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-primary md:text-[9px] xl:text-[10px]">Beta Live</div>
             <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white md:text-[12px] xl:text-base">
               <span className="inline-flex items-center gap-1.5">
                 Powered by <ZeroGLogo className="h-3 w-auto shrink-0 xl:h-4" />
@@ -786,7 +786,7 @@ function StatsBar() {
               <s.icon className="h-4 w-4 xl:h-5 xl:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="font-tech text-xs font-semibold leading-tight text-primary md:text-[11px] xl:text-sm">{s.label}</div>
+              <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-primary md:text-[9px] xl:text-[10px]">{s.label}</div>
               <div className="mt-0.5 text-[12px] font-semibold leading-tight text-white xl:text-base">{s.detail}</div>
             </div>
           </div>

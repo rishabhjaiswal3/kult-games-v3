@@ -286,14 +286,16 @@ function StatsRail({ myAgents }: { myAgents: AiArenaAgent[] }) {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="home-stat-tile relative z-10 flex items-center gap-4 px-5 py-3.5 sm:px-6 sm:py-4"
+          className="home-stat-tile relative z-10 flex min-w-0 items-center gap-2.5 px-3 py-3.5 sm:gap-3 sm:px-4 sm:py-4 lg:gap-4 lg:px-5"
           style={{ "--stat-color": stat.color } as CSSProperties}
         >
-          <div className="home-stat-icon grid h-11 w-11 place-items-center rounded-lg">
-            <stat.icon className="h-5 w-5" />
+          <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10 lg:h-11 lg:w-11">
+            <stat.icon className="h-4 w-4 lg:h-5 lg:w-5" />
           </div>
-          <div>
-            <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">{stat.label}</div>
+          <div className="min-w-0">
+            <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-white/72 sm:text-[9px] lg:text-[10px]">
+              {stat.label}
+            </div>
             <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">
               {stat.value} {stat.suffix && <span className="text-xs text-white/45">{stat.suffix}</span>}
             </div>
@@ -327,8 +329,10 @@ function RankCard({ firstAgent }: { firstAgent: AiArenaAgent | null }) {
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 28px color-mix(in srgb, ${accent} 18%, transparent)`,
       } as CSSProperties}
     >
-      <div>
-        <div className="font-tech text-xs font-semibold text-white/72 sm:text-sm">ARENA RANK</div>
+      <div className="min-w-0">
+        <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-white/72 sm:text-[9px] lg:text-[10px]">
+          ARENA RANK
+        </div>
         <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">
           {firstAgent ? (rank != null ? `#${rank.toLocaleString()}` : "UNRANKED") : "—"}
         </div>
