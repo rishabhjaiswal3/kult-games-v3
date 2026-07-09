@@ -546,8 +546,8 @@ function AgentCard({
 
   if (!agent) {
     return (
-      <div className="flex flex-1 items-center gap-3 px-2 sm:px-4">
-        <div className="h-14 w-14 sm:h-16 sm:w-16 animate-pulse rounded-xl bg-white/5" />
+      <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-3 sm:px-3">
+        <div className="h-12 w-12 animate-pulse rounded-xl bg-white/5 sm:h-14 sm:w-14" />
         <div className="space-y-1.5">
           <div className="h-3 w-24 animate-pulse rounded bg-white/8" />
           <div className="h-2 w-16 animate-pulse rounded bg-white/5" />
@@ -565,7 +565,7 @@ function AgentCard({
         />
         <ArenaAgentThumbnail
           agent={agent}
-          className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-xl border-white/15"
+          className="relative h-12 w-12 rounded-xl border-white/15 sm:h-14 sm:w-14"
         />
         {isWinner && (
           <Crown
@@ -576,18 +576,18 @@ function AgentCard({
       </div>
 
       <div className={`min-w-0 ${isRight ? "text-right" : "text-left"}`}>
-        <div className="font-display text-sm sm:text-lg font-bold leading-tight truncate max-w-[88px] sm:max-w-[160px]">
+        <div className="font-display text-sm font-bold leading-tight truncate max-w-[88px] sm:max-w-[120px]">
           {agent.name}
         </div>
         <div className="text-[10px] font-mono uppercase tracking-wider text-white/45 mt-0.5">
           {agent.archetype}
         </div>
         <div
-          className="flex items-center gap-2 mt-1.5"
+          className="flex items-center gap-1.5 mt-1"
           style={{ justifyContent: isRight ? "flex-end" : "flex-start" }}
         >
           <span
-            className="font-tech text-sm font-bold"
+            className="font-tech text-xs font-bold sm:text-sm"
             style={{ color }}
           >
             {agent.eloRating.toLocaleString()}
@@ -616,7 +616,7 @@ function AgentCard({
 
   return (
     <div
-      className={`flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3 px-1.5 sm:px-4 transition-all duration-500 ${
+      className={`flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-3 sm:px-3 transition-all duration-500 ${
         isLoser ? "opacity-40 grayscale" : ""
       } ${isRight ? "flex-row-reverse" : ""}`}
     >
@@ -660,7 +660,7 @@ function AgentBanner({
       <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#8b5cf620] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-[#06b6d420] to-transparent" />
 
-      <div className="relative flex items-center min-h-[80px] sm:min-h-[96px]">
+      <div className="relative grid min-h-[86px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
         <AgentCard
           agent={myAgent}
           side="left"
@@ -668,8 +668,8 @@ function AgentBanner({
           isLoser={gamePhase === "ended" && !myWon && !!result}
         />
 
-        <div className="flex shrink-0 flex-col items-center justify-center px-2 sm:px-4">
-          <span className="font-display text-2xl font-black text-gradient sm:text-4xl">
+        <div className="flex shrink-0 flex-col items-center justify-center px-1.5 sm:px-2">
+          <span className="font-display text-xl font-black text-gradient sm:text-2xl">
             VS
           </span>
         </div>

@@ -39,6 +39,7 @@ import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/are
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import { aiArenaMedia, type AiArenaMediaKey } from "@/lib/aiArenaMedia";
+import { cn } from "@/lib/utils";
 import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
@@ -241,6 +242,7 @@ type AiArenaMatchmakingContextValue = {
   helperText: string;
   queuedAgent: AiArenaAgent | null;
   startButtonDisabled: boolean;
+  joinButtonDisabled: boolean;
   startMatchmaking: (gameId?: AiArenaGameId) => void;
   openQueuedMatchStatus: () => void;
   openJoinBattle: () => void;
@@ -336,6 +338,10 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     isAuthenticated &&
     agents.length > 0 &&
     (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+  const joinButtonDisabled =
+    isAuthenticated &&
+    agents.length > 0 &&
+    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
 
   const startMatchmaking = useCallback((gameId: AiArenaGameId = AI_ARENA_DEFAULT_GAME_ID) => {
     selectedGameIdRef.current = gameId;
@@ -351,8 +357,13 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (!isAiArenaReady || myAgentsQ.isLoading || queuedAgent) {
+      if (queuedAgent) setStatusModalAgent(queuedAgent);
+      return;
+    }
+
     setStartModalOpen(true);
-  }, [agents.length, isAuthenticated, login, navigate]);
+  }, [agents.length, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate, queuedAgent]);
 
   const openJoinBattle = useCallback(() => {
     if (!isAuthenticated) {
@@ -365,8 +376,13 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (!isAiArenaReady || myAgentsQ.isLoading || queuedAgent) {
+      if (queuedAgent) setStatusModalAgent(queuedAgent);
+      return;
+    }
+
     setJoinBattleOpen(true);
-  }, [agents.length, isAuthenticated, login, navigate]);
+  }, [agents.length, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate, queuedAgent]);
 
   const handleMatchFound = (payload: {
     agent: AiArenaAgent;
@@ -417,11 +433,12 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       helperText,
       queuedAgent,
       startButtonDisabled,
+      joinButtonDisabled,
       startMatchmaking,
       openQueuedMatchStatus: () => queuedAgent && setStatusModalAgent(queuedAgent),
       openJoinBattle,
     }),
-    [buttonLabel, helperText, queuedAgent, startButtonDisabled, startMatchmaking, openJoinBattle],
+    [buttonLabel, helperText, queuedAgent, startButtonDisabled, joinButtonDisabled, startMatchmaking, openJoinBattle],
   );
 
   return (
@@ -598,6 +615,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
     buttonLabel,
     queuedAgent,
     startButtonDisabled,
+    joinButtonDisabled,
     startMatchmaking,
     openQueuedMatchStatus,
     openJoinBattle,
@@ -634,6 +652,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         <button
           type="button"
           onClick={openJoinBattle}
+          disabled={joinButtonDisabled}
           className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
         >
           <Swords className="h-3 w-3 shrink-0 text-emerald-200" />
@@ -1065,7 +1084,8 @@ const competeGames: CompeteGame[] = [
 ];
 
 function WhereAgentsCompete() {
-  const { startMatchmaking } = useAiArenaMatchmakingFlow();
+  const { startMatchmaking, startButtonDisabled, queuedAgent, openQueuedMatchStatus } = useAiArenaMatchmakingFlow();
+  const canStartFromCards = !startButtonDisabled;
 
   return (
     <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
@@ -1086,8 +1106,22 @@ function WhereAgentsCompete() {
           <button
             type="button"
             key={game.title}
-            onClick={() => startMatchmaking(game.gameId)}
-            className="arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
+            onClick={() => {
+              if (canStartFromCards) {
+                startMatchmaking(game.gameId);
+                return;
+              }
+              if (queuedAgent) {
+                openQueuedMatchStatus();
+              }
+            }}
+            disabled={!canStartFromCards && !queuedAgent}
+            className={cn(
+              "arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50",
+              canStartFromCards || queuedAgent
+                ? "hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)]"
+                : "cursor-not-allowed opacity-65",
+            )}
           >
             {game.mediaKey ? (
               <LazyInViewVideo
@@ -1130,7 +1164,7 @@ function WhereAgentsCompete() {
               </h4>
               <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">{game.body}</p>
               <span className="mt-2 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-white transition group-hover:gap-2.5">
-                {game.cta}
+                {canStartFromCards ? game.cta : queuedAgent ? "Queue Running" : "Unavailable"}
                 <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </span>
             </div>
