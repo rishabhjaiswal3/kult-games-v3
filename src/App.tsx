@@ -6,7 +6,6 @@ import { hasUserLoginIntent, getUserLoginMethod, requestOpenLoginModal } from "@
 import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { RouteChunkErrorBoundary } from "@/components/RouteChunkErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
-
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const Games = lazyWithRetry(() => import("./pages/Games"));
 const Inventory = lazyWithRetry(() => import("./pages/Inventory"));
@@ -37,6 +36,10 @@ const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating")
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
+import { PostHogProvider } from '@posthog/react'
+
+
+
 
 const TourProvider = lazyWithRetry(() =>
   import("@/tour/TourProvider").then((mod) => ({ default: mod.TourProvider }))
@@ -172,12 +175,32 @@ function BrowserApp() {
   );
 }
 
+const PostHogProviderConfig = ({ children }: { children: React.ReactNode }) => {
+
+  const postHogKey = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN as string;
+  const postHogHost = import.meta.env.VITE_POSTHOG_HOST as string;
+  const postHogDefaults = '2026-05-30';
+
+  if( postHogKey && postHogHost ) {
+    return (
+      <PostHogProvider apiKey={postHogKey} options = {{ api_host: postHogHost, defaults: postHogDefaults }}>
+        {children}
+      </PostHogProvider>
+    )
+  }
+  return <>
+    {children}
+  </>
+}
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AccessProvider>
-      <BrowserApp />
-    </AccessProvider>
-  </QueryClientProvider>
+  <PostHogProviderConfig> 
+      <QueryClientProvider client={queryClient}>
+        <AccessProvider>
+          <BrowserApp />
+        </AccessProvider>
+      </QueryClientProvider>
+  </PostHogProviderConfig>
 );
 
 export default App;
