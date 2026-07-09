@@ -7,12 +7,22 @@ import { leagueApi, type OpenBattle } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaStaking } from "@/hooks/useArenaStaking";
 import { LeagueFightScene } from "./leagueFightUi";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STAKING_STATUS_LABEL: Record<string, string> = {
   "switching-network": "Switching to 0G…",
   "checking-allowance": "Checking approval…",
   approving: "Approving $ARENA (check your wallet)…",
 };
+
+const challengeSelectTriggerClass =
+  "mt-1 h-8 w-full rounded-md border border-white/15 bg-black/40 px-2 font-tech text-[11px] text-white shadow-none outline-none focus:border-[#a855f7]/50 focus:ring-0 focus:ring-offset-0 [&>span]:truncate";
+
+const challengeSelectContentClass =
+  "z-[120] max-h-44 overflow-hidden border-white/10 bg-[#070c14] text-white [&_[data-radix-select-viewport]]:max-h-40 [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:overflow-y-auto [scrollbar-color:rgba(168,85,247,0.45)_transparent] [scrollbar-width:thin]";
+
+const challengeSelectItemClass =
+  "cursor-pointer font-tech text-[11px] focus:bg-white/10 focus:text-white";
 
 /** Real "challenge an agent" flow (docs/league) -- the backend battle system
  * (POST /v1/league/battles, .../accept) existed with zero frontend UI to
@@ -82,35 +92,60 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="block font-tech text-[8px] uppercase tracking-wider text-white/40">Your agent</label>
-            <select
-              value={challengerAgentId}
-              onChange={(e) => setChallengerAgentId(e.target.value)}
-              className="mt-1 h-8 w-full rounded-md border border-white/15 bg-black/40 px-2 font-tech text-[11px] text-white outline-none focus:border-[#a855f7]/50"
-            >
-              {lineup.map((a) => <option key={a.agentId} value={a.agentId}>{a.agentName}</option>)}
-            </select>
+            <Select value={challengerAgentId} onValueChange={setChallengerAgentId}>
+              <SelectTrigger className={challengeSelectTriggerClass}>
+                <SelectValue placeholder="Select your agent…" />
+              </SelectTrigger>
+              <SelectContent className={challengeSelectContentClass} position="popper">
+                {lineup.map((a) => (
+                  <SelectItem key={a.agentId} value={a.agentId} className={challengeSelectItemClass}>
+                    {a.agentName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="block font-tech text-[8px] uppercase tracking-wider text-white/40">Opponent agent</label>
-            <select
-              value={opponentAgentId}
-              onChange={(e) => setOpponentAgentId(e.target.value)}
-              className="mt-1 h-8 w-full rounded-md border border-white/15 bg-black/40 px-2 font-tech text-[11px] text-white outline-none focus:border-[#a855f7]/50"
-            >
-              <option value="">Select an agent…</option>
-              {opponents.map((row) => <option key={row.agentId} value={row.agentId}>{row.agentName} ({row.reputation} rep)</option>)}
-            </select>
+            <Select value={opponentAgentId || undefined} onValueChange={setOpponentAgentId}>
+              <SelectTrigger className={challengeSelectTriggerClass}>
+                <SelectValue placeholder="Select an agent…" />
+              </SelectTrigger>
+              <SelectContent className={challengeSelectContentClass} position="popper">
+                {opponents.length === 0 ? (
+                  <SelectItem value="__none" disabled className={challengeSelectItemClass}>
+                    No opponents available
+                  </SelectItem>
+                ) : (
+                  opponents.map((row) => (
+                    <SelectItem key={row.agentId} value={row.agentId} className={challengeSelectItemClass}>
+                      {row.agentName} ({row.reputation} rep)
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="block font-tech text-[8px] uppercase tracking-wider text-white/40">Match</label>
-            <select
-              value={matchId}
-              onChange={(e) => setMatchId(e.target.value)}
-              className="mt-1 h-8 w-full rounded-md border border-white/15 bg-black/40 px-2 font-tech text-[11px] text-white outline-none focus:border-[#a855f7]/50"
-            >
-              <option value="">Select a match…</option>
-              {(matches?.matches ?? []).map((m) => <option key={m.id} value={m.id}>{m.home} vs {m.away}</option>)}
-            </select>
+            <Select value={matchId || undefined} onValueChange={setMatchId}>
+              <SelectTrigger className={challengeSelectTriggerClass}>
+                <SelectValue placeholder="Select a match…" />
+              </SelectTrigger>
+              <SelectContent className={challengeSelectContentClass} position="popper">
+                {(matches?.matches ?? []).length === 0 ? (
+                  <SelectItem value="__none" disabled className={challengeSelectItemClass}>
+                    No scheduled matches
+                  </SelectItem>
+                ) : (
+                  (matches?.matches ?? []).map((m) => (
+                    <SelectItem key={m.id} value={m.id} className={challengeSelectItemClass}>
+                      {m.home} vs {m.away}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="block font-tech text-[8px] uppercase tracking-wider text-white/40">Stake ($ARENA)</label>
