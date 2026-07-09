@@ -1,15 +1,20 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Bell, HelpCircle, LogIn, LogOut, Menu, Sparkles } from "lucide-react";
+import { Bell, Gift, HelpCircle, LogIn, LogOut, Menu, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { useTour } from "@/tour/TourProvider";
+import { DailyRewardsModal } from "@/components/rewards/DailyRewardsModal";
+import { useDailyRewards } from "@/hooks/useDailyRewards";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
 
 export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"notifications" | null>(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  const [rewardsOpen, setRewardsOpen] = useState(false);
+  const { state: rewardsState } = useDailyRewards();
+  const rewardWaiting = rewardsState?.claimableToday ?? false;
   const { isAuthenticated, logout } = useAuth();
   const { canUse } = useAccess();
   const { isRunning, startWebsiteTour } = useTour();
@@ -58,6 +63,24 @@ export function DashboardTopbar() {
             ) : null}
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => (isAuthenticated ? setRewardsOpen(true) : requestOpenLoginModal())}
+              data-tour="topbar-rewards"
+              aria-label={isAuthenticated ? "Open daily login rewards" : "Connect wallet for rewards"}
+              title={isAuthenticated ? undefined : "Connect wallet for rewards"}
+              className="relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#c084fc]/35 bg-gradient-to-r from-[#7c3aed]/20 to-[#c084fc]/10 px-2.5 font-tech text-[11px] font-bold uppercase tracking-[0.12em] text-[#d8b4fe] transition hover:border-[#c084fc]/60 hover:from-[#7c3aed]/30 hover:to-[#c084fc]/18 hover:text-white min-[430px]:px-3"
+            >
+              <Gift className="h-3.5 w-3.5" />
+              <span className="hidden min-[430px]:inline">Rewards</span>
+              {isAuthenticated && rewardWaiting ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#fbbf24] opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#fbbf24] shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                </span>
+              ) : null}
+            </button>
+
             <button
               type="button"
               onClick={startWebsiteTour}
@@ -161,6 +184,8 @@ export function DashboardTopbar() {
           </div>
         )}
       </header>
+
+      <DailyRewardsModal open={rewardsOpen} onClose={() => setRewardsOpen(false)} />
     </>
   );
 }

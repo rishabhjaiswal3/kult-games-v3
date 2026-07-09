@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, HelpCircle, Menu, Sparkles, User } from "lucide-react";
+import { Bell, Gift, HelpCircle, Menu, Sparkles, User } from "lucide-react";
 import { requestOpenLoginModal } from "@/lib/loginModalBus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { useTour } from "@/tour/TourProvider";
+import { DailyRewardsModal } from "@/components/rewards/DailyRewardsModal";
+import { useDailyRewards } from "@/hooks/useDailyRewards";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +20,9 @@ export function AppTopbar() {
   const { canUse } = useAccess();
   const { isRunning, startWebsiteTour } = useTour();
   const showArenaLinks = canUse("ai_arena");
+  const [rewardsOpen, setRewardsOpen] = useState(false);
+  const { state: rewardsState } = useDailyRewards();
+  const rewardWaiting = rewardsState?.claimableToday ?? false;
 
   const displayName =
     player?.name?.trim() ||
@@ -36,6 +42,24 @@ export function AppTopbar() {
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-wrap sm:gap-3">
+            <button
+              type="button"
+              onClick={() => (isAuthenticated ? setRewardsOpen(true) : requestOpenLoginModal())}
+              data-tour="topbar-rewards"
+              aria-label={isAuthenticated ? "Open daily login rewards" : "Connect wallet for rewards"}
+              title={isAuthenticated ? undefined : "Connect wallet for rewards"}
+              className="relative inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-[#c084fc]/35 bg-gradient-to-r from-[#7c3aed]/20 to-[#c084fc]/12 px-2.5 font-tech text-[10px] font-black uppercase tracking-[0.14em] text-[#d8b4fe] shadow-[0_0_16px_rgba(168,85,247,0.18)] transition hover:border-[#c084fc]/60 hover:from-[#7c3aed]/30 hover:to-[#c084fc]/20 hover:text-white min-[430px]:px-3"
+            >
+              <Gift className="h-4 w-4" />
+              <span className="hidden min-[430px]:inline">Rewards</span>
+              {isAuthenticated && rewardWaiting ? (
+                <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#fbbf24] opacity-70" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-[#fbbf24] shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                </span>
+              ) : null}
+            </button>
+
             <button
               type="button"
               onClick={startWebsiteTour}
@@ -107,6 +131,8 @@ export function AppTopbar() {
           </div>
         </div>
       </header>
+
+      <DailyRewardsModal open={rewardsOpen} onClose={() => setRewardsOpen(false)} />
     </>
   );
 }

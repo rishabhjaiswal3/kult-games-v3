@@ -48,7 +48,7 @@ import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { PolymarketDepositModal } from "./PolymarketDepositModal";
-import { FlagCircle, type CountryCode } from "./FlagHex";
+import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
 import { PolymarketLogo } from "./PolymarketLogo";
 
@@ -190,7 +190,7 @@ const MATCHES: Match[] = [
 
 const TRADER_ADDRESSES = ["0x7a2f…c41", "0x3b9d…e07", "0xf12a…9b4", "0x55c8…1de", "0x9e34…a6f", "0x0b71…d22", "0xc4a0…77e", "0x6df2…334", "0xab19…502", "0x2e8c…f90"];
 
-type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; eventTitle?: string };
+type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; noTokenId?: string; eventTitle?: string; gameTime?: number; dayChange?: number };
 
 type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
 
@@ -219,12 +219,6 @@ function makeTrade(id: number, markets: BaseMarket[]): MarketTrade {
   };
 }
 
-type PriceEntry = { yes: number; dir: "up" | "down" | "flat"; delta: number; session: number };
-
-function seedPrices(markets: BaseMarket[]): Record<string, PriceEntry> {
-  return Object.fromEntries(markets.map((market) => [market.id, { yes: market.yes, dir: "flat", delta: 0, session: 0 }]));
-}
-
 function seedHistory(markets: BaseMarket[]): Record<string, number[]> {
   return Object.fromEntries(
     markets.map((market) => [
@@ -234,13 +228,13 @@ function seedHistory(markets: BaseMarket[]): Record<string, number[]> {
   );
 }
 
-/** Live Polymarket football data (real prices + real chart history, key-less &
- *  CORS-direct) with a simulated micro-movement layer for liveness. Falls back
- *  to the static football set if the public API is unavailable. */
+/** Live Polymarket football data — real prices, real 24h change and real chart
+ *  history (key-less & CORS-direct). Prices are never simulated: they re-anchor
+ *  from Gamma on every poll. Falls back to the static football set if the
+ *  public API is unavailable. */
 function useLiveMarketData() {
   const [markets, setMarkets] = useState<BaseMarket[]>(FALLBACK_MARKETS);
   const [source, setSource] = useState<"live" | "sim">("sim");
-  const [prices, setPrices] = useState<Record<string, PriceEntry>>(() => seedPrices(FALLBACK_MARKETS));
   const [history, setHistory] = useState<Record<string, number[]>>(() => seedHistory(FALLBACK_MARKETS));
   const [trades, setTrades] = useState<MarketTrade[]>(() => Array.from({ length: 7 }, (_, index) => makeTrade(index, FALLBACK_MARKETS)));
   const marketsRef = useRef<BaseMarket[]>(FALLBACK_MARKETS);
@@ -257,20 +251,8 @@ function useLiveMarketData() {
       setMarkets(real);
       setSource("live");
       if (firstLoad.current) {
-        setPrices(seedPrices(real));
-        setHistory(seedHistory(real));
         setTrades(Array.from({ length: 7 }, (_, index) => makeTrade(index, real)));
         firstLoad.current = false;
-      } else {
-        // Re-anchor live prices to the freshest real values, keep session drift.
-        setPrices((prev) => {
-          const next = { ...prev };
-          for (const market of real) {
-            const entry = prev[market.id];
-            next[market.id] = entry ? { ...entry, yes: market.yes } : { yes: market.yes, dir: "flat", delta: 0, session: 0 };
-          }
-          return next;
-        });
       }
       // Real price history per market powers the live chart.
       real.forEach((market) => {
@@ -289,35 +271,10 @@ function useLiveMarketData() {
     };
   }, []);
 
-  // Simulated micro-movement + streaming trades for a live feel between fetches.
+  // Ambient trade ticker between fetches (slated to be replaced by the real
+  // data-api /trades feed). Prices themselves are never touched here.
   useEffect(() => {
     const interval = setInterval(() => {
-      const list = marketsRef.current;
-      setPrices((prev) => {
-        const next = { ...prev };
-        for (const market of list) {
-          const prevEntry = prev[market.id];
-          const current = prevEntry?.yes ?? market.yes;
-          const session = prevEntry?.session ?? 0;
-          if (Math.random() < 0.55) {
-            const delta = Math.random() < 0.5 ? -1 : 1;
-            const yes = Math.min(94, Math.max(6, current + delta));
-            const moved = yes - current;
-            next[market.id] = { yes, dir: moved > 0 ? "up" : moved < 0 ? "down" : "flat", delta: moved, session: session + moved };
-          } else {
-            next[market.id] = { yes: current, dir: "flat", delta: 0, session };
-          }
-        }
-        setHistory((prevHistory) => {
-          const nextHistory: Record<string, number[]> = { ...prevHistory };
-          for (const market of list) {
-            const series = prevHistory[market.id] ?? [market.yes];
-            nextHistory[market.id] = [...series, next[market.id]?.yes ?? market.yes].slice(-36);
-          }
-          return nextHistory;
-        });
-        return next;
-      });
       setTrades((prev) => {
         const count = Math.random() < 0.4 ? 2 : 1;
         const fresh = Array.from({ length: count }, () => {
@@ -330,14 +287,14 @@ function useLiveMarketData() {
     return () => clearInterval(interval);
   }, []);
 
-  return { markets, prices, trades, history, source };
+  return { markets, trades, history, source };
 }
 
 export function LeaguePolymarketBoard() {
   const [selectedMarketId, setSelectedMarketId] = useState<string>(MARKETS[0].id);
   const category: (typeof MARKET_CATEGORIES)[number] = "All";
   const [view, setView] = useState<BoardView>("market");
-  const { markets, prices, trades, history, source } = useLiveMarketData();
+  const { markets, trades, history, source } = useLiveMarketData();
 
   // Trending movers → jump to that question's card in the grid below.
   const [highlightedMarketId, setHighlightedMarketId] = useState<string | null>(null);
@@ -351,9 +308,10 @@ export function LeaguePolymarketBoard() {
     document.getElementById(`poly-question-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
+  // dir/delta/session all reflect the REAL 24h price change from Gamma.
   const liveMarkets: LiveMarket[] = markets.map((market) => {
-    const live = prices[market.id];
-    return { ...market, yes: live?.yes ?? market.yes, dir: live?.dir ?? "flat", delta: live?.delta ?? 0, session: live?.session ?? 0 };
+    const change = market.dayChange ?? 0;
+    return { ...market, dir: change > 0 ? "up" : change < 0 ? "down" : "flat", delta: change, session: change };
   });
 
   const selectedMarket = liveMarkets.find((market) => market.id === selectedMarketId) ?? liveMarkets[0];
@@ -377,7 +335,7 @@ export function LeaguePolymarketBoard() {
       <div className="h-full lg:col-span-6">
         <WorldCupOddsHero />
       </div>
-      <TrendingMovers markets={marketsForCategory(liveMarkets, category)} onSelect={jumpToQuestion} />
+      <NextMatchPanel markets={marketsForCategory(liveMarkets, category)} onSelect={jumpToQuestion} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
         {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} highlighted={market.id === highlightedMarketId} />)}
@@ -966,6 +924,206 @@ function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
 }
 
 
+function formatKickoffCountdown(kickoff: number, now: number): string {
+  const ms = kickoff - now;
+  if (ms <= 0) return "now";
+  const hours = Math.floor(ms / 3_600_000);
+  const minutes = Math.ceil((ms % 3_600_000) / 60_000);
+  if (hours >= 24) return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+  return hours > 0 ? `${hours}h ${minutes.toString().padStart(2, "0")}m` : `${minutes}m`;
+}
+
+/** The current (live) or next (upcoming) match's headline questions with
+ *  one-tap YES/NO betting. Falls back to TrendingMovers when no match-day
+ *  markets are available (e.g. simulated fallback data). */
+function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
+  const { isAuthenticated, login } = useAuth();
+  const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
+  const [stakeUsd, setStakeUsd] = useState(10);
+  const [placed, setPlaced] = useState<{ id: string; side: "YES" | "NO" } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const withKickoff = markets.filter((m) => (m.gameTime ?? 0) > 0 && m.tokenId);
+  const kickoff = withKickoff.length ? Math.min(...withKickoff.map((m) => m.gameTime ?? 0)) : 0;
+  // Head-to-head questions lead ("Will France win…?", "Will Morocco win…?",
+  // draw), then the rest keep their volume order (Team to Advance, O/U, …).
+  const headlinePriority = (q: string): number => {
+    if (/^will .+ win on /i.test(q)) return 0;
+    if (/end in a draw/i.test(q)) return 1;
+    return 2;
+  };
+  const matchMarkets = withKickoff
+    .filter((m) => m.gameTime === kickoff)
+    .sort((a, b) => headlinePriority(a.question) - headlinePriority(b.question))
+    .slice(0, 4);
+  const matchName = matchMarkets[0]?.eventTitle ?? "Next match";
+  const [homeTeam, awayTeam] = matchName.split(/\s+vs\.?\s+/i);
+  const isLive = kickoff > 0 && now >= kickoff;
+  const isTrading = tradingStatus !== "idle" && tradingStatus !== "done";
+
+  // Live score for the featured match (worldCupApi), polled while in play.
+  const { data: allMatches } = useQuery({
+    queryKey: ["worldcup", "matches", "next-match-score"],
+    queryFn: fetchAllMatches,
+    enabled: isLive && Boolean(homeTeam && awayTeam),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const liveScore = useMemo(() => {
+    if (!isLive || !allMatches || !homeTeam || !awayTeam) return null;
+    const norm = (s: string) => s.trim().toLowerCase();
+    const h = norm(homeTeam);
+    const a = norm(awayTeam);
+    const found = allMatches.find((m) => {
+      const mh = norm(m.home);
+      const ma = norm(m.away);
+      return (mh === h && ma === a) || (mh === a && ma === h);
+    });
+    if (!found || found.homeScore === undefined || found.awayScore === undefined) return null;
+    return found;
+  }, [isLive, allMatches, homeTeam, awayTeam]);
+
+  async function handleBuy(market: LiveMarket, side: "YES" | "NO") {
+    if (!isAuthenticated) {
+      login();
+      return;
+    }
+    const tokenId = side === "YES" ? market.tokenId : market.noTokenId;
+    if (!tokenId || isTrading) return;
+    setPlaced(null);
+    try {
+      await placeMarketBuy(tokenId, stakeUsd);
+      setPlaced({ id: market.id, side });
+    } catch {
+      // tradeError from the hook already surfaces this
+    }
+  }
+
+  // No real match-day data (e.g. offline fallback set) — keep the old panel.
+  if (matchMarkets.length === 0) return <TrendingMovers markets={markets} onSelect={onSelect} />;
+
+  return (
+    <LeaguePanel fill={false} className="relative overflow-hidden border-emerald-400/20 p-3 lg:col-span-6">
+      <div className="relative mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          {homeTeam && awayTeam ? (
+            <h3 className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-sm font-bold uppercase tracking-[0.18em] text-white">
+              <TeamFlagCircle teamName={homeTeam.trim()} className="h-5 w-5 shrink-0 ring-1 ring-white/20" />
+              <span className="truncate">{homeTeam.trim()}</span>
+              <span className="text-white/40">vs.</span>
+              <TeamFlagCircle teamName={awayTeam.trim()} className="h-5 w-5 shrink-0 ring-1 ring-white/20" />
+              <span className="truncate">{awayTeam.trim()}</span>
+            </h3>
+          ) : (
+            <h3 className="truncate font-mono text-sm font-bold uppercase tracking-[0.18em] text-white">{matchName}</h3>
+          )}
+          <p className="mt-1 text-xs text-white/58">
+            {isLive ? (
+              <span className="inline-flex flex-wrap items-center gap-1.5 text-emerald-300">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="font-tech text-[10px] font-black uppercase tracking-widest">Live</span>
+                {liveScore ? (
+                  <span className="font-tech text-sm font-black text-white">
+                    {liveScore.home} <span className="text-emerald-300">{liveScore.homeScore}</span>
+                    <span className="mx-1 text-white/40">–</span>
+                    <span className="text-emerald-300">{liveScore.awayScore}</span> {liveScore.away}
+                  </span>
+                ) : (
+                  <span>Match in progress — markets live</span>
+                )}
+              </span>
+            ) : (
+              <>Kicks off in <span className="font-bold text-emerald-300">{formatKickoffCountdown(kickoff, now)}</span></>
+            )}
+          </p>
+        </div>
+        <MatchdayBadge label={isLive ? "Live now" : "Next match"} />
+      </div>
+
+      {/* Stake */}
+      <div className="relative mb-2 flex items-center gap-2">
+        <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
+        <input
+          type="number"
+          min={1}
+          step={1}
+          value={stakeUsd}
+          onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+          disabled={isTrading}
+          className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
+        />
+        <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">USDC</span>
+      </div>
+
+      <div className="relative max-h-[240px] space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(52,211,153,0.5)_transparent] [scrollbar-width:thin]">
+        {matchMarkets.map((market) => {
+          const placedHere = placed?.id === market.id ? placed.side : null;
+          return (
+            <div key={market.id} className="flex items-center gap-3 rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.07),transparent_55%),#070911] p-2.5">
+              {/* Question + chance on the left, Polymarket-style */}
+              <button type="button" onClick={() => onSelect(market.id)} className="min-w-0 flex-1 self-start pt-0.5 text-left" title="View full market card">
+                <p className="line-clamp-2 font-tech text-[13px] font-bold leading-snug text-white transition hover:text-emerald-200">{market.question}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <p className="font-tech text-2xl font-black leading-none text-white">
+                    {market.yes}
+                    <span className="ml-1 text-[10px] font-bold uppercase tracking-wider text-white/40">% chance</span>
+                  </p>
+                  {market.session !== 0 ? (
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-tech text-[9px] font-bold ${priceToneClass(market.dir)}`}>
+                      <PriceArrow dir={market.dir} /> {market.session > 0 ? "+" : ""}{market.session}¢ 24h
+                    </span>
+                  ) : null}
+                </div>
+                {/* Probability bar */}
+                <div className="mt-1.5 h-1 w-full max-w-[190px] overflow-hidden rounded-full bg-white/8">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.5)] transition-[width] duration-700"
+                    style={{ width: `${Math.min(100, Math.max(2, market.yes))}%` }}
+                  />
+                </div>
+                {placedHere ? (
+                  <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-emerald-300">✓ {placedHere} order placed · ${stakeUsd}</p>
+                ) : null}
+              </button>
+              {/* Yes stacked over No on the right */}
+              <div className="flex w-28 shrink-0 flex-col gap-1.5">
+                <button
+                  type="button"
+                  disabled={isTrading || !market.tokenId}
+                  onClick={() => void handleBuy(market, "YES")}
+                  className="flex items-center justify-between rounded-md border border-emerald-400/40 bg-emerald-400/10 px-2.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-emerald-300 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  <span>Yes</span><span>{market.yes}¢</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isTrading || !market.noTokenId}
+                  onClick={() => void handleBuy(market, "NO")}
+                  title={!market.noTokenId ? "No-side token unavailable for this market" : undefined}
+                  className="flex items-center justify-between rounded-md border border-rose-400/40 bg-rose-400/10 px-2.5 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-rose-300 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  <span>No</span><span>{100 - market.yes}¢</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {isTrading ? (
+        <p className="relative mt-1.5 text-center font-tech text-[9px] uppercase tracking-wider text-cyan-300">{TRADING_STATUS_LABEL[tradingStatus]}</p>
+      ) : tradeError ? (
+        <p className="relative mt-1.5 text-center text-[9px] text-rose-400">{tradeError}</p>
+      ) : null}
+    </LeaguePanel>
+  );
+}
+
 function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
 
@@ -987,7 +1145,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0"><p className="truncate font-tech text-[9px] uppercase tracking-wider text-white/50">⚽ {market.eventTitle ?? market.category}</p><p className="mt-1 line-clamp-2 font-tech text-[11px] font-bold leading-snug text-white">{market.question}</p></div>
                 <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 font-tech text-[11px] font-bold ${priceToneClass(sessionDir)}`}>
-                  <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢
+                  <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢ 24h
                 </span>
               </div>
               <span className="mt-1.5 block font-tech text-base font-black text-white">YES {market.yes}¢</span>
@@ -1621,7 +1779,7 @@ function LiveMarketChart({ market, markets, onSelect, history }: { market: LiveM
         <div className="text-right">
           <p className="font-tech text-3xl font-black leading-none text-white sm:text-4xl">{market.yes}<span className="text-lg text-white/40">%</span></p>
           <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-tech text-[10px] font-bold ${priceToneClass(sessionDir)}`}>
-            <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢ session
+            <PriceArrow dir={sessionDir} /> {market.session >= 0 ? "+" : ""}{market.session}¢ 24h
           </span>
         </div>
       </div>
