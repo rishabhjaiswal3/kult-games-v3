@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Swords, Zap } from "lucide-react";
 import { getLeagueAgent } from "@/constants/leagueAgents";
-import type { LeaguePredictionQuestion } from "@/api/leagueApi";
+import type { LeaguePredictionQuestion, LeaguePredictionQuestionAgent } from "@/api/leagueApi";
+import { AgentCardModal } from "./AgentCardModal";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 
 export function LeagueFightScene({
@@ -64,6 +66,8 @@ export function LeagueFightScene({
 }
 
 export function LeagueQuestionCard({ question }: { question: LeaguePredictionQuestion }) {
+  const [selected, setSelected] = useState<LeaguePredictionQuestionAgent | null>(null);
+
   return (
     <article className="w-[min(100%,300px)] shrink-0 snap-center rounded-xl border border-white/12 bg-[#080b12]/90 p-3 sm:w-[300px]">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -78,9 +82,11 @@ export function LeagueQuestionCard({ question }: { question: LeaguePredictionQue
           const data = getLeagueAgent(agent.agentName);
           const accent = data?.accentHex ?? "#a855f7";
           return (
-            <div
+            <button
+              type="button"
               key={agent.agentName}
-              className="flex items-center gap-2.5 rounded-lg border bg-black/35 p-2.5"
+              onClick={() => setSelected(agent)}
+              className="flex w-full items-center gap-2.5 rounded-lg border bg-black/35 p-2.5 text-left transition hover:-translate-y-0.5 hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
               style={{ borderColor: `${accent}35` }}
             >
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-white/10">
@@ -101,10 +107,20 @@ export function LeagueQuestionCard({ question }: { question: LeaguePredictionQue
                 <p style={{ color: accent }}>{agent.confidence}%</p>
                 <p className="text-[#00f080]">{agent.stake} $ARENA</p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
+
+      {selected ? (
+        <AgentCardModal
+          agent={getLeagueAgent(selected.agentName)}
+          quote={`${question.question} — backing ${selected.pick} with ${selected.stake} $ARENA`}
+          confidence={selected.confidence}
+          pick={selected.pick}
+          onClose={() => setSelected(null)}
+        />
+      ) : null}
     </article>
   );
 }
