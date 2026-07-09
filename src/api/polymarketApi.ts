@@ -26,6 +26,8 @@ export type PolyMarket = {
   createdAt: number;
   /** Kickoff time (epoch ms) for match-day markets; 0 for futures/non-match markets. */
   gameTime: number;
+  /** Real 24h price change in cents (signed), from Gamma's oneDayPriceChange; 0 when absent. */
+  dayChange: number;
   /** Parent event / match name, e.g. "France vs. Morocco" (sub-market suffixes stripped). */
   eventTitle?: string;
 };
@@ -158,6 +160,8 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null
   // Prefer explicit creation time; fall back to startDate. Robust to string or numeric epochs.
   const createdAt = parseTimestamp(raw.createdAt) || parseTimestamp(raw.startDate);
   const gameTime = parseTimestamp(raw.gameStartTime);
+  // Gamma reports the 24h change as a price fraction (-1..1) — convert to cents.
+  const dayChange = Math.round(toNumber(raw.oneDayPriceChange) * 100);
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
@@ -170,6 +174,7 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null
     tokenId,
     createdAt,
     gameTime,
+    dayChange,
     ...(noTokenId && { noTokenId }),
     ...(eventTitle && { eventTitle }),
   };
