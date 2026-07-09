@@ -162,9 +162,12 @@ export function ArenaMatchStatusModal({
   }, [battleQ.data?.battle?.gameId]);
 
   // Fire once per battleId — prevent double-navigation when status/battle re-poll after queue clears.
+  // Also skip if the battle is already ended (stale cache from a previous session).
   useEffect(() => {
     if (!open || !agent || !battleId || !opponentQ.data) return;
     if (matchFiredRef.current === battleId) return;
+    const battleStatus = battleQ.data?.battle?.status;
+    if (battleStatus === "COMPLETED" || battleStatus === "CANCELLED" || battleStatus === "DISPUTED") return;
     matchFiredRef.current = battleId;
     onMatchFound?.({
       agent,
@@ -173,7 +176,7 @@ export function ArenaMatchStatusModal({
       mode:   status?.mode ?? battleQ.data?.battle?.mode ?? "RANKED",
       gameId: resolvedGameIdRef.current,
     });
-  }, [open, agent, battleId, opponentQ.data, onMatchFound]);
+  }, [open, agent, battleId, opponentQ.data, onMatchFound, battleQ.data?.battle?.status]);
 
   if (!agent) return null;
 

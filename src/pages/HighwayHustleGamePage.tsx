@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -1286,6 +1287,7 @@ export default function HighwayHustleGamePage() {
         unityInstanceRef.current = null;
       }
       localStorage.removeItem('hrDuelPayload');
+      saveTrackedAiArenaBattleId(null);
     };
   }, []);
 
@@ -1298,6 +1300,8 @@ export default function HighwayHustleGamePage() {
       // 1. Show result overlay immediately
       setBattleResult(detail);
       setGamePhase("ended");
+      saveTrackedAiArenaBattleId(null);
+      localStorage.removeItem('hrDuelPayload');
 
       const bid = detail.battleId;
       if (!bid) {
