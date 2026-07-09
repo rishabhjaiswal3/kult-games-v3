@@ -693,8 +693,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "w-full max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
-            {queuedAgent.name} is already live in the arena lobby. Keep this queue running and open
-            the live match modal any time.
+            {queuedAgent.name} is already busy — could be in queue, an active battle, or post-battle onchain registration. Check the live status for updates.
           </p>
           <button
             type="button"
