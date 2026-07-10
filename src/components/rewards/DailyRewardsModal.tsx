@@ -1,8 +1,10 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, Gift, Lock, X } from "lucide-react";
 import { ArenaAgentMedia } from "@/components/league/ArenaAgentMedia";
 import finalRewardChest from "@/assets/icon-earn.png";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import {
   DAILY_REWARDS,
   RARITY_STYLES,
@@ -77,6 +79,14 @@ function claimGradient(rarity: RewardRarity): { background: string; color: strin
   return { background: "linear-gradient(120deg, #8b5cf6, #c026d3)", color: "#fff", glow: "rgba(168,85,247,0.45)" };
 }
 
+function rewardMediaProps(reward: DailyRewardDef) {
+  const isVideo = reward.img?.endsWith(".mp4") ?? false;
+  const fit = reward.imgFit ?? (isVideo ? "cover" : "contain");
+  const position = reward.imgPosition ?? (isVideo || fit === "cover" ? "top" : "center");
+  const layout: "fill" | "intrinsic" = fit === "contain" && !isVideo ? "intrinsic" : "fill";
+  return { fit, position, layout };
+}
+
 type DayStatus = "claimed" | "today" | "locked";
 
 /** One vertical reward card in the track grid — neon rarity frame, ring
@@ -131,16 +141,16 @@ function RewardCard({
         {reward.tag}
       </span>
 
-      {/* Artwork — no frame, the reward stands on its own */}
+      {/* Artwork — flex-centered so wide/portrait assets stay aligned on every breakpoint */}
       <span
-        className={`relative my-1 grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl sm:h-[72px] sm:w-[72px] ${
+        className={`relative my-1 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black/35 p-1.5 sm:h-[72px] sm:w-[72px] sm:p-2 ${
           reward.img && isToday ? "animate-[reward-float_3.6s_ease-in-out_infinite]" : ""
         }`}
         style={reward.img ? { boxShadow: `0 0 18px ${rarity.hex}${isToday ? "55" : "38"}` } : undefined}
         aria-hidden
       >
         {reward.img ? (
-          <ArenaAgentMedia src={reward.img} alt="" fit={reward.imgFit ?? "cover"} className="rounded-xl" />
+          <ArenaAgentMedia src={reward.img} alt="" {...rewardMediaProps(reward)} />
         ) : (
           <span
             className={`text-4xl leading-none sm:text-5xl ${
@@ -184,6 +194,8 @@ function RewardCard({
 }
 
 export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const navigate = useNavigate();
+  const { openCreateAgent } = useCreateAgent();
   const { state, isLoading, claim, isClaiming } = useDailyRewards();
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -220,9 +232,15 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
 
   const handleClaim = async () => {
     if (!claimable) return;
-    const before = currentDay;
-    await claim(before);
-    setJustClaimedDay(before);
+    const dayToClaim = currentDay;
+    const isFirstRewardClaim = claimedCount === 0;
+    await claim(dayToClaim);
+    setJustClaimedDay(dayToClaim);
+    if (isFirstRewardClaim) {
+      onClose();
+      navigate("/my-agents");
+      window.setTimeout(() => openCreateAgent(), 150);
+    }
   };
 
   const dayStatus = (day: number): DayStatus =>
@@ -422,14 +440,14 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                 {featured.img ? (
                   <span
                     key={`${featured.day}-${featuredClaimed}`}
-                    className={`absolute inset-4 z-10 overflow-hidden rounded-full ${
+                    className={`absolute inset-4 z-10 flex items-center justify-center overflow-hidden rounded-full bg-black/25 p-2 sm:p-3 ${
                       justClaimedDay
                         ? "animate-[reward-pop_0.6s_cubic-bezier(0.2,1.4,0.4,1)_both]"
                         : "animate-[reward-float_4.5s_ease-in-out_infinite]"
                     }`}
                     aria-hidden
                   >
-                    <ArenaAgentMedia src={featured.img} alt="" fit={featured.imgFit ?? "cover"} />
+                    <ArenaAgentMedia src={featured.img} alt="" {...rewardMediaProps(featured)} />
                   </span>
                 ) : (
                   <span

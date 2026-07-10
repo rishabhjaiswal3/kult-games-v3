@@ -5,11 +5,23 @@ type ArenaAgentMediaProps = {
   alt: string;
   className?: string;
   fit?: "cover" | "contain";
+  /** "intrinsic" sizes to the asset aspect ratio inside a flex/grid frame; "fill" stretches to the frame. */
+  layout?: "fill" | "intrinsic";
+  position?: "center" | "top";
 };
 
-export function ArenaAgentMedia({ src, alt, className, fit = "cover" }: ArenaAgentMediaProps) {
-  const fitClass =
-    fit === "contain" ? "object-contain object-center" : "object-cover object-top";
+export function ArenaAgentMedia({
+  src,
+  alt,
+  className,
+  fit = "cover",
+  layout = "fill",
+  position,
+}: ArenaAgentMediaProps) {
+  const objectPosition = position === "top" ? "object-top" : "object-center";
+  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
+  const sizeClass = layout === "intrinsic" ? "h-auto w-auto max-h-full max-w-full" : "h-full w-full";
+  const mediaClass = cn("block", sizeClass, fitClass, objectPosition, className);
 
   if (src.endsWith(".mp4")) {
     return (
@@ -19,7 +31,7 @@ export function ArenaAgentMedia({ src, alt, className, fit = "cover" }: ArenaAge
         loop
         muted
         playsInline
-        className={cn("h-full w-full", fitClass, className)}
+        className={mediaClass}
       />
     );
   }
@@ -28,7 +40,7 @@ export function ArenaAgentMedia({ src, alt, className, fit = "cover" }: ArenaAge
     <img
       src={src}
       alt={alt}
-      className={cn("h-full w-full", fitClass, className)}
+      className={mediaClass}
       loading="lazy"
       decoding="async"
     />
