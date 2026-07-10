@@ -104,27 +104,27 @@ const homeArenaAgents = [
 ];
 
 const homeHeroActionBase =
-  "min-w-0 w-full rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr] items-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-2.5 text-[8px] tracking-[0.1em] gap-1 min-[480px]:h-8.5 min-[480px]:px-3 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.11em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] sm:tracking-[0.12em]";
+  "min-w-0 w-full rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr] items-center text-center transition border shadow-[0_0_14px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(0,0,0,0.45),0_8px_18px_rgba(0,0,0,0.38)] h-8 px-2.5 text-[8px] tracking-[0.1em] gap-1 min-[480px]:h-8.5 min-[480px]:px-3 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.11em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] sm:tracking-[0.12em] md:h-6 md:max-w-[240px] md:px-2 md:text-[8px] md:tracking-[0.09em] md:gap-1 lg:h-9 lg:max-w-none lg:px-2.5 lg:text-[9px] lg:tracking-[0.12em] lg:gap-1.5 xl:h-9 xl:px-3 xl:text-[9.5px] xl:tracking-[0.12em]";
 
 const homeHeroActionStyles = {
   games:
-    "border-purple-300/50 bg-[linear-gradient(135deg,rgba(122,34,232,0.88),rgba(154,53,255,0.72),rgba(4,8,15,0.92))] text-white hover:border-purple-200/80 hover:bg-[linear-gradient(135deg,rgba(154,53,255,0.95),rgba(168,85,247,0.78),rgba(4,8,15,0.94))]",
+    "border-purple-400/40 bg-[linear-gradient(135deg,rgba(52,10,108,0.96),rgba(68,18,132,0.9),rgba(4,8,15,0.98))] text-white hover:border-purple-300/65 hover:bg-[linear-gradient(135deg,rgba(68,18,132,0.98),rgba(88,28,158,0.92),rgba(4,8,15,1))]",
   arena:
-    "border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]",
+    "border-cyan-400/38 bg-[linear-gradient(135deg,rgba(6,72,110,0.94),rgba(52,10,108,0.86),rgba(4,8,15,0.98))] text-white ring-1 ring-cyan-400/12 hover:border-cyan-300/60 hover:bg-[linear-gradient(135deg,rgba(8,92,138,0.96),rgba(68,18,132,0.9),rgba(4,8,15,1))]",
   league:
-    "border-amber-200/40 bg-[linear-gradient(135deg,rgba(251,191,36,0.4),rgba(154,53,255,0.34),rgba(4,8,15,0.92))] text-amber-50 hover:border-amber-100/70 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.5),rgba(154,53,255,0.42),rgba(4,8,15,0.94))] hover:text-white",
+    "border-amber-400/38 bg-[linear-gradient(135deg,rgba(110,68,8,0.94),rgba(52,10,108,0.78),rgba(4,8,15,0.98))] text-amber-100 hover:border-amber-300/60 hover:bg-[linear-gradient(135deg,rgba(132,88,12,0.96),rgba(68,18,132,0.86),rgba(4,8,15,1))] hover:text-white",
 } as const;
 
 function homeHeroCtaGridClass(count: number) {
   if (count <= 2) {
-    return "grid w-full max-w-full grid-cols-2 gap-1.5";
+    return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:grid-cols-1 md:max-w-[240px] md:gap-1.5 lg:grid-cols-2 lg:w-full lg:max-w-[400px] lg:gap-1.5";
   }
-  return "grid w-full max-w-full grid-cols-2 gap-1.5 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
+  return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:max-w-[240px] md:gap-1.5 lg:grid-cols-1 lg:w-full lg:max-w-[400px]";
 }
 
 function homeHeroCtaItemClass(count: number, index: number) {
   if (count === 1) {
-    return "col-span-2";
+    return "col-span-2 md:col-span-1 lg:col-span-2";
   }
   if (count === 3 && index === 2) {
     return "col-span-2 lg:col-span-1";
@@ -217,7 +217,7 @@ export function HomePage() {
       ? {
           key: "games",
           label: "Explore Games",
-          icon: <Joystick className="h-4 w-4 shrink-0 text-purple-200" aria-hidden />,
+          icon: <Joystick className="h-4 w-4 shrink-0 text-purple-200 md:h-3 md:w-3 lg:h-3 lg:w-3" aria-hidden />,
           onClick: handleExploreGames,
           variant: "games" as const,
         }
@@ -228,9 +228,9 @@ export function HomePage() {
           key: "arena",
           label: isAuthenticated ? "Enter AI Arena" : "Connect Wallet",
           icon: isAuthenticated ? (
-            <Swords className="h-4 w-4 shrink-0 text-cyan-100" aria-hidden />
+            <Swords className="h-4 w-4 shrink-0 text-cyan-100 md:h-3 md:w-3 lg:h-3 lg:w-3" aria-hidden />
           ) : (
-            <Wallet className="h-4 w-4 shrink-0 text-cyan-100" aria-hidden />
+            <Wallet className="h-4 w-4 shrink-0 text-cyan-100 md:h-3 md:w-3 lg:h-3 lg:w-3" aria-hidden />
           ),
           onClick: handlePrimaryCta,
           variant: "arena" as const,
@@ -239,7 +239,7 @@ export function HomePage() {
       ? {
           key: "league",
           label: "Enter League",
-          icon: <Trophy className="h-4 w-4 shrink-0 text-amber-200" aria-hidden />,
+          icon: <Trophy className="h-4 w-4 shrink-0 text-amber-200 md:h-3 md:w-3 lg:h-3 lg:w-3" aria-hidden />,
           onClick: handleEnterLeague,
           variant: "league" as const,
         }
