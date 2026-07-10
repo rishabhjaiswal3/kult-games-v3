@@ -104,7 +104,7 @@ const homeArenaAgents = [
 ];
 
 const homeHeroActionBase =
-  "min-w-0 w-full max-w-[190px] rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr_auto] items-center text-center transition whitespace-nowrap border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-2.5 text-[8px] tracking-[0.11em] gap-1 min-[480px]:h-8.5 min-[480px]:px-2.5 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.12em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] min-[480px]:w-auto min-[480px]:min-w-[148px]";
+  "min-w-0 w-full rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr] items-center text-center transition border shadow-[0_0_18px_rgba(0,210,255,0.16)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,210,255,0.32),0_12px_26px_rgba(0,0,0,0.32)] h-8 px-2.5 text-[8px] tracking-[0.1em] gap-1 min-[480px]:h-8.5 min-[480px]:px-3 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.11em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] sm:tracking-[0.12em]";
 
 const homeHeroActionStyles = {
   games:
@@ -122,12 +122,12 @@ function homeHeroCtaGridClass(count: number) {
   if (count === 2) {
     return "flex w-full max-w-full flex-wrap items-center gap-2 min-[480px]:gap-2.5";
   }
-  return "grid w-full max-w-[620px] grid-cols-1 gap-1.5 min-[480px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
+  return "grid w-full max-w-full grid-cols-1 gap-1.5 min-[480px]:grid-cols-2 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
 }
 
 function homeHeroCtaItemClass(count: number, index: number) {
   if (count === 3 && index === 2) {
-    return "min-[480px]:col-span-2 md:col-span-1 lg:col-span-1";
+    return "min-[480px]:col-span-2 lg:col-span-1";
   }
   return "";
 }

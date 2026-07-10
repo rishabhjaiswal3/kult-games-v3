@@ -4,7 +4,9 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { leaderboardElo, useEnrichedArenaLeaderboard } from "@/hooks/useEnrichedArenaLeaderboard";
 import type { AiArenaAgent, AiArenaLeaderboardEntry, AiArenaMatchmakingStatusBody } from "@/types/aiArenaGateway";
 
-const LIVE_ARENA_REFRESH_MS = 2_000;
+/** Open-lobby status is fetched per agent — keep this interval conservative. */
+const DEFAULT_OPEN_LOBBY_REFRESH_MS = 30_000;
+const DEFAULT_LEADERBOARD_REFRESH_MS = 30_000;
 
 export type ArenaOpenLobbyItem = {
   kind: "open-lobby";
@@ -49,7 +51,10 @@ function buildRankedBattleItems(entries: AiArenaLeaderboardEntry[], maxPairs: nu
   return items;
 }
 
-export function useArenaOpenLobbies(enabled = true) {
+export function useArenaOpenLobbies(
+  enabled = true,
+  refetchIntervalMs = DEFAULT_OPEN_LOBBY_REFRESH_MS,
+) {
   return useQuery({
     queryKey: ["aiArenaGateway", "openLobbies"],
     queryFn: async () => {
@@ -67,24 +72,34 @@ export function useArenaOpenLobbies(enabled = true) {
       return withStatus.filter((row): row is { agent: AiArenaAgent; status: AiArenaMatchmakingStatusBody } => Boolean(row.status?.inQueue));
     },
     enabled,
-    staleTime: LIVE_ARENA_REFRESH_MS,
-    refetchInterval: LIVE_ARENA_REFRESH_MS,
+    staleTime: refetchIntervalMs,
+    refetchInterval: enabled ? refetchIntervalMs : false,
     retry: 1,
   });
 }
 
 type UseArenaBattleBoardOptions = {
   enabled?: boolean;
+  /** When false, skips per-agent matchmaking status calls (ranked leaderboard only). */
+  includeOpenLobbies?: boolean;
   maxRankedPairs?: number;
+  openLobbyRefetchIntervalMs?: number;
+  leaderboardRefetchIntervalMs?: number;
 };
 
 export function useArenaBattleBoard(options: UseArenaBattleBoardOptions = {}) {
-  const { enabled = true, maxRankedPairs = 6 } = options;
-  const openLobbiesQ = useArenaOpenLobbies(enabled);
+  const {
+    enabled = true,
+    includeOpenLobbies = true,
+    maxRankedPairs = 6,
+    openLobbyRefetchIntervalMs = DEFAULT_OPEN_LOBBY_REFRESH_MS,
+    leaderboardRefetchIntervalMs = DEFAULT_LEADERBOARD_REFRESH_MS,
+  } = options;
+  const openLobbiesQ = useArenaOpenLobbies(enabled && includeOpenLobbies, openLobbyRefetchIntervalMs);
   const leaderboardQ = useEnrichedArenaLeaderboard({
     enabled,
-    staleTime: LIVE_ARENA_REFRESH_MS,
-    refetchInterval: LIVE_ARENA_REFRESH_MS,
+    staleTime: leaderboardRefetchIntervalMs,
+    refetchInterval: leaderboardRefetchIntervalMs,
   });
 
   const openLobbyItems = useMemo<ArenaOpenLobbyItem[]>(

@@ -241,6 +241,7 @@ type AiArenaMatchmakingContextValue = {
   buttonLabel: string;
   helperText: string;
   queuedAgent: AiArenaAgent | null;
+  agentBusy: boolean;
   startButtonDisabled: boolean;
   joinButtonDisabled: boolean;
   startMatchmaking: (gameId?: AiArenaGameId) => void;
@@ -298,8 +299,8 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
         })
       ),
     enabled: isAiArenaReady && agents.length > 0,
-    staleTime: 4_000,
-    refetchInterval: 4_000,
+    staleTime: 3_000,
+    refetchInterval: 3_000,
     retry: 1,
   });
 
@@ -307,6 +308,22 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     () => queueQ.data?.find((row) => row.status?.inQueue)?.agent ?? null,
     [queueQ.data]
   );
+
+  const trackedBattleQ = useQuery({
+    queryKey: ["aiArenaGateway", "trackedBattle", trackedBattleId],
+    queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
+    enabled: isAiArenaReady && !!trackedBattleId,
+    staleTime: 5_000,
+    refetchInterval: 5_000,
+    retry: 1,
+  });
+
+  const agentInActiveBattle = useMemo(() => {
+    const status = trackedBattleQ.data?.battle?.status;
+    return status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS";
+  }, [trackedBattleQ.data?.battle?.status]);
+
+  const agentBusy = !!queuedAgent || agentInActiveBattle;
 
   const leaveQueueMut = useMutation({
     mutationFn: async (agentId: string) => aiArenaGatewayApi.leaveMatchmakingQueue(agentId),
@@ -337,11 +354,11 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
   const startButtonDisabled =
     isAuthenticated &&
     agents.length > 0 &&
-    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+    (!isAiArenaReady || myAgentsQ.isLoading || agentBusy);
   const joinButtonDisabled =
     isAuthenticated &&
     agents.length > 0 &&
-    (!isAiArenaReady || myAgentsQ.isLoading || !!queuedAgent);
+    (!isAiArenaReady || myAgentsQ.isLoading || agentBusy);
 
   const startMatchmaking = useCallback((gameId: AiArenaGameId = AI_ARENA_DEFAULT_GAME_ID) => {
     selectedGameIdRef.current = gameId;
@@ -357,13 +374,12 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!isAiArenaReady || myAgentsQ.isLoading || queuedAgent) {
-      if (queuedAgent) setStatusModalAgent(queuedAgent);
+    if (!isAiArenaReady || myAgentsQ.isLoading || agentBusy) {
       return;
     }
 
     setStartModalOpen(true);
-  }, [agents.length, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate, queuedAgent]);
+  }, [agents.length, agentBusy, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate]);
 
   const openJoinBattle = useCallback(() => {
     if (!isAuthenticated) {
@@ -376,13 +392,12 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!isAiArenaReady || myAgentsQ.isLoading || queuedAgent) {
-      if (queuedAgent) setStatusModalAgent(queuedAgent);
+    if (!isAiArenaReady || myAgentsQ.isLoading || agentBusy) {
       return;
     }
 
     setJoinBattleOpen(true);
-  }, [agents.length, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate, queuedAgent]);
+  }, [agents.length, agentBusy, isAuthenticated, isAiArenaReady, login, myAgentsQ.isLoading, navigate]);
 
   const handleMatchFound = (payload: {
     agent: AiArenaAgent;
@@ -432,13 +447,14 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
       buttonLabel,
       helperText,
       queuedAgent,
+      agentBusy,
       startButtonDisabled,
       joinButtonDisabled,
       startMatchmaking,
       openQueuedMatchStatus: () => queuedAgent && setStatusModalAgent(queuedAgent),
       openJoinBattle,
     }),
-    [buttonLabel, helperText, queuedAgent, startButtonDisabled, joinButtonDisabled, startMatchmaking, openJoinBattle],
+    [buttonLabel, helperText, queuedAgent, agentBusy, startButtonDisabled, joinButtonDisabled, startMatchmaking, openJoinBattle],
   );
 
   return (
@@ -693,7 +709,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           className={`text-muted-foreground ${compact ? "max-w-[240px] text-center text-[11px]" : "w-full max-w-md text-left text-xs xl:col-span-1"}`}
         >
           <p>
-            {queuedAgent.name} is already busy — could be in queue, an active battle, or post-battle onchain registration. Check the live status for updates.
+            {queuedAgent.name} is waiting for an opponent. Stay in the matchmaking queue and you’ll be notified the moment a battle is ready
           </p>
           <button
             type="button"
@@ -1083,7 +1099,7 @@ const competeGames: CompeteGame[] = [
 ];
 
 function WhereAgentsCompete() {
-  const { startMatchmaking, startButtonDisabled, queuedAgent, openQueuedMatchStatus } = useAiArenaMatchmakingFlow();
+  const { startMatchmaking, startButtonDisabled, agentBusy } = useAiArenaMatchmakingFlow();
   const canStartFromCards = !startButtonDisabled;
   const agentBusy = startButtonDisabled && !!queuedAgent;
 
@@ -1113,18 +1129,13 @@ function WhereAgentsCompete() {
             type="button"
             key={game.title}
             onClick={() => {
-              if (canStartFromCards) {
-                startMatchmaking(game.gameId);
-                return;
-              }
-              if (queuedAgent) {
-                openQueuedMatchStatus();
-              }
+              if (!canStartFromCards) return;
+              startMatchmaking(game.gameId);
             }}
-            disabled={!canStartFromCards && !queuedAgent}
+            disabled={!canStartFromCards}
             className={cn(
               "arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50",
-              canStartFromCards || queuedAgent
+              canStartFromCards
                 ? "hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)]"
                 : "cursor-not-allowed opacity-65",
             )}
@@ -1789,7 +1800,11 @@ function MyBattleSection() {
 }
 
 function LiveBattles() {
-  const battleBoardQ = useArenaBattleBoard({ maxRankedPairs: 6 });
+  const battleBoardQ = useArenaBattleBoard({
+    maxRankedPairs: 6,
+    includeOpenLobbies: false,
+    leaderboardRefetchIntervalMs: 30_000,
+  });
   const previewItems = battleBoardQ.items.slice(0, 1);
 
   return (

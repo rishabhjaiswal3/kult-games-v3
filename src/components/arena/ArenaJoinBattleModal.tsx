@@ -30,7 +30,12 @@ export type ArenaJoinBattleModalProps = {
 
 export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: ArenaJoinBattleModalProps) {
   const queryClient = useQueryClient();
-  const battleBoardQ = useArenaBattleBoard({ enabled: open, maxRankedPairs: 8 });
+  const battleBoardQ = useArenaBattleBoard({
+    enabled: open,
+    maxRankedPairs: 8,
+    openLobbyRefetchIntervalMs: 3_000,
+    leaderboardRefetchIntervalMs: 30_000,
+  });
 
   const [challengeAgentId, setChallengeAgentId] = useState<string | null>(agents[0]?.id ?? null);
   const [mode, setMode] = useState<AiArenaMatchMode>("RANKED");

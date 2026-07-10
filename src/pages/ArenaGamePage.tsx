@@ -535,11 +535,13 @@ function AgentCard({
   side,
   isWinner,
   isLoser,
+  compact = false,
 }: {
   agent: AiArenaAgent | null;
   side: "left" | "right";
   isWinner?: boolean;
   isLoser?: boolean;
+  compact?: boolean;
 }) {
   const rankInfo = agent ? getRankFromElo(agent.eloRating) : null;
   const color = agent ? clanColor(agent.clan) : "#8b6dff";
@@ -547,11 +549,63 @@ function AgentCard({
 
   if (!agent) {
     return (
-      <div className="flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-3 sm:px-3">
-        <div className="h-12 w-12 animate-pulse rounded-xl bg-white/5 sm:h-14 sm:w-14" />
+      <div
+        className={
+          compact
+            ? "flex min-w-0 flex-col items-center gap-1.5 px-1 py-2"
+            : "flex min-w-0 flex-1 items-center gap-2 px-2 sm:gap-3 sm:px-3"
+        }
+      >
+        <div className="h-10 w-10 animate-pulse rounded-xl bg-white/5 sm:h-14 sm:w-14" />
         <div className="space-y-1.5">
-          <div className="h-3 w-24 animate-pulse rounded bg-white/8" />
-          <div className="h-2 w-16 animate-pulse rounded bg-white/5" />
+          <div className="h-3 w-20 animate-pulse rounded bg-white/8" />
+          <div className="h-2 w-14 animate-pulse rounded bg-white/5" />
+        </div>
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div
+        className={`flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-center transition-all duration-500 ${
+          isLoser ? "opacity-40 grayscale" : ""
+        }`}
+      >
+        <div className="relative shrink-0">
+          <div
+            className="absolute -inset-1 rounded-lg blur-md opacity-40"
+            style={{ background: `${color}40` }}
+          />
+          <ArenaAgentThumbnail
+            agent={agent}
+            className="relative h-10 w-10 rounded-lg border-white/15"
+          />
+          {isWinner ? (
+            <Crown
+              className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 drop-shadow-lg"
+              style={{ color: "#fbbf24" }}
+            />
+          ) : null}
+        </div>
+        <div className="min-w-0 w-full">
+          <div className="truncate font-display text-[11px] font-bold leading-tight text-white">
+            {agent.name}
+          </div>
+          <div className="mt-0.5 truncate text-[8px] font-mono uppercase tracking-wider text-white/45">
+            {agent.archetype}
+          </div>
+          <div className="mt-1 flex items-center justify-center gap-1">
+            <span className="font-tech text-[10px] font-bold" style={{ color }}>
+              {agent.eloRating.toLocaleString()}
+            </span>
+            <span className="text-[8px] text-white/30 font-tech">ELO</span>
+          </div>
+          <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[8px] text-white/30 font-tech">
+            <span>{agent.wins}W</span>
+            <span className="text-white/20">·</span>
+            <span>{agent.losses}L</span>
+          </div>
         </div>
       </div>
     );
@@ -626,13 +680,13 @@ function AgentCard({
   );
 }
 
-/** Top banner: both agents + VS center */
+/** Top banner: both agents + VS center (compact layout for the narrow battle chat drawer). */
 function AgentBanner({
   myAgent,
   opponent,
   battle,
   gamePhase,
-  mode,
+  mode: _mode,
 }: {
   myAgent: AiArenaAgent | null;
   opponent: AiArenaAgent | null;
@@ -649,7 +703,7 @@ function AgentBanner({
       : result?.winnerId !== myId;
 
   return (
-    <div className="relative border-b border-white/8 bg-[#04080f]/95 backdrop-blur overflow-hidden">
+    <div className="relative overflow-hidden border-b border-white/8 bg-[#04080f]/95 backdrop-blur">
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
@@ -661,16 +715,17 @@ function AgentBanner({
       <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-[#8b5cf620] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-[#06b6d420] to-transparent" />
 
-      <div className="relative grid min-h-[86px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
+      <div className="relative grid grid-cols-[minmax(0,1fr)_2.5rem_minmax(0,1fr)] items-center gap-0 px-1 py-1 sm:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)]">
         <AgentCard
           agent={myAgent}
           side="left"
+          compact
           isWinner={gamePhase === "ended" && myWon}
           isLoser={gamePhase === "ended" && !myWon && !!result}
         />
 
-        <div className="flex shrink-0 flex-col items-center justify-center px-1.5 sm:px-2">
-          <span className="font-display text-xl font-black text-gradient sm:text-2xl">
+        <div className="flex shrink-0 flex-col items-center justify-center self-center">
+          <span className="font-display text-base font-black leading-none text-gradient sm:text-lg">
             VS
           </span>
         </div>
@@ -678,6 +733,7 @@ function AgentBanner({
         <AgentCard
           agent={opponent}
           side="right"
+          compact
           isWinner={gamePhase === "ended" && !!oppWon}
           isLoser={gamePhase === "ended" && oppWon === false && !!result}
         />

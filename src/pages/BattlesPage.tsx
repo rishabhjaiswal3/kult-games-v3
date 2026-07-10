@@ -354,12 +354,28 @@ function RankCard({ firstAgent }: { firstAgent: AiArenaAgent | null }) {
   );
 }
 
-function GameModeCard({ mode, onStartMatchmaking }: { mode: GameMode; onStartMatchmaking: (gameId: AiArenaGameId) => void }) {
+function GameModeCard({
+  mode,
+  onStartMatchmaking,
+  disabled = false,
+}: {
+  mode: GameMode;
+  onStartMatchmaking: (gameId: AiArenaGameId) => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={() => onStartMatchmaking(mode.gameId)}
-      className="arena-panel group relative h-[260px] overflow-hidden text-left transition hover:-translate-y-1 hover:border-cyan-300/40 hover:shadow-[0_18px_46px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50"
+      disabled={disabled}
+      onClick={() => {
+        if (disabled) return;
+        onStartMatchmaking(mode.gameId);
+      }}
+      className={`arena-panel group relative h-[260px] overflow-hidden text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50 ${
+        disabled
+          ? "cursor-not-allowed opacity-65"
+          : "hover:-translate-y-1 hover:border-cyan-300/40 hover:shadow-[0_18px_46px_rgba(0,0,0,0.36),0_0_28px_rgba(34,211,238,0.12)]"
+      }`}
     >
       {mode.video ? (
         <video src={mode.video} autoPlay loop muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-78 transition duration-500 group-hover:scale-105 group-hover:opacity-90" />
@@ -377,7 +393,7 @@ function GameModeCard({ mode, onStartMatchmaking }: { mode: GameMode; onStartMat
           </span>
           <p className="mt-2 max-w-[250px] text-xs leading-relaxed text-white/72">{mode.body}</p>
           <span className="mt-4 inline-flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-100 transition group-hover:gap-2.5 group-hover:text-white">
-            Start matchmaking
+            {disabled ? "Agent busy" : "Start matchmaking"}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </span>
         </div>
@@ -386,13 +402,24 @@ function GameModeCard({ mode, onStartMatchmaking }: { mode: GameMode; onStartMat
   );
 }
 
-function GameCarouselSection({ onStartMatchmaking }: { onStartMatchmaking: (gameId: AiArenaGameId) => void }) {
+function GameCarouselSection({
+  onStartMatchmaking,
+  matchmakingBlocked,
+}: {
+  onStartMatchmaking: (gameId: AiArenaGameId) => void;
+  matchmakingBlocked: boolean;
+}) {
   return (
     <section className="mt-7" data-tour="battles-game-modes">
       <h2 className="font-tech text-sm uppercase tracking-[0.08em]">CHOOSE YOUR GAME</h2>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {gameModes.map((mode) => (
-          <GameModeCard key={mode.title} mode={mode} onStartMatchmaking={onStartMatchmaking} />
+          <GameModeCard
+            key={mode.title}
+            mode={mode}
+            onStartMatchmaking={onStartMatchmaking}
+            disabled={matchmakingBlocked}
+          />
         ))}
       </div>
     </section>
@@ -1044,6 +1071,23 @@ const BattlesPage = () => {
     () => (myStatusesQ.data ?? []).filter((row) => Boolean(row.status?.inQueue)),
     [myStatusesQ.data]
   );
+
+  const trackedBattleQ = useQuery({
+    queryKey: ["aiArenaGateway", "battlesTrackedBattle", trackedBattleId],
+    queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
+    enabled: isAuthenticated && isAiArenaReady && !!trackedBattleId,
+    staleTime: 5_000,
+    refetchInterval: 5_000,
+    retry: 1,
+  });
+
+  const agentInActiveBattle = useMemo(() => {
+    const status = trackedBattleQ.data?.battle?.status;
+    return status === "PENDING" || status === "INITIALIZING" || status === "IN_PROGRESS";
+  }, [trackedBattleQ.data?.battle?.status]);
+
+  const matchmakingBlocked = myQueueRows.length > 0 || agentInActiveBattle;
+
   const topPerformerAgents = useMemo(
     () =>
       [...myAgents]
@@ -1265,6 +1309,10 @@ const BattlesPage = () => {
       return;
     }
 
+    if (matchmakingBlocked) {
+      return;
+    }
+
     setStartModalOpen(true);
   };
 
@@ -1280,7 +1328,10 @@ const BattlesPage = () => {
         <RankCard firstAgent={myAgents[0] ?? null} />
       </div>
 
-      <GameCarouselSection onStartMatchmaking={openStartMatchmaking} />
+      <GameCarouselSection
+        onStartMatchmaking={openStartMatchmaking}
+        matchmakingBlocked={isAuthenticated && myAgents.length > 0 && matchmakingBlocked}
+      />
 
       <div className="mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-5">
@@ -1408,7 +1459,8 @@ const BattlesPage = () => {
                   <button
                     type="button"
                     onClick={() => openStartMatchmaking()}
-                    className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/28 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(12,18,28,0.55))] px-3.5 py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/55 hover:text-white"
+                    disabled={matchmakingBlocked}
+                    className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/28 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(12,18,28,0.55))] px-3.5 py-2.5 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/55 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Swords className="h-3.5 w-3.5" />
                     Start matching
