@@ -14,6 +14,7 @@ import {
   type RewardRarity,
 } from "@/constants/dailyRewards";
 import { useDailyRewards } from "@/hooks/useDailyRewards";
+import { hasArenaAgent, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 
 const CELEBRATION_COLORS = ["#fbbf24", "#c084fc", "#22d3ee", "#f472b6", "#34d399", "#fb7185", "#facc15"];
 
@@ -197,6 +198,8 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   const navigate = useNavigate();
   const { openCreateAgent } = useCreateAgent();
   const { state, isLoading, claim, isClaiming } = useDailyRewards();
+  const myAgentsQ = useMyArenaAgents();
+  const userHasAgent = hasArenaAgent(myAgentsQ.data);
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -236,7 +239,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
     const isFirstRewardClaim = claimedCount === 0;
     await claim(dayToClaim);
     setJustClaimedDay(dayToClaim);
-    if (isFirstRewardClaim) {
+    if (isFirstRewardClaim && !userHasAgent) {
       onClose();
       navigate("/my-agents");
       window.setTimeout(() => openCreateAgent(), 150);
