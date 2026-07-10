@@ -157,11 +157,16 @@ export default function AccessLoginPage() {
         </div>
 
         <h1
-          className="anim-title w-full whitespace-nowrap font-tech font-black uppercase leading-none text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.25)]"
+          className="anim-title flex w-full items-baseline justify-center gap-2 whitespace-nowrap font-tech font-black uppercase leading-none text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.25)]"
           style={{ fontSize: "clamp(1.6rem, 8vw, 4.5rem)", letterSpacing: "0.08em" }}
         >
           Kult Browser
+          {/* <span className="font-sans text-[0.20em] font-medium normal-case tracking-normal text-white/45 text-yellow-500">beta</span> */}
+            <span className="font-sans text-[0.60rem] font-medium normal-case tracking-normal text-black bg-yellow-500  w-[30px] items-center justify-center flex" style={{borderRadius:'40px', height:"16px"}}>
+            Beta
+          </span>
         </h1>
+         
         <p className="anim-sub mt-2 text-[11px] font-bold uppercase tracking-[0.34em] text-white/50">
           Private access gateway
         </p>
