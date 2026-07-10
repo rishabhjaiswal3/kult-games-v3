@@ -104,7 +104,7 @@ const homeArenaAgents = [
 ];
 
 const homeHeroActionBase =
-  "min-w-0 w-full rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr] items-center text-center transition border shadow-[0_0_14px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(0,0,0,0.45),0_8px_18px_rgba(0,0,0,0.38)] h-8 px-2.5 text-[8px] tracking-[0.1em] gap-1 min-[480px]:h-8.5 min-[480px]:px-3 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.11em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] sm:tracking-[0.12em] md:h-6 md:max-w-[240px] md:px-2 md:text-[8px] md:tracking-[0.09em] md:gap-1 lg:h-9 lg:max-w-none lg:px-2.5 lg:text-[9px] lg:tracking-[0.12em] lg:gap-1.5 xl:h-9 xl:px-3 xl:text-[9.5px] xl:tracking-[0.12em]";
+  "min-w-0 w-full rounded-md font-tech font-black uppercase grid grid-cols-[auto_1fr] items-center text-center transition border shadow-[0_0_14px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_0_22px_rgba(0,0,0,0.45),0_8px_18px_rgba(0,0,0,0.38)] h-8 px-2.5 text-[8px] tracking-[0.1em] gap-1 min-[480px]:h-8.5 min-[480px]:px-3 min-[480px]:text-[8.5px] min-[480px]:tracking-[0.11em] min-[480px]:gap-1.5 sm:h-9 sm:text-[9px] sm:tracking-[0.12em] md:h-6 md:max-w-[240px] md:px-2 md:text-[8px] md:tracking-[0.09em] md:gap-1 lg:h-9 lg:max-w-full lg:px-2.5 lg:text-[9px] lg:tracking-[0.12em] lg:gap-1.5 xl:h-9 xl:px-3 xl:text-[9.5px] xl:tracking-[0.12em]";
 
 const homeHeroActionStyles = {
   games:
@@ -117,9 +117,9 @@ const homeHeroActionStyles = {
 
 function homeHeroCtaGridClass(count: number) {
   if (count <= 2) {
-    return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:grid-cols-1 md:max-w-[240px] md:gap-1.5 lg:grid-cols-2 lg:w-full lg:max-w-[400px] lg:gap-1.5";
+    return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:grid-cols-1 md:max-w-[240px] md:gap-1.5 lg:grid-cols-2 lg:w-full lg:max-w-full lg:gap-1.5";
   }
-  return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:max-w-[240px] md:gap-1.5 lg:grid-cols-1 lg:w-full lg:max-w-[400px]";
+  return "grid w-full max-w-full grid-cols-2 gap-1.5 sm:max-w-[300px] md:max-w-[240px] md:gap-1.5 lg:grid-cols-1 lg:w-full lg:max-w-full";
 }
 
 function homeHeroCtaItemClass(count: number, index: number) {
