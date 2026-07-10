@@ -269,7 +269,7 @@ export function HomePage() {
               Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
-          <div className="w-full max-w-[36rem] space-y-3 sm:max-w-[28rem] sm:space-y-5 lg:max-w-none">
+          <div className="w-full max-w-[36rem] space-y-3 sm:max-w-[28rem] sm:space-y-5 lg:max-w-[19rem] xl:max-w-[21rem]">
             <h1 className="home-agentic-title max-w-[22rem] font-display [font-family:'Orbitron',sans-serif] text-[1.66rem] font-black uppercase leading-[0.98] tracking-[0.016em] text-white min-[390px]:max-w-[24rem] min-[390px]:text-[1.82rem] sm:max-w-[26rem] sm:text-[2.5rem] sm:leading-[1.02] lg:max-w-none lg:text-[2.85rem] xl:text-[3.1rem]">
               The Operating
               <br />
