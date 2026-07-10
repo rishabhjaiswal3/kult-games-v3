@@ -31,7 +31,7 @@ export function ArenaAgentThumbnail({ agent, className, mediaClassName, size = "
           loop
           muted
           playsInline
-          className={cn("h-full w-full object-cover object-center", mediaClassName)}
+          className={cn("h-[420px] w-full object-cover object-center", mediaClassName)}
         />
       ) : (
         <img

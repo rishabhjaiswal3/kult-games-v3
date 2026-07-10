@@ -92,7 +92,7 @@ export function DashboardLiveAgentPanel({
     <section data-tour="dashboard-agent" className="group relative overflow-hidden rounded-xl border border-white/10 bg-[#04080f]/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:border-[#8b29ff]/40 hover:shadow-[0_8px_40px_rgba(139,41,255,0.15)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_50%,rgba(139,41,255,0.05),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(0,255,128,0.03),transparent_50%)]" />
       <div className="relative z-10 grid md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="relative h-[220px] shrink-0 overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] md:h-auto md:min-h-[220px] md:border-b-0 md:border-r">
+        <div className="relative h-[380px] shrink-0 overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#180b2b] via-[#0a0f18] to-[#04080f] md:h-auto md:min-h-[220px] md:border-b-0 md:border-r">
           <ArenaAgentThumbnail
             agent={agent}
             size="md"

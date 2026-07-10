@@ -116,18 +116,18 @@ const homeHeroActionStyles = {
 } as const;
 
 function homeHeroCtaGridClass(count: number) {
-  if (count <= 1) {
-    return "flex w-full max-w-[190px] flex-col gap-1.5";
+  if (count <= 2) {
+    return "grid w-full max-w-full grid-cols-2 gap-1.5";
   }
-  if (count === 2) {
-    return "flex w-full max-w-full flex-wrap items-center gap-2 min-[480px]:gap-2.5";
-  }
-  return "grid w-full max-w-full grid-cols-1 gap-1.5 min-[480px]:grid-cols-2 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
+  return "grid w-full max-w-full grid-cols-2 gap-1.5 lg:grid-cols-1 lg:w-[188px] lg:max-w-[188px]";
 }
 
 function homeHeroCtaItemClass(count: number, index: number) {
+  if (count === 1) {
+    return "col-span-2";
+  }
   if (count === 3 && index === 2) {
-    return "min-[480px]:col-span-2 lg:col-span-1";
+    return "col-span-2 lg:col-span-1";
   }
   return "";
 }
@@ -260,7 +260,7 @@ export function HomePage() {
         />
         <div className="absolute inset-0 hidden bg-gradient-to-r from-[#050913]/96 via-[#050913]/58 via-[42%] to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050913]/25 to-transparent" />
-        <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-16 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,30rem)_1fr] xl:min-h-[660px] 2xl:grid-cols-[minmax(0,34rem)_1fr] 2xl:min-h-[780px]">
+        <div className="relative z-10 flex min-h-[490px] flex-col justify-end gap-8 p-5 pb-8 pt-54 sm:min-h-[520px] sm:justify-start sm:p-8 sm:pt-16 lg:min-h-[560px] lg:grid lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,30rem)_1fr] xl:min-h-[660px] 2xl:grid-cols-[minmax(0,34rem)_1fr] 2xl:min-h-[780px]">
           <div className="absolute left-5 right-5 top-8 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-tech font-bold uppercase tracking-[0.14em] text-[#FFFFFF] [text-shadow:0_0_12px_rgba(255,255,255,0.55),0_1px_3px_rgba(0,0,0,0.45)] sm:static sm:justify-start sm:gap-3 sm:text-[11px] sm:tracking-[0.2em] lg:col-span-2">
             <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               Presented by <img src={kultLogo} alt="Kult" className="h-3.5 w-auto object-contain sm:h-4" />
