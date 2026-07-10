@@ -18,12 +18,8 @@ import { saveAiAgentInfo } from "@/lib/aiAgentStorage";
 import type { AiArenaArchetype } from "@/constants/aiArenaAgent";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { playerTitlesApi, type PlayerTitle } from "@/api/playerTitlesApi";
+import { CreateAiArenaAgentModal } from "@/components/arena/CreateAiArenaAgentModal";
 
-const CreateAiArenaAgentModal = lazy(() =>
-  import("@/components/arena/CreateAiArenaAgentModal").then((mod) => ({
-    default: mod.CreateAiArenaAgentModal,
-  }))
-);
 const PlayerTitleModal = lazy(() =>
   import("@/components/titles/PlayerTitleModal").then((mod) => ({
     default: mod.PlayerTitleModal,
@@ -129,18 +125,16 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
     <CreateAgentContext.Provider value={value}>
       {children}
       {createOpen ? (
-        <Suspense fallback={null}>
-          <CreateAiArenaAgentModal
-            open={createOpen}
-            onOpenChange={(open) => {
-              setCreateOpen(open);
-              if (!open) setPendingArchetype(undefined);
-            }}
-            defaultName={defaultName}
-            defaultArchetype={pendingArchetype}
-            onCreated={(agent) => void handleCreated(agent)}
-          />
-        </Suspense>
+        <CreateAiArenaAgentModal
+          open={createOpen}
+          onOpenChange={(open) => {
+            setCreateOpen(open);
+            if (!open) setPendingArchetype(undefined);
+          }}
+          defaultName={defaultName}
+          defaultArchetype={pendingArchetype}
+          onCreated={(agent) => void handleCreated(agent)}
+        />
       ) : null}
       {titleModalOpen ? (
         <Suspense fallback={null}>
