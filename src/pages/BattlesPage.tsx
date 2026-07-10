@@ -744,7 +744,7 @@ function performerBattleCount(agent: AiArenaAgent) {
 function PerformerCard({ agent }: { agent: AiArenaAgent }) {
   return (
     <article className="arena-panel flex items-center gap-3 p-3">
-      <ArenaAgentThumbnail agent={agent} className="h-[86px] w-[70px] rounded object-cover object-top" size="md" />
+      <ArenaAgentThumbnail agent={agent} className="h-[86px] w-[70px] rounded" size="md" />
       <div className="min-w-0 flex-1">
         <h3 className="truncate font-tech text-xs">{agent.name}</h3>
         <p className="mt-1 text-[11px] text-white/55">

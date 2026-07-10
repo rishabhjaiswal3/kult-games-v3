@@ -28,7 +28,6 @@ import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
-import { ResponsiveBackgroundVideo } from "@/components/ResponsiveBackgroundVideo";
 import { LazyInViewVideo } from "@/components/LazyInViewVideo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
@@ -725,6 +724,27 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
   );
 }
 
+function HeroBackgroundVideo({
+  src,
+  className,
+}: {
+  src: string;
+  className?: string;
+}) {
+  return (
+    <video
+      src={src}
+      aria-hidden
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      className={cn(className)}
+    />
+  );
+}
+
 function Hero() {
   return (
     <section
@@ -733,15 +753,10 @@ function Hero() {
     >
       {/* Mobile — show character faces; content sits low */}
       <div className="relative min-h-[560px] h-[min(168vw,780px)] md:hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <ResponsiveBackgroundVideo
-            mobileSrc={mobileHeroVideo}
-            desktopSrc={heroVideo}
-            breakpoint="md"
-            wrapperClassName="absolute inset-0"
-            placeholderClassName="absolute inset-0 bg-[#04080f]"
-            mobileClassName="absolute left-1/2 top-0 z-0 h-[122%] w-[112%] -translate-x-1/2 object-cover object-top [transform:translateZ(0)]"
-            desktopClassName="hidden"
+        <div className="absolute inset-0 overflow-hidden bg-[#04080f]">
+          <HeroBackgroundVideo
+            src={mobileHeroVideo}
+            className="absolute inset-0 h-full w-full object-cover object-top"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#04080f] via-[#04080f]/88 via-55% to-transparent" />
         </div>
@@ -759,15 +774,10 @@ function Hero() {
       </div>
 
       {/* Desktop — reserve 16:9 hero frame + skeleton until the video can paint */}
-      <div className="relative hidden aspect-video w-full md:block">
-        <ResponsiveBackgroundVideo
-          mobileSrc={mobileHeroVideo}
-          desktopSrc={heroVideo}
-          breakpoint="md"
-          wrapperClassName="absolute inset-0"
-          placeholderClassName="absolute inset-0 bg-[#04080f]"
-          mobileClassName="hidden"
-          desktopClassName="absolute inset-0 z-0 h-full w-full object-cover object-[center_18%] [transform:translateZ(0)]"
+      <div className="relative hidden aspect-video w-full bg-[#04080f] md:block">
+        <HeroBackgroundVideo
+          src={heroVideo}
+          className="absolute inset-0 h-full w-full object-cover object-[center_18%]"
         />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/82 via-[#04080f]/28 via-[40%] to-transparent" />
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent from-55% via-transparent to-[#04080f]/35" />

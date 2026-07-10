@@ -102,7 +102,7 @@ function TableRow({
               highlighted ? "border-[#9a35ff]/40 bg-[#9a35ff]/25 shadow-[0_0_8px_rgba(154,53,255,0.2)]" : "border-white/10"
             }`}
           >
-            <AgentThumb src={player.avatar} className="h-full w-full object-cover" />
+            <AgentThumb src={player.avatar} className="h-full w-full object-cover object-top" />
           </div>
           <span className={`font-semibold tracking-wide ${highlighted ? "font-bold text-white" : ""}`}>
             {player.name}

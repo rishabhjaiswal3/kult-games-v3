@@ -586,13 +586,13 @@ const MyAgentsPage = () => {
                       loop
                       muted
                       playsInline
-                      className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover object-top opacity-90 transition duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <img
                       src={resolveAgentImage(agent, index)}
                       alt={agent.name}
-                      className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover object-top opacity-90 transition duration-500 group-hover:scale-105"
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#04080f] via-[#04080f]/10 to-transparent" />

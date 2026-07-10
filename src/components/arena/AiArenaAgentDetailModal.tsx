@@ -186,9 +186,9 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
           <div className="flex items-center gap-3">
             <div className="relative flex h-16 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#9a35ff]/40 bg-gradient-to-br from-[#9a35ff]/25 to-[#9a35ff]/5 shadow-[0_0_18px_rgba(154,53,255,0.35)]">
               {agentImage.endsWith(".mp4") ? (
-                <video src={agentImage} autoPlay loop muted playsInline className="h-full w-full object-cover" />
+                <video src={agentImage} autoPlay loop muted playsInline className="h-full w-full object-cover object-top" />
               ) : (
-                <img src={agentImage} alt={profile.name} className="h-full w-full object-cover" />
+                <img src={agentImage} alt={profile.name} className="h-full w-full object-cover object-top" />
               )}
             </div>
             <div className="min-w-0">

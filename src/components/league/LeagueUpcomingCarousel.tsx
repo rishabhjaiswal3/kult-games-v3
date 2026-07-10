@@ -115,7 +115,9 @@ export function LeagueUpcomingCarousel() {
         <div>
           <h3 className={fifaSectionTitle}>Upcoming Matches</h3>
           <p className={fifaSubTitle}>Group stage fixtures · make your pick before kickoff</p>
-        </div>
+          <p className="mt-1 font-tech text-[10px] leading-snug text-amber-200/75">
+            Tip: lock in your pick at least 1 hour before kickoff for the best results.
+          </p></div>
         <div className="flex gap-1.5">
           <button
             type="button"

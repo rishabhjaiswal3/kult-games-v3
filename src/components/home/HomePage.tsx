@@ -917,7 +917,7 @@ function HomeAIArenaSection() {
                 muted
                 playsInline
                 preload="none"
-                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                className="absolute inset-0 h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.025]"
               />
             ) : (
               <img
@@ -926,7 +926,7 @@ function HomeAIArenaSection() {
                 alt={activeAgent.name}
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                className="absolute inset-0 h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.025]"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/12 to-transparent" />

@@ -53,7 +53,7 @@ export function QuickActions() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
                   <img
@@ -62,7 +62,7 @@ export function QuickActions() {
                     loading="lazy"
                     width={400}
                     height={400}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
                   />
                 )}
               </div>

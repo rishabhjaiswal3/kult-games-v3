@@ -1,6 +1,10 @@
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import { cn } from "@/lib/utils";
 
+/** Crop agent portraits from the top so faces stay visible in small frames. */
+export const AGENT_PORTRAIT_MEDIA_CLASS =
+  "absolute inset-0 h-full w-full object-cover object-top";
+
 type ArenaAgentThumbnailProps = {
   agent: { id: string; archetype?: string | null; name?: string };
   className?: string;
@@ -31,13 +35,13 @@ export function ArenaAgentThumbnail({ agent, className, mediaClassName, size = "
           loop
           muted
           playsInline
-          className={cn("h-[420px] w-full object-cover object-center", mediaClassName)}
+          className={cn(AGENT_PORTRAIT_MEDIA_CLASS, mediaClassName)}
         />
       ) : (
         <img
           src={src}
           alt={agent.name ? `${agent.name} portrait` : "Agent portrait"}
-          className={cn("h-full w-full object-contain object-center p-0.5", mediaClassName)}
+          className={cn(AGENT_PORTRAIT_MEDIA_CLASS, mediaClassName)}
           loading="lazy"
           decoding="async"
         />

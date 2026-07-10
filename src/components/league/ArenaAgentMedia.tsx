@@ -8,7 +8,8 @@ type ArenaAgentMediaProps = {
 };
 
 export function ArenaAgentMedia({ src, alt, className, fit = "cover" }: ArenaAgentMediaProps) {
-  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
+  const fitClass =
+    fit === "contain" ? "object-contain object-center" : "object-cover object-top";
 
   if (src.endsWith(".mp4")) {
     return (
