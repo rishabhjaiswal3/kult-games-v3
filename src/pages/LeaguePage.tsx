@@ -265,7 +265,7 @@ function LeagueModeTabs({
           <span className="rounded-full bg-amber-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-amber-300 sm:px-2 sm:text-[9px]">Markets</span>
         </span>
         <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents use the same record to recommend market calls. Every decision stays with you.</span>
-        <span className="mt-3 block font-tech text-[12px] text-white font-bold uppercase tracking-wider bg-red-800 w-[120px] items-center justify-center flex" style={{borderRadius:'40px'}}>OPENING SOON</span>
+        <span className="mt-3 block font-tech text-[12px] text-white font-bold uppercase tracking-wider bg-red-800 w-[120px] items-center justify-center flex" style={{borderRadius:'40px'}}>COMING NEXT</span>
       </button>
     </div>
   );
