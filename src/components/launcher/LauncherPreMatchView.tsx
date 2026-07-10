@@ -108,7 +108,7 @@ export function LauncherPreMatchView({
 
       {/* Background */}
       <img
-        src="/Robowar/bg.png"
+        src="/Robowar/bg.webp"
         alt="Robowar arena"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.75 }}
@@ -147,7 +147,7 @@ export function LauncherPreMatchView({
 
         {/* Fighter panels */}
         <div className="flex flex-1 min-h-0 items-stretch">
-          <BotCard agent={myAgent} botSrc="/Robowar/bot1.png" />
+          <BotCard agent={myAgent} botSrc="/Robowar/bot1.webp" />
 
           {/* Centre column */}
           <div className="flex shrink-0 flex-col items-center justify-center px-4 gap-2.5">
@@ -163,7 +163,7 @@ export function LauncherPreMatchView({
             </div>
           </div>
 
-          <BotCard agent={opponent} botSrc="/Robowar/bot2.png" flip />
+          <BotCard agent={opponent} botSrc="/Robowar/bot2.webp" flip />
         </div>
 
         {/* Footer — description + action buttons */}
