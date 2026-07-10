@@ -1,31 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { dailyRewardsApi, type DailyRewardsState } from "@/api/dailyRewardsApi";
+import { useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { buildDailyRewardsState, type DailyRewardsState } from "@/api/dailyRewardsApi";
+import { hasArenaAgent, MY_ARENA_AGENTS_QUERY_KEY, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 
-const QUERY_KEY = ["rewards", "daily"];
-
-/** Daily login rewards state + claim action. Backed by the mocked
- *  dailyRewardsApi for now; swapping in the real endpoints there changes
- *  nothing here or in any component. */
+/** Daily login rewards — day 1 status comes from the My Agents API, not localStorage. */
 export function useDailyRewards() {
   const queryClient = useQueryClient();
+  const myAgentsQ = useMyArenaAgents();
+  const hasAgent = hasArenaAgent(myAgentsQ.data);
 
-  const { data: state, isLoading } = useQuery<DailyRewardsState>({
-    queryKey: QUERY_KEY,
-    queryFn: dailyRewardsApi.getState,
-    staleTime: 30_000,
-    // Re-evaluates the unlock window so the CTA flips to claimable at midnight.
-    refetchInterval: 60_000,
-  });
+  const state = useMemo<DailyRewardsState>(() => buildDailyRewardsState(hasAgent), [hasAgent]);
 
   const claimMutation = useMutation({
-    mutationFn: (day: number) => dailyRewardsApi.claim(day),
-    onSuccess: (next) => queryClient.setQueryData(QUERY_KEY, next),
+    mutationFn: async (_day: number) => {
+      await queryClient.invalidateQueries({ queryKey: MY_ARENA_AGENTS_QUERY_KEY });
+      const result = await myAgentsQ.refetch();
+      return buildDailyRewardsState(hasArenaAgent(result.data));
+    },
   });
 
   return {
     state,
-    isLoading,
+    isLoading: myAgentsQ.isLoading,
     claim: claimMutation.mutateAsync,
     isClaiming: claimMutation.isPending,
+    refetchAgents: myAgentsQ.refetch,
   };
 }

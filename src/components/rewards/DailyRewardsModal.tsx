@@ -14,7 +14,7 @@ import {
   type RewardRarity,
 } from "@/constants/dailyRewards";
 import { useDailyRewards } from "@/hooks/useDailyRewards";
-import { hasArenaAgent, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { hasArenaAgent } from "@/hooks/useMyArenaAgents";
 
 const CELEBRATION_COLORS = ["#fbbf24", "#c084fc", "#22d3ee", "#f472b6", "#34d399", "#fb7185", "#facc15"];
 
@@ -197,11 +197,15 @@ function RewardCard({
 export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const { openCreateAgent } = useCreateAgent();
-  const { state, isLoading, claim, isClaiming } = useDailyRewards();
-  const myAgentsQ = useMyArenaAgents();
-  const userHasAgent = hasArenaAgent(myAgentsQ.data);
+  const { state, isLoading, claim, isClaiming, refetchAgents } = useDailyRewards();
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+
+  // Refresh agent list when the modal opens so day-1 claimed state is current.
+  useEffect(() => {
+    if (!open) return;
+    void refetchAgents();
+  }, [open, refetchAgents]);
 
   // Tick the countdown while the modal is open.
   useEffect(() => {
@@ -216,6 +220,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
 
   const currentDay = state?.currentDay ?? 1;
   const claimedDays = useMemo(() => new Set(state?.claimedDays ?? []), [state?.claimedDays]);
+  const userHasAgent = claimedDays.has(1);
   const claimedCount = claimedDays.size;
   const completed = state?.completed ?? false;
   const claimableNow = state?.claimableToday ?? false;
@@ -236,14 +241,19 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   const handleClaim = async () => {
     if (!claimable) return;
     const dayToClaim = currentDay;
-    const isFirstRewardClaim = claimedCount === 0;
+
+    if (dayToClaim === 1 && !userHasAgent) {
+      const result = await refetchAgents();
+      if (!hasArenaAgent(result.data)) {
+        onClose();
+        navigate("/my-agents");
+        window.setTimeout(() => openCreateAgent(), 150);
+        return;
+      }
+    }
+
     await claim(dayToClaim);
     setJustClaimedDay(dayToClaim);
-    if (isFirstRewardClaim && !userHasAgent) {
-      onClose();
-      navigate("/my-agents");
-      window.setTimeout(() => openCreateAgent(), 150);
-    }
   };
 
   const dayStatus = (day: number): DayStatus =>
