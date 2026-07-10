@@ -52,6 +52,9 @@ export type SharePayload = {
   /** Public crawler-facing preview route on the app host, e.g. /share/moments/:id. */
   publicPreviewUrl: string;
   title: string;
+  /** Full moment description (not truncated). */
+  description: string;
+  /** @deprecated Use `description` — kept for Reddit title fallback. */
   teaser: string;
   hashtags: string[];
   /** Direct image URL for Pinterest `media` param. */
@@ -102,7 +105,7 @@ export function buildMomentShareBody(
   options: BuildMomentShareBodyOptions = {},
 ): string {
   const title = (options.title ?? payload.title).trim();
-  const description = (options.description ?? payload.teaser).trim();
+  const description = (options.description ?? payload.description ?? payload.teaser).trim();
   const link = (options.linkUrl ?? resolvePlatformShareUrl(payload)).trim();
   const includeTags = options.includeTags ?? true;
 
@@ -112,6 +115,30 @@ export function buildMomentShareBody(
     link,
     includeTags ? buildMomentShareTags(payload) : undefined,
   ]);
+}
+
+const TWITTER_MAX_CHARS = 280;
+
+/** X/Twitter hard limit — trim description first, always keep link + tags when possible. */
+export function buildTwitterSharePostText(payload: SharePayload): string {
+  const full = buildMomentSharePostText(payload);
+  if (full.length <= TWITTER_MAX_CHARS) return full;
+
+  const link = resolvePlatformShareUrl(payload).trim();
+  const tags = buildMomentShareTags(payload);
+  const title = payload.title.trim();
+  const description = (payload.description ?? payload.teaser).trim();
+
+  const suffix = joinShareBlocks([link, tags]);
+  const prefix = title ? `${title}${SHARE_BLOCK_GAP}` : "";
+  const maxDescription = TWITTER_MAX_CHARS - prefix.length - suffix.length - (description ? SHARE_BLOCK_GAP.length : 0);
+
+  if (maxDescription > 40 && description) {
+    const trimmed = truncateText(description, maxDescription);
+    return joinShareBlocks([title, trimmed, link, tags]);
+  }
+
+  return truncateText(full, TWITTER_MAX_CHARS);
 }
 
 export function buildTemplateShareBody(templateText: string, payload: SharePayload): string {
@@ -197,7 +224,7 @@ export function buildRedditSubmitTitle(payload: Pick<SharePayload, "title" | "te
 }
 
 export function buildRedditSubmitParams(
-  payload: Pick<SharePayload, "title" | "teaser" | "url" | "previewUrl" | "hashtags">,
+  payload: Pick<SharePayload, "title" | "description" | "teaser" | "url" | "previewUrl" | "hashtags">,
   titleOverride?: string,
 ): Record<string, string> {
   const params: Record<string, string> = {
@@ -206,7 +233,11 @@ export function buildRedditSubmitParams(
       ? truncateText(titleOverride, 300)
       : buildRedditSubmitTitle(payload),
   };
-  const body = joinShareBlocks([payload.teaser, buildMomentShareTags(payload)]);
+  const body = joinShareBlocks([
+    payload.description ?? payload.teaser,
+    payload.previewUrl ?? payload.url,
+    buildMomentShareTags(payload),
+  ]);
   if (body.trim()) {
     params.text = body;
   }
@@ -216,7 +247,6 @@ export function buildRedditSubmitParams(
 export function buildMomentSharePayload(moment: Moment): SharePayload {
   const title = moment.title.trim() || "Check out this Kult moment";
   const description = moment.description?.trim() || moment.aiCaption?.trim() || "";
-  const teaser = description ? truncateText(description, 120) : "";
   const momentUrl = buildMomentShareUrl(moment.momentId);
   const previewUrl = buildMomentSharePreviewUrl(moment.momentId);
   const publicPreviewUrl = buildMomentPublicPreviewUrl(moment.momentId);
@@ -232,7 +262,8 @@ export function buildMomentSharePayload(moment: Moment): SharePayload {
     previewUrl,
     publicPreviewUrl,
     title,
-    teaser,
+    description,
+    teaser: description,
     hashtags: ["KultGames", "KultMoments", game.replace(/[\s-]+/g, ""), ...hashtags].filter(Boolean),
     mediaUrl: resolveShareMediaUrl(moment),
     cacheKey: buildMomentShareCacheKey(moment),

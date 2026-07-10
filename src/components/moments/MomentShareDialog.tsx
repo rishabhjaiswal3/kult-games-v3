@@ -6,6 +6,7 @@ import {
   buildMomentSharePostText,
   buildRedditSubmitParams,
   buildTemplateShareBody,
+  buildTwitterSharePostText,
   resolvePlatformShareUrl,
   resolveShareMediaUrl,
   type SharePayload,
@@ -29,6 +30,8 @@ type SharePlatform = {
   color: string;
   bg: string;
   copyOnly?: boolean;
+  copyBeforeOpen?: boolean;
+  helperText?: string;
   buildUrl: (p: SharePayload) => string;
   buildPostText: (p: SharePayload) => string;
 };
@@ -48,10 +51,10 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#000",
     buildUrl: (p) => {
-      const text = buildMomentSharePostText(withPlatformShareUrl(p));
+      const text = buildTwitterSharePostText(withPlatformShareUrl(p));
       return `https://twitter.com/intent/tweet?${new URLSearchParams({ text })}`;
     },
-    buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
+    buildPostText: (p) => buildTwitterSharePostText(withPlatformShareUrl(p)),
   },
   {
     id: "facebook",
@@ -59,11 +62,12 @@ const PLATFORMS: SharePlatform[] = [
     icon: "f",
     color: "#fff",
     bg: "#1877f2",
+    copyBeforeOpen: true,
+    helperText: "Full post text is copied — paste it in the Facebook composer. The link preview image comes from the share URL.",
     buildUrl: (p) => {
       const platformPayload = withPlatformShareUrl(p);
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
         u: platformPayload.previewUrl,
-        quote: buildMomentSharePostText(platformPayload),
       })}`;
     },
     buildPostText: (p) => buildMomentSharePostText(withPlatformShareUrl(p)),
@@ -195,7 +199,6 @@ function buildPlatformUrlWithTemplate(platform: SharePlatform, templateText: str
     case "facebook": {
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
         u: platformPayload.previewUrl,
-        quote: text,
       })}`;
     }
     case "pinterest": {
@@ -336,21 +339,35 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
   const fileType = String(moment.assetMetadata?.fileType ?? "").toLowerCase();
   const isVideo = fileType.startsWith("video/") || /\.(mp4|webm|mov)(\?.*)?$/i.test(mediaUrl ?? "");
 
+  const [copiedShareHint, setCopiedShareHint] = useState(false);
+
   const handleShare = useCallback(async () => {
+    const platformPayload = withPlatformShareUrl(payload);
+    const postText = selectedTemplate
+      ? buildTemplateShareBody(selectedTemplate.text, platformPayload)
+      : platform.buildPostText(platformPayload);
+
     if (platform.copyOnly) {
-      const text = selectedTemplate
-        ? buildTemplateShareBody(selectedTemplate.text, withPlatformShareUrl(payload))
-        : platform.buildPostText(withPlatformShareUrl(payload));
       try {
-        await copyText(text);
+        await copyText(postText);
       } catch {
       }
       window.open(platform.buildUrl(payload), "_blank", "noopener,noreferrer");
       return;
     }
+
+    if (platform.copyBeforeOpen) {
+      try {
+        await copyText(postText);
+        setCopiedShareHint(true);
+        setTimeout(() => setCopiedShareHint(false), 4000);
+      } catch {
+      }
+    }
+
     const url = selectedTemplate
       ? buildPlatformUrlWithTemplate(platform, selectedTemplate.text, payload)
-      : platform.buildUrl(withPlatformShareUrl(payload));
+      : platform.buildUrl(platformPayload);
     window.open(url, "_blank", "noopener,noreferrer");
   }, [platform, payload, selectedTemplate]);
 
@@ -470,6 +487,12 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
           />
 
           {/* Post preview */}
+          {platform.helperText ? (
+            <p className="mb-2 font-sans text-[11px] leading-relaxed text-amber-200/75">{platform.helperText}</p>
+          ) : null}
+          {copiedShareHint ? (
+            <p className="mb-2 font-sans text-[11px] text-emerald-400">Post text copied — paste it in the composer.</p>
+          ) : null}
           <PostPreviewText
             platform={platform}
             payload={payload}

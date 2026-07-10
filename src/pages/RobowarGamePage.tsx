@@ -394,12 +394,12 @@ function UnityLoadingScreen({
 
   return (
     <div className="absolute inset-0 z-20 overflow-hidden">
-      <video
+              <video
         src="/videos/SC_2-3.mp4"
         autoPlay
         loop
-        muted
-        playsInline
+                muted
+                playsInline
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.55 }}
       />
@@ -434,7 +434,7 @@ function UnityLoadingScreen({
             <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
               {mode}
-            </span>
+                </span>
           </div>
 
           <AgentLoadingCard agent={opponent} side="right" />
@@ -492,7 +492,7 @@ function AgentCard({
         <div className="space-y-1.5">
           <div className="h-3 w-24 animate-pulse rounded bg-white/8" />
           <div className="h-2 w-16 animate-pulse rounded bg-white/5" />
-        </div>
+          </div>
       </div>
     );
   }
@@ -539,7 +539,7 @@ function AgentCard({
       } ${isRight ? "flex-row-reverse" : ""}`}
     >
       {inner}
-    </div>
+            </div>
   );
 }
 
@@ -594,11 +594,11 @@ function AgentBanner({
             <span className="absolute inset-0 animate-ping rounded-full bg-primary/10" />
             <div className="relative flex h-full w-full items-center justify-center rounded-full border border-primary/50 bg-primary/15 shadow-[0_0_20px_hsl(268_100%_70%/0.3)]">
               <Swords className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
+          </div>
           </div>
           <span className="font-display text-base sm:text-xl font-black mt-1 text-gradient">VS</span>
           <span className="font-tech text-[8px] uppercase tracking-widest text-white/30 mt-0.5">{mode}</span>
-        </div>
+      </div>
 
         <AgentCard
           agent={opponent}
@@ -646,9 +646,9 @@ function ResultCard({
         <Trophy className="h-3.5 w-3.5 shrink-0" style={{ color: winnerColor }} />
         <span className="font-tech text-[10px] uppercase tracking-widest font-bold" style={{ color: winnerColor }}>
           {iWon ? "VICTORY" : "DEFEAT"}
-        </span>
+            </span>
         <span className="ml-auto font-mono text-[9px] text-white/25">{shortId(battle.id)}</span>
-      </div>
+          </div>
 
       <div className="px-3 py-3 space-y-2">
         {winner && (
@@ -662,8 +662,8 @@ function ResultCard({
               <span className="font-mono text-[10px] text-green-400 shrink-0">
                 {eloSign(result.eloChange[winner.id])} ELO
               </span>
-            )}
-          </div>
+          )}
+        </div>
         )}
         {loser && (
           <div className="flex items-center gap-2">
@@ -671,11 +671,11 @@ function ResultCard({
             <span className="font-tech text-[10px] text-white/40 uppercase">Destroyed</span>
             <span className="font-tech text-[11px] font-bold ml-auto truncate max-w-[100px]" style={{ color: loserColor }}>
               {loser.name}
-            </span>
+          </span>
             {result.eloChange?.[loser.id] != null && (
               <span className="font-mono text-[10px] text-red-400 shrink-0">
                 {eloSign(result.eloChange[loser.id])} ELO
-              </span>
+          </span>
             )}
           </div>
         )}
@@ -708,8 +708,8 @@ function ResultCard({
         ) : (
           <span className="text-[9px] font-mono text-white/20">Stored on 0G</span>
         )}
-        <button
-          type="button"
+          <button
+            type="button"
           onClick={onShareMoment}
           disabled={!onShareMoment}
           className={`ml-auto flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-tech uppercase tracking-wider transition ${
@@ -720,9 +720,9 @@ function ResultCard({
         >
           <Share2 className="h-2.5 w-2.5" />
           Kult Moment
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
   );
 }
 
@@ -1330,14 +1330,14 @@ export default function RobowarGamePage() {
             <span className="flex items-center gap-1 rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-red-400">
               <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
               LIVE
-            </span>
+          </span>
           )}
           {gamePhase === "ended" && (
             <span className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 font-tech text-[8px] uppercase tracking-wider text-white/40">
               ENDED
-            </span>
+          </span>
           )}
-        </div>
+      </div>
 
         <div className="flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-widest text-white/30">{mode}</span>
@@ -1352,8 +1352,8 @@ export default function RobowarGamePage() {
             </button>
           )}
           {battleQ.isFetching && <Loader2 className="h-3 w-3 animate-spin text-white/25" />}
-        </div>
-      </div>
+          </div>
+            </div>
 
       {/* Agent VS Banner */}
       <div data-tour="robowar-agents">
@@ -1364,7 +1364,7 @@ export default function RobowarGamePage() {
           gamePhase={gamePhase}
           mode={mode}
         />
-      </div>
+        </div>
 
       {/* Main: Launcher area + Chat */}
       <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
@@ -1380,14 +1380,14 @@ export default function RobowarGamePage() {
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-                <button
+            <button
                   onClick={() => battleQ.refetch()}
                   className="font-tech text-xs text-primary hover:text-primary/80 underline"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
+            >
+              Retry
+            </button>
+          </div>
+          </div>
           )}
 
           {/* ── Launcher phases (shown when no battle API error) ── */}
@@ -1473,9 +1473,9 @@ export default function RobowarGamePage() {
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
                       {`robowar · ${shortId(battleId)} · ${battle?.status ?? "—"}`}
-                    </span>
-                  </div>
-                </div>
+                </span>
+            </div>
+          </div>
               )}
             </>
           )}

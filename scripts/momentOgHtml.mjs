@@ -31,7 +31,7 @@ function isVideoMoment(moment) {
  */
 function resolveOgImageUrl(moment, pageOrigin, momentId) {
   const meta = moment.assetMetadata ?? {};
-  const proxyUrl = `${(pageOrigin || "").replace(/\/+$/, "")}/api/moments/${momentId}/share-image.jpg`;
+  const proxyUrl = `${(pageOrigin || "").replace(/\/+$/, "")}/api/share/moments/${momentId}/og-image.jpg`;
 
   const ogImageUrl = typeof meta.ogImageUrl === "string" ? meta.ogImageUrl.trim() : "";
   if (ogImageUrl) return proxyUrl;

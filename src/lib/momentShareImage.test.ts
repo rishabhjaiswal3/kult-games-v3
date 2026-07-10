@@ -52,10 +52,10 @@ describe("momentShareImage", () => {
     ).toBe(true);
   });
 
-  it("always returns share-image.jpg proxy URL", () => {
+  it("always returns og-image.jpg proxy URL under /api/share", () => {
     const host = "https://kult-browser-rust-l2lwg.ondigitalocean.app";
     expect(buildMomentShareImageProxyUrl("abc123", host)).toBe(
-      `${host}/api/moments/abc123/share-image.jpg`,
+      `${host}/api/share/moments/abc123/og-image.jpg`,
     );
 
     vi.stubGlobal("window", { location: { origin: host } });
@@ -68,6 +68,6 @@ describe("momentShareImage", () => {
         },
         host,
       ),
-    ).toBe(`${host}/api/moments/abc123/share-image.jpg`);
+    ).toBe(`${host}/api/share/moments/abc123/og-image.jpg`);
   });
 });

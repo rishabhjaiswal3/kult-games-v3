@@ -215,6 +215,13 @@ createServer((req, res) => {
     return;
   }
 
+  // Legacy OG image paths (older share HTML may still reference these).
+  if (/^\/api\/moments\/[^/]+\/share-image\.jpg$/.test(pathname)) {
+    const momentId = pathname.split("/")[3];
+    void proxyToBackend(req, res, `/api/share/moments/${momentId}/og-image.jpg`);
+    return;
+  }
+
   // ── Legacy /share/moments/:id (kult-moment share links) ─────────────────────
   // Always proxy to backend OG HTML — humans get JS redirect to /moments/:id;
   // crawlers receive og:image + twitter:card meta tags.

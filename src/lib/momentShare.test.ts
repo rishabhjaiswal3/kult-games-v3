@@ -46,7 +46,7 @@ describe("buildMomentShareUrl", () => {
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/share/moments/${momentId}`,
     );
     expect(buildMomentShareOgImageUrl(momentId)).toBe(
-      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}/og-image.jpg`,
     );
   });
 
@@ -79,10 +79,10 @@ describe("buildMomentShareUrl", () => {
       `https://kult-browser-rust-l2lwg.ondigitalocean.app/share/moments/${momentId}`,
     );
     expect(payload.mediaUrl).toBe(
-      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}/og-image.jpg`,
     );
     expect(buildMomentShareOgImageUrl(momentId)).toBe(
-      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/moments/${momentId}/share-image.jpg`,
+      `https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/${momentId}/og-image.jpg`,
     );
   });
 });
@@ -110,12 +110,13 @@ describe("resolvePlatformShareUrl", () => {
 });
 
 describe("buildRedditSubmitParams", () => {
-  it("uses title for the link post and description + tags in the body", async () => {
+  it("uses title for the link post and description + link + tags in the body", async () => {
     vi.resetModules();
     const { buildRedditSubmitParams, buildRedditSubmitTitle } = await import("./momentShare");
 
     const payload = {
       title: "New Trash Talk",
+      description: "Let's try to wrap up early because you are not good enough to compete",
       teaser: "Let's try to wrap up early because you are not good enough to compete",
       url: "https://kult-browser-rust-l2lwg.ondigitalocean.app/moments/abc",
       previewUrl: "https://kult-browser-rust-l2lwg.ondigitalocean.app/api/share/moments/abc",
@@ -128,6 +129,7 @@ describe("buildRedditSubmitParams", () => {
     expect(params.url).toBe(payload.previewUrl);
     expect(params.title).toBe("New Trash Talk");
     expect(params.text).toContain("wrap up early");
+    expect(params.text).toContain(payload.previewUrl);
     expect(params.text).toContain("#KultGames");
   });
 });
