@@ -161,7 +161,6 @@ export default function AccessLoginPage() {
           style={{ fontSize: "clamp(1.6rem, 8vw, 4.5rem)", letterSpacing: "0.08em" }}
         >
           Kult Browser
-          {/* <span className="font-sans text-[0.20em] font-medium normal-case tracking-normal text-white/45 text-yellow-500">beta</span> */}
             <span className="font-sans text-[0.60rem] font-medium normal-case tracking-normal text-black bg-yellow-500  w-[30px] items-center justify-center flex" style={{borderRadius:'40px', height:"16px"}}>
             Beta
           </span>
