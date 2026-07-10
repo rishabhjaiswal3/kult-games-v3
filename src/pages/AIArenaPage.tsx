@@ -728,7 +728,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
 function Hero() {
   return (
     <section
-      className="arena-panel relative overflow-hidden border border-white/8 bg-[#04080f]"
+      className="arena-panel ai-arena-hero-panel relative overflow-hidden border border-white/8 bg-[#04080f] backdrop-blur-none"
       data-tour="ai-arena-hero"
     >
       {/* Mobile — show character faces; content sits low */}
@@ -739,7 +739,8 @@ function Hero() {
             desktopSrc={heroVideo}
             breakpoint="md"
             wrapperClassName="absolute inset-0"
-            mobileClassName="absolute left-1/2 top-0 h-[122%] w-[112%] -translate-x-1/2 object-cover object-top"
+            placeholderClassName="absolute inset-0 bg-[#04080f]"
+            mobileClassName="absolute left-1/2 top-0 z-0 h-[122%] w-[112%] -translate-x-1/2 object-cover object-top [transform:translateZ(0)]"
             desktopClassName="hidden"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-[#04080f] via-[#04080f]/88 via-55% to-transparent" />
@@ -764,11 +765,12 @@ function Hero() {
           desktopSrc={heroVideo}
           breakpoint="md"
           wrapperClassName="absolute inset-0"
+          placeholderClassName="absolute inset-0 bg-[#04080f]"
           mobileClassName="hidden"
-          desktopClassName="absolute inset-0 h-full w-full object-cover object-center"
+          desktopClassName="absolute inset-0 z-0 h-full w-full object-cover object-[center_18%] [transform:translateZ(0)]"
         />
-        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/90 via-[#04080f]/34 via-[42%] to-transparent" />
-        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#04080f]/35" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#04080f]/82 via-[#04080f]/28 via-[40%] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-transparent from-55% via-transparent to-[#04080f]/35" />
         <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 py-6 lg:px-8 lg:py-8">
           <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px] font-tech uppercase tracking-[0.2em] text-white lg:mb-4">
             <span className="flex items-center gap-1.5">

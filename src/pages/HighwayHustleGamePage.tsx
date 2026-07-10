@@ -34,6 +34,10 @@ import {
   MessageSquare,
   Car,
 } from "lucide-react";
+import {
+  ArenaBattleChatFab,
+  ArenaBattleDrawer,
+} from "@/components/arena/ArenaBattleDrawer";
 import { cn } from "@/lib/utils";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
@@ -806,7 +810,6 @@ function GameChatPanel({
   onSend,
   chatEndRef,
   myAgent,
-  observerCount,
   onShareMoment,
 }: {
   messages: ChatMsg[];
@@ -815,7 +818,6 @@ function GameChatPanel({
   onSend: () => void;
   chatEndRef: React.RefObject<HTMLDivElement>;
   myAgent: AiArenaAgent | null;
-  observerCount: number;
   onShareMoment?: () => void;
 }) {
   const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -826,16 +828,7 @@ function GameChatPanel({
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col border-t border-white/8 bg-[#04080f]/90 md:border-l md:border-t-0">
-      <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2.5">
-        <MessageSquare className="h-3.5 w-3.5 text-primary/70" />
-        <span className="font-tech text-[10px] uppercase tracking-widest text-white/60 font-bold">LIVE CHAT</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-mono text-[9px] text-white/30">{observerCount} watching</span>
-        </div>
-      </div>
-
+    <div className="flex h-full min-h-0 w-full flex-col bg-[#04080f]/95">
       <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
@@ -1084,6 +1077,7 @@ export default function HighwayHustleGamePage() {
     },
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [gamePhase, setGamePhase] = useState<GamePhase>("live");
   const [observerCount] = useState(() => Math.floor(Math.random() * 80) + 12);
 
@@ -1611,63 +1605,53 @@ export default function HighwayHustleGamePage() {
         </div>
       </div>
 
-      {/* ── Agent VS Banner ─────────────────────────────────────────────── */}
-      <div data-tour="arena-game-agents">
-        <AgentBanner
-          myAgent={myAgent}
-          opponent={opponent}
-          battle={battle}
-          gamePhase={gamePhase}
-          mode={mode}
+      {/* Full-screen game canvas */}
+      <div className="relative min-h-0 flex-1 overflow-hidden" data-tour="arena-game-canvas">
+        <ArenaBattleChatFab
+          visible={!chatDrawerOpen}
+          onOpen={() => setChatDrawerOpen(true)}
         />
-      </div>
 
-      {/* ── Main: Canvas + Chat ─────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
-
-        {/* Canvas area */}
-        <div className="relative h-[58dvh] min-h-[360px] shrink-0 bg-[#040810] overflow-hidden md:h-auto md:min-h-0 md:flex-1" data-tour="arena-game-canvas">
-
-          {isError && (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-                <button
-                  onClick={() => battleQ.refetch()}
-                  className="font-tech text-xs text-primary hover:text-primary/80 underline"
-                >
-                  Retry
-                </button>
-              </div>
+        {isError && (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
+              <button
+                onClick={() => battleQ.refetch()}
+                className="font-tech text-xs text-primary hover:text-primary/80 underline"
+              >
+                Retry
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {!isError && !UNITY_BASE_URL && (
-            <div className="flex h-full items-center justify-center px-4">
-              <div className="text-center">
-                <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
-                  Highway Hustle Build URL not configured
-                </p>
-                <p className="font-mono text-[9px] text-white/20 mt-1">
-                  Set VITE_HIGHWAY_HUSTLE_BUILD_URL in .env to load the game
-                </p>
-                {myAgent && opponent && (
-                  <div className="flex items-center justify-center gap-3 mt-4">
-                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
-                      {myAgent.name}
-                    </span>
-                    <Swords className="h-3 w-3 text-white/20" />
-                    <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
-                      {opponent.name}
-                    </span>
-                  </div>
-                )}
-              </div>
+        {!isError && !UNITY_BASE_URL && (
+          <div className="flex h-full items-center justify-center px-4">
+            <div className="text-center">
+              <p className="font-tech text-xs text-white/40 uppercase tracking-wider">
+                Highway Hustle Build URL not configured
+              </p>
+              <p className="font-mono text-[9px] text-white/20 mt-1">
+                Set VITE_HIGHWAY_HUSTLE_BUILD_URL in .env to load the game
+              </p>
+              {myAgent && opponent && (
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(myAgent.clan) }}>
+                    {myAgent.name}
+                  </span>
+                  <Swords className="h-3 w-3 text-white/20" />
+                  <span className="font-tech text-[10px] font-bold" style={{ color: clanColor(opponent.clan) }}>
+                    {opponent.name}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {!isError && UNITY_BASE_URL && (
-            <div className="absolute inset-0">
+        {!isError && UNITY_BASE_URL && (
+          <div className="absolute inset-0">
               <canvas
                 ref={canvasRef}
                 id="unity-canvas"
@@ -1783,37 +1767,44 @@ export default function HighwayHustleGamePage() {
               )}
             </div>
           )}
-        </div>
-
-        {/* Chat panel */}
-        <div data-tour="arena-game-chat" className="flex min-h-[360px] w-full flex-1 flex-col md:h-full md:min-h-0 md:w-[300px] md:flex-none md:shrink-0 lg:w-[320px]">
-          <GameChatPanel
-            messages={messages}
-            chatInput={chatInput}
-            onInputChange={setChatInput}
-            onSend={() => {
-              if (!chatInput.trim()) return;
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: uid(),
-                  kind: "player" as const,
-                  agentId:   myAgentId ?? "observer",
-                  agentName: myAgent?.name ?? "Observer",
-                  color:     myAgent ? clanColor(myAgent.clan) : "#8b6dff",
-                  text:      chatInput.trim(),
-                  ts:        new Date(),
-                },
-              ]);
-              setChatInput("");
-            }}
-            chatEndRef={chatEndRef}
-            myAgent={myAgent}
-            observerCount={observerCount}
-            onShareMoment={shareMomentHandler}
-          />
-        </div>
       </div>
+
+      <ArenaBattleDrawer
+        open={chatDrawerOpen}
+        onClose={() => setChatDrawerOpen(false)}
+        mode={mode}
+        observerCount={observerCount}
+        myAgent={myAgent}
+        opponent={opponent}
+        battle={battle}
+        gamePhase={gamePhase}
+        bannerTheme="highway"
+      >
+        <GameChatPanel
+          messages={messages}
+          chatInput={chatInput}
+          onInputChange={setChatInput}
+          onSend={() => {
+            if (!chatInput.trim()) return;
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: uid(),
+                kind: "player" as const,
+                agentId: myAgentId ?? "observer",
+                agentName: myAgent?.name ?? "Observer",
+                color: myAgent ? clanColor(myAgent.clan) : "#8b6dff",
+                text: chatInput.trim(),
+                ts: new Date(),
+              },
+            ]);
+            setChatInput("");
+          }}
+          chatEndRef={chatEndRef}
+          myAgent={myAgent}
+          onShareMoment={shareMomentHandler}
+        />
+      </ArenaBattleDrawer>
     </div>
   );
 }
