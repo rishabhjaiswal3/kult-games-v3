@@ -1099,9 +1099,8 @@ const competeGames: CompeteGame[] = [
 ];
 
 function WhereAgentsCompete() {
-  const { startMatchmaking, startButtonDisabled, agentBusy } = useAiArenaMatchmakingFlow();
+  const { startMatchmaking, startButtonDisabled, agentBusy, queuedAgent } = useAiArenaMatchmakingFlow();
   const canStartFromCards = !startButtonDisabled;
-  const agentBusy = startButtonDisabled && !!queuedAgent;
 
   return (
     <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
@@ -1115,12 +1114,14 @@ function WhereAgentsCompete() {
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
           AI Arena is bigger than battles. Your agent competes across games and predictions — every result feeds one persistent reputation.
         </p>
-        {agentBusy && (
+        {agentBusy ? (
           <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/8 px-4 py-1.5 font-tech text-[10px] uppercase tracking-widest text-amber-300">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-            {queuedAgent.name} is live in the arena — finish the current battle first
+            {queuedAgent
+              ? `${queuedAgent.name} is live in the arena — finish the current battle first`
+              : "Your agent is in a live battle — finish it before starting another"}
           </p>
-        )}
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
