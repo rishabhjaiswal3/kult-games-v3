@@ -1127,6 +1127,16 @@ button[aria-label="close modal"]:hover {
     scrollbar-width: thin;
     scrollbar-color: rgba(154, 53, 255, 0.5) rgba(255, 255, 255, 0.06);
   }
+
+  /* Carousels / tickers — horizontal scroll stays inside the row (mobile pan does not move the page). */
+  .horizontal-scroll-contained {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    max-width: 100%;
+  }
   .arena-scroll::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -1146,6 +1156,10 @@ button[aria-label="close modal"]:hover {
   /* Horizontal-scroll tables (e.g. League "My Recent Picks") — visible thin scrollbar so overflowed columns don't look cut off/broken. */
   .table-scroll-x {
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: rgba(154, 53, 255, 0.5) rgba(255, 255, 255, 0.06);
   }
@@ -1808,6 +1822,22 @@ button[aria-label="close modal"]:hover {
 /* Hide scrollbar on mobile */
 @media (max-width: 767px) {
   html,
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    max-width: 100%;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+
+  .arena-scroll {
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  html,
   body,
   * {
     scrollbar-width: none;
@@ -1863,6 +1893,7 @@ button[aria-label="close modal"]:hover {
   --arena-gold: #ffc000;
   --arena-green: #00f080;
   --kult-min-label-size: 10px;
+  overflow-x: clip;
 }
 
 /* Bump only 8–9px labels in main content (not heroes / chrome) */

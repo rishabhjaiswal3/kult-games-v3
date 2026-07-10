@@ -249,7 +249,7 @@ export function HomePage() {
   const heroCtaCount = heroCtaActions.length;
 
   return (
-    <div className="home-page space-y-6 pb-10">
+    <div className="home-page max-w-full space-y-6 overflow-x-clip pb-10">
       <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}
@@ -269,7 +269,7 @@ export function HomePage() {
               Powered by <img src={zeroGLogo} alt="0G" className="h-3.5 w-auto object-contain sm:h-4" />
             </span>
           </div>
-          <div className="w-full max-w-[36rem] space-y-3 sm:max-w-[28rem] sm:space-y-5 lg:max-w-[19rem] xl:max-w-[21rem]">
+          <div className="w-full max-w-[36rem] space-y-3 sm:max-w-[28rem] sm:space-y-5 lg:max-w-none">
             <h1 className="home-agentic-title max-w-[22rem] font-display [font-family:'Orbitron',sans-serif] text-[1.66rem] font-black uppercase leading-[0.98] tracking-[0.016em] text-white min-[390px]:max-w-[24rem] min-[390px]:text-[1.82rem] sm:max-w-[26rem] sm:text-[2.5rem] sm:leading-[1.02] lg:max-w-none lg:text-[2.85rem] xl:text-[3.1rem]">
               The Operating
               <br />
@@ -316,7 +316,7 @@ export function HomePage() {
             </div>
             <h2 className="mt-2.5 font-tech text-2xl font-black uppercase leading-[1.02] text-white sm:text-3xl lg:text-[2rem]">
               One Identity
-              <span className="text-gradient-arena">Every Battle Every Prediction</span>
+              <span className="mt-0.5 block text-gradient-arena sm:mt-0 sm:inline">Every Battle Every Prediction</span>
             </h2>
             <p className="mt-1.5 max-w-xl text-sm leading-snug text-white/60 sm:text-[15px]">
               One identity. Every world you play in — Arena, League, and beyond.
@@ -475,7 +475,7 @@ export function HomePage() {
           <h2 className="shrink-0 font-tech text-lg font-black uppercase leading-[1.25] text-white sm:text-xl">
               Everything you do keeps building
           </h2>
-          <div className="grid grid-cols-3 gap-2 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.08em] sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
+          <div className="min-w-0 grid grid-cols-3 gap-1.5 pb-1 font-tech text-[11px] font-bold uppercase tracking-[0.08em] max-[389px]:text-[10px] sm:gap-2 sm:text-xs md:flex md:flex-wrap md:items-center md:justify-start xl:flex-nowrap xl:justify-end">
             {[
               { label: "Play", accent: "154,53,255" },
               { label: "Create", accent: "0,137,255" },
@@ -483,9 +483,9 @@ export function HomePage() {
               { label: "Build", accent: "255,196,46" },
               { label: "Persist", accent: "0,240,128" },
             ].map(({ label, accent }, index) => (
-              <div key={label} className="flex items-center gap-1.5 md:shrink-0">
+              <div key={label} className="flex min-w-0 items-center gap-1 sm:gap-1.5 md:shrink-0">
                 <span
-                  className="flex-1 rounded-full border px-3.5 py-1.5 text-center text-white transition duration-300 hover:-translate-y-0.5 md:flex-none"
+                  className="min-w-0 flex-1 truncate rounded-full border px-2 py-1.5 text-center text-white transition duration-300 hover:-translate-y-0.5 max-[389px]:px-1.5 sm:px-3.5 md:flex-none md:overflow-visible md:whitespace-normal"
                   style={{
                     borderColor: `rgba(${accent},0.55)`,
                     background: `linear-gradient(135deg, rgba(${accent},0.22), rgba(${accent},0.04))`,
@@ -496,7 +496,7 @@ export function HomePage() {
                   {label}
                 </span>
                 <ArrowRight
-                  className={`h-3.5 w-3.5 shrink-0 ${index === 4 ? "invisible md:hidden" : index === 2 ? "invisible md:visible" : ""}`}
+                  className={`h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${index === 4 ? "hidden" : index === 2 ? "hidden md:block" : ""}`}
                   style={{ color: `rgba(${accent},0.85)` }}
                   aria-hidden
                 />
@@ -603,7 +603,7 @@ export function HomePage() {
       {canViewMoments ? <HomeMomentsSection /> : null}
 
       {canViewGames ? (
-        <section className="arena-panel space-y-3 border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
+        <section className="arena-panel space-y-3 overflow-hidden border-white/8 bg-[#03070d]/95 p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Featured games</h2>
             <Link
@@ -615,7 +615,7 @@ export function HomePage() {
           </div>
           <div
             ref={featuredScrollerRef}
-            className="flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-visible pb-3 scrollbar-none"
+            className="horizontal-scroll-contained flex snap-x snap-mandatory gap-5 pb-3 scrollbar-none"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {isLoading
@@ -680,8 +680,9 @@ function HomeFeaturedExperiencesSection({
       {/* <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.16),transparent_28%),radial-gradient(circle_at_0%_100%,rgba(17,167,255,0.12),transparent_24%),radial-gradient(circle_at_100%_0%,rgba(255,196,0,0.12),transparent_24%)]" /> */}
        
        <div className="mb-4">
-          <h3 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white sm:text-3xl">Ready for the arena ?</h3>
-          <p className="mt-1 text-sm leading-relaxed text-white/85">Train agents, earn rewards, and compete globally.</p>
+          <h3 className="font-tech text-2xl font-black uppercase leading-tight tracking-wider text-white max-[639px]:whitespace-nowrap max-[639px]:text-[1.0625rem] max-[639px]:tracking-[0.05em] sm:text-3xl">
+            Ready for the arena ?
+          </h3><p className="mt-1 text-sm leading-relaxed text-white/85">Train agents, earn rewards, and compete globally.</p>
         </div>
 
       <div className="relative">
@@ -1176,7 +1177,7 @@ function HomeMomentsSection() {
         <p className="text-sm leading-relaxed text-white/58">Rivalries, betrayals, AI commentary, and learning clips from the arena.</p>
       </div>
       <div
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-4 lg:items-stretch lg:gap-4 lg:overflow-visible lg:pb-0"
+        className="horizontal-scroll-contained flex snap-x snap-mandatory gap-4 pb-2 scrollbar-none lg:grid lg:grid-cols-4 lg:items-stretch lg:gap-4 lg:overflow-visible lg:pb-0"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {isLoading
