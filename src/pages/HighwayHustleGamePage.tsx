@@ -255,7 +255,7 @@ function PreMatchOverlay({
     >
       {/* ── Full-bleed background image ── */}
       <img
-        src="/HighwayHustle/bg.webp"
+        src="/HighwayHustle/bg2.webp"
         alt="Highway"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ opacity: 0.9 }}
@@ -317,20 +317,6 @@ function PreMatchOverlay({
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
-          </div>
-
-          {/* Centre VS */}
-          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
-            <div
-              className="font-display text-5xl font-black"
-              style={{
-                color: "#fff",
-                textShadow: `0 0 40px ${ACCENT}, 0 0 80px ${ACCENT}80`,
-                WebkitTextStroke: `2px ${ACCENT}`,
-              }}
-            >
-              VS
-            </div>
           </div>
 
           {/* Right fighter panel */}
