@@ -1968,6 +1968,7 @@ button[aria-label="close modal"]:hover {
   .arena-scroll {
     overscroll-behavior-x: none;
     touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 
   html,
@@ -2800,7 +2801,6 @@ button[aria-label="close modal"]:hover {
 }
 
 .moments-page-scroll {
-  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
   width: 100%;
@@ -2843,6 +2843,14 @@ button[aria-label="close modal"]:hover {
 }
 
 @media (min-width: 1280px) {
+  .moments-page-scroll {
+    overscroll-behavior: contain;
+  }
+
+  .moments-sidebar-column {
+    overscroll-behavior: contain;
+  }
+
   .moments-page-root {
     flex: 1;
     min-height: 0;
@@ -2901,6 +2909,7 @@ button[aria-label="close modal"]:hover {
     min-height: auto;
     overflow: visible;
     padding-bottom: 0;
+    overscroll-behavior: auto;
   }
 
   .moments-page-inner {
@@ -2908,14 +2917,15 @@ button[aria-label="close modal"]:hover {
   }
 
   .moments-sticky-header {
-    position: sticky;
-    top: 0;
+    position: static;
+    top: auto;
     z-index: 40;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0;
   }
 
   .moments-sidebar-column {
     position: static;
+    overscroll-behavior: auto;
   }
 }
 
