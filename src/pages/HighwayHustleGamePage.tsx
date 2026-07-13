@@ -142,10 +142,10 @@ function AgentLoadingCard({
   const color = agent ? clanColor(agent.clan) : "#8b6dff";
 
   return (
-    <div className="flex w-[132px] flex-col items-center gap-2 sm:w-[180px] sm:gap-3">
+    <div className="flex w-[132px] flex-col items-center gap-2 sm:w-[180px] sm:gap-3 arena-loading-card-wrap">
       {/* Portrait frame */}
       <div
-        className="relative h-[165px] w-[132px] overflow-hidden rounded-2xl border border-white/20 sm:h-[220px] sm:w-[180px]"
+        className="arena-loading-card-frame relative h-[165px] w-[132px] overflow-hidden rounded-2xl border border-white/20 sm:h-[220px] sm:w-[180px]"
         style={{ boxShadow: `0 0 48px ${color}55, 0 12px 40px rgba(0,0,0,0.7)` }}
       >
         {portrait ? (
@@ -192,7 +192,7 @@ function AgentLoadingCard({
 
       {/* Stats panel — glassmorphism */}
       <div
-        className="w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
+        className="arena-loading-card-stats w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
         style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
       >
         <div className="font-tech text-base font-bold sm:text-lg" style={{ color }}>
@@ -412,8 +412,8 @@ function UnityLoadingScreen({
         style={{ background: "linear-gradient(to bottom, rgba(3,7,16,0.55) 0%, rgba(3,7,16,0.45) 50%, rgba(3,7,16,0.75) 100%)", backdropFilter: "blur(2px)" }}
       />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
-        <div className="text-center">
+      <div className="arena-loading-root relative z-10 flex h-full min-h-0 flex-col items-center justify-center gap-5 overflow-y-auto overscroll-contain px-3 sm:gap-8 sm:px-6">
+        <div className="arena-loading-title-block text-center">
           <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
             🚗 &nbsp;Highway Hustle&nbsp; 🏁
           </div>
@@ -422,12 +422,12 @@ function UnityLoadingScreen({
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
+        <div className="arena-loading-cards-row flex w-full items-center justify-center gap-3 sm:gap-16">
           <AgentLoadingCard agent={myAgent} side="left" />
 
           <div className="flex flex-col items-center gap-2 shrink-0">
             <div
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
+              className="arena-loading-vs-ring flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
               style={{
                 background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
                 boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
@@ -435,7 +435,7 @@ function UnityLoadingScreen({
             >
               <Swords className="h-5 w-5 text-primary sm:h-7 sm:w-7" />
             </div>
-            <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
+            <span className="arena-loading-vs-text font-display text-2xl font-black leading-none text-gradient sm:text-3xl">VS</span>
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
               {mode}
             </span>
@@ -816,7 +816,7 @@ function GameChatPanel({
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[#04080f]/95">
-      <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 [-webkit-overflow-scrolling:touch]">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
         ))}
@@ -1543,7 +1543,7 @@ export default function HighwayHustleGamePage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
+    <div className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-[#030710] text-white">
 
       {/* ── Top Nav ─────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5" data-tour="arena-game-topbar">

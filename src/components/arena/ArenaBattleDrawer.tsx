@@ -45,7 +45,14 @@ export function ArenaBattleDrawer({
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
 
   return (
@@ -64,7 +71,7 @@ export function ArenaBattleDrawer({
         data-tour={chatTourId}
         aria-hidden={!open}
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-[min(92vw,360px)] flex-col border-l border-white/10 bg-[#04080f]/98 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300 ease-out",
+          "fixed inset-y-0 right-0 z-50 flex h-dvh max-h-dvh w-[min(92vw,360px)] flex-col overflow-hidden border-l border-white/10 bg-[#04080f]/98 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
@@ -101,7 +108,7 @@ export function ArenaBattleDrawer({
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-3 py-2">
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/45">
               Live chat

@@ -161,10 +161,10 @@ function AgentLoadingCard({
   const color = agent ? clanColor(agent.clan) : "#8b6dff";
 
   return (
-    <div className="flex w-[132px] flex-col items-center gap-2 sm:w-[180px] sm:gap-3">
+    <div className="flex w-[132px] flex-col items-center gap-2 sm:w-[180px] sm:gap-3 arena-loading-card-wrap">
       {/* Portrait frame */}
       <div
-        className="relative h-[165px] w-[132px] overflow-hidden rounded-2xl border border-white/20 sm:h-[220px] sm:w-[180px]"
+        className="arena-loading-card-frame relative h-[165px] w-[132px] overflow-hidden rounded-2xl border border-white/20 sm:h-[220px] sm:w-[180px]"
         style={{ boxShadow: `0 0 48px ${color}55, 0 12px 40px rgba(0,0,0,0.7)` }}
       >
         {portrait ? (
@@ -211,7 +211,7 @@ function AgentLoadingCard({
 
       {/* Stats panel — glassmorphism */}
       <div
-        className="w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
+        className="arena-loading-card-stats w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
         style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
       >
         <div className="font-tech text-base font-bold sm:text-lg" style={{ color }}>
@@ -278,26 +278,26 @@ function PreMatchOverlay({
       {/* ══════════════════════════════════════════════════════════════════
           Content — 3-row layout: header / fighters / footer
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 flex h-full flex-col">
+      <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden">
 
         {/* ── ROW 1: header strip ─────────────────────────────────────── */}
         <div
-          className="flex items-center justify-between px-6 py-3 shrink-0"
+          className="arena-prematch-header flex shrink-0 items-center justify-between px-6 py-3"
           style={{ background: "rgba(5,8,15,0.85)", borderBottom: `2px solid ${meta.accentColor}` }}
         >
-          <div className="flex items-center gap-3">
+          <div className="arena-prematch-header-side flex items-center gap-3 min-w-0">
             <span
-              className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold"
+              className="font-tech text-[10px] uppercase tracking-[0.35em] font-bold truncate"
               style={{ color: meta.accentColor }}
             >
               ⚡ Arena · Ranked
             </span>
           </div>
-          <div className="font-display text-base font-black text-white tracking-widest uppercase">
+          <div className="arena-prematch-map-title font-display text-base font-black text-white tracking-widest uppercase truncate px-2">
             {meta.name}
           </div>
           <div
-            className="font-tech text-[10px] uppercase tracking-widest font-bold"
+            className="arena-prematch-header-side font-tech text-[10px] uppercase tracking-widest font-bold truncate text-right"
             style={{ color: meta.accentColor }}
           >
             Match Starting
@@ -305,7 +305,7 @@ function PreMatchOverlay({
         </div>
 
         {/* ── ROW 2: fighters — takes all remaining space ─────────────── */}
-        <div className="flex flex-1 min-h-0 items-stretch">
+        <div className="flex min-h-0 flex-1 items-stretch overflow-hidden">
 
           {/* Left fighter panel */}
           <div
@@ -313,11 +313,11 @@ function PreMatchOverlay({
             style={{ background: `linear-gradient(to right, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
           >
             {/* Agent name above */}
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+            <div className="mb-1 px-2 text-center sm:mb-2 sm:px-4">
+              <div className="arena-prematch-agent-name mx-auto font-display text-2xl font-black uppercase tracking-wide text-white drop-shadow-lg sm:text-2xl">
                 {myAgentName || "Agent A"}
               </div>
-              <div className="flex items-center justify-center gap-2 mt-1.5">
+              <div className="arena-prematch-agent-meta mt-1 flex items-center justify-center gap-2 sm:mt-1.5">
                 <img src="/Warzone/Uzi.webp" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
                 <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
@@ -326,16 +326,16 @@ function PreMatchOverlay({
             <img
               src="/Warzone/Character1-A.webp"
               alt="Fighter A"
-              className="object-contain object-bottom drop-shadow-2xl"
+              className="arena-prematch-character object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
           </div>
 
           {/* Centre VS column */}
-          <div className="flex flex-col items-center justify-center shrink-0 px-4 gap-3">
+          <div className="arena-prematch-center flex shrink-0 flex-col items-center justify-center gap-3 px-4">
             <div
-              className="font-display text-5xl font-black"
+              className="arena-prematch-vs font-display text-5xl font-black"
               style={{
                 color: "#fff",
                 textShadow: `0 0 40px ${meta.accentColor}, 0 0 80px ${meta.accentColor}80`,
@@ -346,7 +346,7 @@ function PreMatchOverlay({
             </div>
             {/* Countdown ring */}
             <div
-              className="flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
+              className="arena-prematch-countdown flex h-16 w-16 items-center justify-center rounded-full font-display text-3xl font-black"
               style={{
                 border: `3px solid ${meta.accentColor}`,
                 color: meta.accentColor,
@@ -363,11 +363,11 @@ function PreMatchOverlay({
             className="flex flex-col items-center justify-end gap-0 flex-1"
             style={{ background: `linear-gradient(to left, rgba(5,8,15,0.7) 0%, transparent 100%)` }}
           >
-            <div className="text-center mb-2 px-4">
-              <div className="font-display text-2xl font-black text-white uppercase tracking-wide drop-shadow-lg">
+            <div className="mb-1 px-2 text-center sm:mb-2 sm:px-4">
+              <div className="arena-prematch-agent-name mx-auto font-display text-2xl font-black uppercase tracking-wide text-white drop-shadow-lg sm:text-2xl">
                 {opponentName || "Agent B"}
               </div>
-              <div className="flex items-center justify-center gap-2 mt-1.5">
+              <div className="arena-prematch-agent-meta mt-1 flex items-center justify-center gap-2 sm:mt-1.5">
                 <img src="/Warzone/Uzi.webp" alt="Uzi" className="h-6 object-contain drop-shadow-lg" draggable={false} />
                 <span className="font-tech text-xs text-white font-bold uppercase tracking-widest">Uzi</span>
               </div>
@@ -375,7 +375,7 @@ function PreMatchOverlay({
             <img
               src="/Warzone/Character1-B.webp"
               alt="Fighter B"
-              className="object-contain object-bottom drop-shadow-2xl"
+              className="arena-prematch-character object-contain object-bottom drop-shadow-2xl"
               style={{ maxHeight: "55%", width: "auto" }}
               draggable={false}
             />
@@ -385,11 +385,11 @@ function PreMatchOverlay({
 
         {/* ── ROW 3: footer — rules + sync bar ────────────────────────── */}
         <div
-          className="shrink-0 flex flex-col items-center gap-2 px-6 py-4"
+          className="arena-prematch-footer flex shrink-0 flex-col items-center gap-2 px-6 py-4"
           style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           {/* Rules */}
-          <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
+          <p className="arena-prematch-footer-rules font-mono text-xs text-center text-white leading-relaxed max-w-lg">
             ⏱ <span className="text-white font-bold">90 second</span> match ·
             Kill the opponent to win early ·
             Your agent can <span className="font-bold" style={{ color: meta.accentColor }}>shoot</span>,{" "}
@@ -460,10 +460,10 @@ function UnityLoadingScreen({
       />
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-5 px-3 sm:gap-8 sm:px-6">
+      <div className="arena-loading-root relative z-10 flex h-full min-h-0 flex-col items-center justify-center gap-5 overflow-y-auto overscroll-contain px-3 sm:gap-8 sm:px-6">
 
         {/* Title */}
-        <div className="text-center">
+        <div className="arena-loading-title-block text-center">
           <div className="font-display text-[10px] uppercase tracking-[0.35em] text-white/40 mb-1.5">
             ⚡ &nbsp;AI Battle&nbsp; ⚡
           </div>
@@ -473,7 +473,7 @@ function UnityLoadingScreen({
         </div>
 
         {/* Agent cards + VS */}
-        <div className="flex w-full items-center justify-center gap-3 sm:gap-16">
+        <div className="arena-loading-cards-row flex w-full items-center justify-center gap-3 sm:gap-16">
 
           {/* My agent */}
           <AgentLoadingCard agent={myAgent} side="left" />
@@ -481,7 +481,7 @@ function UnityLoadingScreen({
           {/* VS center — single column, perfectly centred */}
           <div className="flex flex-col items-center gap-2 shrink-0">
             <div
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
+              className="arena-loading-vs-ring flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
               style={{
                 background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.05) 100%)",
                 boxShadow: "0 0 28px rgba(139,92,246,0.5), inset 0 0 16px rgba(139,92,246,0.1)",
@@ -489,7 +489,7 @@ function UnityLoadingScreen({
             >
               <Swords className="h-5 w-5 text-primary sm:h-7 sm:w-7" />
             </div>
-            <span className="font-display text-2xl font-black text-gradient leading-none sm:text-3xl">VS</span>
+            <span className="arena-loading-vs-text font-display text-2xl font-black leading-none text-gradient sm:text-3xl">VS</span>
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/35 mt-0.5">
               {mode}
             </span>
@@ -997,7 +997,7 @@ function GameChatPanel({
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[#04080f]/95">
-      <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 [-webkit-overflow-scrolling:touch]">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
         ))}
@@ -1072,7 +1072,14 @@ function ArenaBattleDrawer({
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
 
   return (
@@ -1091,7 +1098,7 @@ function ArenaBattleDrawer({
         data-tour="arena-game-chat"
         aria-hidden={!open}
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-[min(92vw,360px)] flex-col border-l border-white/10 bg-[#04080f]/98 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300 ease-out",
+          "fixed inset-y-0 right-0 z-50 flex h-dvh max-h-dvh w-[min(92vw,360px)] flex-col overflow-hidden border-l border-white/10 bg-[#04080f]/98 shadow-[-24px_0_80px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
@@ -1128,7 +1135,7 @@ function ArenaBattleDrawer({
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex shrink-0 items-center gap-2 border-b border-white/8 px-3 py-2">
             <span className="font-tech text-[9px] uppercase tracking-widest text-white/45">
               Live chat
@@ -2112,7 +2119,7 @@ export default function ArenaGamePage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
+    <div className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-[#030710] text-white">
 
       {/* ── Top Nav ───────────────────────────────────────────────────────── */}
       <header
@@ -2128,7 +2135,7 @@ export default function ArenaGamePage() {
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/35 to-transparent" />
 
-        <div className="relative grid h-12 grid-cols-[auto_1fr_auto] items-center gap-2 px-2 sm:h-14 sm:gap-3 sm:px-4">
+        <div className="arena-game-topbar-inner relative grid h-12 grid-cols-[auto_1fr_auto] items-center gap-2 px-2 sm:h-14 sm:gap-3 sm:px-4">
           <button
             type="button"
             onClick={() => navigate(-1)}

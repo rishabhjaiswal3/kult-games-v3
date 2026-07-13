@@ -71,7 +71,7 @@ function AgentCard({
         />
         <ArenaAgentThumbnail
           agent={agent}
-          className="relative h-10 w-10 rounded-lg border-white/15"
+          className="arena-battle-agent-thumb relative h-10 w-10 rounded-lg border-white/15"
         />
         {isWinner ? (
           <Crown
@@ -142,7 +142,7 @@ export function ArenaBattleAgentBanner({
         className={`pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l to-transparent ${styles.rightGlowClass}`}
       />
 
-      <div className="relative grid grid-cols-[minmax(0,1fr)_2.5rem_minmax(0,1fr)] items-center gap-0 px-1 py-1 sm:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)]">
+      <div className="arena-battle-agent-banner relative grid grid-cols-[minmax(0,1fr)_2.5rem_minmax(0,1fr)] items-center gap-0 px-1 py-1 sm:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)]">
         <AgentCard
           agent={myAgent}
           isWinner={gamePhase === "ended" && myWon}
