@@ -46,6 +46,7 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaLandscapeGate } from "@/components/arena/ArenaLandscapeGate";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import {
   LauncherPreMatchView,
@@ -1361,25 +1362,23 @@ export default function RobowarGamePage() {
 
         {/* Launcher canvas area */}
         <div className="absolute inset-0 bg-[#040810]">
-
-          {/* ── Battle API error ── */}
-          {isError && (
+          {isError ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-            <button
+                <button
                   onClick={() => battleQ.refetch()}
                   className="font-tech text-xs text-primary hover:text-primary/80 underline"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ArenaLandscapeGate
+              active={launcherPhase !== "idle" && launcherPhase !== "not_installed"}
+              className="absolute inset-0"
             >
-              Retry
-            </button>
-          </div>
-          </div>
-          )}
-
-          {/* ── Launcher phases (shown when no battle API error) ── */}
-          {!isError && (
-            <>
               {/* Phase: idle — pre-match landing with Download + Launch */}
               {(launcherPhase === "idle" || launcherPhase === "launching") && (
                 <LauncherPreMatchView
@@ -1460,11 +1459,11 @@ export default function RobowarGamePage() {
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
                       {`robowar · ${shortId(battleId)} · ${battle?.status ?? "—"}`}
-                </span>
-            </div>
-          </div>
+                    </span>
+                  </div>
+                </div>
               )}
-            </>
+            </ArenaLandscapeGate>
           )}
         </div>
       </div>

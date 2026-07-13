@@ -45,6 +45,7 @@ import { saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaLandscapeGate } from "@/components/arena/ArenaLandscapeGate";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import type {
   AiArenaAgent,
@@ -2250,6 +2251,7 @@ export default function ArenaGamePage() {
         {/* ── Unity canvas — fills entire game area ── */}
         {!isError && UNITY_BASE_URL && (
           <div className="absolute inset-0">
+            <ArenaLandscapeGate active={unityLoaded} className="absolute inset-0">
               {/* Unity renders directly into this canvas; CSS fills the space,
                   width/height attrs set the render resolution */}
               <canvas
@@ -2372,7 +2374,8 @@ export default function ArenaGamePage() {
                   </div>
                 </div>
               )}
-            </div>
+            </ArenaLandscapeGate>
+          </div>
           )}
       </div>
 

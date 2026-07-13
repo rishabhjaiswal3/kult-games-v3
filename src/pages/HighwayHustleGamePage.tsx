@@ -44,6 +44,7 @@ import { saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaLandscapeGate } from "@/components/arena/ArenaLandscapeGate";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import type {
   AiArenaAgent,
@@ -1638,6 +1639,7 @@ export default function HighwayHustleGamePage() {
 
         {!isError && UNITY_BASE_URL && (
           <div className="absolute inset-0">
+            <ArenaLandscapeGate active={unityLoaded} className="absolute inset-0">
               <canvas
                 ref={canvasRef}
                 id="unity-canvas"
@@ -1751,7 +1753,8 @@ export default function HighwayHustleGamePage() {
                   </div>
                 </div>
               )}
-            </div>
+            </ArenaLandscapeGate>
+          </div>
           )}
       </div>
 
