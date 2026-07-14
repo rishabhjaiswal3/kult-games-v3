@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Side } from "@polymarket/clob-client-v2";
-import { encodeFunctionData, erc1155Abi, erc20Abi, maxUint256, parseUnits } from "viem";
+import { createWalletClient, custom, encodeFunctionData, erc1155Abi, erc20Abi, maxUint256, parseUnits } from "viem";
+import { polygon } from "viem/chains";
 import { usePrivyWalletTools } from "@/hooks/usePrivyWalletTools";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import { POLYGON_CHAIN } from "@/lib/polygonChain";
@@ -14,6 +15,12 @@ import {
   PUSD_DECIMALS,
 } from "@/lib/polygonUsdc";
 import { getBuilderCode, getClobClient, hasCachedCreds } from "@/lib/polymarketClob";
+import {
+  deriveDepositWalletAddress,
+  ensureDepositWalletDeployed,
+  signAndSubmitDepositWalletBatch,
+  type DepositWalletCall,
+} from "@/lib/polymarketDepositWallet";
 
 /** ERC-1155 Conditional Tokens contract Polymarket positions are held as -- docs/polymarket §5 Phase 4. */
 const CONDITIONAL_TOKENS_ADDRESS = POLYMARKET_CONTRACTS.conditionalTokens;
@@ -21,6 +28,7 @@ const CONDITIONAL_TOKENS_ADDRESS = POLYMARKET_CONTRACTS.conditionalTokens;
 export type PolymarketTradingStatus =
   | "idle"
   | "switching-network"
+  | "deploying-wallet"
   | "wrapping"
   | "approving"
   | "deriving-key"
@@ -29,17 +37,23 @@ export type PolymarketTradingStatus =
 
 /**
  * Real order execution against Polymarket's own CLOB (docs/polymarket §5
- * Phase 4, later migrated to CTF Exchange V2 + pUSD). The backend is never
- * in this path -- every step here is either a read against Polygon, or a
- * signature/transaction from the user's own wallet. No custody, no
- * server-side signing.
+ * Phase 4, later migrated to CTF Exchange V2 + pUSD, then to the deposit
+ * wallet flow -- see polymarketDepositWallet.ts). The backend is never in
+ * the fund-custody path here -- every step is either a read against Polygon,
+ * or a signature/transaction from the user's own wallet. No custody, no
+ * server-side signing of anything that moves money.
  *
  * "Enable trading" (idempotent, runs before every order):
- *   1. Wrap enough USDC.e into pUSD to cover the trade (CTF Exchange V2
- *      settles in pUSD, not USDC.e directly -- docs.polymarket.com/concepts/pusd).
- *   2. Approve pUSD to the CTF Exchange V2 / Neg Risk CTF Exchange V2 contracts.
- *   3. Grant Conditional Tokens operator approval to both V2 exchanges.
- *   4. Derive/cache the wallet's own CLOB API key.
+ *   1. Derive + deploy (if needed) the player's Polymarket deposit wallet --
+ *      Polymarket's CLOB rejects orders made directly by a plain EOA now.
+ *   2. Wrap enough USDC.e into pUSD, straight into the deposit wallet (CTF
+ *      Exchange V2 settles in pUSD, not USDC.e -- docs.polymarket.com/concepts/pusd).
+ *   3. Have the deposit wallet approve the CTF Exchange V2 / Neg Risk CTF
+ *      Exchange V2 contracts to spend its own pUSD, and grant them
+ *      Conditional Tokens operator approval -- one signed batch, since only
+ *      the deposit wallet itself can approve spending its own balance.
+ *   4. Derive/cache the wallet's own CLOB API key (against the EOA, not the
+ *      deposit wallet -- confirmed via docs.polymarket.com/trading/deposit-wallets).
  * Each step is skipped if already satisfied, so there's one "Buy" button,
  * not a separate "enable" step the user has to find first.
  */
@@ -51,15 +65,15 @@ export function usePolymarketTrading() {
   const address = activeWallet?.address ?? null;
   const isReady = Boolean(address ? hasCachedCreds(address) : false);
 
-  /** Wraps just enough USDC.e -> pUSD to cover `amountUsd`, if the wallet's pUSD balance is short. */
-  async function ensurePusdWrapped(owner: `0x${string}`, amountUsd: number) {
+  /** Wraps just enough USDC.e -> pUSD to cover `amountUsd`, straight into the deposit wallet, if it's short. USDC.e is still pulled from the owner EOA's own balance. */
+  async function ensurePusdWrapped(owner: `0x${string}`, depositWallet: `0x${string}`, amountUsd: number) {
     const requiredRaw = parseUnits(amountUsd.toFixed(PUSD_DECIMALS), PUSD_DECIMALS);
 
     const currentPusd = await polygonPublicClient.readContract({
       address: PUSD_ADDRESS,
       abi: erc20Abi,
       functionName: "balanceOf",
-      args: [owner],
+      args: [depositWallet],
     });
     if (currentPusd >= requiredRaw) return;
 
@@ -94,7 +108,7 @@ export function usePolymarketTrading() {
     const wrapData = encodeFunctionData({
       abi: [{ type: "function", name: "wrap", stateMutability: "nonpayable", inputs: [{ name: "_asset", type: "address" }, { name: "_to", type: "address" }, { name: "_amount", type: "uint256" }], outputs: [] }],
       functionName: "wrap",
-      args: [POLYGON_USDC_ADDRESS, owner, shortfall],
+      args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall],
     });
     await sendPrivyTransaction(
       { to: COLLATERAL_ONRAMP_ADDRESS, value: 0n, data: wrapData, chainId: POLYGON_CHAIN.decimalChainId },
@@ -102,40 +116,43 @@ export function usePolymarketTrading() {
     );
   }
 
-  async function ensurePusdAllowance(owner: `0x${string}`, spender: `0x${string}`) {
-    const current = await polygonPublicClient.readContract({
-      address: PUSD_ADDRESS,
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [owner, spender],
-    });
-    if (current > 0n) return;
+  /**
+   * The deposit wallet holds the pUSD, so only it can approve the exchanges
+   * to spend it -- that means these approvals can't be plain EOA
+   * transactions anymore. Collects whichever of the 4 approvals aren't
+   * already satisfied and submits them as ONE signed relayer batch (one
+   * signature, gasless -- Polymarket sponsors the relayed call).
+   */
+  async function ensureDepositWalletApprovals(owner: `0x${string}`, depositWallet: `0x${string}`, provider: Eip1193LikeProvider) {
+    const [pusdAllowanceExchange, pusdAllowanceNegRisk, ctApprovedExchange, ctApprovedNegRisk] = await Promise.all([
+      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
+      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
+      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
+      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
+    ]);
 
-    const data = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [spender, maxUint256] });
-    await sendPrivyTransaction(
-      { to: PUSD_ADDRESS, value: 0n, data, chainId: POLYGON_CHAIN.decimalChainId },
-      { address: owner, uiOptions: { showWalletUIs: true } },
-    );
+    const calls: DepositWalletCall[] = [];
+    if (pusdAllowanceExchange === 0n) {
+      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.exchangeV2, maxUint256] }) });
+    }
+    if (pusdAllowanceNegRisk === 0n) {
+      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, maxUint256] }) });
+    }
+    if (!ctApprovedExchange) {
+      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.exchangeV2, true] }) });
+    }
+    if (!ctApprovedNegRisk) {
+      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, true] }) });
+    }
+    if (calls.length === 0) return;
+
+    setStatus("approving");
+    const walletClient = createWalletClient({ account: owner, chain: polygon, transport: custom(provider) });
+    await signAndSubmitDepositWalletBatch(walletClient, owner, depositWallet, calls);
   }
 
-  async function ensureOperatorApproval(owner: `0x${string}`, operator: `0x${string}`) {
-    const approved = await polygonPublicClient.readContract({
-      address: CONDITIONAL_TOKENS_ADDRESS,
-      abi: erc1155Abi,
-      functionName: "isApprovedForAll",
-      args: [owner, operator],
-    });
-    if (approved) return;
-
-    const data = encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [operator, true] });
-    await sendPrivyTransaction(
-      { to: CONDITIONAL_TOKENS_ADDRESS, value: 0n, data, chainId: POLYGON_CHAIN.decimalChainId },
-      { address: owner, uiOptions: { showWalletUIs: true } },
-    );
-  }
-
-  /** Idempotent: safe to call before every order, only prompts for whatever isn't already done. */
-  async function ensureTradingEnabled(amountUsd: number): Promise<void> {
+  /** Idempotent: safe to call before every order, only prompts for whatever isn't already done. Returns the deposit wallet address to trade through. */
+  async function ensureTradingEnabled(amountUsd: number): Promise<`0x${string}`> {
     if (!activeWallet?.address || typeof activeWallet.getEthereumProvider !== "function") {
       throw new Error("Connect your wallet first");
     }
@@ -145,16 +162,17 @@ export function usePolymarketTrading() {
     const provider = await activeWallet.getEthereumProvider();
     await ensureWalletOnAllowedChain(provider, POLYGON_CHAIN);
 
-    await ensurePusdWrapped(owner, amountUsd);
+    setStatus("deploying-wallet");
+    const depositWallet = await deriveDepositWalletAddress(polygonPublicClient, owner);
+    await ensureDepositWalletDeployed(owner, depositWallet);
 
-    setStatus("approving");
-    await ensurePusdAllowance(owner, POLYMARKET_CONTRACTS.exchangeV2);
-    await ensurePusdAllowance(owner, POLYMARKET_CONTRACTS.negRiskExchangeV2);
-    await ensureOperatorApproval(owner, POLYMARKET_CONTRACTS.exchangeV2);
-    await ensureOperatorApproval(owner, POLYMARKET_CONTRACTS.negRiskExchangeV2);
+    await ensurePusdWrapped(owner, depositWallet, amountUsd);
+    await ensureDepositWalletApprovals(owner, depositWallet, provider);
 
     setStatus("deriving-key");
-    await getClobClient(owner, provider);
+    await getClobClient(owner, provider, depositWallet);
+
+    return depositWallet;
   }
 
   /**
@@ -168,11 +186,11 @@ export function usePolymarketTrading() {
     }
     setError(null);
     try {
-      await ensureTradingEnabled(amountUsd);
+      const depositWallet = await ensureTradingEnabled(amountUsd);
 
       setStatus("placing-order");
       const provider = await activeWallet.getEthereumProvider();
-      const client = await getClobClient(activeWallet.address, provider);
+      const client = await getClobClient(activeWallet.address, provider, depositWallet);
 
       const builderCode = getBuilderCode();
       const result = await client.createAndPostMarketOrder({
@@ -198,3 +216,5 @@ export function usePolymarketTrading() {
     placeMarketBuy,
   };
 }
+
+type Eip1193LikeProvider = { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> };

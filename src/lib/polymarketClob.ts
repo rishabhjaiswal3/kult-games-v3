@@ -1,4 +1,4 @@
-import { ClobClient, Chain, type ApiKeyCreds } from "@polymarket/clob-client-v2";
+import { ClobClient, Chain, SignatureTypeV2, type ApiKeyCreds } from "@polymarket/clob-client-v2";
 import { createWalletClient, custom } from "viem";
 import { polygon } from "viem/chains";
 
@@ -11,11 +11,7 @@ const CLOB_HOST = "https://clob.polymarket.com";
  * We use @polymarket/clob-client-v2 (not the older @polymarket/clob-client)
  * specifically because builderCode is only meaningful there: v2 serializes it
  * into the actual signed order's `builder` field (see Polymarket's Order
- * Attribution docs), which the v1 client's order schema has no room for at
- * all. Our existing direct-EOA signing flow (Privy wallet, plain approve())
- * needs no changes for this — v2's signatureType defaults to EOA and
- * funderAddress is only needed for Polymarket's separate "deposit wallet"
- * onboarding path, which we don't use.
+ * Attribution docs).
  */
 const POLYMARKET_BUILDER_CODE: string | undefined = import.meta.env.VITE_POLYMARKET_BUILDER_CODE;
 
@@ -62,27 +58,44 @@ export function getBuilderCode(): string | undefined {
  * is registered with Polymarket as a platform/company for this to work.
  * Never touches the user's private key directly: the viem WalletClient
  * signs through the wallet's own provider (Privy's getEthereumProvider()).
+ *
+ * `funderAddress` is the player's deposit wallet (see
+ * polymarketDepositWallet.ts) -- Polymarket's CLOB now rejects orders where
+ * the maker is a plain EOA ("maker address not allowed, please use the
+ * deposit wallet flow"), so every order has to be made by that
+ * smart-contract wallet instead (signatureType POLY_1271, EIP-1271
+ * validated). The API key itself is still derived against the EOA, not the
+ * deposit wallet -- confirmed from docs.polymarket.com/trading/deposit-wallets.
  */
-export async function getClobClient(address: string, provider: Eip1193Provider): Promise<ClobClient> {
+export async function getClobClient(address: string, provider: Eip1193Provider, funderAddress: string): Promise<ClobClient> {
   const walletClient = createWalletClient({
     account: address as `0x${string}`,
     chain: polygon,
     transport: custom(provider),
   });
 
-  // throwOnError is required: by default the SDK returns API failures as a
-  // normal resolved { error, status } object instead of throwing, which
-  // meant a rejected/unfilled order looked identical to a successful one to
-  // every caller here -- a real order silently failed to execute once
-  // ("YES ORDER PLACED" shown, zero trades/positions ever appeared on
-  // Polymarket, pUSD balance never moved) before this was caught and fixed.
+  const clientOpts = {
+    host: CLOB_HOST,
+    chain: Chain.POLYGON,
+    signer: walletClient,
+    signatureType: SignatureTypeV2.POLY_1271,
+    funderAddress,
+    // throwOnError is required: by default the SDK returns API failures as a
+    // normal resolved { error, status } object instead of throwing, which
+    // meant a rejected/unfilled order looked identical to a successful one to
+    // every caller here -- a real order silently failed to execute once
+    // ("YES ORDER PLACED" shown, zero trades/positions ever appeared on
+    // Polymarket, pUSD balance never moved) before this was caught and fixed.
+    throwOnError: true,
+  } as const;
+
   const cached = loadCachedCreds(address);
   if (cached) {
-    return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds: cached, throwOnError: true });
+    return new ClobClient({ ...clientOpts, creds: cached });
   }
 
-  const bootstrapClient = new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, throwOnError: true });
+  const bootstrapClient = new ClobClient(clientOpts);
   const creds = await bootstrapClient.createOrDeriveApiKey();
   saveCachedCreds(address, creds);
-  return new ClobClient({ host: CLOB_HOST, chain: Chain.POLYGON, signer: walletClient, creds, throwOnError: true });
+  return new ClobClient({ ...clientOpts, creds });
 }

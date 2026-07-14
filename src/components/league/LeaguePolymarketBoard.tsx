@@ -43,7 +43,7 @@ import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
-import { usePolymarketPusdBalance } from "@/hooks/usePolymarketPusdBalance";
+import { useDepositWalletPusdBalance } from "@/hooks/useDepositWalletPusdBalance";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -478,17 +478,18 @@ function PolymarketComplianceNotice({ source }: { source: "live" | "sim" }) {
 
 /**
  * Read-only balance readout (docs/polymarket §5 Phase 3, later migrated to
- * CTF Exchange V2 + pUSD). Funding is entirely on the user -- this just
+ * CTF Exchange V2 + pUSD, then to the deposit-wallet flow -- see
+ * polymarketDepositWallet.ts). Funding is entirely on the user -- this just
  * confirms what's already there before Phase 4 lets them actually trade
- * against it. Shows both: plain USDC.e (what's in the wallet) and pUSD (what
- * CTF Exchange V2 actually trades with -- usePolymarketTrading auto-wraps
- * USDC.e into pUSD as needed before an order, so pUSD being $0 here is normal
- * and not an error).
+ * against it. Shows both: plain USDC.e in the player's own wallet, and pUSD
+ * in their Polymarket deposit wallet (the actual tradeable balance --
+ * usePolymarketTrading auto-wraps USDC.e into pUSD there as needed before an
+ * order, so this being $0 before a first trade is normal, not an error).
  */
 function PolygonWalletBalance() {
   const { isAuthenticated, walletAddress, login } = useAuth();
   const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
-  const { data: pusd, isLoading: pusdLoading } = usePolymarketPusdBalance(walletAddress);
+  const { data: pusd, isLoading: pusdLoading } = useDepositWalletPusdBalance(walletAddress);
   const [depositOpen, setDepositOpen] = useState(false);
 
   if (!isAuthenticated) {
