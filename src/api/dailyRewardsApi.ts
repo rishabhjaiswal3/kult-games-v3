@@ -55,18 +55,7 @@ function clampDay(day: number): number {
   return Math.min(Math.max(Math.trunc(day), 1), TOTAL_REWARD_DAYS);
 }
 
-/**
- * Users who minted a Genesis agent before daily-rewards DB tracking should see day 1
- * as claimed and be able to claim day 2 immediately on first interaction.
- */
-export function mergeLegacyGenesisAgentState(
-  state: DailyRewardsState,
-  hasGenesisAgent: boolean,
-): DailyRewardsState {
-  if (state.hasRecord || !hasGenesisAgent || state.completed) {
-    return state;
-  }
-
+function legacyGenesisPreview(): DailyRewardsState {
   return {
     currentDay: 2,
     claimedDays: [1],
@@ -75,6 +64,42 @@ export function mergeLegacyGenesisAgentState(
     completed: false,
     hasRecord: false,
   };
+}
+
+/**
+ * Users who minted a Genesis agent before daily-rewards DB tracking should see day 1
+ * as claimed and be able to claim day 2 immediately on first interaction.
+ */
+export function mergeLegacyGenesisAgentState(
+  state: DailyRewardsState,
+  hasGenesisAgent: boolean,
+): DailyRewardsState {
+  if (!hasGenesisAgent || state.completed) {
+    return state;
+  }
+
+  // No DB record yet — agent already exists from before rewards tracking.
+  if (!state.hasRecord) {
+    return legacyGenesisPreview();
+  }
+
+  // DB has day 1 only but day 2 is time-locked because day 1 was recorded today
+  // without the legacy bootstrap (common for pre-existing agents).
+  const hasDay1Only =
+    state.claimedDays.includes(1) &&
+    !state.claimedDays.includes(2) &&
+    state.currentDay === 2 &&
+    !state.claimableToday;
+
+  if (hasDay1Only) {
+    return {
+      ...state,
+      claimableToday: true,
+      nextUnlockAt: null,
+    };
+  }
+
+  return state;
 }
 
 export const dailyRewardsApi = {

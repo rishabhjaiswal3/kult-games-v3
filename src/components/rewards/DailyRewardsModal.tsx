@@ -213,7 +213,7 @@ function rewardRedirectPath(day: number): string | "create-agent" | null {
 export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
-  const { state, isLoading, claim, isClaiming, refetch, refetchAgents } = useDailyRewards();
+  const { state, hasGenesisAgent, isLoading, claim, isClaiming, refetch, refetchAgents } = useDailyRewards();
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const pendingDay1ClaimRef = useRef(false);
@@ -257,7 +257,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
 
   const currentDay = state?.currentDay ?? 1;
   const claimedDays = useMemo(() => new Set(state?.claimedDays ?? []), [state?.claimedDays]);
-  const userHasAgent = claimedDays.has(1);
+  const userHasAgent = hasGenesisAgent || claimedDays.has(1);
   const claimedCount = claimedDays.size;
   const completed = state?.completed ?? false;
   const claimableNow = state?.claimableToday ?? false;
