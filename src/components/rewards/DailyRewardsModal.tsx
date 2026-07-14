@@ -290,18 +290,22 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
       }
     }
 
-    const result = await claim();
-    setJustClaimedDay(result.claimedDay);
+    try {
+      const result = await claim();
+      setJustClaimedDay(result.claimedDay);
 
-    const redirect = rewardRedirectPath(result.claimedDay);
-    if (redirect) {
-      onClose();
-      if (redirect === "create-agent") {
-        navigate("/my-agents");
-        window.setTimeout(() => openCreateAgent(), 150);
-      } else {
-        navigate(redirect);
+      const redirect = rewardRedirectPath(result.claimedDay);
+      if (redirect) {
+        onClose();
+        if (redirect === "create-agent") {
+          navigate("/my-agents");
+          window.setTimeout(() => openCreateAgent(), 150);
+        } else {
+          navigate(redirect);
+        }
       }
+    } catch {
+      /* claim failed — e.g. rewards API 404 until backend is deployed */
     }
   };
 
