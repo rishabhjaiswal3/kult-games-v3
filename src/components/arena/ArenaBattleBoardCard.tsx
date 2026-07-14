@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import type { CSSProperties } from "react";
 import { ArrowUpRight, Loader2, Search, Swords } from "lucide-react";
 import { ClanIcon } from "@/components/arena/ClanIcon";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -121,6 +122,8 @@ type ArenaBattleBoardCardProps = {
   onAction?: () => void;
   actionDisabled?: boolean;
   actionLoading?: boolean;
+  /** Inline styles for the primary action (Watch Live / Join). React CSS: camelCase keys. */
+  actionStyle?: CSSProperties;
   /** Optional FOMO CTA shown inside ranked live cards (e.g. start matchmaking). */
   secondaryCta?: {
     eyebrow: string;
@@ -137,6 +140,7 @@ function CardAction({
   onAction,
   actionDisabled,
   actionLoading,
+  actionStyle,
 }: Omit<ArenaBattleBoardCardProps, "item" | "secondaryCta">) {
   if (onAction) {
     return (
@@ -145,6 +149,7 @@ function CardAction({
         onClick={onAction}
         disabled={actionDisabled || actionLoading}
         className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        style={actionStyle}
       >
         {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
         <span>{actionLabel}</span>
@@ -156,7 +161,11 @@ function CardAction({
   if (!actionTo) return null;
 
   return (
-    <Link to={actionTo} className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white">
+    <Link
+      to={actionTo}
+      className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white"
+      style={actionStyle}
+    >
       <span>{actionLabel}</span>
       <ArrowUpRight className="h-3.5 w-3.5" />
     </Link>
@@ -170,6 +179,7 @@ export function ArenaBattleBoardCard({
   onAction,
   actionDisabled,
   actionLoading,
+  actionStyle,
   secondaryCta,
 }: ArenaBattleBoardCardProps) {
   if (item.kind === "open-lobby") {
@@ -211,6 +221,7 @@ export function ArenaBattleBoardCard({
             onAction={onAction}
             actionDisabled={actionDisabled}
             actionLoading={actionLoading}
+            actionStyle={actionStyle}
           />
           <span className="text-xs text-muted-foreground">
             {item.status.gameId ?? "Arena queue"} · {formatLobbyMode(item.status.mode)}
@@ -284,13 +295,14 @@ export function ArenaBattleBoardCard({
           align="right"
         />
       </div>
-      <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3">
+      <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3 h-[70px]">
         <CardAction
           actionLabel={actionLabel}
           actionTo={actionTo}
           onAction={onAction}
           actionDisabled={actionDisabled}
           actionLoading={actionLoading}
+          actionStyle={actionStyle}
         />
         {item.watchLabel ? <span className="text-xs text-muted-foreground">{item.watchLabel}</span> : null}
       </div>
