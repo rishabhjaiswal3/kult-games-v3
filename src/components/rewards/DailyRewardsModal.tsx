@@ -115,7 +115,7 @@ function RewardCard({
   return (
     <div
       className={`relative flex flex-col items-center gap-2 overflow-hidden rounded-2xl border p-3 text-center transition duration-300 ${
-        isToday ? "z-10 scale-[1.03]" : "hover:-translate-y-0.5"
+        isToday ? "z-[1] scale-[1.03] [contain:paint]" : "hover:-translate-y-0.5"
       }`}
       style={{
         borderColor: `${rarity.hex}${isToday ? "aa" : isClaimed ? "77" : "40"}`,
@@ -264,7 +264,14 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
     if (!open) {
       setJustClaimedDay(null);
       pendingDay1ClaimRef.current = false;
+      return;
     }
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
 
   const currentDay = state?.currentDay ?? 1;
@@ -330,14 +337,14 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
+      className="fixed inset-0 z-[1000] flex items-center justify-center overflow-hidden bg-black/80 p-3 backdrop-blur-md sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Daily login rewards"
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[calc(100dvh-32px)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-[#a855f7]/35 bg-[#05040c] shadow-[0_32px_110px_rgba(0,0,0,0.85)]"
+        className="relative flex max-h-[calc(100dvh-24px)] w-full max-w-4xl min-h-0 flex-col overflow-hidden rounded-3xl border border-[#a855f7]/35 bg-[#05040c] shadow-[0_32px_110px_rgba(0,0,0,0.85)] sm:max-h-[calc(100dvh-48px)]"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Ambient glows */}
@@ -404,7 +411,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
           <X className="h-4 w-4" />
         </button>
 
-        <div className="relative z-10 overflow-y-auto p-4 sm:p-6 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin]">
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 sm:p-6 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]">
           {/* Header — centered like the design */}
           <div className="flex flex-col items-center text-center">
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-[#38bdf8]/45 bg-[#38bdf8]/12 text-lg" aria-hidden>
@@ -432,8 +439,8 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
               <span className="text-white/35">/ {TOTAL_REWARD_DAYS}</span>
             </p>
 
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-              <div className="flex min-w-0 flex-1 items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto overscroll-x-contain touch-pan-x sm:gap-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-max flex-1 items-center pr-1">
                 {DAILY_REWARDS.map((reward, index) => {
                   const status = dayStatus(reward.day);
                   // The trail you've already walked glows gold.
