@@ -35,6 +35,7 @@ import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
+import { isBattleNotFoundError, battleLiveRefetchInterval } from "@/lib/aiArenaBattleErrors";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import { aiArenaMedia, type AiArenaMediaKey } from "@/lib/aiArenaMedia";
@@ -313,9 +314,21 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
     enabled: isAiArenaReady && !!trackedBattleId,
     staleTime: 5_000,
-    refetchInterval: 5_000,
-    retry: 1,
+    refetchInterval: (q) => battleLiveRefetchInterval(q, 5_000),
+    retry: (failureCount, error) => {
+      if (isBattleNotFoundError(error)) return false;
+      return failureCount < 1;
+    },
+    refetchOnWindowFocus: (q) => !isBattleNotFoundError(q.state.error),
+    refetchOnReconnect: (q) => !isBattleNotFoundError(q.state.error),
   });
+
+  useEffect(() => {
+    if (!trackedBattleId || !trackedBattleQ.isError) return;
+    if (!isBattleNotFoundError(trackedBattleQ.error)) return;
+    saveTrackedAiArenaBattleId(null);
+    setTrackedBattleId(null);
+  }, [trackedBattleId, trackedBattleQ.isError, trackedBattleQ.error]);
 
   const agentInActiveBattle = useMemo(() => {
     const status = trackedBattleQ.data?.battle?.status;
@@ -671,7 +684,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
         >
           <Swords className="h-3 w-3 shrink-0 text-emerald-200" />
-          <span>JOIN BATTLE</span>
+          <span>OPEN LOBBIES</span>
         </button>
 
         <Link
@@ -1842,7 +1855,7 @@ function LiveBattles() {
             <ArenaBattleBoardCard
               key={item.id}
               item={item}
-              actionLabel={item.kind === "ranked" ? "Join Battle" : "View Battle"}
+              actionLabel={item.kind === "ranked" ? "Watch Live" : "View Battle"}
               actionTo={item.kind === "ranked" ? `/arena/game/${item.id}` : "/battles"}
             />
           ))}

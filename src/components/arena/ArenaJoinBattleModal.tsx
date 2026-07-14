@@ -95,10 +95,10 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
 
         <ArenaDialogHeader className="relative border-emerald-200/12 bg-[linear-gradient(135deg,rgba(16,185,129,0.11),rgba(154,53,255,0.10),rgba(4,8,15,0.35))]">
           <ArenaDialogTitle className="font-tech text-2xl font-black uppercase tracking-[-0.04em] text-white sm:text-3xl">
-            Join a <span className="bg-gradient-to-r from-emerald-200 via-white to-purple-300 bg-clip-text text-transparent">battle</span>
+            Open <span className="bg-gradient-to-r from-emerald-200 via-white to-purple-300 bg-clip-text text-transparent">lobbies</span>
           </ArenaDialogTitle>
           <ArenaDialogDescription className="max-w-2xl text-sm leading-relaxed text-white/56">
-            Open lobbies are waiting for a rival. Pick one of your agents and jump straight into an existing match.
+            Browse open lobbies waiting for a rival. Pick one of your agents and jump into a match.
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
