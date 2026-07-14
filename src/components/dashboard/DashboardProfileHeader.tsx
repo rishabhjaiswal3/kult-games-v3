@@ -1,4 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { Copy, Wallet } from "lucide-react";
+import { arenaChainApi } from "@/api/arenaChainApi";
 import type { FullPlayerProfile } from "@/types/api";
 import { initialsFromName, shortWallet } from "@/components/dashboard/profileAvatars";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,22 +12,45 @@ type DashboardProfileHeaderProps = {
   agentCount: number;
 };
 
-function formatKultPoints(value: number): string {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 1,
-    maximumFractionDigits: 1,
+function formatArenaToken(value?: string | number | null): string {
+  const num = typeof value === "string" ? Number.parseFloat(value) : value;
+  if (num == null || !Number.isFinite(num)) return "—";
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: Number.isInteger(num) ? 0 : 2,
+    maximumFractionDigits: 2,
   });
 }
 
-export function DashboardProfileHeader({ profile, isLoading, walletAddress, agentCount }: DashboardProfileHeaderProps) {
+export function DashboardProfileHeader({ profile, isLoading, walletAddress }: DashboardProfileHeaderProps) {
   const displayName = profile?.player.name?.trim() || "Arena Pilot";
-  const inventoryCount = Array.isArray(profile?.purchasedAssets) ? profile.purchasedAssets.length : null;
+
+  const walletQ = useQuery({
+    queryKey: ["arenaChain", "dashboard", "walletBalance", walletAddress],
+    queryFn: () => arenaChainApi.getWalletBalance(walletAddress!),
+    enabled: !!walletAddress,
+    staleTime: 0,
+    refetchOnMount: "always",
+    retry: false,
+  });
+
+  const arenaBalance = walletQ.data?.balanceArena;
+  const arenaLoading = !!walletAddress && (walletQ.isLoading || walletQ.isFetching) && arenaBalance == null;
+
   const profileStats = [
-    { label: "Kult Points", value: profile ? formatKultPoints(profile.kultPoints) : "—" },
-    { label: "KP Rank", value: profile?.kultPointsRank != null ? `#${profile.kultPointsRank}` : "—" },
-    { label: "Level", value: profile?.level ?? "—" },
-    ...(profile?.rank != null ? [{ label: "Rank", value: `#${profile.rank}` }] : []),
-    ...(profile?.totalGamesPlayed ? [{ label: "Games played", value: profile.totalGamesPlayed }] : []),
+    {
+      label: "Arena Token",
+      value: walletAddress
+        ? walletQ.isError
+          ? "—"
+          : formatArenaToken(arenaBalance)
+        : "—",
+      loading: arenaLoading,
+    },
+    { label: "Level", value: profile?.level ?? "—", loading: isLoading },
+    ...(profile?.rank != null ? [{ label: "Rank", value: `#${profile.rank}`, loading: isLoading }] : []),
+    ...(profile?.totalGamesPlayed
+      ? [{ label: "Games played", value: profile.totalGamesPlayed, loading: isLoading }]
+      : []),
   ];
 
   const copyWallet = () => {
@@ -80,7 +105,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress, agen
                 {stat.label}
               </div>
               <div className="mt-1 text-sm font-black text-white tabular-nums drop-shadow-sm">
-                {isLoading ? <Skeleton className="mx-auto h-3.5 w-8 bg-white/10" /> : stat.value}
+                {stat.loading ? <Skeleton className="mx-auto h-3.5 w-8 bg-white/10" /> : stat.value}
               </div>
             </div>
           ))}

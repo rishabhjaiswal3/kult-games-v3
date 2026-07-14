@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, Gift, Lock, X } from "lucide-react";
@@ -194,18 +194,52 @@ function RewardCard({
   );
 }
 
+function rewardRedirectPath(day: number): string | "create-agent" | null {
+  switch (day) {
+    case 10:
+      return "create-agent";
+    case 2:
+    case 5:
+      return "/training";
+    case 4:
+      return "/inventory";
+    case 9:
+      return "/autonomous";
+    default:
+      return null;
+  }
+}
+
 export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
-  const { openCreateAgent } = useCreateAgent();
-  const { state, isLoading, claim, isClaiming, refetchAgents } = useDailyRewards();
+  const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
+  const { state, isLoading, claim, isClaiming, refetch, refetchAgents } = useDailyRewards();
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const pendingDay1ClaimRef = useRef(false);
 
-  // Refresh agent list when the modal opens so day-1 claimed state is current.
+  // Refresh reward + agent state when the modal opens.
   useEffect(() => {
     if (!open) return;
+    void refetch();
     void refetchAgents();
-  }, [open, refetchAgents]);
+  }, [open, refetch, refetchAgents]);
+
+  // After creating a Genesis agent from the day-1 flow, record day 1 in the backend.
+  useEffect(() => {
+    return subscribeAgentCreated(() => {
+      if (!pendingDay1ClaimRef.current) return;
+      pendingDay1ClaimRef.current = false;
+      void (async () => {
+        try {
+          const result = await claim({ legacyDay1: false });
+          setJustClaimedDay(result.claimedDay);
+        } catch {
+          /* user can retry from the rewards modal */
+        }
+      })();
+    });
+  }, [claim, subscribeAgentCreated]);
 
   // Tick the countdown while the modal is open.
   useEffect(() => {
@@ -215,7 +249,10 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   }, [open]);
 
   useEffect(() => {
-    if (!open) setJustClaimedDay(null);
+    if (!open) {
+      setJustClaimedDay(null);
+      pendingDay1ClaimRef.current = false;
+    }
   }, [open]);
 
   const currentDay = state?.currentDay ?? 1;
@@ -245,6 +282,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
     if (dayToClaim === 1 && !userHasAgent) {
       const result = await refetchAgents();
       if (!hasArenaAgent(result.data)) {
+        pendingDay1ClaimRef.current = true;
         onClose();
         navigate("/my-agents");
         window.setTimeout(() => openCreateAgent(), 150);
@@ -252,8 +290,19 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
       }
     }
 
-    await claim(dayToClaim);
-    setJustClaimedDay(dayToClaim);
+    const result = await claim();
+    setJustClaimedDay(result.claimedDay);
+
+    const redirect = rewardRedirectPath(result.claimedDay);
+    if (redirect) {
+      onClose();
+      if (redirect === "create-agent") {
+        navigate("/my-agents");
+        window.setTimeout(() => openCreateAgent(), 150);
+      } else {
+        navigate(redirect);
+      }
+    }
   };
 
   const dayStatus = (day: number): DayStatus =>
