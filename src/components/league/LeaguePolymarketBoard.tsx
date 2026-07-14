@@ -44,6 +44,7 @@ import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
 import { useDepositWalletPusdBalance } from "@/hooks/useDepositWalletPusdBalance";
+import { useDepositWalletAddress } from "@/hooks/useDepositWalletAddress";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -490,6 +491,7 @@ function PolygonWalletBalance() {
   const { isAuthenticated, walletAddress, login } = useAuth();
   const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
   const { data: pusd, isLoading: pusdLoading } = useDepositWalletPusdBalance(walletAddress);
+  const { data: depositWalletAddress } = useDepositWalletAddress(walletAddress);
   const [depositOpen, setDepositOpen] = useState(false);
 
   if (!isAuthenticated) {
@@ -525,7 +527,7 @@ function PolygonWalletBalance() {
       >
         Fund wallet
       </button>
-      <PolymarketDepositModal open={depositOpen} onOpenChange={setDepositOpen} walletAddress={walletAddress} />
+      <PolymarketDepositModal open={depositOpen} onOpenChange={setDepositOpen} walletAddress={depositWalletAddress ?? null} />
     </div>
   );
 }
