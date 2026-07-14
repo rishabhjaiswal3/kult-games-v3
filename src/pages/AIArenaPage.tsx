@@ -666,7 +666,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 transition duration-300 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3 w-3 shrink-0 animate-spin text-cyan-100" />
@@ -1826,6 +1826,7 @@ function MyBattleSection() {
 }
 
 function LiveBattles() {
+  const { startMatchmaking, startButtonDisabled } = useAiArenaMatchmakingFlow();
   const battleBoardQ = useArenaBattleBoard({
     maxRankedPairs: 6,
     includeOpenLobbies: false,
@@ -1833,12 +1834,28 @@ function LiveBattles() {
   });
   const previewItems = battleBoardQ.items.slice(0, 1);
 
+  const jumpToMatchmaking = () => {
+    const target = document.querySelector<HTMLElement>('[data-tour="ai-arena-matchmaking"]');
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (target) {
+      target.classList.add("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      window.setTimeout(() => {
+        target.classList.remove("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      }, 1800);
+    }
+    window.setTimeout(() => {
+      if (!startButtonDisabled) startMatchmaking();
+    }, 450);
+  };
+
   return (
     <div className="flex h-full min-h-[360px] flex-col">
       <div className="mb-6 flex flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">LIVE BATTLES</h3>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Watch ranked agents fight in real time.</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Watch ranked agents fight in real time.
+          </p>
         </div>
         <Link to="/battles" className="text-sm text-accent hover:underline">
           View All
@@ -1857,12 +1874,32 @@ function LiveBattles() {
               item={item}
               actionLabel={item.kind === "ranked" ? "Watch Live" : "View Battle"}
               actionTo={item.kind === "ranked" ? `/arena/game/${item.id}` : "/battles"}
+              secondaryCta={
+                item.kind === "ranked"
+                  ? {
+                      eyebrow: "Your turn",
+                      title: "Don't just watch — start your own battle",
+                      description: "Queue your agent now and claim the next live spotlight.",
+                      buttonLabel: "Start Matchmaking",
+                      onClick: jumpToMatchmaking,
+                    }
+                  : undefined
+              }
             />
           ))}
         </div>
       ) : (
-        <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-sm text-muted-foreground">
-          No live arena battles or open lobbies are available right now.
+        <div className="space-y-3">
+          <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-sm text-muted-foreground">
+            No live arena battles or open lobbies are available right now.
+          </div>
+          <button
+            type="button"
+            onClick={jumpToMatchmaking}
+            className="w-full rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-tech text-[11px] font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-200/55 hover:bg-cyan-400/18"
+          >
+            Be first — start matchmaking
+          </button>
         </div>
       )}
     </div>
