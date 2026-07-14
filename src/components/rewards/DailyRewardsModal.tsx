@@ -200,7 +200,7 @@ function rewardRedirectPath(day: number): string | "create-agent" | null {
       return "create-agent";
     case 2:
     case 5:
-      return "/training";
+      return "/training?type=rewarded";
     case 4:
       return "/inventory";
     case 9:

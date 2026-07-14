@@ -21,6 +21,33 @@ function formatArenaToken(value?: string | number | null): string {
   });
 }
 
+function formatKultPoints(value?: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+type ProfileStat = {
+  label: string;
+  value: string | number;
+  loading?: boolean;
+  valueClassName?: string;
+};
+
+function ProfileStatCard({ stat }: { stat: ProfileStat }) {
+  return (
+    <div className="relative min-h-[58px] min-w-0 overflow-hidden rounded-md border border-white/[0.08] bg-[#0a0f1b]/50 px-2 py-2 text-center backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-[#c78aff]/30 hover:bg-[#111626]/70 hover:shadow-[0_4px_20px_rgba(154,53,255,0.1)] sm:px-2.5">
+      <div className="truncate font-tech text-[7px] uppercase tracking-[0.12em] text-white/48 sm:text-[7.5px] sm:tracking-[0.14em]">
+        {stat.label}
+      </div>
+      <div
+        className={`mt-1 truncate text-xs font-black tabular-nums drop-shadow-sm sm:text-sm ${stat.valueClassName ?? "text-white"}`}
+      >
+        {stat.loading ? <Skeleton className="mx-auto h-3.5 w-10 bg-white/10" /> : stat.value}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardProfileHeader({ profile, isLoading, walletAddress }: DashboardProfileHeaderProps) {
   const displayName = profile?.player.name?.trim() || "Arena Pilot";
 
@@ -36,17 +63,26 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
   const arenaBalance = walletQ.data?.balanceArena;
   const arenaLoading = !!walletAddress && (walletQ.isLoading || walletQ.isFetching) && arenaBalance == null;
 
-  const profileStats = [
+  const primaryStats: ProfileStat[] = [
     {
       label: "Arena Token",
-      value: walletAddress
-        ? walletQ.isError
-          ? "—"
-          : formatArenaToken(arenaBalance)
-        : "—",
+      value: walletAddress ? (walletQ.isError ? "—" : formatArenaToken(arenaBalance)) : "—",
       loading: arenaLoading,
     },
-    { label: "Level", value: profile?.level ?? "—", loading: isLoading },
+    {
+      label: "Kult Points",
+      value: profile ? `${formatKultPoints(profile.kultPoints)} KP` : "—",
+      loading: isLoading,
+      valueClassName: "text-[#00f080]",
+    },
+    {
+      label: "Level",
+      value: profile?.level ?? "—",
+      loading: isLoading,
+    },
+  ];
+
+  const secondaryStats: ProfileStat[] = [
     ...(profile?.rank != null ? [{ label: "Rank", value: `#${profile.rank}`, loading: isLoading }] : []),
     ...(profile?.totalGamesPlayed
       ? [{ label: "Games played", value: profile.totalGamesPlayed, loading: isLoading }]
@@ -95,20 +131,21 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
           </div>
         </div>
 
-        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 lg:max-w-[460px]">
-          {profileStats.map((stat) => (
+        <div className="flex w-full flex-col gap-2 lg:w-auto lg:min-w-[300px] lg:max-w-[520px] lg:shrink-0">
+          <div className="grid grid-cols-3 gap-2">
+            {primaryStats.map((stat) => (
+              <ProfileStatCard key={stat.label} stat={stat} />
+            ))}
+          </div>
+          {secondaryStats.length > 0 ? (
             <div
-              key={stat.label}
-              className="relative min-h-[58px] overflow-hidden rounded-md border border-white/[0.08] bg-[#0a0f1b]/50 px-2.5 py-2 text-center backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5 hover:border-[#c78aff]/30 hover:bg-[#111626]/70 hover:shadow-[0_4px_20px_rgba(154,53,255,0.1)]"
+              className={`grid gap-2 ${secondaryStats.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
             >
-              <div className="font-tech text-[7.5px] uppercase tracking-[0.14em] text-white/48">
-                {stat.label}
-              </div>
-              <div className="mt-1 text-sm font-black text-white tabular-nums drop-shadow-sm">
-                {stat.loading ? <Skeleton className="mx-auto h-3.5 w-8 bg-white/10" /> : stat.value}
-              </div>
+              {secondaryStats.map((stat) => (
+                <ProfileStatCard key={stat.label} stat={stat} />
+              ))}
             </div>
-          ))}
+          ) : null}
         </div>
       </div>
       {/*

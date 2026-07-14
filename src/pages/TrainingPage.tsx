@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Activity, Award, Clock, Eye, Hexagon, Loader2, Plus, Search, Sparkles, TrendingUp, X, Zap } from "lucide-react";
+import { Activity, Award, Clock, Eye, Hexagon, Loader2, Plus, Search, Sparkles, TrendingUp, Wallet, X, Zap } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
@@ -17,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent, AiArenaTrainingEligibilityResponse, AiArenaTrainingJob } from "@/types/aiArenaGateway";
+import { startRewardTrainingTour } from "@/tour/rewardTrainingTour";
 
 type TrainingJobWithAgent = AiArenaTrainingJob & {
   agent?: AiArenaAgent;
@@ -148,6 +150,9 @@ function readinessCopy(eligibility?: AiArenaTrainingEligibilityResponse | null) 
 
 const TrainingPage = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const isRewardedEntry = searchParams.get("type") === "rewarded";
+  const rewardTourStartedRef = useRef(false);
   const { isAuthenticated } = useAuth();
   const { isAiArenaReady } = useAiArenaGatewaySession();
   const [activeTab, setActiveTab] = useState<string>("OVERVIEW");
@@ -158,6 +163,14 @@ const TrainingPage = () => {
   const [jobLookupInput, setJobLookupInput] = useState("");
   const [paymentError, setPaymentError] = useState<X402PaymentError | null>(null);
   const [walletOpen, setWalletOpen] = useState(false);
+
+  const openFundWallet = () => setWalletOpen(true);
+
+  useEffect(() => {
+    if (!isAuthenticated || !isRewardedEntry || rewardTourStartedRef.current) return;
+    rewardTourStartedRef.current = true;
+    startRewardTrainingTour(openFundWallet);
+  }, [isAuthenticated, isRewardedEntry]);
 
   useEffect(() => {
     setSelectedAgentId((current) => {
@@ -349,6 +362,34 @@ const TrainingPage = () => {
         agentsLoading={myAgentsQ.isLoading}
         initialAgentId={selectedAgentId}
       />
+      {isRewardedEntry ? (
+        <div
+          data-tour="training-reward-banner"
+          className="arena-panel flex flex-wrap items-center justify-between gap-3 border-amber-500/25 bg-amber-500/8 px-4 py-3"
+        >
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-amber-500/30 bg-amber-500/15 text-amber-300">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300">Daily reward</p>
+              <p className="mt-0.5 text-sm font-semibold text-white/90">Free training unlocked — queue a custom job below.</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-white/55">
+                Training uses $ARENA from your wallet on 0G Chain. Fund your agent wallet when you are ready.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            data-tour="training-fund-wallet"
+            onClick={openFundWallet}
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded border border-amber-500/40 bg-amber-500/12 px-4 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-amber-300 transition hover:border-amber-400 hover:bg-amber-500/20"
+          >
+            <Wallet className="h-3.5 w-3.5" />
+            Fund wallet
+          </button>
+        </div>
+      ) : null}
       <div data-tour="training-header">
         <h1 className="font-tech text-3xl font-bold uppercase tracking-tight text-white">TRAINING CENTER</h1>
         <p className="mt-1 text-[11px] font-medium text-white/55">
@@ -403,6 +444,7 @@ const TrainingPage = () => {
                 </button>
                 <button
                   type="button"
+                  data-tour="training-create-custom-job"
                   onClick={() => queueMut.mutate(undefined)}
                   disabled={!selectedAgentId || queueMut.isPending || !selectedEligibility?.eligible}
                   className="flex cursor-pointer items-center gap-1 rounded border border-purple-500/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-purple-400 transition hover:border-purple-400 hover:bg-[#9a35ff]/20 disabled:cursor-not-allowed disabled:opacity-50"

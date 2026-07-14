@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { driver, type Driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useAuth } from "@/contexts/AuthContext";
@@ -147,6 +147,9 @@ function resolveAvailableSteps(steps: DriveStep[]) {
 
 export function TourProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
+  const isRewardTrainingEntry =
+    pathname.startsWith("/training") && searchParams.get("type") === "rewarded";
   const { isAuthenticated } = useAuth();
   const [isRunning, setIsRunning] = useState(false);
   const driverRef = useRef<Driver | null>(null);
@@ -253,12 +256,13 @@ export function TourProvider({ children, enabled = true }: { children: ReactNode
 
   useEffect(() => {
     if (!enabled) return;
+    if (isRewardTrainingEntry) return;
     if (isTourGloballyDismissed()) return;
     if (autoStartedRef.current.has(currentTourId) || hasCompletedTour(currentTourId)) return;
     autoStartedRef.current.add(currentTourId);
     const timer = window.setTimeout(() => startWebsiteTour(), AUTO_TOUR_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [currentTourId, enabled, startWebsiteTour]);
+  }, [currentTourId, enabled, isRewardTrainingEntry, startWebsiteTour]);
 
   useEffect(() => {
     return () => {
