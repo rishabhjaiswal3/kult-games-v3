@@ -98,12 +98,14 @@ function RewardCard({
   canClaim,
   isClaiming,
   onClaim,
+  onClaimedNavigate,
 }: {
   reward: DailyRewardDef;
   status: DayStatus;
   canClaim: boolean;
   isClaiming: boolean;
   onClaim: () => void;
+  onClaimedNavigate?: () => void;
 }) {
   const rarity = RARITY_STYLES[reward.rarity];
   const cta = claimGradient(reward.rarity);
@@ -170,12 +172,14 @@ function RewardCard({
 
       {/* CTA */}
       {isClaimed ? (
-        <span
-          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border px-2 py-2 font-tech text-[10px] font-black uppercase tracking-[0.2em]"
+        <button
+          type="button"
+          onClick={onClaimedNavigate}
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2 py-2 font-tech text-[10px] font-black uppercase tracking-[0.2em] transition hover:scale-[1.02] hover:brightness-110 active:scale-95"
           style={{ borderColor: `${rarity.hex}70`, color: rarity.hex, background: `${rarity.hex}12` }}
         >
           <Check className="h-3.5 w-3.5" strokeWidth={3.5} /> Claimed
-        </span>
+        </button>
       ) : (
         <button
           type="button"
@@ -194,15 +198,23 @@ function RewardCard({
   );
 }
 
-function rewardRedirectPath(day: number): string | "create-agent" | null {
+/** Per-day destination after claim or when tapping a claimed reward card. */
+function rewardRedirectPath(day: number): string | null {
   switch (day) {
+    case 1:
     case 10:
-      return "create-agent";
+      return "/my-agents";
     case 2:
     case 5:
       return "/training?type=rewarded";
+    case 3:
+    case 8:
+      return "/leaderboard";
     case 4:
+    case 6:
       return "/inventory";
+    case 7:
+      return "/dashboard";
     case 9:
       return "/autonomous";
     default:
@@ -272,6 +284,13 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   const featuredClaimed = claimedDays.has(featured.day);
   const featuredCta = claimGradient(featured.rarity);
 
+  const navigateToRewardDay = (day: number) => {
+    const path = rewardRedirectPath(day);
+    if (!path) return;
+    onClose();
+    navigate(path);
+  };
+
   // Fresh confetti layout for every claim.
   const confetti = useMemo(() => (justClaimedDay ? makeConfetti() : []), [justClaimedDay]);
 
@@ -297,12 +316,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
       const redirect = rewardRedirectPath(result.claimedDay);
       if (redirect) {
         onClose();
-        if (redirect === "create-agent") {
-          navigate("/my-agents");
-          window.setTimeout(() => openCreateAgent(), 150);
-        } else {
-          navigate(redirect);
-        }
+        navigate(redirect);
       }
     } catch {
       /* claim failed — e.g. rewards API 404 until backend is deployed */
@@ -581,9 +595,13 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                     </span>
                   ) : featuredClaimed ? (
                     <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-                      <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/45 bg-emerald-400/12 px-5 py-3 font-tech text-xs font-black uppercase tracking-[0.16em] text-emerald-300">
+                      <button
+                        type="button"
+                        onClick={() => navigateToRewardDay(featured.day)}
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-400/45 bg-emerald-400/12 px-5 py-3 font-tech text-xs font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:scale-[1.02] hover:border-emerald-300/60 hover:bg-emerald-400/18 active:scale-95"
+                      >
                         <Check className="h-4 w-4" strokeWidth={3} /> Claimed
-                      </span>
+                      </button>
                       {state?.nextUnlockAt ? (
                         <span className="font-tech text-[10px] uppercase tracking-widest text-white/45">
                           Next reward in {formatCountdown(state.nextUnlockAt, now)}
@@ -620,6 +638,9 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                   canClaim={status === "today" && claimable}
                   isClaiming={isClaiming}
                   onClaim={() => void handleClaim()}
+                  onClaimedNavigate={
+                    status === "claimed" ? () => navigateToRewardDay(reward.day) : undefined
+                  }
                 />
               );
             })}
