@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, Gift, Lock, X } from "lucide-react";
@@ -98,12 +98,14 @@ function RewardCard({
   canClaim,
   isClaiming,
   onClaim,
+  onClaimedNavigate,
 }: {
   reward: DailyRewardDef;
   status: DayStatus;
   canClaim: boolean;
   isClaiming: boolean;
   onClaim: () => void;
+  onClaimedNavigate?: () => void;
 }) {
   const rarity = RARITY_STYLES[reward.rarity];
   const cta = claimGradient(reward.rarity);
@@ -113,7 +115,7 @@ function RewardCard({
   return (
     <div
       className={`relative flex flex-col items-center gap-2 overflow-hidden rounded-2xl border p-3 text-center transition duration-300 ${
-        isToday ? "z-10 scale-[1.03]" : "hover:-translate-y-0.5"
+        isToday ? "z-[1] scale-[1.03] [contain:paint]" : "hover:-translate-y-0.5"
       }`}
       style={{
         borderColor: `${rarity.hex}${isToday ? "aa" : isClaimed ? "77" : "40"}`,
@@ -170,12 +172,14 @@ function RewardCard({
 
       {/* CTA */}
       {isClaimed ? (
-        <span
-          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border px-2 py-2 font-tech text-[10px] font-black uppercase tracking-[0.2em]"
+        <button
+          type="button"
+          onClick={onClaimedNavigate}
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2 py-2 font-tech text-[10px] font-black uppercase tracking-[0.2em] transition hover:scale-[1.02] hover:brightness-110 active:scale-95"
           style={{ borderColor: `${rarity.hex}70`, color: rarity.hex, background: `${rarity.hex}12` }}
         >
           <Check className="h-3.5 w-3.5" strokeWidth={3.5} /> Claimed
-        </span>
+        </button>
       ) : (
         <button
           type="button"
@@ -194,18 +198,60 @@ function RewardCard({
   );
 }
 
+/** Per-day destination after claim or when tapping a claimed reward card. */
+function rewardRedirectPath(day: number): string | null {
+  switch (day) {
+    case 1:
+    case 10:
+      return "/my-agents";
+    case 2:
+    case 5:
+      return "/training?type=rewarded";
+    case 3:
+    case 8:
+      return "/leaderboard";
+    case 4:
+    case 6:
+      return "/inventory";
+    case 7:
+      return "/dashboard";
+    case 9:
+      return "/autonomous";
+    default:
+      return null;
+  }
+}
+
 export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
-  const { openCreateAgent } = useCreateAgent();
-  const { state, isLoading, claim, isClaiming, refetchAgents } = useDailyRewards();
+  const { openCreateAgent, subscribeAgentCreated } = useCreateAgent();
+  const { state, hasGenesisAgent, isLoading, claim, isClaiming, refetch, refetchAgents } = useDailyRewards();
   const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const pendingDay1ClaimRef = useRef(false);
 
-  // Refresh agent list when the modal opens so day-1 claimed state is current.
+  // Refresh reward + agent state when the modal opens.
   useEffect(() => {
     if (!open) return;
+    void refetch();
     void refetchAgents();
-  }, [open, refetchAgents]);
+  }, [open, refetch, refetchAgents]);
+
+  // After creating a Genesis agent from the day-1 flow, record day 1 in the backend.
+  useEffect(() => {
+    return subscribeAgentCreated(() => {
+      if (!pendingDay1ClaimRef.current) return;
+      pendingDay1ClaimRef.current = false;
+      void (async () => {
+        try {
+          const result = await claim({ legacyDay1: false });
+          setJustClaimedDay(result.claimedDay);
+        } catch {
+          /* user can retry from the rewards modal */
+        }
+      })();
+    });
+  }, [claim, subscribeAgentCreated]);
 
   // Tick the countdown while the modal is open.
   useEffect(() => {
@@ -215,12 +261,22 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   }, [open]);
 
   useEffect(() => {
-    if (!open) setJustClaimedDay(null);
+    if (!open) {
+      setJustClaimedDay(null);
+      pendingDay1ClaimRef.current = false;
+      return;
+    }
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
 
   const currentDay = state?.currentDay ?? 1;
   const claimedDays = useMemo(() => new Set(state?.claimedDays ?? []), [state?.claimedDays]);
-  const userHasAgent = claimedDays.has(1);
+  const userHasAgent = hasGenesisAgent || claimedDays.has(1);
   const claimedCount = claimedDays.size;
   const completed = state?.completed ?? false;
   const claimableNow = state?.claimableToday ?? false;
@@ -235,6 +291,13 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   const featuredClaimed = claimedDays.has(featured.day);
   const featuredCta = claimGradient(featured.rarity);
 
+  const navigateToRewardDay = (day: number) => {
+    const path = rewardRedirectPath(day);
+    if (!path) return;
+    onClose();
+    navigate(path);
+  };
+
   // Fresh confetti layout for every claim.
   const confetti = useMemo(() => (justClaimedDay ? makeConfetti() : []), [justClaimedDay]);
 
@@ -245,6 +308,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
     if (dayToClaim === 1 && !userHasAgent) {
       const result = await refetchAgents();
       if (!hasArenaAgent(result.data)) {
+        pendingDay1ClaimRef.current = true;
         onClose();
         navigate("/my-agents");
         window.setTimeout(() => openCreateAgent(), 150);
@@ -252,8 +316,18 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
       }
     }
 
-    await claim(dayToClaim);
-    setJustClaimedDay(dayToClaim);
+    try {
+      const result = await claim();
+      setJustClaimedDay(result.claimedDay);
+
+      const redirect = rewardRedirectPath(result.claimedDay);
+      if (redirect) {
+        onClose();
+        navigate(redirect);
+      }
+    } catch {
+      /* claim failed — e.g. rewards API 404 until backend is deployed */
+    }
   };
 
   const dayStatus = (day: number): DayStatus =>
@@ -263,14 +337,14 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
+      className="fixed inset-0 z-[1000] flex items-center justify-center overflow-hidden bg-black/80 p-3 backdrop-blur-md sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Daily login rewards"
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[calc(100dvh-32px)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-[#a855f7]/35 bg-[#05040c] shadow-[0_32px_110px_rgba(0,0,0,0.85)]"
+        className="relative flex max-h-[calc(100dvh-24px)] w-full max-w-4xl min-h-0 flex-col overflow-hidden rounded-3xl border border-[#a855f7]/35 bg-[#05040c] shadow-[0_32px_110px_rgba(0,0,0,0.85)] sm:max-h-[calc(100dvh-48px)]"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Ambient glows */}
@@ -337,7 +411,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
           <X className="h-4 w-4" />
         </button>
 
-        <div className="relative z-10 overflow-y-auto p-4 sm:p-6 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin]">
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 sm:p-6 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]">
           {/* Header — centered like the design */}
           <div className="flex flex-col items-center text-center">
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-[#38bdf8]/45 bg-[#38bdf8]/12 text-lg" aria-hidden>
@@ -365,8 +439,8 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
               <span className="text-white/35">/ {TOTAL_REWARD_DAYS}</span>
             </p>
 
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-              <div className="flex min-w-0 flex-1 items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto overscroll-x-contain touch-pan-x sm:gap-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-max flex-1 items-center pr-1">
                 {DAILY_REWARDS.map((reward, index) => {
                   const status = dayStatus(reward.day);
                   // The trail you've already walked glows gold.
@@ -528,9 +602,13 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                     </span>
                   ) : featuredClaimed ? (
                     <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-                      <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/45 bg-emerald-400/12 px-5 py-3 font-tech text-xs font-black uppercase tracking-[0.16em] text-emerald-300">
+                      <button
+                        type="button"
+                        onClick={() => navigateToRewardDay(featured.day)}
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-400/45 bg-emerald-400/12 px-5 py-3 font-tech text-xs font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:scale-[1.02] hover:border-emerald-300/60 hover:bg-emerald-400/18 active:scale-95"
+                      >
                         <Check className="h-4 w-4" strokeWidth={3} /> Claimed
-                      </span>
+                      </button>
                       {state?.nextUnlockAt ? (
                         <span className="font-tech text-[10px] uppercase tracking-widest text-white/45">
                           Next reward in {formatCountdown(state.nextUnlockAt, now)}
@@ -567,6 +645,9 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                   canClaim={status === "today" && claimable}
                   isClaiming={isClaiming}
                   onClaim={() => void handleClaim()}
+                  onClaimedNavigate={
+                    status === "claimed" ? () => navigateToRewardDay(reward.day) : undefined
+                  }
                 />
               );
             })}

@@ -46,6 +46,7 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
+import { ArenaLandscapeGate } from "@/components/arena/ArenaLandscapeGate";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import {
   LauncherPreMatchView,
@@ -803,7 +804,7 @@ function GameChatPanel({
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[#04080f]/95">
-      <div className="flex-1 min-h-0 overflow-y-auto py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y py-2 space-y-0.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 [-webkit-overflow-scrolling:touch]">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} msg={msg} onShareMoment={onShareMoment} />
         ))}
@@ -1304,7 +1305,7 @@ export default function RobowarGamePage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#030710] text-white md:h-dvh md:min-h-0 md:overflow-hidden">
+    <div className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-[#030710] text-white">
 
       {/* Top Nav */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 bg-[#04080f]/95 px-2 py-2 backdrop-blur z-30 sm:gap-3 sm:px-5" data-tour="robowar-topbar">
@@ -1361,25 +1362,23 @@ export default function RobowarGamePage() {
 
         {/* Launcher canvas area */}
         <div className="absolute inset-0 bg-[#040810]">
-
-          {/* ── Battle API error ── */}
-          {isError && (
+          {isError ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-            <button
+                <button
                   onClick={() => battleQ.refetch()}
                   className="font-tech text-xs text-primary hover:text-primary/80 underline"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ArenaLandscapeGate
+              active={launcherPhase !== "idle" && launcherPhase !== "not_installed"}
+              className="absolute inset-0"
             >
-              Retry
-            </button>
-          </div>
-          </div>
-          )}
-
-          {/* ── Launcher phases (shown when no battle API error) ── */}
-          {!isError && (
-            <>
               {/* Phase: idle — pre-match landing with Download + Launch */}
               {(launcherPhase === "idle" || launcherPhase === "launching") && (
                 <LauncherPreMatchView
@@ -1460,11 +1459,11 @@ export default function RobowarGamePage() {
                     <Zap className="h-2.5 w-2.5 text-primary/60" />
                     <span className="font-mono text-[8px] text-white/25">
                       {`robowar · ${shortId(battleId)} · ${battle?.status ?? "—"}`}
-                </span>
-            </div>
-          </div>
+                    </span>
+                  </div>
+                </div>
               )}
-            </>
+            </ArenaLandscapeGate>
           )}
         </div>
       </div>

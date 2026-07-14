@@ -1332,6 +1332,139 @@ button[aria-label="close modal"]:hover {
   50% { transform: translateY(-10px); }
 }
 
+@keyframes arena-phone-rotate {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+/* AI Arena — compact layouts for mobile landscape (short viewport height) */
+@media (orientation: landscape) and (max-height: 520px) {
+  .arena-game-topbar-inner {
+    height: 2.5rem;
+  }
+
+  .arena-prematch-header {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .arena-prematch-header-side {
+    display: none;
+  }
+
+  .arena-prematch-map-title {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .arena-prematch-agent-name {
+    font-size: 0.6875rem;
+    line-height: 1.1;
+    max-width: 28vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .arena-prematch-agent-meta {
+    margin-top: 0.25rem;
+  }
+
+  .arena-prematch-agent-meta img {
+    height: 1rem;
+  }
+
+  .arena-prematch-agent-meta span {
+    font-size: 0.625rem;
+  }
+
+  .arena-prematch-vs {
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  .arena-prematch-countdown {
+    height: 2.75rem;
+    width: 2.75rem;
+    font-size: 1.25rem;
+    border-width: 2px;
+  }
+
+  .arena-prematch-center {
+    gap: 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .arena-prematch-character {
+    max-height: min(34vh, 118px) !important;
+  }
+
+  .arena-prematch-footer {
+    padding: 0.5rem 0.75rem;
+    gap: 0.375rem;
+  }
+
+  .arena-prematch-footer-rules {
+    display: none;
+  }
+
+  .arena-loading-root {
+    gap: 0.5rem;
+    justify-content: center;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .arena-loading-title-block {
+    display: none;
+  }
+
+  .arena-loading-cards-row {
+    gap: 0.5rem;
+  }
+
+  .arena-loading-card-wrap {
+    width: 5.5rem;
+    gap: 0.375rem;
+  }
+
+  .arena-loading-card-frame {
+    height: 5.5rem !important;
+    width: 4.5rem !important;
+  }
+
+  .arena-loading-card-stats {
+    display: none;
+  }
+
+  .arena-loading-vs-ring {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .arena-loading-vs-ring svg {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+
+  .arena-loading-vs-text {
+    font-size: 1.125rem;
+  }
+
+  .arena-battle-agent-banner {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .arena-battle-agent-thumb {
+    height: 2rem !important;
+    width: 2rem !important;
+  }
+}
+
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
@@ -1835,6 +1968,7 @@ button[aria-label="close modal"]:hover {
   .arena-scroll {
     overscroll-behavior-x: none;
     touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 
   html,
@@ -2667,7 +2801,6 @@ button[aria-label="close modal"]:hover {
 }
 
 .moments-page-scroll {
-  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(154, 53, 255, 0.4) transparent;
   width: 100%;
@@ -2710,6 +2843,14 @@ button[aria-label="close modal"]:hover {
 }
 
 @media (min-width: 1280px) {
+  .moments-page-scroll {
+    overscroll-behavior: contain;
+  }
+
+  .moments-sidebar-column {
+    overscroll-behavior: contain;
+  }
+
   .moments-page-root {
     flex: 1;
     min-height: 0;
@@ -2768,6 +2909,7 @@ button[aria-label="close modal"]:hover {
     min-height: auto;
     overflow: visible;
     padding-bottom: 0;
+    overscroll-behavior: auto;
   }
 
   .moments-page-inner {
@@ -2775,14 +2917,15 @@ button[aria-label="close modal"]:hover {
   }
 
   .moments-sticky-header {
-    position: sticky;
-    top: 0;
+    position: static;
+    top: auto;
     z-index: 40;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0;
   }
 
   .moments-sidebar-column {
     position: static;
+    overscroll-behavior: auto;
   }
 }
 
