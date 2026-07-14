@@ -40,7 +40,7 @@ const LeaguePage = () => {
       <div data-tour="league-header">
         <LeaguePageHeader />
       </div>
-      <LeagueModeTabs mode={mode} onModeChange={()=>{console.log("polymarket is not live  yet");}} />
+      <LeagueModeTabs mode={mode} onModeChange={setMode} />
       {mode === "league" ? <KultLeagueBoard /> : <LeaguePolymarketBoard />}
     </div>
   );
@@ -257,15 +257,14 @@ function LeagueModeTabs({
       <button
         type="button"
         onClick={() => onModeChange("polymarket")}
-        disabled={true}
-        className={`rounded-xl border p-3 text-left bg-gray-800 transition sm:p-5 ${mode === "polymarket" ? "border-[#2E5CFF]/60 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.16),transparent_48%),#080b14] shadow-[0_0_22px_rgba(46,92,255,0.12)]" : "border-white/10 bg-[#070911] hover:border-[#2E5CFF]/35"}`}
+        className={`rounded-xl border p-3 text-left transition sm:p-5 ${mode === "polymarket" ? "border-[#2E5CFF]/60 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.16),transparent_48%),#080b14] shadow-[0_0_22px_rgba(46,92,255,0.12)]" : "border-white/10 bg-[#070911] hover:border-[#2E5CFF]/35"}`}
       >
         <span className="flex flex-wrap items-center gap-1.5 font-tech text-sm font-bold text-white sm:gap-2 sm:text-lg">
           <PolymarketLogo className="h-5 w-auto text-[#7d97ff] sm:h-6" />
           <span className="rounded-full bg-amber-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-amber-300 sm:px-2 sm:text-[9px]">Markets</span>
         </span>
         <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents use the same record to recommend market calls. Every decision stays with you.</span>
-        <span className="mt-3 block font-tech text-[12px] text-white font-bold uppercase tracking-wider bg-red-800 w-[120px] items-center justify-center flex" style={{borderRadius:'40px'}}>COMING NEXT</span>
+        <span className="mt-3 block font-tech text-[9px] font-bold uppercase tracking-wider text-[#7d97ff] sm:mt-4 sm:text-[10px]">{mode === "polymarket" ? "Active" : "Open →"}<span className="hidden sm:inline"> markets</span></span>
       </button>
     </div>
   );
