@@ -119,8 +119,12 @@ export function PolymarketDepositModal({ open, onOpenChange, walletAddress }: Po
         <ArenaDialogHeader>
           <ArenaDialogTitle className="font-display text-left text-xl">Fund Your Polymarket Wallet</ArenaDialogTitle>
           <ArenaDialogDescription className="text-left text-xs sm:text-sm">
-            Send USDC (or another supported asset) from any chain below -- Polymarket auto-converts it to pUSD in your
-            wallet. Works even if you only hold native USDC, not USDC.e.
+            Send{" "}
+            <span className="font-semibold text-neon-cyan">USDC</span>{" "}
+            (or another supported asset) from any chain below -- Polymarket auto-converts it to{" "}
+            <span className="font-semibold text-neon-cyan">pUSD</span> in your wallet. Works even if you only hold
+            native <span className="font-semibold text-neon-cyan">USDC</span>, not{" "}
+            <span className="font-semibold text-amber-300">USDC.e</span>.
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 

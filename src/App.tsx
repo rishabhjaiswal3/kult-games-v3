@@ -37,6 +37,7 @@ const KultAIFloating = lazyWithRetry(() => import("./components/KultAIFloating")
 import { AppShell } from "@/layout/AppShell";
 import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
+import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { PostHogProvider } from '@posthog/react'
 
 
@@ -124,6 +125,7 @@ function BrowserApp() {
     <Suspense fallback={<PageRouteFallback />}>
       <AuthenticatedAppProviders>
         <BrowserRouter>
+          <CreateAgentProvider>
           <Suspense fallback={null}>
             <TourProvider enabled>
             <RouteChunkErrorBoundary>
@@ -171,6 +173,7 @@ function BrowserApp() {
             </Suspense>
           </TourProvider>
           </Suspense>
+          </CreateAgentProvider>
         </BrowserRouter>
       </AuthenticatedAppProviders>
     </Suspense>

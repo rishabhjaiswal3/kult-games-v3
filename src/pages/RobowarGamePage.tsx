@@ -47,6 +47,8 @@ import { buildTrashTalkMomentPath } from "@/lib/battleTrashTalkMoment";
 import { getRankFromElo } from "@/utils/rankSystem";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaLandscapeGate } from "@/components/arena/ArenaLandscapeGate";
+import { BattleLoadErrorState } from "@/components/arena/BattleLoadErrorState";
+import { battleLiveRefetchInterval, isBattleNotFoundError } from "@/lib/aiArenaBattleErrors";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import {
   LauncherPreMatchView,
@@ -1067,13 +1069,14 @@ export default function RobowarGamePage() {
     queryKey: ["rwGame", "battle", battleId],
     queryFn:  () => aiArenaGatewayApi.getBattle(battleId!),
     enabled:  !!battleId,
-    refetchInterval: (q) => {
-      const s = q.state.data?.battle?.status;
-      if (!s || s === "PENDING" || s === "INITIALIZING" || s === "IN_PROGRESS") return 2_000;
-      return false;
-    },
+    refetchInterval: (q) => battleLiveRefetchInterval(q, 2_000),
     staleTime: 500,
-    retry: 2,
+    retry: (failureCount, error) => {
+      if (isBattleNotFoundError(error)) return false;
+      return failureCount < 2;
+    },
+    refetchOnWindowFocus: (q) => !isBattleNotFoundError(q.state.error),
+    refetchOnReconnect: (q) => !isBattleNotFoundError(q.state.error),
   });
 
   const myAgentQ = useQuery({
@@ -1363,17 +1366,7 @@ export default function RobowarGamePage() {
         {/* Launcher canvas area */}
         <div className="absolute inset-0 bg-[#040810]">
           {isError ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <div className="font-tech text-sm text-red-400/80 mb-2">Failed to load battle</div>
-                <button
-                  onClick={() => battleQ.refetch()}
-                  className="font-tech text-xs text-primary hover:text-primary/80 underline"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
+            <BattleLoadErrorState error={battleQ.error} onRetry={() => void battleQ.refetch()} />
           ) : (
             <ArenaLandscapeGate
               active={launcherPhase !== "idle" && launcherPhase !== "not_installed"}

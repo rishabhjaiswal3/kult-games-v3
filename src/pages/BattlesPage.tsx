@@ -36,6 +36,7 @@ import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { formatArenaWaitTime, useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
+import { battleLiveRefetchInterval, isBattleNotFoundError } from "@/lib/aiArenaBattleErrors";
 import agentShadow from "@/assets/agent-shadow.jpg";
 import battleStep1 from "@/assets/step1.mp4";
 import battleStep2 from "@/assets/step2.mp4";
@@ -470,7 +471,7 @@ function BattleCard({ battle }: { battle: (typeof activeBattles)[number] }) {
         </div>
         <div className="mt-auto pt-3">
           <button type="button" className="h-9 w-full rounded border border-[#9b32ff]/70 bg-[#230b35]/75 font-tech text-[10px]">
-            {battle.status === "LIVE" ? "WATCH NOW" : "JOIN BATTLE"}
+            {battle.status === "LIVE" ? "WATCH NOW" : "OPEN MATCH"}
           </button>
         </div>
       </div>
@@ -1077,8 +1078,12 @@ const BattlesPage = () => {
     queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
     enabled: isAuthenticated && isAiArenaReady && !!trackedBattleId,
     staleTime: 5_000,
-    refetchInterval: 5_000,
-    retry: 1,
+    refetchInterval: (q) => battleLiveRefetchInterval(q, 5_000),
+    retry: (failureCount, error) => {
+      if (isBattleNotFoundError(error)) return false;
+      return failureCount < 1;
+    },
+    refetchOnWindowFocus: (q) => !isBattleNotFoundError(q.state.error),
   });
 
   const agentInActiveBattle = useMemo(() => {

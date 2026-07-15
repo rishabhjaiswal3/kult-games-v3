@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import type { CSSProperties } from "react";
 import { ArrowUpRight, Loader2, Search, Swords } from "lucide-react";
 import { ClanIcon } from "@/components/arena/ClanIcon";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -121,6 +122,16 @@ type ArenaBattleBoardCardProps = {
   onAction?: () => void;
   actionDisabled?: boolean;
   actionLoading?: boolean;
+  /** Inline styles for the primary action (Watch Live / Join). React CSS: camelCase keys. */
+  actionStyle?: CSSProperties;
+  /** Optional FOMO CTA shown inside ranked live cards (e.g. start matchmaking). */
+  secondaryCta?: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    buttonLabel: string;
+    onClick: () => void;
+  };
 };
 
 function CardAction({
@@ -129,7 +140,8 @@ function CardAction({
   onAction,
   actionDisabled,
   actionLoading,
-}: Omit<ArenaBattleBoardCardProps, "item">) {
+  actionStyle,
+}: Omit<ArenaBattleBoardCardProps, "item" | "secondaryCta">) {
   if (onAction) {
     return (
       <button
@@ -137,6 +149,7 @@ function CardAction({
         onClick={onAction}
         disabled={actionDisabled || actionLoading}
         className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        style={actionStyle}
       >
         {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
         <span>{actionLabel}</span>
@@ -148,7 +161,11 @@ function CardAction({
   if (!actionTo) return null;
 
   return (
-    <Link to={actionTo} className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white">
+    <Link
+      to={actionTo}
+      className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 font-tech text-xs text-accent shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-accent/70 hover:bg-accent/20 hover:text-white"
+      style={actionStyle}
+    >
       <span>{actionLabel}</span>
       <ArrowUpRight className="h-3.5 w-3.5" />
     </Link>
@@ -162,6 +179,8 @@ export function ArenaBattleBoardCard({
   onAction,
   actionDisabled,
   actionLoading,
+  actionStyle,
+  secondaryCta,
 }: ArenaBattleBoardCardProps) {
   if (item.kind === "open-lobby") {
     return (
@@ -202,6 +221,7 @@ export function ArenaBattleBoardCard({
             onAction={onAction}
             actionDisabled={actionDisabled}
             actionLoading={actionLoading}
+            actionStyle={actionStyle}
           />
           <span className="text-xs text-muted-foreground">
             {item.status.gameId ?? "Arena queue"} · {formatLobbyMode(item.status.mode)}
@@ -275,16 +295,47 @@ export function ArenaBattleBoardCard({
           align="right"
         />
       </div>
-      <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3">
+      <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3 h-[70px]">
         <CardAction
           actionLabel={actionLabel}
           actionTo={actionTo}
           onAction={onAction}
           actionDisabled={actionDisabled}
           actionLoading={actionLoading}
+          actionStyle={actionStyle}
         />
         {item.watchLabel ? <span className="text-xs text-muted-foreground">{item.watchLabel}</span> : null}
       </div>
+
+      {secondaryCta ? (
+        <button
+          type="button"
+          onClick={secondaryCta.onClick}
+          className="group/cta relative mt-3 w-full overflow-hidden rounded-xl border border-cyan-300/30 bg-[linear-gradient(120deg,rgba(14,165,233,0.18),rgba(154,53,255,0.16),rgba(4,8,15,0.88))] p-3.5 text-left shadow-[0_0_24px_rgba(34,211,238,0.1),inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-cyan-200/55 hover:shadow-[0_0_32px_rgba(34,211,238,0.18)] sm:p-4"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(34,211,238,0.22),transparent_42%),radial-gradient(circle_at_100%_100%,rgba(168,85,247,0.16),transparent_40%)]" />
+          <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
+          <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/25 bg-cyan-400/10 px-2 py-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]" />
+                <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-cyan-200/85">
+                  {secondaryCta.eyebrow}
+                </span>
+              </div>
+              <p className="mt-2 font-tech text-sm font-black uppercase leading-snug tracking-wide text-white sm:text-[15px]">
+                {secondaryCta.title}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-white/55">{secondaryCta.description}</p>
+            </div>
+            <span className="inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-full border border-cyan-200/45 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(154,53,255,0.22))] px-4 py-2.5 font-tech text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-[0_0_18px_rgba(34,211,238,0.2)] transition group-hover/cta:scale-[1.03] group-hover/cta:border-cyan-100/70 sm:self-center">
+              <Swords className="h-3.5 w-3.5 text-cyan-100" />
+              {secondaryCta.buttonLabel}
+              <ArrowUpRight className="h-3.5 w-3.5 text-cyan-100/80" />
+            </span>
+          </div>
+        </button>
+      ) : null}
       </div>
     </article>
   );

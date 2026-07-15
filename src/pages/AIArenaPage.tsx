@@ -35,6 +35,7 @@ import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getTrackedAiArenaBattleId, saveTrackedAiArenaBattleId } from "@/lib/arenaBattleStorage";
+import { isBattleNotFoundError, battleLiveRefetchInterval } from "@/lib/aiArenaBattleErrors";
 import { AI_ARENA_DEFAULT_GAME_ID, type AiArenaGameId } from "@/constants/aiArenaMatchmaking";
 import { getArenaAgentPortrait } from "@/constants/arenaAgentArchetypes";
 import { aiArenaMedia, type AiArenaMediaKey } from "@/lib/aiArenaMedia";
@@ -313,9 +314,21 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
     queryFn: () => aiArenaGatewayApi.getBattle(trackedBattleId!),
     enabled: isAiArenaReady && !!trackedBattleId,
     staleTime: 5_000,
-    refetchInterval: 5_000,
-    retry: 1,
+    refetchInterval: (q) => battleLiveRefetchInterval(q, 5_000),
+    retry: (failureCount, error) => {
+      if (isBattleNotFoundError(error)) return false;
+      return failureCount < 1;
+    },
+    refetchOnWindowFocus: (q) => !isBattleNotFoundError(q.state.error),
+    refetchOnReconnect: (q) => !isBattleNotFoundError(q.state.error),
   });
+
+  useEffect(() => {
+    if (!trackedBattleId || !trackedBattleQ.isError) return;
+    if (!isBattleNotFoundError(trackedBattleQ.error)) return;
+    saveTrackedAiArenaBattleId(null);
+    setTrackedBattleId(null);
+  }, [trackedBattleId, trackedBattleQ.isError, trackedBattleQ.error]);
 
   const agentInActiveBattle = useMemo(() => {
     const status = trackedBattleQ.data?.battle?.status;
@@ -653,7 +666,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
         onClick={() => startMatchmaking()}
         disabled={startButtonDisabled}
         data-tour="ai-arena-matchmaking"
-        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
+        className={`${actionButtonBase} ${actionButtonSize} ${compact ? "col-span-2" : "w-full"} border-cyan-200/55 bg-[linear-gradient(135deg,rgba(14,165,233,0.5),rgba(154,53,255,0.45),rgba(4,8,15,0.92))] text-white ring-1 ring-cyan-200/10 transition duration-300 hover:border-cyan-100/80 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.6),rgba(168,85,247,0.52),rgba(4,8,15,0.94))]`}
       >
         {startButtonDisabled && !queuedAgent ? (
           <Loader2 className="h-3 w-3 shrink-0 animate-spin text-cyan-100" />
@@ -671,7 +684,7 @@ function ArenaHeroMatchmakingAction({ compact = false }: { compact?: boolean }) 
           className={`${actionButtonBase} ${actionButtonSize} border-emerald-300/45 bg-[linear-gradient(135deg,rgba(16,185,129,0.42),rgba(4,8,15,0.92))] text-emerald-50 hover:border-emerald-200/75 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.52),rgba(4,8,15,0.94))] hover:text-white`}
         >
           <Swords className="h-3 w-3 shrink-0 text-emerald-200" />
-          <span>JOIN BATTLE</span>
+          <span>OPEN LOBBIES</span>
         </button>
 
         <Link
@@ -1566,6 +1579,7 @@ function BattlesRow() {
 function MyBattleSection() {
   const PREVIEW_AGENT_LIMIT = 8;
   const PREVIEW_MEMORIES_PER_AGENT = 12;
+  const { startMatchmaking, startButtonDisabled } = useAiArenaMatchmakingFlow();
   const myAgentsQ = useMyArenaAgents(1, 50);
   const ownedAgents = myAgentsQ.data?.agents ?? [];
   const previewAgents = useMemo(() => ownedAgents.slice(0, PREVIEW_AGENT_LIMIT), [ownedAgents]);
@@ -1653,6 +1667,20 @@ function MyBattleSection() {
   const canPrevBattle = battlePage > 0;
   const canNextBattle = battlePage < totalBattlePages - 1;
 
+  const jumpToMatchmaking = () => {
+    const target = document.querySelector<HTMLElement>('[data-tour="ai-arena-matchmaking"]');
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (target) {
+      target.classList.add("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      window.setTimeout(() => {
+        target.classList.remove("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      }, 1800);
+    }
+    window.setTimeout(() => {
+      if (!startButtonDisabled) startMatchmaking();
+    }, 450);
+  };
+
   return (
     <div id="my-battles" className="flex h-full min-h-[360px] flex-col scroll-mt-24">
       <div className="mb-6 flex flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between">
@@ -1725,12 +1753,12 @@ function MyBattleSection() {
                     return (
                       <div
                         key={memory.id}
-                        className="card-glass group relative h-full overflow-hidden rounded-2xl border border-primary/25 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/70 hover:shadow-[0_26px_65px_rgba(0,0,0,0.46),0_0_34px_rgba(154,53,255,0.22)] lg:p-3.5 xl:p-4"
+                        className="card-glass group relative flex h-full min-h-[540px] flex-col overflow-hidden rounded-2xl border border-primary/25 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/70 hover:shadow-[0_26px_65px_rgba(0,0,0,0.46),0_0_34px_rgba(154,53,255,0.22)] lg:p-3.5 xl:p-4"
                       >
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.18),transparent_34%),radial-gradient(circle_at_8%_12%,rgba(34,211,238,0.10),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.045),transparent_42%)] opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
                         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
                         <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/4 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
-                        <div className="relative z-10">
+                        <div className="relative z-10 flex h-full min-h-0 flex-col">
                         <div className="flex items-center justify-between gap-3">
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-tech text-[9px] uppercase shadow-[0_0_18px_rgba(154,53,255,0.08)] ${
                             isCancelled
@@ -1772,16 +1800,67 @@ function MyBattleSection() {
                             {new Date(memory.createdAt).toLocaleString()}
                           </p>
                         </div>
-                        {battleId ? (
-                          <Link
-                            to={`/arena/game/${battleId}`}
-                            className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1.5 font-tech text-[9px] font-bold uppercase text-primary shadow-[0_0_18px_rgba(154,53,255,0.12)] transition hover:border-primary/70 hover:bg-primary/20 hover:text-white"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            Open Battle {shortBattleId(battleId)}
-                            <ArrowUpRight className="h-3.5 w-3.5" />
-                          </Link>
-                        ) : null}
+
+                        <div className="mt-3 grid grid-cols-3 gap-2 mb-4">
+                          {[
+                            {
+                              label: "Result",
+                              value: isCancelled ? "Cancel" : isWin ? "Victory" : "Defeat",
+                              tone: isCancelled ? "text-white/70" : isWin ? "text-emerald-300" : "text-rose-300",
+                            },
+                            {
+                              label: "Mode",
+                              value: (battle?.mode ?? "Ranked").replaceAll("_", " "),
+                              tone: "text-white/85",
+                            },
+                            {
+                              label: "Agents",
+                              value: String(Math.max(participants.length, 2)),
+                              tone: "text-white/85",
+                            },
+                          ].map((stat) => (
+                            <div
+                              key={stat.label}
+                              className="rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.018] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                            >
+                              <div className="font-tech text-[9px] uppercase tracking-[0.14em] text-white/40">{stat.label}</div>
+                              <div className={`mt-1 truncate font-tech text-xs font-semibold capitalize ${stat.tone}`}>
+                                {stat.value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+
+                        <button
+                          type="button"
+                          onClick={jumpToMatchmaking}
+                          className="group/cta relative mt-auto w-full overflow-hidden rounded-xl border border-primary/30 bg-[linear-gradient(120deg,rgba(154,53,255,0.18),rgba(14,165,233,0.14),rgba(4,8,15,0.88))] p-3.5 text-left shadow-[0_0_24px_rgba(154,53,255,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-primary/55 hover:shadow-[0_0_32px_rgba(154,53,255,0.2)] sm:p-4"
+                        >
+                          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(168,85,247,0.22),transparent_42%),radial-gradient(circle_at_100%_100%,rgba(34,211,238,0.14),transparent_40%)]" />
+                          <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc]/70 to-transparent" />
+                          <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                            <div className="min-w-0">
+                              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#c084fc] shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+                                <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-[#d8b4fe]/90">
+                                  Next fight
+                                </span>
+                              </div>
+                              <p className="mt-2 font-tech text-sm font-black uppercase leading-snug tracking-wide text-white sm:text-[15px]">
+                                Rematch the arena — start your next battle
+                              </p>
+                              <p className="mt-1 text-xs leading-relaxed text-white/55">
+                                History is done. Queue up and write a better ending.
+                              </p>
+                            </div>
+                            <span className="inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-full border border-primary/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.32),rgba(14,165,233,0.22))] px-4 py-2.5 font-tech text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-[0_0_18px_rgba(154,53,255,0.22)] transition group-hover/cta:scale-[1.03] group-hover/cta:border-primary/70 sm:self-center">
+                              <Swords className="h-3.5 w-3.5 text-[#e9d5ff]" />
+                              Start Matchmaking
+                              <ArrowUpRight className="h-3.5 w-3.5 text-[#e9d5ff]/80" />
+                            </span>
+                          </div>
+                        </button>
                         </div>
                       </div>
                     );
@@ -1813,6 +1892,7 @@ function MyBattleSection() {
 }
 
 function LiveBattles() {
+  const { startMatchmaking, startButtonDisabled } = useAiArenaMatchmakingFlow();
   const battleBoardQ = useArenaBattleBoard({
     maxRankedPairs: 6,
     includeOpenLobbies: false,
@@ -1820,12 +1900,28 @@ function LiveBattles() {
   });
   const previewItems = battleBoardQ.items.slice(0, 1);
 
+  const jumpToMatchmaking = () => {
+    const target = document.querySelector<HTMLElement>('[data-tour="ai-arena-matchmaking"]');
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (target) {
+      target.classList.add("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      window.setTimeout(() => {
+        target.classList.remove("ring-2", "ring-cyan-300/80", "ring-offset-2", "ring-offset-[#050913]", "scale-[1.02]");
+      }, 1800);
+    }
+    window.setTimeout(() => {
+      if (!startButtonDisabled) startMatchmaking();
+    }, 450);
+  };
+
   return (
     <div className="flex h-full min-h-[360px] flex-col">
       <div className="mb-6 flex flex-col gap-3 text-left sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">LIVE BATTLES</h3>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Watch ranked agents fight in real time.</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Watch ranked agents fight in real time.
+          </p>
         </div>
         <Link to="/battles" className="text-sm text-accent hover:underline">
           View All
@@ -1842,14 +1938,34 @@ function LiveBattles() {
             <ArenaBattleBoardCard
               key={item.id}
               item={item}
-              actionLabel={item.kind === "ranked" ? "Join Battle" : "View Battle"}
+              actionLabel={item.kind === "ranked" ? "Watch Live" : "View Battle"}
               actionTo={item.kind === "ranked" ? `/arena/game/${item.id}` : "/battles"}
+              secondaryCta={
+                item.kind === "ranked"
+                  ? {
+                      eyebrow: "Your turn",
+                      title: "Don't just watch — start your own battle",
+                      description: "Queue your agent now and claim the next live spotlight.",
+                      buttonLabel: "Start Matchmaking",
+                      onClick: jumpToMatchmaking,
+                    }
+                  : undefined
+              }
             />
           ))}
         </div>
       ) : (
-        <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-sm text-muted-foreground">
-          No live arena battles or open lobbies are available right now.
+        <div className="space-y-3">
+          <div className="card-glass flex flex-1 items-center justify-center rounded-xl px-5 py-8 text-sm text-muted-foreground">
+            No live arena battles or open lobbies are available right now.
+          </div>
+          <button
+            type="button"
+            onClick={jumpToMatchmaking}
+            className="w-full rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-tech text-[11px] font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-200/55 hover:bg-cyan-400/18"
+          >
+            Be first — start matchmaking
+          </button>
         </div>
       )}
     </div>
