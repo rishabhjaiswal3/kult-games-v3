@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import {
   AI_ARENA_ARCHETYPE_OPTIONS,
@@ -33,6 +35,19 @@ const CLAN_LOGOS: Record<string, string> = {
   OKX: okxLogo,
 };
 
+function createAgentErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { error?: string; message?: string } | undefined;
+    const raw = String(data?.error ?? data?.message ?? err.message ?? "");
+    if (/already minted|only one agent/i.test(raw)) {
+      return "This wallet already has an agent. Only one agent can be minted per wallet — open My Agents to play with yours.";
+    }
+    if (raw.trim()) return raw;
+  }
+  if (err instanceof Error && err.message.trim()) return err.message;
+  return "Couldn't create your agent right now. Please try again.";
+}
+
 export type CreateAiArenaAgentModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,11 +73,16 @@ export function CreateAiArenaAgentModal({
     "Built for smart plays, sharp banter, and a long climb up the arena ladder."
   );
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [alreadyMinted, setAlreadyMinted] = useState(false);
   const wasOpenRef = useRef(false);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) {
       wasOpenRef.current = false;
+      setSubmitError(null);
+      setAlreadyMinted(false);
       return;
     }
 
@@ -71,6 +91,8 @@ export function CreateAiArenaAgentModal({
     if (!wasOpenRef.current) {
       wasOpenRef.current = true;
       setArchetype(defaultArchetype ?? randomAiArenaArchetype());
+      setSubmitError(null);
+      setAlreadyMinted(false);
       return;
     }
 
@@ -79,20 +101,31 @@ export function CreateAiArenaAgentModal({
     }
   }, [open, defaultName, defaultArchetype]);
 
+  useEffect(() => {
+    if (!submitError) return;
+    // Keep the error in view — modal body scrolls and the banner was easy to miss.
+    errorRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [submitError]);
+
   const selectedCard = getArchetypeCardByType(archetype);
 
   const handleSubmit = async () => {
     if (!walletAddress) {
+      setSubmitError("Connect your wallet before minting an agent.");
       return;
     }
     const trimmed = name.trim();
     if (trimmed.length < 2) {
+      setSubmitError("Give your agent a name (at least 2 characters).");
       return;
     }
     if (backstory.trim().length < 8) {
+      setSubmitError("Add a short backstory (at least 8 characters).");
       return;
     }
     setSubmitting(true);
+    setSubmitError(null);
+    setAlreadyMinted(false);
     try {
       const agent = await aiArenaGatewayApi.createAgent({
         name: trimmed,
@@ -104,6 +137,9 @@ export function CreateAiArenaAgentModal({
       onOpenChange(false);
     } catch (e) {
       console.error("Failed to create AI Arena agent", e);
+      const message = createAgentErrorMessage(e);
+      setSubmitError(message);
+      setAlreadyMinted(/already has an agent|already minted|only one agent/i.test(message));
     } finally {
       setSubmitting(false);
     }
@@ -257,14 +293,24 @@ export function CreateAiArenaAgentModal({
               placeholder="Born from corrupted validator nodes…"
             />
           </div>
+
+          {submitError ? (
+            <div ref={errorRef} role="alert" className="space-y-1.5 text-left">
+              <p className="text-sm font-semibold text-red-400">
+                {alreadyMinted ? "Agent already minted" : "Error"}
+              </p>
+              <p className="text-sm leading-snug text-red-300/90">{submitError}</p>
+              
+            </div>
+          ) : null}
         </ArenaDialogBody>
 
         <ArenaDialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancel
           </Button>
-          <Button type="button" onClick={() => void handleSubmit()} disabled={submitting}>
-            {submitting ? "Creating…" : "Create AI Agent"}
+          <Button type="button" onClick={() => void handleSubmit()} disabled={submitting || alreadyMinted}>
+            {submitting ? "Creating…" : alreadyMinted ? "Already Minted" : "Create AI Agent"}
           </Button>
         </ArenaDialogFooter>
       </ArenaDialogContent>

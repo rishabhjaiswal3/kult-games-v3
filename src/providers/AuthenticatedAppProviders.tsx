@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { privyConfig } from "@/lib/privyConfig";
 
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID ?? "";
@@ -11,9 +10,7 @@ export default function AuthenticatedAppProviders({ children }: { children: Reac
   return (
     <PrivyProvider appId={PRIVY_APP_ID} config={privyConfig}>
       <AuthProvider>
-        <CreateAgentProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </CreateAgentProvider>
+        <TooltipProvider>{children}</TooltipProvider>
       </AuthProvider>
     </PrivyProvider>
   );
