@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Crown,
   FileText,
+  Flag,
   Gamepad2,
   Home,
   Medal,
@@ -27,6 +28,7 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { label: "Home", path: "/", icon: Home },
   { label: "AI Arena", path: "/ai-arena", icon: Sparkles, feature: "ai_arena" },
   { label: "League", path: "/league", icon: Medal, feature: "league" },
+  { label: "F1", path: "/f1", icon: Flag, feature: "league" },
   { label: "Games", path: "/games", icon: Gamepad2, feature: "games" },
   { label: "Moments", path: "/moments", icon: FileText, feature: "moments" },
   { label: "Inventory", path: "/inventory", icon: Package, feature: "full_browser" },

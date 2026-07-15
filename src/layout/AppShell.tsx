@@ -29,7 +29,7 @@ export function AppShell() {
   const isLeaderboard = pathname === "/leaderboard";
   const isAutonomous = pathname === "/autonomous";
   const isAchievements = pathname === "/achievements";
-  const isLeague = pathname === "/league";
+  const isLeague = pathname === "/league" || pathname === "/f1";
   const isGamePlay = /^\/game\/[^/]+\/play$/.test(pathname);
 
   useEffect(() => {

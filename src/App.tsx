@@ -21,6 +21,7 @@ const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
 const LeaguePage = lazyWithRetry(() => import("./pages/LeaguePage"));
+const F1Page = lazyWithRetry(() => import("./pages/F1Page"));
 const AllMomentsPage = lazyWithRetry(() => import("./pages/AllMomentsPage"));
 const MomentDetailPage = lazyWithRetry(() => import("./pages/MomentDetailPage"));
 const AccessLoginPage = lazyWithRetry(() => import("./pages/AccessLoginPage"));
@@ -139,6 +140,7 @@ function BrowserApp() {
                     <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
                     <Route path="/leaderboard" element={<AccessRoute><Leaderboard /></AccessRoute>} />
                     <Route path="/league" element={<AccessRoute><LeaguePage /></AccessRoute>} />
+                    <Route path="/f1" element={<AccessRoute><F1Page /></AccessRoute>} />
                     <Route path="/ai-arena" element={<AccessRoute><AIArenaPage /></AccessRoute>} />
                     <Route path="/moments" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
                     <Route path="/moments/browse" element={<AccessRoute><AllMomentsPage /></AccessRoute>} />
