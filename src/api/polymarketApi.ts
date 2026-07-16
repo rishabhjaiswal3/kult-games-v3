@@ -1,7 +1,7 @@
 // Direct, key-less Polymarket integration (public CORS-enabled endpoints).
 // Gamma = market metadata + current prices, CLOB = price history for charts.
-// Everything here is football-only (filtered client-side) and degrades to the
-// caller's simulated data if the network/shape is unavailable.
+// Everything here is football-only (filtered client-side). Callers should treat
+// [] as “no live data” — do not substitute fake markets.
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
 const CLOB_BASE = "https://clob.polymarket.com";
@@ -226,43 +226,67 @@ const WORLD_CUP_SERIES_ID = "11433";
 // the board, so they're skipped.
 const PLAYER_PROPS_SLUG = /-player-props$/;
 
+function flattenOpenMarketsFromEvents(events: RawMarket[]): PolyMarket[] {
+  return events
+    .filter((event) => !PLAYER_PROPS_SLUG.test(typeof event.slug === "string" ? event.slug : ""))
+    .flatMap((event) => {
+      // "France vs. Morocco - Exact Score" → "France vs. Morocco"
+      const matchName = typeof event.title === "string" ? event.title.split(" - ")[0].trim() : "";
+      const markets = Array.isArray(event.markets) ? (event.markets as RawMarket[]) : [];
+      return markets
+        .filter((raw) => raw.active !== false && raw.closed !== true)
+        .map((raw) => normalizeMarket(raw, matchName || undefined));
+    })
+    .filter((m): m is PolyMarket => m !== null);
+}
+
+function sortWorldCupMarkets(markets: PolyMarket[]): PolyMarket[] {
+  // Next kickoff first; within the same match, headline (highest-volume)
+  // markets lead. Futures without a kickoff sink below, newest-first.
+  return [...markets].sort((a, b) => {
+    if (a.gameTime && b.gameTime) return a.gameTime - b.gameTime || b.volumeNum - a.volumeNum;
+    if (a.gameTime !== b.gameTime) return a.gameTime ? -1 : 1;
+    return b.createdAt - a.createdAt;
+  });
+}
+
+async function fetchEventsJson(url: string): Promise<RawMarket[]> {
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) return [];
+  const json: unknown = await res.json();
+  if (Array.isArray(json)) return json as RawMarket[];
+  if (Array.isArray((json as { data?: unknown })?.data)) return (json as { data: RawMarket[] }).data;
+  return [];
+}
+
 /**
- * Fetch strictly FIFA World Cup markets via the soccer-fifwc series — active,
- * open (not resolved/closed). Latest matches lead: markets with the soonest
- * kickoff (gameStartTime) come first; markets without a kickoff (futures) sink
- * below, newest-first. Returns [] on any failure.
+ * Fetch FIFA / soccer prediction markets. Prefers the soccer-fifwc series
+ * (match-day boards). That series is often player-props-only mid-tournament,
+ * so we fall back to volume-ranked football markets, then soccer-tagged events
+ * (winner / golden boot boards). Returns [] on any failure — never fakes data.
  */
 export async function fetchWorldCupMarkets(limit = 60): Promise<PolyMarket[]> {
   try {
-    const url = `${GAMMA_BASE}/events?series_id=${WORLD_CUP_SERIES_ID}&active=true&closed=false&order=startDate&ascending=false&limit=30`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) return [];
-    const json: unknown = await res.json();
-    const events: RawMarket[] = Array.isArray(json)
-      ? (json as RawMarket[])
-      : Array.isArray((json as { data?: unknown })?.data)
-        ? ((json as { data: RawMarket[] }).data)
-        : [];
+    const seriesEvents = await fetchEventsJson(
+      `${GAMMA_BASE}/events?series_id=${WORLD_CUP_SERIES_ID}&active=true&closed=false&order=startDate&ascending=false&limit=30`,
+    );
+    let worldCup = sortWorldCupMarkets(flattenOpenMarketsFromEvents(seriesEvents));
 
-    const worldCup = events
-      .filter((event) => !PLAYER_PROPS_SLUG.test(typeof event.slug === "string" ? event.slug : ""))
-      .flatMap((event) => {
-        // "France vs. Morocco - Exact Score" → "France vs. Morocco"
-        const matchName = typeof event.title === "string" ? event.title.split(" - ")[0].trim() : "";
-        const markets = Array.isArray(event.markets) ? (event.markets as RawMarket[]) : [];
-        return markets
-          .filter((raw) => raw.active !== false && raw.closed !== true)
-          .map((raw) => normalizeMarket(raw, matchName || undefined));
-      })
-      .filter((m): m is PolyMarket => m !== null);
+    if (worldCup.length === 0) {
+      worldCup = await fetchFootballMarkets(limit);
+    }
 
-    // Next kickoff first; within the same match, headline (highest-volume)
-    // markets lead. Futures without a kickoff sink below, newest-first.
-    worldCup.sort((a, b) => {
-      if (a.gameTime && b.gameTime) return a.gameTime - b.gameTime || b.volumeNum - a.volumeNum;
-      if (a.gameTime !== b.gameTime) return a.gameTime ? -1 : 1;
-      return b.createdAt - a.createdAt;
-    });
+    if (worldCup.length === 0) {
+      const soccerEvents = await fetchEventsJson(
+        `${GAMMA_BASE}/events?tag_slug=soccer&active=true&closed=false&order=volume24hr&ascending=false&limit=30`,
+      );
+      const headline = soccerEvents.filter((event) => {
+        const title = typeof event.title === "string" ? event.title : "";
+        const slug = typeof event.slug === "string" ? event.slug : "";
+        return isFootball(`${title} ${slug}`);
+      });
+      worldCup = sortWorldCupMarkets(flattenOpenMarketsFromEvents(headline));
+    }
 
     return worldCup.slice(0, limit);
   } catch {

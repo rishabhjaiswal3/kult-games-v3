@@ -195,20 +195,13 @@ type BaseMarket = { id: string; question: string; category: string; short: strin
 
 type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
 
-/** Static football set used until live Polymarket data arrives (or if it fails). */
-const FALLBACK_MARKETS: BaseMarket[] = MARKETS.map((market) => ({
-  id: market.id,
-  question: market.question,
-  category: market.category,
-  short: market.short,
-  yes: market.yes,
-  volume: market.volume,
-}));
+type MarketSource = "live" | "loading" | "offline";
 
 type MarketTrade = { id: number; addr: string; side: "YES" | "NO"; price: number; size: number; label: string };
 
-function makeTrade(id: number, markets: BaseMarket[]): MarketTrade {
-  const market = markets[Math.floor(Math.random() * markets.length)] ?? FALLBACK_MARKETS[0];
+function makeTrade(id: number, markets: BaseMarket[]): MarketTrade | null {
+  if (markets.length === 0) return null;
+  const market = markets[Math.floor(Math.random() * markets.length)];
   const side: "YES" | "NO" = Math.random() < market.yes / 100 ? "YES" : "NO";
   return {
     id,
@@ -231,14 +224,14 @@ function seedHistory(markets: BaseMarket[]): Record<string, number[]> {
 
 /** Live Polymarket football data — real prices, real 24h change and real chart
  *  history (key-less & CORS-direct). Prices are never simulated: they re-anchor
- *  from Gamma on every poll. Falls back to the static football set if the
- *  public API is unavailable. */
+ *  from Gamma on every poll. Shows empty/offline when the public API returns
+ *  nothing — never swaps in hardcoded demo markets. */
 function useLiveMarketData() {
-  const [markets, setMarkets] = useState<BaseMarket[]>(FALLBACK_MARKETS);
-  const [source, setSource] = useState<"live" | "sim">("sim");
-  const [history, setHistory] = useState<Record<string, number[]>>(() => seedHistory(FALLBACK_MARKETS));
-  const [trades, setTrades] = useState<MarketTrade[]>(() => Array.from({ length: 7 }, (_, index) => makeTrade(index, FALLBACK_MARKETS)));
-  const marketsRef = useRef<BaseMarket[]>(FALLBACK_MARKETS);
+  const [markets, setMarkets] = useState<BaseMarket[]>([]);
+  const [source, setSource] = useState<MarketSource>("loading");
+  const [history, setHistory] = useState<Record<string, number[]>>({});
+  const [trades, setTrades] = useState<MarketTrade[]>([]);
+  const marketsRef = useRef<BaseMarket[]>([]);
   const firstLoad = useRef(true);
   const seq = useRef(1000);
 
@@ -247,12 +240,27 @@ function useLiveMarketData() {
     let cancelled = false;
     const load = async () => {
       const real: PolyMarket[] = await fetchWorldCupMarkets(200);
-      if (cancelled || real.length === 0) return;
+      if (cancelled) return;
+      if (real.length === 0) {
+        // Keep prior live data across a bad poll; only show offline on first empty load.
+        if (firstLoad.current || marketsRef.current.length === 0) {
+          marketsRef.current = [];
+          setMarkets([]);
+          setTrades([]);
+          setHistory({});
+          setSource("offline");
+          firstLoad.current = false;
+        }
+        return;
+      }
       marketsRef.current = real;
       setMarkets(real);
       setSource("live");
       if (firstLoad.current) {
-        setTrades(Array.from({ length: 7 }, (_, index) => makeTrade(index, real)));
+        setTrades(
+          Array.from({ length: 7 }, (_, index) => makeTrade(index, real)).filter((t): t is MarketTrade => t !== null),
+        );
+        setHistory(seedHistory(real));
         firstLoad.current = false;
       }
       // Real price history per market powers the live chart.
@@ -276,12 +284,13 @@ function useLiveMarketData() {
   // data-api /trades feed). Prices themselves are never touched here.
   useEffect(() => {
     const interval = setInterval(() => {
+      if (marketsRef.current.length === 0) return;
       setTrades((prev) => {
         const count = Math.random() < 0.4 ? 2 : 1;
         const fresh = Array.from({ length: count }, () => {
           seq.current += 1;
           return makeTrade(seq.current, marketsRef.current);
-        });
+        }).filter((t): t is MarketTrade => t !== null);
         return [...fresh, ...prev].slice(0, 14);
       });
     }, 2200);
@@ -292,7 +301,7 @@ function useLiveMarketData() {
 }
 
 export function LeaguePolymarketBoard() {
-  const [selectedMarketId, setSelectedMarketId] = useState<string>(MARKETS[0].id);
+  const [selectedMarketId, setSelectedMarketId] = useState<string>("");
   const category: (typeof MARKET_CATEGORIES)[number] = "All";
   const [view, setView] = useState<BoardView>("market");
   const { markets, trades, history, source } = useLiveMarketData();
@@ -315,7 +324,12 @@ export function LeaguePolymarketBoard() {
     return { ...market, dir: change > 0 ? "up" : change < 0 ? "down" : "flat", delta: change, session: change };
   });
 
-  const selectedMarket = liveMarkets.find((market) => market.id === selectedMarketId) ?? liveMarkets[0];
+  useEffect(() => {
+    if (liveMarkets.length === 0) return;
+    if (!liveMarkets.some((market) => market.id === selectedMarketId)) {
+      setSelectedMarketId(liveMarkets[0].id);
+    }
+  }, [liveMarkets, selectedMarketId]);
 
   return (
     <div className="min-w-0 space-y-3">
@@ -341,7 +355,11 @@ export function LeaguePolymarketBoard() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
         {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} highlighted={market.id === highlightedMarketId} />)}
         {liveMarkets.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">No markets in this category yet</div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">
+            {source === "loading"
+              ? "Loading live Polymarket markets…"
+              : "Polymarket unreachable — no live markets to show"}
+          </div>
         ) : null}
       </div>
       </div>
@@ -359,7 +377,7 @@ function WorldCupOddsHero() {
     events.find((event) => /world cup/i.test(event.title) && event.outcomesDetail.length >= 4) ??
     events.find((event) => event.outcomesDetail.length >= 4);
 
-  const outcomes = (worldCupEvent?.outcomesDetail.length ? worldCupEvent.outcomesDetail : STATIC_FEATURED.outcomes)
+  const outcomes = (worldCupEvent?.outcomesDetail ?? [])
     .slice(0, 7)
     .map((outcome, index) => ({
       label: outcome.label,
@@ -462,15 +480,22 @@ function WorldCupOddsHero() {
   );
 }
 
-function PolymarketComplianceNotice({ source }: { source: "live" | "sim" }) {
+function PolymarketComplianceNotice({ source }: { source: MarketSource }) {
+  const badge =
+    source === "live"
+      ? { className: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300", label: "Live Polymarket data" }
+      : source === "loading"
+        ? { className: "border-white/20 bg-white/[0.06] text-white/60", label: "Loading markets…" }
+        : { className: "border-amber-400/40 bg-amber-400/10 text-amber-300", label: "Polymarket offline" };
+
   return (
     <div className="rounded-xl border border-cyan-400/25 bg-cyan-400/[0.06] px-3 py-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-cyan-100">
           KULT is a signal layer only. Markets, prices, trading, execution, custody, and settlement are provided by Polymarket. KULT never custodies funds or executes trades. No cash value.
         </p>
-        <span className={`shrink-0 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${source === "live" ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" : "border-amber-400/40 bg-amber-400/10 text-amber-300"}`}>
-          {source === "live" ? "Live Polymarket data" : "Fallback preview data"}
+        <span className={`shrink-0 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${badge.className}`}>
+          {badge.label}
         </span>
       </div>
     </div>
@@ -1353,24 +1378,6 @@ function flagFor(label: string): string | undefined {
 
 type FeaturedOutcome = { key: string; label: string; yes: number; color: string; icon?: string; code?: CountryCode; history: number[] };
 
-const STATIC_FEATURED = {
-  id: "static-wc-winner",
-  title: "World Cup Winner",
-  category: "World Cup",
-  volume: "$3B",
-  endsLabel: "Jul 20, 2026",
-  outcomes: [
-    { label: "France", yes: 19, code: "FRA" as CountryCode },
-    { label: "Argentina", yes: 15, code: "ARG" as CountryCode },
-    { label: "Spain", yes: 14, code: "ESP" as CountryCode },
-    { label: "England", yes: 11, code: "ENG" as CountryCode },
-  ],
-  comments: [
-    { id: "c1", author: "nikitakud77", body: "you think portugal will win this world cup? Spain is actually pretty strong with Lamine Yamal" },
-    { id: "c2", author: "casda858", body: "Cristiano Ronaldo's last World Cup as Portugal champions; hoping Portugal will win." },
-  ] as PolyComment[],
-};
-
 function synthSeries(base: number): number[] {
   return Array.from({ length: 36 }, (_, i) => Math.max(2, Math.round(base + Math.sin(i / 3) * 3 + (i / 35) * 2)));
 }
@@ -1421,33 +1428,33 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
     };
   }, [event]);
 
-  // Resolve display data: real event when available, else the static fallback.
-  const usingStatic = !event;
-  const title = event?.title ?? STATIC_FEATURED.title;
-  const volume = event?.volume ?? STATIC_FEATURED.volume;
-  const endsLabel = event?.endsLabel ?? STATIC_FEATURED.endsLabel;
-  const headerIcon = event?.icon;
+  // Live event only — never substitute hardcoded demo outcomes.
+  if (!event) {
+    return (
+      <LeaguePanel fill={false} className="relative overflow-hidden border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4 sm:p-5">
+        <p className="font-tech text-[11px] uppercase tracking-wider text-white/40">
+          {events.length === 0 ? "Loading featured Polymarket event…" : "No featured event in this category"}
+        </p>
+      </LeaguePanel>
+    );
+  }
 
-  const outcomes: FeaturedOutcome[] = usingStatic
-    ? STATIC_FEATURED.outcomes.map((o, i) => ({
-        key: o.label,
-        label: o.label,
-        yes: o.yes,
-        color: OUTCOME_COLORS[i % OUTCOME_COLORS.length],
-        code: o.code,
-        history: synthSeries(o.yes),
-      }))
-    : (event?.outcomesDetail ?? []).slice(0, 5).map((o, i) => ({
-        key: o.tokenId ?? o.label,
-        label: o.label,
-        yes: o.yes,
-        color: OUTCOME_COLORS[i % OUTCOME_COLORS.length],
-        icon: o.icon,
-        code: NAME_TO_CODE[o.label.toLowerCase()],
-        history: (o.tokenId && histories[o.tokenId]) || synthSeries(o.yes),
-      }));
+  const title = event.title;
+  const volume = event.volume;
+  const endsLabel = event.endsLabel;
+  const headerIcon = event.icon;
 
-  const displayComments = comments.length > 0 ? comments : usingStatic ? STATIC_FEATURED.comments : [];
+  const outcomes: FeaturedOutcome[] = event.outcomesDetail.slice(0, 5).map((o, i) => ({
+    key: o.tokenId ?? o.label,
+    label: o.label,
+    yes: o.yes,
+    color: OUTCOME_COLORS[i % OUTCOME_COLORS.length],
+    icon: o.icon,
+    code: NAME_TO_CODE[o.label.toLowerCase()],
+    history: (o.tokenId && histories[o.tokenId]) || synthSeries(o.yes),
+  }));
+
+  const displayComments = comments;
   const chartLines = outcomes.slice(0, 4).map((o) => ({ color: o.color, series: o.history }));
   const canCycle = pool.length > 1;
 
