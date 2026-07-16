@@ -23,6 +23,7 @@ import {
 import {
   fetchEventComments,
   fetchFootballEvents,
+  fetchResolvedFootballMarkets,
   fetchWorldCupMarkets,
   fetchPriceHistory,
   fetchUserPositions,
@@ -337,7 +338,9 @@ export function LeaguePolymarketBoard() {
       <PolygonWalletBalance />
       <BoardViewTabs view={view} onChange={setView} marketCount={liveMarkets.length} newsCount={MATCH_NEWS.length} />
 
-      {view === "pulse" ? (
+      {source === "loading" ? (
+        <PolymarketBoardSkeleton />
+      ) : view === "pulse" ? (
         <MatchPulseView category={category} />
       ) : view === "analysis" ? (
         <AnalysisView markets={liveMarkets} category={category} selectedId={selectedMarketId} onSelect={setSelectedMarketId} history={history} trades={trades} />
@@ -356,15 +359,85 @@ export function LeaguePolymarketBoard() {
         {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} highlighted={market.id === highlightedMarketId} />)}
         {liveMarkets.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">
-            {source === "loading"
-              ? "Loading live Polymarket markets…"
-              : "Polymarket unreachable — no live markets to show"}
+            Polymarket unreachable — no live markets to show
           </div>
         ) : null}
       </div>
       </div>
       )}
 
+    </div>
+  );
+}
+
+function PolymarketMarketCardSkeleton() {
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0b0d12] p-3.5">
+      <div className="mb-2.5 flex items-center justify-between gap-2">
+        <div className="skeleton h-5 w-20 rounded-md" />
+        <div className="skeleton h-3 w-16 rounded" />
+      </div>
+      <div className="skeleton h-2.5 w-28 rounded" />
+      <div className="skeleton mt-2 h-4 w-full rounded" />
+      <div className="skeleton mt-1.5 h-4 w-4/5 rounded" />
+      <div className="mt-3 flex items-center gap-2">
+        <div className="skeleton h-8 w-16 rounded-md" />
+        <div className="skeleton h-8 flex-1 rounded-md" />
+        <div className="skeleton h-8 flex-1 rounded-md" />
+      </div>
+      <div className="skeleton mt-3 h-9 w-full rounded-md" />
+    </div>
+  );
+}
+
+function PolymarketBoardSkeleton() {
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-12" aria-busy="true" aria-label="Loading Polymarket markets">
+      <div className="lg:col-span-12">
+        <div className="rounded-xl border border-[#2E5CFF]/30 bg-[#070911] p-4 sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="skeleton h-12 w-12 shrink-0 rounded-xl" />
+              <div className="min-w-0 space-y-2">
+                <div className="skeleton h-3 w-28 rounded" />
+                <div className="skeleton h-5 w-48 rounded sm:w-64" />
+              </div>
+            </div>
+            <div className="skeleton h-7 w-20 rounded-full" />
+          </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 py-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className="skeleton h-7 w-7 rounded-md" />
+                    <div className="skeleton h-3.5 w-24 rounded" />
+                  </div>
+                  <div className="skeleton h-5 w-10 rounded" />
+                </div>
+              ))}
+              <div className="skeleton mt-2 h-[132px] w-full rounded-lg" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <div className="skeleton h-3 w-16 rounded" />
+                <div className="skeleton h-3 w-16 rounded" />
+                <div className="skeleton h-3 w-16 rounded" />
+              </div>
+              <div className="skeleton h-[200px] w-full rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="skeleton h-[260px] rounded-2xl sm:h-[280px] lg:col-span-6 lg:h-[300px]" />
+      <div className="skeleton h-[260px] rounded-xl lg:col-span-6" />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <PolymarketMarketCardSkeleton key={i} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -382,8 +455,8 @@ function WorldCupOddsHero() {
     .map((outcome, index) => ({
       label: outcome.label,
       yes: outcome.yes,
-      icon: "icon" in outcome ? outcome.icon : undefined,
-      code: "code" in outcome ? outcome.code : NAME_TO_CODE[outcome.label.toLowerCase()],
+      icon: outcome.icon,
+      code: NAME_TO_CODE[outcome.label.toLowerCase()],
       color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
     }));
 
@@ -398,6 +471,8 @@ function WorldCupOddsHero() {
   >(() => orbitItems.map(() => ({ x: 0, y: 0, scale: 1, z: 0, rotate: 0, opacity: 1 })));
 
   useEffect(() => {
+    if (count === 0) return;
+
     const SPEED = 0.004; // radians per frame (~0.23°/frame ≈ one full rotation ~27s at 60fps)
     let prev = performance.now();
 
@@ -443,6 +518,26 @@ function WorldCupOddsHero() {
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   }, [count, orbitItems.length]);
+
+  if (outcomes.length === 0) {
+    return (
+      <section
+        className="relative h-full min-h-[260px] overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,#171f25,#11181d)] p-5 sm:min-h-[280px] sm:p-7 lg:min-h-[300px]"
+        aria-busy="true"
+        aria-label="Loading World Cup odds"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center gap-4 sm:top-10">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="skeleton h-10 w-10 rounded-full sm:h-12 sm:w-12" style={{ opacity: 0.35 + i * 0.1 }} />
+          ))}
+        </div>
+        <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-end sm:min-h-[220px] lg:min-h-[240px]">
+          <div className="skeleton h-8 w-48 rounded sm:h-10 sm:w-64" />
+          <div className="skeleton mt-3 h-3 w-full max-w-sm rounded" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative h-full min-h-[260px] overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_18%_18%,rgba(125,151,255,0.14),transparent_36%),linear-gradient(180deg,#171f25,#11181d)] p-5 sm:min-h-[280px] sm:p-7 lg:min-h-[300px]">
@@ -1431,10 +1526,31 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
   // Live event only — never substitute hardcoded demo outcomes.
   if (!event) {
     return (
-      <LeaguePanel fill={false} className="relative overflow-hidden border-[#2E5CFF]/30 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.1),transparent_45%),#070911] p-4 sm:p-5">
-        <p className="font-tech text-[11px] uppercase tracking-wider text-white/40">
-          {events.length === 0 ? "Loading featured Polymarket event…" : "No featured event in this category"}
-        </p>
+      <LeaguePanel fill={false} className="relative overflow-hidden border-[#2E5CFF]/30 bg-[#070911] p-4 sm:p-5" aria-busy={events.length === 0}>
+        {events.length === 0 ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="skeleton h-12 w-12 rounded-xl" />
+              <div className="space-y-2">
+                <div className="skeleton h-3 w-28 rounded" />
+                <div className="skeleton h-5 w-48 rounded" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="skeleton h-7 w-7 rounded-md" />
+                    <div className="skeleton h-3.5 w-24 rounded" />
+                  </div>
+                  <div className="skeleton h-5 w-10 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="font-tech text-[11px] uppercase tracking-wider text-white/40">No featured event in this category</p>
+        )}
       </LeaguePanel>
     );
   }
