@@ -5,7 +5,7 @@ import { getLeagueAgent } from "@/constants/leagueAgents";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { TeamFlagCircle } from "./FlagHex";
 import { LeagueStadiumBackground } from "./LeagueStadiumBackground";
-import { leagueApi } from "@/api/leagueApi";
+import { leagueApi, type MatchSummary } from "@/api/leagueApi";
 import { useMakeLeaguePick, toPickResult } from "@/hooks/useMakeLeaguePick";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -28,16 +28,51 @@ function formatStage(stage: string): string {
   return stage.replace(/_/g, " ").replace(/\w\S*/g, (w) => w[0] + w.slice(1).toLowerCase());
 }
 
+const EMPTY_CONSENSUS = { homePct: 0, drawPct: 0, awayPct: 0 };
+
+async function resolveFeaturedMatch(): Promise<MatchSummary | null> {
+  const featured = await leagueApi.getFeaturedMatch();
+  if (featured) return featured;
+
+  const { matches } = await leagueApi.listMatches({ limit: 8 });
+  const fallback = matches.find((m) => m.status === "LIVE" || m.status === "SCHEDULED") ?? matches[0];
+  if (!fallback) return null;
+
+  try {
+    return await leagueApi.getMatchDetail(fallback.id);
+  } catch {
+    return {
+      id: fallback.id,
+      home: fallback.home,
+      away: fallback.away,
+      stage: fallback.stage,
+      matchday: fallback.matchday,
+      venue: fallback.venue,
+      kickoffAt: fallback.kickoffAt,
+      status: fallback.status,
+      isLive: fallback.status === "LIVE",
+      homeScore: null,
+      awayScore: null,
+      liveMinute: null,
+      predictionPool: 0,
+      totalAgentBets: 0,
+      consensus: EMPTY_CONSENSUS,
+      userAgentPick: fallback.userAgentPick,
+    };
+  }
+}
+
 export function LeagueFeaturedBanner() {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
-  const { makePick, isLoading: isPickLoading, result: pickResult, error: pickError, hasAgent } = useMakeLeaguePick();
+  const { makePick, isLoading: isPickLoading, result: pickResult, error: pickError, hasAgent } =
+    useMakeLeaguePick();
 
   const { data: match, isLoading } = useQuery({
-    queryKey: ["league", "matches", "featured"],
-    queryFn: () => leagueApi.getFeaturedMatch(),
+    queryKey: ["league", "matches", "featured", "banner"],
+    queryFn: resolveFeaturedMatch,
     staleTime: 15_000,
-    refetchInterval: 15_000, // consensus/score move server-side; poll rather than fake-animate client-side
+    refetchInterval: 15_000,
     placeholderData: keepPreviousData,
   });
 
@@ -50,26 +85,14 @@ export function LeagueFeaturedBanner() {
   });
 
   const agentBets = (detail?.agentBets ?? []).slice(0, 4);
-
-  if (isLoading) {
-    return <div className="skeleton h-[420px] w-full rounded-xl" />;
-  }
-
-  if (!match) {
-    return (
-      <section className="w-full rounded-xl border border-white/10 bg-[#05050a] p-6 text-center">
-        <p className="text-sm text-white/50">No featured match right now — check back closer to kickoff.</p>
-      </section>
-    );
-  }
-
-  const consensus = match.consensus;
-
-  const isPickingThis = isPickLoading(match.id);
-  const thisPick = pickResult(match.id) ?? (match.userAgentPick ? toPickResult(match.userAgentPick) : null);
-  const thisPickError = pickError(match.id);
+  const thisPick = match
+    ? pickResult(match.id) ?? (match.userAgentPick ? toPickResult(match.userAgentPick) : null)
+    : null;
+  const thisPickError = match ? pickError(match.id) : null;
+  const isPickingThis = match ? isPickLoading(match.id) : false;
 
   function handleMakeYourPick() {
+    if (!match) return;
     if (!isAuthenticated) {
       login();
       return;
@@ -78,123 +101,241 @@ export function LeagueFeaturedBanner() {
       navigate("/my-agents");
       return;
     }
-    void makePick(match!.id);
+    void makePick(match.id);
+  }
+
+  if (isLoading) {
+    return <div className="skeleton h-[420px] w-full rounded-xl" />;
   }
 
   return (
     <section className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#a855f7]/40 shadow-[0_0_56px_rgba(168,85,247,0.15)]">
+      {/* Video only — no UI overlay (your design) */}
       <div className="relative aspect-video w-full min-w-0 max-w-full overflow-hidden sm:aspect-auto sm:h-[340px] md:h-[400px]">
         <LeagueStadiumBackground clean />
       </div>
 
+      {/* Prediction content below the video */}
       <div className="w-full min-w-0 border-t border-white/10 bg-[#05050a] px-3 py-2.5 sm:px-5 sm:py-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+        {!match ? (
+          <div className="rounded-lg border border-white/12 bg-[#080914]/95 p-4 text-center sm:p-5">
             <p className="font-tech text-[10px] font-bold uppercase tracking-[0.22em] text-white sm:text-xs">
               Today&apos;s Featured Prediction
             </p>
-            {match.isLive ? <LiveBadge /> : null}
-          </div>
-          <div className="sm:text-right">
-            <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-white sm:text-xs">
-              FIFA World Cup 2026™
-            </p>
-            <p className="font-tech text-[9px] uppercase tracking-widest text-white/55">
-              {formatStage(match.stage)}{match.matchday ? ` · Matchday ${match.matchday}` : ""}
+            <p className="mt-2 text-sm text-white/50">
+              No featured match right now — check back closer to kickoff.
             </p>
           </div>
-        </div>
-
-        <div className="mt-2.5 rounded-lg border border-white/12 bg-[#080914]/95 p-3 sm:p-3.5">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <div className="text-center">
-              <TeamFlagCircle teamName={match.home} className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
-              <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.home}</p>
-            </div>
-            <div className="min-w-[88px] text-center sm:min-w-[130px]">
-              <p className="font-tech text-[8px] uppercase tracking-[0.26em] text-[#aaa9dc] sm:text-[10px]">
-                {formatStage(match.stage)}{match.matchday ? ` · MD ${match.matchday}` : ""}
-              </p>
-              <p className="my-0.5 font-display text-3xl font-black text-[#a78bfa]">
-                {match.isLive && match.homeScore !== null && match.awayScore !== null
-                  ? `${match.homeScore} - ${match.awayScore}`
-                  : "VS"}
-              </p>
-              {match.isLive ? (
-                <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-400 sm:text-[10px]">
-                  Live{match.liveMinute !== null ? ` · ${match.liveMinute}'` : ""}
+        ) : (
+          <>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-tech text-[10px] font-bold uppercase tracking-[0.22em] text-white sm:text-xs">
+                  Today&apos;s Featured Prediction
                 </p>
-              ) : null}
+                {match.isLive ? <LiveBadge /> : null}
+              </div>
+              <div className="sm:text-right">
+                <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-white sm:text-xs">
+                  FIFA World Cup 2026™
+                </p>
+                <p className="font-tech text-[9px] uppercase tracking-widest text-white/55">
+                  {formatStage(match.stage)}
+                  {match.matchday ? ` · Matchday ${match.matchday}` : ""}
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <TeamFlagCircle teamName={match.away} className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]" />
-              <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.away}</p>
-            </div>
-          </div>
 
-          <div className="mt-2.5">
-            <p className="mb-1.5 text-center font-tech text-[9px] uppercase tracking-[0.28em] text-[#aaa9dc] sm:text-[10px]">Agent Consensus</p>
-            <div className="flex h-10 overflow-hidden rounded-xl border border-white/15 bg-white/5 font-tech font-black text-white sm:h-11">
-              <div className="flex items-center justify-center bg-gradient-to-r from-[#244ac4] to-[#2d65dd] transition-all duration-1000" style={{ width: `${consensus.homePct}%` }}>{consensus.homePct}%</div>
-              <div className="flex items-center justify-center bg-[#3b3a60] transition-all duration-1000" style={{ width: `${consensus.drawPct}%` }}>{consensus.drawPct}%</div>
-              <div className="flex items-center justify-center bg-gradient-to-r from-[#139bc1] to-[#117b99] transition-all duration-1000" style={{ width: `${consensus.awayPct}%` }}>{consensus.awayPct}%</div>
-            </div>
-            <div className="mt-1.5 grid grid-cols-3 font-tech text-[9px] uppercase tracking-wider text-white/75 sm:text-[10px]">
-              <span>{match.home} win <span className="text-blue-300">↑</span></span>
-              <span className="text-center">Draw</span>
-              <span className="text-right">{match.away} win <span className="text-cyan-300">↓</span></span>
-            </div>
-          </div>
+            <div className="mt-2.5 rounded-lg border border-white/12 bg-[#080914]/95 p-3 sm:p-3.5">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <div className="text-center">
+                  <TeamFlagCircle
+                    teamName={match.home}
+                    className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]"
+                  />
+                  <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.home}</p>
+                </div>
+                <div className="min-w-[88px] text-center sm:min-w-[130px]">
+                  <p className="font-tech text-[8px] uppercase tracking-[0.26em] text-[#aaa9dc] sm:text-[10px]">
+                    {formatStage(match.stage)}
+                    {match.matchday ? ` · MD ${match.matchday}` : ""}
+                  </p>
+                  <p className="my-0.5 font-display text-3xl font-black text-[#a78bfa]">
+                    {match.isLive && match.homeScore !== null && match.awayScore !== null
+                      ? `${match.homeScore} - ${match.awayScore}`
+                      : "VS"}
+                  </p>
+                  {match.isLive ? (
+                    <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-emerald-400 sm:text-[10px]">
+                      Live{match.liveMinute !== null ? ` · ${match.liveMinute}'` : ""}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="text-center">
+                  <TeamFlagCircle
+                    teamName={match.away}
+                    className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]"
+                  />
+                  <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.away}</p>
+                </div>
+              </div>
 
-          {agentBets.length > 0 ? (
-            <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {agentBets.map((bet) => {
-                const agent = getLeagueAgent(bet.agentName);
-                if (!agent) return null;
-                const pickLabel = bet.winner === "HOME" ? match.home : bet.winner === "AWAY" ? match.away : "Draw";
+              {(() => {
+                const homePct = Number(match.consensus?.homePct) || 0;
+                const drawPct = Number(match.consensus?.drawPct) || 0;
+                const awayPct = Number(match.consensus?.awayPct) || 0;
+                const hasConsensus = homePct + drawPct + awayPct > 0;
+
                 return (
-                  <div key={bet.agentId} className="relative flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-white/10 bg-[#101022] p-1.5" style={{ borderTopColor: agent.accentHex }}>
-                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: agent.accentHex }}>
-                      <ArenaAgentMedia src={agent.img} alt={agent.name} />
+                  <div className="mt-2.5">
+                    <p className="mb-1.5 text-center font-tech text-[9px] uppercase tracking-[0.28em] text-[#aaa9dc] sm:text-[10px]">
+                      Agent Consensus
+                    </p>
+                    <div className="relative">
+                      <div
+                        className={`flex h-10 overflow-hidden rounded-xl border border-white/15 bg-white/5 font-tech font-black text-white sm:h-11 ${
+                          hasConsensus ? "" : "opacity-35"
+                        }`}
+                        aria-disabled={!hasConsensus}
+                      >
+                        {hasConsensus ? (
+                          <>
+                            <div
+                              className="flex items-center justify-center bg-gradient-to-r from-[#244ac4] to-[#2d65dd] transition-all duration-1000"
+                              style={{ width: `${homePct}%` }}
+                            >
+                              {homePct}%
+                            </div>
+                            <div
+                              className="flex items-center justify-center bg-[#3b3a60] transition-all duration-1000"
+                              style={{ width: `${drawPct}%` }}
+                            >
+                              {drawPct}%
+                            </div>
+                            <div
+                              className="flex items-center justify-center bg-gradient-to-r from-[#139bc1] to-[#117b99] transition-all duration-1000"
+                              style={{ width: `${awayPct}%` }}
+                            >
+                              {awayPct}%
+                            </div>
+                          </>
+                        ) : (
+                          <div className="h-full w-full bg-white/[0.04]" />
+                        )}
+                      </div>
+
+                      {!hasConsensus ? (
+                        <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-[#05050a]/75 backdrop-blur-[2px]">
+                          <p className="px-3 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-white/70 sm:text-[10px]">
+                            Consensus unavailable — waiting for agent picks
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-tech text-xs font-black uppercase text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">{agent.name}</p>
-                      <p className="font-tech text-[9px] font-bold uppercase tracking-wider" style={{ color: agent.accentHex }}>
-                        {pickLabel} · {CONVICTION_PCT[bet.conviction] ?? 70}%
-                      </p>
+                    <div
+                      className={`mt-1.5 grid grid-cols-3 font-tech text-[9px] uppercase tracking-wider sm:text-[10px] ${
+                        hasConsensus ? "text-white/75" : "text-white/30"
+                      }`}
+                    >
+                      <span>
+                        {match.home} win <span className={hasConsensus ? "text-blue-300" : ""}>↑</span>
+                      </span>
+                      <span className="text-center">Draw</span>
+                      <span className="text-right">
+                        {match.away} win <span className={hasConsensus ? "text-cyan-300" : ""}>↓</span>
+                      </span>
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          ) : null}
+              })()}
 
-          {thisPick ? (
-            <div className="mt-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/8 p-2.5 text-center">
-              <p className="font-tech text-[9px] uppercase tracking-wider text-white/45">{thisPick.agentName}'s pick</p>
-              <p className="mt-0.5 font-tech text-sm font-bold text-emerald-300">
-                {thisPick.winner === "HOME" ? match.home : thisPick.winner === "AWAY" ? match.away : "Draw"} {thisPick.scoreHome}-{thisPick.scoreAway}
-              </p>
-              <p className="mt-0.5 font-tech text-[9px] text-white/40">{CONVICTION_PCT[thisPick.conviction] ?? 70}% confidence</p>
-              {thisPick.reasoning ? <p className="mt-1 text-[10px] italic text-white/50">&ldquo;{thisPick.reasoning}&rdquo;</p> : null}
-            </div>
-          ) : null}
-          {thisPickError ? <p className="mt-1.5 text-center text-[10px] text-rose-400">{thisPickError}</p> : null}
+              {agentBets.length > 0 ? (
+                <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {agentBets.map((bet) => {
+                    const agent = getLeagueAgent(bet.agentName);
+                    if (!agent) return null;
+                    const pickLabel =
+                      bet.winner === "HOME" ? match.home : bet.winner === "AWAY" ? match.away : "Draw";
+                    return (
+                      <div
+                        key={bet.agentId}
+                        className="relative flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-white/10 bg-[#101022] p-1.5"
+                        style={{ borderTopColor: agent.accentHex }}
+                      >
+                        <div
+                          className="h-8 w-8 shrink-0 overflow-hidden rounded-md border"
+                          style={{ borderColor: agent.accentHex }}
+                        >
+                          <ArenaAgentMedia src={agent.img} alt={agent.name} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-tech text-xs font-black uppercase text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">
+                            {agent.name}
+                          </p>
+                          <p
+                            className="font-tech text-[9px] font-bold uppercase tracking-wider"
+                            style={{ color: agent.accentHex }}
+                          >
+                            {pickLabel} · {CONVICTION_PCT[bet.conviction] ?? 70}%
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
 
-          <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
-            <button type="button" onClick={() => document.getElementById("league-fight-arena")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]">Agent Battles <ChevronRight className="h-3 w-3 shrink-0" /></button>
-            {!thisPick ? (
-              <button
-                type="button"
-                disabled={isPickingThis}
-                onClick={handleMakeYourPick}
-                className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-60 sm:text-[10px]"
-              >
-                {isPickingThis ? "Generating…" : "Make Your Pick"}
-              </button>
-            ) : null}
-          </div>
-        </div>
+              {thisPick ? (
+                <div className="mt-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/8 p-2.5 text-center">
+                  <p className="font-tech text-[9px] uppercase tracking-wider text-white/45">
+                    {thisPick.agentName}&apos;s pick
+                  </p>
+                  <p className="mt-0.5 font-tech text-sm font-bold text-emerald-300">
+                    {thisPick.winner === "HOME"
+                      ? match.home
+                      : thisPick.winner === "AWAY"
+                        ? match.away
+                        : "Draw"}{" "}
+                    {thisPick.scoreHome}-{thisPick.scoreAway}
+                  </p>
+                  <p className="mt-0.5 font-tech text-[9px] text-white/40">
+                    {CONVICTION_PCT[thisPick.conviction] ?? 70}% confidence
+                  </p>
+                  {thisPick.reasoning ? (
+                    <p className="mt-1 text-[10px] italic text-white/50">&ldquo;{thisPick.reasoning}&rdquo;</p>
+                  ) : null}
+                </div>
+              ) : null}
+              {thisPickError ? (
+                <p className="mt-1.5 text-center text-[10px] text-rose-400">{thisPickError}</p>
+              ) : null}
+
+              <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById("league-fight-arena")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                  className="inline-flex min-h-[32px] flex-1 items-center justify-center gap-1.5 rounded-md border border-white/25 bg-white/5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:border-[#a855f7]/50 hover:bg-[#a855f7]/25 sm:text-[10px]"
+                >
+                  Agent Battles <ChevronRight className="h-3 w-3 shrink-0" />
+                </button>
+                {!thisPick ? (
+                  <button
+                    type="button"
+                    disabled={isPickingThis}
+                    onClick={handleMakeYourPick}
+                    className="min-h-[32px] flex-1 rounded-md border border-[#a855f7]/50 bg-[#a855f7]/25 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[#a855f7]/40 disabled:cursor-not-allowed disabled:opacity-60 sm:text-[10px]"
+                  >
+                    {isPickingThis ? "Generating…" : "Make Your Pick"}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

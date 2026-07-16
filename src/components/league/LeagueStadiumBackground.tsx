@@ -67,7 +67,7 @@ export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgrou
         onTimeUpdate={handleTimeUpdate}
         className="absolute inset-0 size-full max-w-none object-cover object-center sm:object-[center_35%]"
       />
-      {/* {!clean ? (
+      {!clean ? (
         <>
           <div className="absolute inset-0 bg-[#0a1628]/20 mix-blend-multiply" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#05050a]/50 via-[#05050a]/10 via-45% to-[#05050a]/70" />
@@ -76,7 +76,7 @@ export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgrou
         </>
       ) : (
         <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#05050a] to-transparent sm:h-16" />
-      )} */}
+      )}
     </div>
   );
 }
