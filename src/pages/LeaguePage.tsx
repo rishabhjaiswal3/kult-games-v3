@@ -1,7 +1,8 @@
 import { useState, type CSSProperties } from "react";
-import { Lightbulb } from "lucide-react";
+import { Gauge, Goal, Lightbulb } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { leagueApi } from "@/api/leagueApi";
+import { Formula1Board } from "@/components/league/Formula1Board";
 import { LeagueFeaturedBanner } from "@/components/league/LeagueFeaturedBanner";
 import { LeagueFightCarousel } from "@/components/league/LeagueFightCarousel";
 import { LeagueMomentsTicker } from "@/components/league/LeagueMomentsTicker";
@@ -41,7 +42,7 @@ const LeaguePage = () => {
         <LeaguePageHeader />
       </div>
       <LeagueModeTabs mode={mode} onModeChange={setMode} />
-      {mode === "league" ? <KultLeagueBoard /> : <LeaguePolymarketBoard />}
+      {mode === "league" ? <DifferentLeagueOptions /> : <LeaguePolymarketBoard />}
     </div>
   );
 };
@@ -57,6 +58,55 @@ function LeagueTipBox() {
         {/* Picks lock at kickoff — <span className="font-semibold text-white">get yours in early</span> so you don't miss out. */}
         For the best AI insights, make your prediction before kickoff. Once the match starts, predictions are locked.
       </p>
+    </div>
+  );
+}
+
+type SportTab = "football" | "f1";
+
+const SPORT_TABS: {
+  id: SportTab;
+  label: string;
+  Icon: typeof Goal;
+}[] = [
+  { id: "football", label: "Football", Icon: Goal },
+  { id: "f1", label: "Formula 1", Icon: Gauge },
+];
+
+function DifferentLeagueOptions() {
+  const [sport, setSport] = useState<SportTab>("football");
+
+  return (
+    <div className="min-w-0 space-y-3">
+      <div
+        role="tablist"
+        aria-label="League sport"
+        className="inline-flex w-fit max-w-full items-center gap-1 border-b border-white/10"
+      >
+        {SPORT_TABS.map((tab) => {
+          const active = sport === tab.id;
+          const Icon = tab.Icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setSport(tab.id)}
+              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] transition ${
+                active
+                  ? "border-white text-white"
+                  : "border-transparent text-white/40 hover:text-white/70"
+              }`}
+            >
+              <Icon className={`h-3 w-3 ${active ? "text-emerald-300" : "text-white/35"}`} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {sport === "football" ? <KultLeagueBoard /> : <Formula1Board />}
     </div>
   );
 }
