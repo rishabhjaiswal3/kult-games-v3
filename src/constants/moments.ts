@@ -95,9 +95,11 @@ export function isMomentsCreateQueryOpen(value: string | null): boolean {
   return value === "true" || value === "1";
 }
 
-/** `/moments`, `/moments/browse`, and `/moments/:id` use an inner scroll region on xl+ only. */
-export function usesMomentsInternalScroll(pathname: string): boolean {
-  return pathname === "/moments" || pathname === "/moments/browse" || /^\/moments\/[^/]+$/.test(pathname);
+/** Moments routes use the main AppShell scroll. Nested scroll was locking the
+ *  page (`xl:overflow-hidden`) while browse/hub didn't always get a working
+ *  inner scroller — leaving the moments grid clipped and unscrollable. */
+export function usesMomentsInternalScroll(_pathname: string): boolean {
+  return false;
 }
 
 /** `/moments`, `/moments/browse`, and `/moments/:id` share the same dashboard shell + topbar. */

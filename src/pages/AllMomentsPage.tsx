@@ -550,14 +550,12 @@ export function AllMomentsPage() {
     observerRef.current?.disconnect();
     observerRef.current = null;
     if (!node) return;
-    const scrollRoot = feedScrollRef.current;
-    const useNestedRoot =
-      scrollRoot &&
-      typeof window !== "undefined" &&
-      window.matchMedia("(min-width: 1280px)").matches;
+    // Page uses AppShell main scroll — observe against the viewport.
     const io = new IntersectionObserver(
-      (entries) => { if (entries[0]?.isIntersecting) handleLoadMoreRef.current(); },
-      { root: useNestedRoot ? scrollRoot : null, rootMargin: "240px" },
+      (entries) => {
+        if (entries[0]?.isIntersecting) handleLoadMoreRef.current();
+      },
+      { root: null, rootMargin: "240px" },
     );
     io.observe(node);
     observerRef.current = io;
@@ -716,7 +714,10 @@ export function AllMomentsPage() {
 
         </div>
 
-        <div className={isBrowseAll ? "space-y-4" : "moments-page-scroll"}>
+        <div
+          ref={isBrowseAll ? feedScrollRef : undefined}
+          className={isBrowseAll ? "space-y-4" : "moments-page-scroll"}
+        >
           <div className={isBrowseAll ? "" : "moments-page-inner px-3 sm:px-6 lg:px-8"}>
           <div className={isBrowseAll ? "space-y-4" : "moments-page-grid grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}>
             <div className={isBrowseAll ? "space-y-4" : "moments-main-column min-w-0 space-y-4"}>
