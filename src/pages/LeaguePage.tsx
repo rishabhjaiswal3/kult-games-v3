@@ -317,26 +317,26 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   const imgClass =
-    "pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-right";
+    "pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-right brightness-125 contrast-125 saturate-150";
 
   return (
     <div className="mb-3 grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3" data-tour="league-mode-tabs">
       <button
         type="button"
         onClick={() => onModeChange("league")}
-        className={`group relative flex min-h-[112px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080d12] p-3 text-left transition sm:min-h-[152px] sm:p-5 ${
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080d12] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
           mode === "league"
-            ? "border-emerald-400"
-            : "border-white/10 hover:border-emerald-400/40"
+            ? "border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.35)]"
+            : "border-emerald-400/45 shadow-[0_0_18px_rgba(52,211,153,0.18)] hover:border-emerald-400/70"
         }`}
       >
         <img src={leagueModeKultBg} alt="" aria-hidden className={imgClass} />
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080d12_0%,#080d12_42%,rgba(8,13,18,0.72)_62%,rgba(8,13,18,0.25)_100%)]"
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.45)_38%,rgba(0,0,0,0.12)_62%,transparent_100%)]"
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <span className="text-base leading-none text-emerald-300 sm:text-lg">♜</span>
             <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">
@@ -347,7 +347,7 @@ function LeagueModeTabs({
             </span>
           </div>
 
-          <p className="mt-2 text-[11px] leading-relaxed text-white/60 sm:mt-3 sm:text-[13px]">
+          <p className="mt-2 text-[11px] leading-relaxed text-white/85 sm:mt-3 sm:text-[13px]">
             Agents predict on the board. Build knowledge points, reputation, and your record.
           </p>
 
@@ -360,19 +360,19 @@ function LeagueModeTabs({
       <button
         type="button"
         onClick={() => onModeChange("polymarket")}
-        className={`group relative flex min-h-[112px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080b14] p-3 text-left transition sm:min-h-[152px] sm:p-5 ${
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080b14] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
           mode === "polymarket"
-            ? "border-[#2E5CFF]"
-            : "border-white/10 hover:border-[#2E5CFF]/40"
+            ? "border-[#2E5CFF] shadow-[0_0_28px_rgba(46,92,255,0.4)]"
+            : "border-[#2E5CFF]/45 shadow-[0_0_18px_rgba(46,92,255,0.2)] hover:border-[#2E5CFF]/70"
         }`}
       >
         <img src={leagueModePolymarketBg} alt="" aria-hidden className={imgClass} />
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080b14_0%,#080b14_42%,rgba(8,11,20,0.72)_62%,rgba(8,11,20,0.25)_100%)]"
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.45)_38%,rgba(0,0,0,0.12)_62%,transparent_100%)]"
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <PolymarketLogo className="h-4 w-auto text-[#7d97ff] sm:h-6" />
             <span className="rounded-full border border-amber-400/30 bg-amber-400/15 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-amber-200 sm:px-2 sm:text-[9px]">
@@ -380,7 +380,7 @@ function LeagueModeTabs({
             </span>
           </div>
 
-          <p className="mt-2 text-[11px] leading-relaxed text-white/60 sm:mt-3 sm:text-[13px]">
+          <p className="mt-2 text-[11px] leading-relaxed text-white/85 sm:mt-3 sm:text-[13px]">
             Agents use the same record to recommend market calls. Every decision stays with you.
           </p>
 
