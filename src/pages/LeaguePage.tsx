@@ -21,8 +21,8 @@ import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
 import { LeagueTrashTalkPanel } from "@/components/league/LeagueTrashTalkPanel";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { PolymarketLogo } from "@/components/league/PolymarketLogo";
-import leagueModeKultBg from "@/assets/league/mode-kult-bg.png";
-import leagueModePolymarketBg from "@/assets/league/mode-polymarket-bg.png";
+import leagueModeKultBg from "@/assets/leagueImg.png";
+import leagueModePolymarketBg from "@/assets/polymarketImg.png";
 import footballSportImg from "@/assets/football.png";
 import f1SportImg from "@/assets/f1/f1-car-hero.jpg";
 
@@ -317,7 +317,7 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   const imgClass =
-    "pointer-events-none absolute right-0 top-1/2 z-0 h-[70%] w-[32%] max-w-[120px] -translate-y-1/2 object-contain object-right brightness-115 contrast-115 saturate-125 sm:right-3 sm:h-[84%] sm:w-[36%] sm:max-w-none";
+    "pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-right";
 
   return (
     <div className="mb-3 grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3" data-tour="league-mode-tabs">
@@ -332,11 +332,11 @@ function LeagueModeTabs({
       >
         <img src={leagueModeKultBg} alt="" aria-hidden className={imgClass} />
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080d12_0%,#080d12_58%,rgba(8,13,18,0.55)_78%,transparent_100%)]"
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080d12_0%,#080d12_42%,rgba(8,13,18,0.72)_62%,rgba(8,13,18,0.25)_100%)]"
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[30%] sm:pr-[34%]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <span className="text-base leading-none text-emerald-300 sm:text-lg">♜</span>
             <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">
@@ -368,11 +368,11 @@ function LeagueModeTabs({
       >
         <img src={leagueModePolymarketBg} alt="" aria-hidden className={imgClass} />
         <div
-          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080b14_0%,#080b14_58%,rgba(8,11,20,0.55)_78%,transparent_100%)]"
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,#080b14_0%,#080b14_42%,rgba(8,11,20,0.72)_62%,rgba(8,11,20,0.25)_100%)]"
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[30%] sm:pr-[34%]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <PolymarketLogo className="h-4 w-auto text-[#7d97ff] sm:h-6" />
             <span className="rounded-full border border-amber-400/30 bg-amber-400/15 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-amber-200 sm:px-2 sm:text-[9px]">
