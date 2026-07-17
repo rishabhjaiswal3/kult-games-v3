@@ -16,6 +16,7 @@ import formula1Video from "@/assets/formula1.mp4";
 import kultLogo from "@/assets/Kult Logo.png";
 import f1CarHero from "@/assets/f1/f1-car-hero.jpg";
 import f1CarTransparent from "@/assets/f1/f1-car-transparent.png";
+import f1LeagueBannerBg from "@/assets/f1/f1-league-banner-bg.jpg";
 import assassinCard from "@/assets/f1/agent-cards/assassin.jpg";
 import berserkerCard from "@/assets/f1/agent-cards/berserker.jpg";
 import defenderCard from "@/assets/f1/agent-cards/defender.jpg";
@@ -198,19 +199,104 @@ function LeagueEventBanner({ weekend }: { weekend: F1GrandPrixWeekend | null }) 
 
   return (
     <section className="relative overflow-hidden lg:col-span-12">
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_40%,rgba(139,92,246,0.16),transparent_55%)]" />
-        <div className="absolute -right-10 top-1/3 h-56 w-56 rounded-full bg-violet-600/10 blur-3xl" />
+      {/* ── Mobile / tablet: stacked visual hero ── */}
+      <div className="lg:hidden">
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1]">
+          {/* Hero visual */}
+          <div className="relative h-[200px] overflow-hidden sm:h-[240px] md:h-[280px]">
+            <img
+              src={f1LeagueBannerBg}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-[70%_center] brightness-110"
+            />
+            <img
+              src={f1CarTransparent}
+              alt=""
+              className="absolute bottom-[-8%] left-1/2 z-10 w-[108%] max-w-none -translate-x-1/2 select-none drop-shadow-[0_12px_32px_rgba(154,53,255,0.55)] sm:w-[95%] md:w-[85%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#05050a] via-[#05050a]/35 to-transparent" />
+            <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/35 bg-emerald-500/20 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-[0.14em] text-emerald-300 backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                Live
+              </span>
+              <span className="font-tech text-[9px] font-black uppercase tracking-[0.16em] text-white/70">
+                F1 League
+              </span>
+            </div>
+          </div>
+
+          {/* Copy + CTA */}
+          <div className="relative space-y-3 bg-[#05050a] px-4 pb-4 pt-5 sm:px-5 sm:pb-5 sm:pt-6">
+            <img
+              src={kultLogo}
+              alt="Kult"
+              className="mx-auto h-9 w-auto object-contain sm:h-10"
+            />
+
+            <div className="text-center">
+              <p className="font-tech text-[10px] font-bold uppercase tracking-[0.22em] text-[#c084fc]">
+                Round · Spa
+              </p>
+              <h2 className="mt-1 font-tech text-[2.35rem] font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
+                Belgium
+              </h2>
+              <p className="mt-1.5 font-tech text-xl font-black uppercase italic tracking-wide text-[#d8b4fe] sm:text-2xl">
+                Grand Prix <span className="not-italic text-white">2026</span>
+              </p>
+              <p className="mt-2 font-tech text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 sm:text-[11px]">
+                Circuit de Spa-Francorchamps
+              </p>
+              <p className="mx-auto mt-2.5 max-w-sm text-[12px] leading-snug text-white/55 sm:text-[13px]">
+                Elite AI agents. Your picks. Beat the field on the world&apos;s
+                hardest circuit.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="btn-eye group relative flex w-full items-center justify-between gap-3 overflow-hidden rounded-lg px-4 py-3.5 text-left"
+            >
+              <span className="relative z-[1]">
+                <span className="block font-tech text-[13px] font-bold uppercase tracking-[0.12em] text-white">
+                  Pick your AI team
+                </span>
+                <span className="mt-0.5 block font-tech text-[9px] font-medium uppercase tracking-[0.16em] text-white/80">
+                  Compete · Predict · Win
+                </span>
+              </span>
+              <span className="relative z-[1] grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/20 bg-white/10">
+                <ChevronRight className="h-4 w-4 text-white" />
+              </span>
+            </button>
+
+            {/* Agents — horizontal scroll */}
+            <div>
+              <p className="mb-2 font-tech text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+                AI agents
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {BANNER_AGENTS.map((agent) => (
+                  <BannerAgentCard key={agent.name} agent={agent} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 35% left / 65% right */}
-      <div className="relative z-10 grid grid-cols-1 items-end gap-5 py-2 lg:grid-cols-[7fr_13fr] lg:gap-6">
-        {/* Left 35% — copy from event promo; no figures/prices/players */}
-        <div className="relative z-20 flex min-w-0 flex-col justify-end gap-4 pb-1 lg:pr-3">
+      {/* ── Desktop: 50/50 at 1024–1200, then 35/65 ── */}
+      <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_40%,rgba(154,53,255,0.14),transparent_55%)]" />
+        <div className="absolute -right-10 top-1/3 h-56 w-56 rounded-full bg-[#9a35ff]/10 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 hidden items-end gap-5 py-2 lg:grid lg:grid-cols-2 min-[1200px]:grid-cols-[7fr_13fr] min-[1200px]:gap-6">
+        <div className="relative z-20 flex min-w-0 flex-col justify-end gap-4 pb-1 pr-2 min-[1200px]:pr-3">
           <img
             src={kultLogo}
             alt="Kult"
-            className="h-11 w-auto object-contain object-left sm:h-12"
+            className="h-12 w-auto object-contain object-left"
           />
 
           <div>
@@ -232,81 +318,119 @@ function LeagueEventBanner({ weekend }: { weekend: F1GrandPrixWeekend | null }) 
             <p className="mt-2 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
               {circuitName}
             </p>
-            <p className="mt-3 whitespace-nowrap text-[11px] leading-snug text-white/55 sm:text-[12px]">
+            <p className="mt-3 text-[12px] leading-snug text-white/55">
               Elite AI agents compete on the world&apos;s most challenging circuit.
             </p>
-            <p className="mt-1 text-[12px] leading-snug text-white/55 sm:text-[13px]">
+            <p className="mt-1 text-[13px] leading-snug text-white/55">
               Build your team. Make your picks. Beat the AI. Win rewards.
             </p>
           </div>
 
           <button
             type="button"
-            className="group inline-flex w-full max-w-sm items-center justify-between gap-4 rounded-xl border border-violet-400/30 bg-gradient-to-r from-violet-600 to-blue-500 px-5 py-3.5 text-left shadow-[0_8px_28px_rgba(109,40,217,0.35)] transition hover:border-violet-300/50 hover:brightness-110 sm:w-auto"
+            className="btn-eye group relative inline-flex w-full max-w-sm items-center justify-between gap-4 overflow-hidden rounded-lg px-6 py-4 text-left"
           >
-            <span>
-              <span className="block font-tech text-[12px] font-bold uppercase tracking-wider text-white">
+            <span className="relative z-[1]">
+              <span className="block font-tech text-[15px] font-bold uppercase tracking-[0.14em] text-white">
                 Pick your AI team
               </span>
-              <span className="mt-0.5 block font-tech text-[9px] font-medium uppercase tracking-[0.16em] text-white/75">
+              <span className="mt-1 block font-tech text-[11px] font-medium uppercase tracking-[0.18em] text-white/85">
                 Compete. Predict. Win.
               </span>
             </span>
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/15 transition group-hover:bg-white/25">
-              <ChevronRight className="h-4 w-4 text-white" />
+            <span className="relative z-[1] grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/20 bg-white/10 transition group-hover:bg-white/20">
+              <ChevronRight className="h-5 w-5 text-white" />
             </span>
           </button>
         </div>
 
-        {/* Right 65% — car image + agents row below */}
         <div className="relative flex min-w-0 flex-col gap-3">
-          <div className="relative flex min-h-[140px] items-end justify-center sm:min-h-[180px] lg:min-h-[200px]">
-            <div className="pointer-events-none absolute bottom-2 h-16 w-[70%] rounded-full bg-violet-500/25 blur-3xl" />
+          <div className="relative flex min-h-[180px] items-end justify-center min-[1200px]:min-h-[200px]">
+            <div className="pointer-events-none absolute bottom-2 h-16 w-[70%] rounded-full bg-[#9a35ff]/25 blur-3xl" />
             <img
               src={f1CarTransparent}
               alt=""
-              className="relative z-10 w-full max-w-none select-none drop-shadow-[0_16px_40px_rgba(124,58,237,0.35)]"
+              className="relative z-10 w-full max-w-none select-none drop-shadow-[0_16px_40px_rgba(154,53,255,0.35)]"
             />
           </div>
 
-          <div className="relative z-20 grid w-full grid-cols-6 gap-1.5 sm:gap-2">
-            {BANNER_AGENTS.map((agent) => {
-              const Icon = agent.Icon;
-              return (
-                <div
-                  key={agent.name}
-                  className="group relative min-w-0 overflow-hidden rounded-xl border bg-black/30 shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition hover:-translate-y-1"
-                  style={{ borderColor: `${agent.accent}66` }}
-                  title={`${agent.name} · ${agent.role}`}
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden sm:aspect-[2/3]">
-                    <img
-                      src={AGENT_CARDS[agent.name] ?? AGENT_STILLS[agent.name]}
-                      alt={agent.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover object-top"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    <div className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-md bg-black/55 sm:h-6 sm:w-6">
-                      <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" style={{ color: agent.accent }} />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 px-1 pb-1.5 sm:px-1.5 sm:pb-2">
-                      <p className="truncate font-tech text-[8px] font-black uppercase leading-tight text-white sm:text-[10px]">
-                        {agent.name}
-                      </p>
-                      <p className="mt-0.5 hidden truncate font-mono text-[8px] uppercase tracking-wider text-white/55 sm:block">
-                        {agent.role}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="relative z-20 ml-auto grid w-[min(100%,260px)] grid-cols-3 gap-1.5 min-[1200px]:ml-0 min-[1200px]:w-full min-[1200px]:max-w-none min-[1200px]:grid-cols-6 min-[1200px]:gap-2">
+            {BANNER_AGENTS.map((agent) => (
+              <BannerAgentCard key={agent.name} agent={agent} compact />
+            ))}
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function BannerAgentCard({
+  agent,
+  className,
+  compact = false,
+}: {
+  agent: (typeof BANNER_AGENTS)[number];
+  className?: string;
+  compact?: boolean;
+}) {
+  const Icon = agent.Icon;
+  return (
+    <div
+      className={cn(
+        "group relative min-w-0 overflow-hidden rounded-lg border bg-black/30 shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition hover:-translate-y-1 min-[1200px]:rounded-xl",
+        className,
+      )}
+      style={{ borderColor: `${agent.accent}66` }}
+      title={`${agent.name} · ${agent.role}`}
+    >
+      <div
+        className={cn(
+          "relative w-full overflow-hidden",
+          compact
+            ? "aspect-[3/4] min-[1200px]:aspect-[2/3]"
+            : "aspect-[3/4] sm:aspect-[2/3] lg:aspect-[2/3]",
+        )}
+      >
+        <img
+          src={AGENT_CARDS[agent.name] ?? AGENT_STILLS[agent.name]}
+          alt={agent.name}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div
+          className={cn(
+            "absolute grid place-items-center rounded-md bg-black/55",
+            compact ? "right-0.5 top-0.5 h-4 w-4 min-[1200px]:right-1 min-[1200px]:top-1 min-[1200px]:h-5 min-[1200px]:w-5" : "right-1 top-1 h-5 w-5",
+          )}
+        >
+          <Icon
+            className={cn(compact ? "h-2 w-2 min-[1200px]:h-2.5 min-[1200px]:w-2.5" : "h-2.5 w-2.5")}
+            style={{ color: agent.accent }}
+          />
+        </div>
+        <div className={cn("absolute inset-x-0 bottom-0", compact ? "px-0.5 pb-1 min-[1200px]:px-1.5 min-[1200px]:pb-2" : "px-1 pb-1.5 sm:px-1.5 sm:pb-2")}>
+          <p
+            className={cn(
+              "truncate font-tech font-black uppercase leading-tight text-white",
+              compact ? "text-[7px] min-[1200px]:text-[10px]" : "text-[8px] sm:text-[10px]",
+            )}
+          >
+            {agent.name}
+          </p>
+          <p
+            className={cn(
+              "mt-0.5 truncate font-mono uppercase tracking-wider text-white/55",
+              compact ? "text-[6px] min-[1200px]:text-[8px]" : "text-[7px] sm:text-[8px]",
+            )}
+          >
+            {agent.role}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -665,25 +789,29 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
   );
 }
 
-function InsightsSection() {
+function InsightsSection({
+  columnsClassName = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+}: {
+  columnsClassName?: string;
+}) {
   return (
-    <section>
+    <section className="w-full">
       <div className="mb-3">
         <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">AI intelligence insights</h3>
         <p className="mt-0.5 text-[11px] text-white/45">How agents are performing across key metrics</p>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className={cn("grid w-full gap-3", columnsClassName)}>
         {INSIGHTS.map((item) => (
-          <article key={item.label} className="overflow-hidden rounded-xl border border-white/10 bg-[#0a0b12]">
-            <div className="flex items-start gap-3 p-3 pb-2">
+          <article key={item.label} className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-[#0a0b12]">
+            <div className="flex items-start gap-2.5 p-3 pb-2">
               <AgentAvatar name={item.agent} size="lg" glow={item.color} />
-              <div className="min-w-0">
-                <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">{item.label}</p>
-                <p className="font-tech text-sm font-black text-white">{item.name}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-mono text-[8px] uppercase tracking-wider text-white/40">{item.label}</p>
+                <p className="truncate font-tech text-sm font-black text-white">{item.name}</p>
                 <p className="mt-0.5 font-tech text-lg font-black" style={{ color: item.color }}>
                   {item.metric}
                 </p>
-                <p className="text-[10px] text-white/45">{item.sub}</p>
+                <p className="truncate text-[10px] text-white/45">{item.sub}</p>
               </div>
             </div>
             <Sparkline points={[...item.spark]} color={item.color} className="h-12" />
@@ -699,15 +827,13 @@ function DriverLeaderboardSection({ drivers, isLoading, onSelectDriver }: { driv
     () => [...drivers].filter((d) => d.standing).sort((a, b) => (a.standing!.position - b.standing!.position)),
     [drivers],
   );
-  const left = ranked.slice(0, Math.ceil(ranked.length / 2));
-  const right = ranked.slice(Math.ceil(ranked.length / 2));
 
   const Row = ({ driver }: { driver: F1Driver }) => (
     <li>
       <button
         type="button"
         onClick={() => onSelectDriver(driver.id)}
-        className="grid w-full grid-cols-[2rem_minmax(0,1.4fr)_4.5rem_3.5rem] items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2.5 text-left transition hover:border-violet-400/30 sm:grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4rem]"
+        className="grid w-full grid-cols-[2rem_minmax(0,1.4fr)_4.5rem_3.5rem] items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2.5 text-left transition hover:border-violet-400/30 sm:grid-cols-[2.25rem_minmax(0,1.5fr)_minmax(0,1fr)_4.5rem_3.5rem]"
       >
         <span className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-black/40 font-tech text-xs font-black text-white/60">
           {driver.standing?.position}
@@ -736,30 +862,19 @@ function DriverLeaderboardSection({ drivers, isLoading, onSelectDriver }: { driv
           <p className="mt-0.5 text-[11px] text-white/45">Real driver standings · tap for an AI prediction</p>
         </div>
       </div>
-      <div className="mb-2 hidden grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4rem] gap-2 px-2.5 font-mono text-[9px] uppercase tracking-wider text-white/35 sm:grid">
-        <span>Rank</span>
-        <span>Driver</span>
-        <span>Team</span>
-        <span className="text-right">Points</span>
-        <span className="text-right">Wins</span>
-      </div>
+
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid h-[360px] grid-cols-1 gap-2 overflow-hidden md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="h-14 animate-pulse rounded-xl border border-white/8 bg-white/[0.03]" />
           ))}
         </div>
       ) : ranked.length === 0 ? (
         <p className="font-mono text-xs text-white/40">Standings not synced yet — trigger POST /v1/f1/sync.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <ul className="space-y-2">
-            {left.map((driver) => (
-              <Row key={driver.id} driver={driver} />
-            ))}
-          </ul>
-          <ul className="space-y-2 border-white/8 lg:border-l lg:pl-3">
-            {right.map((driver) => (
+        <div className="h-[360px] overflow-y-auto pr-1 scrollbar-market sm:h-[400px]">
+          <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-3 lg:grid-cols-3">
+            {ranked.map((driver) => (
               <Row key={driver.id} driver={driver} />
             ))}
           </ul>
@@ -839,7 +954,7 @@ function DashboardSidebar() {
             Live race feed
           </p>
         </div>
-        <ul className="max-h-[280px] space-y-0 overflow-y-auto pr-0.5 scrollbar-market">
+        <ul className="max-h-[235px] space-y-0 overflow-y-auto pr-0.5 scrollbar-market">
           {FEED.map((item) => (
             <li key={`${item.ago}-${item.text}`} className="flex items-start gap-2.5 border-b border-white/6 py-2.5 last:border-0">
               <span className="w-12 shrink-0 pt-1 font-mono text-[9px] text-white/35">{item.ago}</span>
@@ -886,7 +1001,7 @@ function DashboardSidebar() {
       </div>
 
 
-      <div className="relative overflow-hidden rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-950/80 via-[#12081a] to-[#080910] p-4">
+      {/* <div className="relative overflow-hidden rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-950/80 via-[#12081a] to-[#080910] p-4">
         <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full bg-violet-500/20 blur-2xl" />
         <Box className="mb-2 h-8 w-8 text-violet-300" />
         <p className="font-tech text-sm font-black uppercase tracking-wide text-white">Ready to dominate?</p>
@@ -897,7 +1012,7 @@ function DashboardSidebar() {
         >
           Build your team <ChevronRight className="h-3.5 w-3.5" />
         </button>
-      </div>
+      </div> */}
     </aside>
   );
 }
@@ -925,12 +1040,23 @@ export function Formula1Board() {
       <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 xl:col-span-9">
         <HeroSection weekend={weekend ?? null} isLoading={weekendLoading} />
         <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
-        <InsightsSection />
-        <DriverLeaderboardSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
+        {/* < lg: stacked · ≥1280: sit beside sidebar */}
+        <div className="lg:hidden xl:block">
+          <InsightsSection columnsClassName="grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4" />
+        </div>
       </div>
 
       <div className="min-w-0 lg:col-span-4 xl:col-span-3">
         <DashboardSidebar />
+      </div>
+
+      {/* 1024–1279 only: full-width 4-up row */}
+      <div className="hidden min-w-0 w-full lg:col-span-12 lg:block xl:hidden">
+        <InsightsSection columnsClassName="grid-cols-4" />
+      </div>
+
+      <div className="min-w-0 lg:col-span-12">
+        <DriverLeaderboardSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
       </div>
 
       <QuestionsSection />
