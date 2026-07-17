@@ -69,10 +69,19 @@ export interface F1Driver {
   standing?: F1DriverStanding | null;
 }
 
+export type F1PredictionMarket = "WINNER" | "PODIUM" | "FASTEST_LAP";
+
+export const F1_PREDICTION_MARKETS: { key: F1PredictionMarket; label: string; question: string }[] = [
+  { key: "WINNER", label: "Race Winner", question: "Who wins the race?" },
+  { key: "PODIUM", label: "Podium", question: "Who finishes on the podium (top 3)?" },
+  { key: "FASTEST_LAP", label: "Fastest Lap", question: "Who sets the fastest lap?" },
+];
+
 export interface F1Prediction {
   id: string;
   raceId: string;
   agentId: string;
+  market: F1PredictionMarket;
   predictedDriverId: string;
   reasoning: string | null;
   predictedDriver?: F1Driver;
@@ -103,17 +112,19 @@ export const f1Api = {
     return data.prediction;
   },
 
-  makePick: async (raceId: string, agentId: string, driverId: string, reasoning?: string): Promise<F1Prediction> => {
+  makePick: async (raceId: string, agentId: string, driverId: string, market: F1PredictionMarket = "WINNER", reasoning?: string): Promise<F1Prediction> => {
     const { data } = await http().post<{ pick: F1Prediction }>(`/v1/f1/races/${raceId}/pick`, {
       agentId,
       driverId,
+      market,
       reasoning,
     });
     return data.pick;
   },
 
-  getPick: async (raceId: string, agentId: string): Promise<F1Prediction | null> => {
-    const { data } = await http().get<{ pick: F1Prediction | null }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
-    return data.pick;
+  /** All of an agent's picks for a race -- one per market (Winner/Podium/Fastest Lap). */
+  getPicks: async (raceId: string, agentId: string): Promise<F1Prediction[]> => {
+    const { data } = await http().get<{ picks: F1Prediction[] }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
+    return data.picks ?? [];
   },
 };

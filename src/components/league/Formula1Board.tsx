@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Crosshair,
   Headphones,
+  Loader2,
   Shield,
   Sparkles,
   Zap,
@@ -30,8 +31,10 @@ import supportStill from "@/assets/f1/agent-stills/support.jpg";
 import tacticianStill from "@/assets/f1/agent-stills/tactician.jpg";
 import { LEAGUE_ARENA_AGENTS } from "@/constants/leagueAgents";
 import { cn } from "@/lib/utils";
-import { f1Api, type F1Driver, type F1GrandPrixWeekend, type F1RaceSession } from "@/api/f1Api";
+import { f1Api, F1_PREDICTION_MARKETS, type F1Driver, type F1GrandPrixWeekend, type F1PredictionMarket, type F1RaceSession } from "@/api/f1Api";
 import { F1DriverModal } from "@/components/f1/F1DriverModal";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AGENT_STILLS: Record<string, string> = {
   HYBRID: hybridStill,
@@ -190,7 +193,7 @@ function sessionShortLabel(sessionType: string): string {
   return sessionType;
 }
 
-function LeagueEventBanner({ weekend }: { weekend: F1GrandPrixWeekend | null }) {
+function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeekend | null; onPickClick: () => void }) {
   const raceDate = weekend ? new Date(weekend.race.startsAt) : null;
   const grandPrixName = weekend?.race.grandPrixName?.replace(/\s*Grand Prix\s*/i, "") ?? "Belgium";
   const circuitName = weekend?.race.circuitName ?? "Circuit de Spa-Francorchamps";
@@ -242,6 +245,7 @@ function LeagueEventBanner({ weekend }: { weekend: F1GrandPrixWeekend | null }) 
 
           <button
             type="button"
+            onClick={onPickClick}
             className="group inline-flex w-full max-w-sm items-center justify-between gap-4 rounded-xl border border-violet-400/30 bg-gradient-to-r from-violet-600 to-blue-500 px-5 py-3.5 text-left shadow-[0_8px_28px_rgba(109,40,217,0.35)] transition hover:border-violet-300/50 hover:brightness-110 sm:w-auto"
           >
             <span>
@@ -471,7 +475,7 @@ function QuestionsSection() {
   );
 }
 
-function HeroSection({ weekend, isLoading }: { weekend: F1GrandPrixWeekend | null; isLoading: boolean }) {
+function HeroSection({ weekend, isLoading, onPickClick }: { weekend: F1GrandPrixWeekend | null; isLoading: boolean; onPickClick: () => void }) {
   const nextSession = useMemo(() => {
     if (!weekend) return null;
     const now = Date.now();
@@ -519,6 +523,7 @@ function HeroSection({ weekend, isLoading }: { weekend: F1GrandPrixWeekend | nul
           ) : null}
           <button
             type="button"
+            onClick={onPickClick}
             className="rounded-full bg-violet-600 px-4 py-2.5 font-tech text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-violet-500"
           >
             Pick your AI team →
@@ -571,6 +576,120 @@ function HeroSection({ weekend, isLoading }: { weekend: F1GrandPrixWeekend | nul
           );
         })}
       </div>
+    </section>
+  );
+}
+
+/**
+ * Real "Make Your Pick" flow -- three separate markets (Winner/Podium/
+ * Fastest Lap), one pick per market per race, backed by F1Prediction
+ * (raceId, agentId, market) unique constraint. The Hero/Banner "Pick your
+ * AI team" buttons were previously decorative (no real pick UI existed
+ * anywhere on this board) -- this is what they now scroll to.
+ */
+function MakeYourPickSection({ raceId, drivers, onOpenDriver }: { raceId: string | undefined; drivers: F1Driver[]; onOpenDriver: (id: string) => void }) {
+  const { isAuthenticated, login } = useAuth();
+  const { data: myAgents } = useMyArenaAgents();
+  const agent = myAgents?.agents?.[0];
+  const queryClient = useQueryClient();
+  const [activeMarket, setActiveMarket] = useState<F1PredictionMarket>("WINNER");
+
+  const { data: picks } = useQuery({
+    queryKey: ["f1", "picks", raceId, agent?.id],
+    queryFn: () => f1Api.getPicks(raceId!, agent!.id),
+    enabled: !!raceId && !!agent?.id,
+  });
+
+  const pickMutation = useMutation({
+    mutationFn: ({ driverId, market }: { driverId: string; market: F1PredictionMarket }) =>
+      f1Api.makePick(raceId!, agent!.id, driverId, market),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["f1", "picks", raceId, agent?.id] });
+    },
+  });
+
+  const pickForMarket = (market: F1PredictionMarket) => picks?.find((p) => p.market === market);
+  const activePick = pickForMarket(activeMarket);
+  const activeQuestion = F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.question;
+
+  return (
+    <section className="rounded-2xl border border-violet-400/25 bg-[radial-gradient(circle_at_0%_0%,rgba(139,92,246,0.1),transparent_55%),#080910] p-3.5 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Make your pick</h3>
+          <p className="mt-0.5 text-[11px] text-white/45">
+            Tap a driver below for an AI prediction first, then lock in your pick for each market.
+          </p>
+        </div>
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {F1_PREDICTION_MARKETS.map((m) => {
+          const done = !!pickForMarket(m.key);
+          return (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => setActiveMarket(m.key)}
+              className={cn(
+                "rounded-lg border px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider transition",
+                activeMarket === m.key
+                  ? "border-violet-400/50 bg-violet-500/15 text-white"
+                  : "border-white/10 bg-white/[0.03] text-white/60 hover:border-violet-400/30",
+              )}
+            >
+              {m.label} {done ? "✓" : ""}
+            </button>
+          );
+        })}
+      </div>
+
+      {!isAuthenticated ? (
+        <button
+          type="button"
+          onClick={login}
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-violet-400/40 hover:text-white"
+        >
+          Connect your wallet to make a pick
+        </button>
+      ) : !agent ? (
+        <p className="font-mono text-xs text-white/40">Mint an agent first to make a pick.</p>
+      ) : !raceId ? (
+        <p className="font-mono text-xs text-white/40">Race not synced yet.</p>
+      ) : activePick ? (
+        <p className="font-mono text-xs text-white/70">
+          <span className="font-bold text-emerald-300">{agent.name}</span> picked{" "}
+          <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
+        </p>
+      ) : (
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">{activeQuestion}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {drivers.slice(0, 12).map((d) => (
+              <div key={d.id} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={pickMutation.isPending}
+                  onClick={() => pickMutation.mutate({ driverId: d.id, market: activeMarket })}
+                  className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-violet-400/40 hover:text-white disabled:opacity-40"
+                >
+                  {pickMutation.isPending && pickMutation.variables?.driverId === d.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                  {d.abbr ?? d.name}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenDriver(d.id)}
+                  title={`AI prediction for ${d.name}`}
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-white/40 transition hover:border-violet-400/40 hover:text-violet-300"
+                >
+                  <Sparkles className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+          {pickMutation.isError ? <p className="mt-2 text-xs text-rose-400">Couldn't lock in that pick — try again.</p> : null}
+        </div>
+      )}
     </section>
   );
 }
@@ -904,6 +1023,8 @@ function DashboardSidebar() {
 
 export function Formula1Board() {
   const [openDriverId, setOpenDriverId] = useState<string | null>(null);
+  const pickSectionRef = useRef<HTMLDivElement>(null);
+  const scrollToPick = () => pickSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const { data: weekend, isLoading: weekendLoading } = useQuery({
     queryKey: ["f1", "grand-prix", "belgium"],
@@ -920,10 +1041,13 @@ export function Formula1Board() {
 
   return (
     <div className="relative grid w-full min-w-0 grid-cols-1 items-start gap-3 lg:grid-cols-12 lg:gap-4">
-      <LeagueEventBanner weekend={weekend ?? null} />
+      <LeagueEventBanner weekend={weekend ?? null} onPickClick={scrollToPick} />
 
       <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 xl:col-span-9">
-        <HeroSection weekend={weekend ?? null} isLoading={weekendLoading} />
+        <HeroSection weekend={weekend ?? null} isLoading={weekendLoading} onPickClick={scrollToPick} />
+        <div ref={pickSectionRef}>
+          <MakeYourPickSection raceId={weekend?.race.id} drivers={drivers ?? []} onOpenDriver={setOpenDriverId} />
+        </div>
         <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
         <InsightsSection />
         <DriverLeaderboardSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
