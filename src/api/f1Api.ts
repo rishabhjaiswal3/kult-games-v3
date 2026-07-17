@@ -127,4 +127,13 @@ export const f1Api = {
     const { data } = await http().get<{ picks: F1Prediction[] }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
     return data.picks ?? [];
   },
+
+  /** "Let AI Predict" -- the AI names the driver itself and the pick is saved immediately. */
+  predictPick: async (raceId: string, agentId: string, market: F1PredictionMarket = "WINNER"): Promise<{ pick: F1Prediction; source: "AI" | "FALLBACK" }> => {
+    const { data } = await http().post<{ pick: F1Prediction; source: "AI" | "FALLBACK" }>(`/v1/f1/races/${raceId}/predict-pick`, {
+      agentId,
+      market,
+    });
+    return data;
+  },
 };

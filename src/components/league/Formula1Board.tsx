@@ -711,7 +711,7 @@ function HeroSection({ weekend, isLoading, onPickClick }: { weekend: F1GrandPrix
  * AI team" buttons were previously decorative (no real pick UI existed
  * anywhere on this board) -- this is what they now scroll to.
  */
-function MakeYourPickSection({ raceId, drivers, onOpenDriver }: { raceId: string | undefined; drivers: F1Driver[]; onOpenDriver: (id: string) => void }) {
+function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefined; onOpenDriver: (id: string) => void }) {
   const { isAuthenticated, login } = useAuth();
   const { data: myAgents } = useMyArenaAgents();
   const agent = myAgents?.agents?.[0];
@@ -724,9 +724,8 @@ function MakeYourPickSection({ raceId, drivers, onOpenDriver }: { raceId: string
     enabled: !!raceId && !!agent?.id,
   });
 
-  const pickMutation = useMutation({
-    mutationFn: ({ driverId, market }: { driverId: string; market: F1PredictionMarket }) =>
-      f1Api.makePick(raceId!, agent!.id, driverId, market),
+  const predictMutation = useMutation({
+    mutationFn: (market: F1PredictionMarket) => f1Api.predictPick(raceId!, agent!.id, market),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["f1", "picks", raceId, agent?.id] });
     },
@@ -742,7 +741,7 @@ function MakeYourPickSection({ raceId, drivers, onOpenDriver }: { raceId: string
         <div>
           <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Make your pick</h3>
           <p className="mt-0.5 text-[11px] text-white/45">
-            Tap a driver below for an AI prediction first, then lock in your pick for each market.
+            Pick a market below and let your AI name the driver, grounded in real current-season standings.
           </p>
         </div>
       </div>
@@ -781,37 +780,35 @@ function MakeYourPickSection({ raceId, drivers, onOpenDriver }: { raceId: string
       ) : !raceId ? (
         <p className="font-mono text-xs text-white/40">Race not synced yet.</p>
       ) : activePick ? (
-        <p className="font-mono text-xs text-white/70">
-          <span className="font-bold text-emerald-300">{agent.name}</span> picked{" "}
-          <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
-        </p>
+        <div>
+          <p className="font-mono text-xs text-white/70">
+            <span className="font-bold text-emerald-300">{agent.name}</span>&apos;s AI predicted{" "}
+            <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
+          </p>
+          {activePick.reasoning ? <p className="mt-1.5 font-mono text-[11px] italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
+          {activePick.predictedDriverId ? (
+            <button
+              type="button"
+              onClick={() => onOpenDriver(activePick.predictedDriverId)}
+              className="mt-2 font-tech text-[10px] font-bold uppercase tracking-wider text-violet-300 hover:text-violet-200"
+            >
+              View driver &rarr;
+            </button>
+          ) : null}
+        </div>
       ) : (
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">{activeQuestion}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {drivers.slice(0, 12).map((d) => (
-              <div key={d.id} className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={pickMutation.isPending}
-                  onClick={() => pickMutation.mutate({ driverId: d.id, market: activeMarket })}
-                  className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1.5 font-tech text-[10px] font-bold uppercase text-white/70 transition hover:border-violet-400/40 hover:text-white disabled:opacity-40"
-                >
-                  {pickMutation.isPending && pickMutation.variables?.driverId === d.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                  {d.abbr ?? d.name}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onOpenDriver(d.id)}
-                  title={`AI prediction for ${d.name}`}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-white/40 transition hover:border-violet-400/40 hover:text-violet-300"
-                >
-                  <Sparkles className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-          {pickMutation.isError ? <p className="mt-2 text-xs text-rose-400">Couldn't lock in that pick — try again.</p> : null}
+          <button
+            type="button"
+            disabled={predictMutation.isPending}
+            onClick={() => predictMutation.mutate(activeMarket)}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2.5 font-tech text-[11px] font-black uppercase tracking-wider text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-50"
+          >
+            {predictMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {predictMutation.isPending ? "AI is deciding…" : "Let AI predict"}
+          </button>
+          {predictMutation.isError ? <p className="mt-2 text-xs text-rose-400">AI prediction failed — try again.</p> : null}
         </div>
       )}
     </section>
@@ -1161,7 +1158,7 @@ export function Formula1Board() {
       <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 xl:col-span-9">
         <HeroSection weekend={weekend ?? null} isLoading={weekendLoading} onPickClick={scrollToPick} />
         <div ref={pickSectionRef}>
-          <MakeYourPickSection raceId={weekend?.race.id} drivers={drivers ?? []} onOpenDriver={setOpenDriverId} />
+          <MakeYourPickSection raceId={weekend?.race.id} onOpenDriver={setOpenDriverId} />
         </div>
         <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
         {/* < lg: stacked · ≥1280: sit beside sidebar */}
