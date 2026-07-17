@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -29,6 +30,8 @@ import supportStill from "@/assets/f1/agent-stills/support.jpg";
 import tacticianStill from "@/assets/f1/agent-stills/tactician.jpg";
 import { LEAGUE_ARENA_AGENTS } from "@/constants/leagueAgents";
 import { cn } from "@/lib/utils";
+import { f1Api, type F1Driver, type F1GrandPrixWeekend, type F1RaceSession } from "@/api/f1Api";
+import { F1DriverModal } from "@/components/f1/F1DriverModal";
 
 const AGENT_STILLS: Record<string, string> = {
   HYBRID: hybridStill,
@@ -57,6 +60,9 @@ const BANNER_AGENTS = [
   { name: "BERSERKER", role: "Predictor", accent: "#e5e7eb", Icon: Zap },
 ] as const;
 
+/** Cycled per driver card since real drivers don't carry an "accent color" from the API. */
+const DRIVER_ACCENTS = ["#a855f7", "#3b82f6", "#ef4444", "#14b8a6", "#f59e0b", "#22d3ee"];
+
 function AgentAvatar({
   name,
   className,
@@ -76,6 +82,19 @@ function AgentAvatar({
       style={glow ? { boxShadow: `0 0 14px ${glow}66` } : undefined}
     >
       <img src={src} alt={name} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
+    </div>
+  );
+}
+
+function DriverAvatar({ driver, className, size = "md" }: { driver: F1Driver; className?: string; size?: "sm" | "md" | "lg" }) {
+  const sizeClass = size === "sm" ? "h-7 w-7" : size === "lg" ? "h-11 w-11" : "h-9 w-9";
+  return (
+    <div className={cn("shrink-0 overflow-hidden rounded-full border border-white/15 bg-black/40", sizeClass, className)}>
+      {driver.image ? (
+        <img src={driver.image} alt={driver.name} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
+      ) : (
+        <div className="h-full w-full bg-white/5" />
+      )}
     </div>
   );
 }
@@ -137,15 +156,46 @@ function Formula1Background() {
   );
 }
 
-const SESSION_STRIP = [
-  { id: "fp1", label: "Practice 1", status: "done" as const },
-  { id: "fp2", label: "Practice 2", status: "done" as const },
-  { id: "fp3", label: "Practice 3", status: "done" as const },
-  { id: "qual", label: "Qualifying", status: "done" as const },
-  { id: "race", label: "Race", status: "live" as const },
-];
+/** mm:ss-style live countdown to `target`. Re-renders every second while mounted. */
+function useCountdown(target: Date | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!target) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [target]);
 
-function LeagueEventBanner() {
+  if (!target) return null;
+  const diffMs = target.getTime() - now;
+  if (diffMs <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true };
+  const totalSeconds = Math.floor(diffMs / 1000);
+  return {
+    days: Math.floor(totalSeconds / 86400),
+    hours: Math.floor((totalSeconds % 86400) / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+    isPast: false,
+  };
+}
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+/** Short label for a session type, matching the API's raw strings ("1st Practice", "2nd Qualifying", "Race", ...). */
+function sessionShortLabel(sessionType: string): string {
+  if (/practice/i.test(sessionType)) return sessionType.replace(/(\d)\w{2} /, "P$1 ").replace("Practice", "").trim() || sessionType;
+  if (/qualifying/i.test(sessionType)) return "Qualifying";
+  if (/sprint/i.test(sessionType)) return "Sprint";
+  return sessionType;
+}
+
+function LeagueEventBanner({ weekend }: { weekend: F1GrandPrixWeekend | null }) {
+  const raceDate = weekend ? new Date(weekend.race.startsAt) : null;
+  const grandPrixName = weekend?.race.grandPrixName?.replace(/\s*Grand Prix\s*/i, "") ?? "Belgium";
+  const circuitName = weekend?.race.circuitName ?? "Circuit de Spa-Francorchamps";
+  const season = weekend?.race.season ?? new Date().getFullYear();
+
   return (
     <section className="relative overflow-hidden lg:col-span-12">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -174,13 +224,13 @@ function LeagueEventBanner() {
               </span>
             </div>
             <h2 className="font-tech text-4xl font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
-              Belgium
+              {grandPrixName}
             </h2>
             <p className="mt-1.5 font-tech text-2xl font-black uppercase italic tracking-wide text-violet-400 sm:text-3xl">
-              Grand Prix 2026
+              Grand Prix {season}
             </p>
             <p className="mt-2 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
-              Circuit de Spa-Francorchamps
+              {circuitName}
             </p>
             <p className="mt-3 whitespace-nowrap text-[11px] leading-snug text-white/55 sm:text-[12px]">
               Elite AI agents compete on the world&apos;s most challenging circuit.
@@ -260,49 +310,6 @@ function LeagueEventBanner() {
   );
 }
 
-const TOP_AGENTS = [
-  {
-    name: "HYBRID",
-    tag: "Most Selected",
-    accent: "#a855f7",
-    confidence: 92,
-    confidenceDelta: 6,
-    value: "$28.4M",
-    selectedBy: 42,
-    spark: [42, 48, 45, 58, 62, 70, 68, 78, 85, 92],
-  },
-  {
-    name: "DEFENDER",
-    tag: "Best Strategist",
-    accent: "#3b82f6",
-    confidence: 88,
-    confidenceDelta: 4,
-    value: "$24.1M",
-    selectedBy: 38,
-    spark: [55, 52, 60, 58, 64, 70, 72, 80, 84, 88],
-  },
-  {
-    name: "ASSASSIN",
-    tag: "Highest Risk",
-    accent: "#ef4444",
-    confidence: 71,
-    confidenceDelta: -2,
-    value: "$19.8M",
-    selectedBy: 27,
-    spark: [30, 48, 35, 62, 40, 70, 45, 68, 55, 71],
-  },
-  {
-    name: "TACTICIAN",
-    tag: "Most Consistent",
-    accent: "#14b8a6",
-    confidence: 90,
-    confidenceDelta: 3,
-    value: "$22.6M",
-    selectedBy: 34,
-    spark: [70, 72, 74, 76, 78, 80, 82, 85, 88, 90],
-  },
-] as const;
-
 const INSIGHTS = [
   {
     label: "Highest valuation gain",
@@ -342,15 +349,6 @@ const INSIGHTS = [
   },
 ] as const;
 
-const LEADERBOARD = [
-  { rank: 1, name: "HYBRID", callsign: "NOVA-11", cost: "$28.4M", selection: "42%", points: "363", trend: 12.4 },
-  { rank: 2, name: "DEFENDER", callsign: "AEGIS-04", cost: "$24.1M", selection: "38%", points: "343", trend: 8.1 },
-  { rank: 3, name: "TACTICIAN", callsign: "ORION-07", cost: "$22.6M", selection: "34%", points: "335", trend: 5.2 },
-  { rank: 4, name: "SUPPORT", callsign: "LYRA-09", cost: "$18.2M", selection: "29%", points: "308", trend: -1.2 },
-  { rank: 5, name: "BERSERKER", callsign: "VOLT-13", cost: "$20.5M", selection: "31%", points: "305", trend: 3.6 },
-  { rank: 6, name: "ASSASSIN", callsign: "NYX-06", cost: "$19.8M", selection: "27%", points: "291", trend: -2.4 },
-] as const;
-
 const FEED = [
   { ago: "1m ago", agent: "HYBRID", text: "Hybrid AI increased confidence on McLaren to 72%", delta: 8 },
   { ago: "2m ago", agent: "DEFENDER", text: "Defender flagged soft tyre deg on sector 2", delta: null },
@@ -365,13 +363,6 @@ const TRENDING = [
   { name: "DEFENDER", pct: 38, delta: 8 },
   { name: "TACTICIAN", pct: 34, delta: -3 },
   { name: "ASSASSIN", pct: 27, delta: 5 },
-] as const;
-
-const COMBOS = [
-  { agents: ["HYBRID", "DEFENDER", "TACTICIAN"] as const, pct: 68 },
-  { agents: ["ASSASSIN", "HYBRID", "SUPPORT"] as const, pct: 54 },
-  { agents: ["DEFENDER", "TACTICIAN", "BERSERKER"] as const, pct: 47 },
-  { agents: ["HYBRID", "ASSASSIN", "TACTICIAN"] as const, pct: 41 },
 ] as const;
 
 const PREDICTIONS = [
@@ -389,6 +380,16 @@ const QUESTIONS = [
   { id: "q5", category: "Points", question: "Will both Ferraris finish in the points?", yes: 71, volume: "$447K", agentName: "SUPPORT", signal: "YES" as const, confidence: 79 },
   { id: "q6", category: "Weather", question: "Will the race start on slicks?", yes: 78, volume: "$203K", agentName: "BERSERKER", signal: "YES" as const, confidence: 91 },
 ];
+
+/**
+ * NOTE: INSIGHTS/FEED/TRENDING/PREDICTIONS/QUESTIONS above are still
+ * placeholder content -- they describe a fantasy "pick an AI agent
+ * archetype" mini-game (confidence %, $ value, selected-by %, live feed
+ * chatter) that has no backing data source anywhere in this codebase, unlike
+ * the real F1 driver data below. Left as-is rather than inventing fake
+ * numbers to fill them; swap in real content here once that game mechanic
+ * has a real backend (or drop these sections).
+ */
 
 function RaceQuestionCard({ question }: { question: (typeof QUESTIONS)[number] }) {
   const noCents = 100 - question.yes;
@@ -470,30 +471,52 @@ function QuestionsSection() {
   );
 }
 
-function HeroSection() {
+function HeroSection({ weekend, isLoading }: { weekend: F1GrandPrixWeekend | null; isLoading: boolean }) {
+  const nextSession = useMemo(() => {
+    if (!weekend) return null;
+    const now = Date.now();
+    return (
+      weekend.sessions.find((s) => s.status !== "COMPLETED" && s.status !== "CANCELLED" && new Date(s.startsAt).getTime() > now) ??
+      weekend.sessions.find((s) => s.status === "LIVE") ??
+      null
+    );
+  }, [weekend]);
+
+  const countdown = useCountdown(nextSession ? new Date(nextSession.startsAt) : null);
+
   return (
     <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#080910]">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/8 px-4 py-3 sm:px-5">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-300">Race weekend · Round 8</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet-300">
+            {isLoading ? "Loading race weekend…" : "Race weekend"}
+          </p>
           <h2 className="mt-0.5 font-tech text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
-            Monaco Grand Prix
+            {weekend?.race.grandPrixName ?? "F1 League"}
           </h2>
+          {nextSession ? (
+            <p className="mt-0.5 font-mono text-[11px] text-white/45">
+              Next: {sessionShortLabel(nextSession.sessionType)} ·{" "}
+              {new Date(nextSession.startsAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex gap-2">
-            {[
-              ["01", "Days"],
-              ["23", "Hrs"],
-              ["36", "Mins"],
-              ["12", "Secs"],
-            ].map(([v, l]) => (
-              <div key={l} className="min-w-[3.25rem] rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-center">
-                <p className="font-tech text-sm font-black text-white">{v}</p>
-                <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">{l}</p>
-              </div>
-            ))}
-          </div>
+          {countdown && !countdown.isPast ? (
+            <div className="flex gap-2">
+              {[
+                [String(countdown.days), "Days"],
+                [pad2(countdown.hours), "Hrs"],
+                [pad2(countdown.minutes), "Mins"],
+                [pad2(countdown.seconds), "Secs"],
+              ].map(([v, l]) => (
+                <div key={l} className="min-w-[3.25rem] rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-center">
+                  <p className="font-tech text-sm font-black text-white">{v}</p>
+                  <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">{l}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <button
             type="button"
             className="rounded-full bg-violet-600 px-4 py-2.5 font-tech text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-violet-500"
@@ -508,113 +531,136 @@ function HeroSection() {
         <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">Featured race</p>
-            <p className="font-tech text-sm font-black uppercase text-white">Monte Carlo · 78 laps</p>
+            <p className="font-tech text-sm font-black uppercase text-white">
+              {weekend?.race.circuitName ?? "TBD"} {weekend?.race.laps ? `· ${weekend.race.laps} laps` : ""}
+            </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-red-200">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
-            Live
-          </span>
+          {nextSession?.status === "LIVE" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-red-200">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
+              Live
+            </span>
+          ) : null}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-1.5 border-t border-white/8 p-2 sm:grid-cols-5 sm:gap-2 sm:p-3">
-        {SESSION_STRIP.map((session) => (
-          <div
-            key={session.id}
-            className={cn(
-              "rounded-lg border px-2.5 py-2 text-center",
-              session.status === "live"
-                ? "border-violet-400/50 bg-violet-500/15"
-                : "border-white/8 bg-white/[0.03]",
-            )}
-          >
-            <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/80">{session.label}</p>
-            {session.status === "live" ? (
-              <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-violet-300">Live</p>
-            ) : (
-              <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-white/35">Done</p>
-            )}
-          </div>
-        ))}
+        {(weekend?.sessions ?? []).map((session) => {
+          const isNext = session.id === nextSession?.id;
+          return (
+            <div
+              key={session.id}
+              className={cn(
+                "rounded-lg border px-2.5 py-2 text-center",
+                isNext || session.status === "LIVE" ? "border-violet-400/50 bg-violet-500/15" : "border-white/8 bg-white/[0.03]",
+              )}
+            >
+              <p className="truncate font-tech text-[10px] font-bold uppercase tracking-wider text-white/80">
+                {sessionShortLabel(session.sessionType)}
+              </p>
+              {session.status === "LIVE" ? (
+                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-violet-300">Live</p>
+              ) : session.status === "COMPLETED" ? (
+                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-white/35">Done</p>
+              ) : (
+                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-300/70">
+                  {new Date(session.startsAt).toLocaleDateString(undefined, { weekday: "short" })}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-function TopAgentsSection() {
+function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1Driver[]; isLoading: boolean; onSelectDriver: (id: string) => void }) {
+  const top = useMemo(
+    () => [...drivers].sort((a, b) => (a.standing?.position ?? 999) - (b.standing?.position ?? 999)).slice(0, 4),
+    [drivers],
+  );
+
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Top AI agents this week</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Updated 2 min ago</p>
+          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Top drivers this season</h3>
+          <p className="mt-0.5 text-[11px] text-white/45">Live standings — tap a driver for an AI prediction</p>
         </div>
-        <button type="button" className="font-tech text-[11px] font-bold uppercase tracking-wider text-violet-300 hover:text-violet-200">
-          View all agents →
-        </button>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {TOP_AGENTS.map((agent) => (
-          <article
-            key={agent.name}
-            className="relative min-h-[280px] overflow-hidden rounded-2xl border bg-[#0a0b12] p-3.5"
-            style={{ borderColor: `${agent.accent}55` }}
-          >
-            <div
-              className="pointer-events-none absolute inset-0 opacity-40"
-              style={{ background: `radial-gradient(circle at 85% 40%, ${agent.accent}33, transparent 55%)` }}
-            />
-            <div className="relative z-10 flex items-start justify-between gap-2">
-              <div>
-                <h4 className="font-tech text-sm font-black uppercase text-white">{agent.name}</h4>
-                <p className="mt-0.5 font-tech text-[10px] font-bold uppercase tracking-wider" style={{ color: agent.accent }}>
-                  {agent.tag}
-                </p>
-              </div>
-              <span className="inline-flex items-center gap-1 rounded-full border border-red-400/35 bg-red-500/15 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-red-200">
-                <span className="h-1 w-1 rounded-full bg-red-400" />
-                Live
-              </span>
-            </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-[280px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]" />
+          ))}
+        </div>
+      ) : top.length === 0 ? (
+        <p className="font-mono text-xs text-white/40">Drivers not synced yet — trigger POST /v1/f1/sync.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {top.map((driver, i) => {
+            const accent = DRIVER_ACCENTS[i % DRIVER_ACCENTS.length];
+            return (
+              <button
+                type="button"
+                key={driver.id}
+                onClick={() => onSelectDriver(driver.id)}
+                className="relative min-h-[280px] overflow-hidden rounded-2xl border bg-[#0a0b12] p-3.5 text-left transition hover:-translate-y-0.5"
+                style={{ borderColor: `${accent}55` }}
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-40"
+                  style={{ background: `radial-gradient(circle at 85% 40%, ${accent}33, transparent 55%)` }}
+                />
+                <div className="relative z-10 flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-tech text-sm font-black uppercase text-white">{driver.abbr ?? driver.name}</h4>
+                    <p className="mt-0.5 font-tech text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                      {driver.currentTeam?.name ?? "Unattached"}
+                    </p>
+                  </div>
+                  {driver.standing ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/40 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/80">
+                      P{driver.standing.position}
+                    </span>
+                  ) : null}
+                </div>
 
-            <div className="relative z-10 mt-4 max-w-[52%] space-y-3">
-              <div>
-                <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Confidence</p>
-                <p className="font-tech text-xl font-black text-white">
-                  {agent.confidence}%
-                  <span className={cn("ml-1.5 text-xs font-bold", agent.confidenceDelta >= 0 ? "text-emerald-400" : "text-rose-400")}>
-                    {agent.confidenceDelta >= 0 ? "↑" : "↓"} {Math.abs(agent.confidenceDelta)}%
-                  </span>
-                </p>
-              </div>
-              <div>
-                <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Value</p>
-                <p className="font-tech text-lg font-black text-white">{agent.value}</p>
-              </div>
-              <div>
-                <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Selected by</p>
-                <p className="font-tech text-lg font-black text-white">
-                  {agent.selectedBy}%
-                  <span className="ml-1 text-[10px] font-medium text-white/40">of players</span>
-                </p>
-              </div>
-            </div>
+                <div className="relative z-10 mt-4 max-w-[52%] space-y-3">
+                  <div>
+                    <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Season points</p>
+                    <p className="font-tech text-xl font-black text-white">{driver.standing?.points ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Wins this season</p>
+                    <p className="font-tech text-lg font-black text-white">{driver.standing?.wins ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Career podiums</p>
+                    <p className="font-tech text-lg font-black text-white">{driver.podiums ?? "—"}</p>
+                  </div>
+                </div>
 
-            <div className="pointer-events-none absolute bottom-0 right-0 h-[78%] w-[58%]">
-              <img
-                src={AGENT_CARDS[agent.name] ?? AGENT_STILLS[agent.name]}
-                alt=""
-                className="h-full w-full object-cover object-[center_15%]"
-                style={{ maskImage: "linear-gradient(to left, black 55%, transparent)", WebkitMaskImage: "linear-gradient(to left, black 55%, transparent)" }}
-              />
-            </div>
+                <div className="pointer-events-none absolute bottom-0 right-0 h-[78%] w-[58%]">
+                  {driver.image ? (
+                    <img
+                      src={driver.image}
+                      alt=""
+                      className="h-full w-full object-cover object-[center_15%]"
+                      style={{ maskImage: "linear-gradient(to left, black 55%, transparent)", WebkitMaskImage: "linear-gradient(to left, black 55%, transparent)" }}
+                    />
+                  ) : null}
+                </div>
 
-            <div className="absolute inset-x-0 bottom-0 z-10 px-1 pb-1">
-              <Sparkline points={[...agent.spark]} color={agent.accent} fill={false} className="h-8 opacity-90" />
-            </div>
-          </article>
-        ))}
-      </div>
+                <div className="absolute inset-x-0 bottom-0 z-10 px-3 pb-2">
+                  <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/60">Tap for AI prediction →</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
@@ -648,35 +694,35 @@ function InsightsSection() {
   );
 }
 
-function LeaderboardSection() {
-  const left = LEADERBOARD.slice(0, 3);
-  const right = LEADERBOARD.slice(3);
+function DriverLeaderboardSection({ drivers, isLoading, onSelectDriver }: { drivers: F1Driver[]; isLoading: boolean; onSelectDriver: (id: string) => void }) {
+  const ranked = useMemo(
+    () => [...drivers].filter((d) => d.standing).sort((a, b) => (a.standing!.position - b.standing!.position)),
+    [drivers],
+  );
+  const left = ranked.slice(0, Math.ceil(ranked.length / 2));
+  const right = ranked.slice(Math.ceil(ranked.length / 2));
 
-  const Row = ({ row }: { row: (typeof LEADERBOARD)[number] }) => (
-    <li className="grid grid-cols-[2rem_minmax(0,1.4fr)_4.5rem_4rem_3.5rem_4.5rem] items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2.5 sm:grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4.5rem_4rem_5rem]">
-      <span className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-black/40 font-tech text-xs font-black text-white/60">
-        {row.rank}
-      </span>
-      <div className="flex min-w-0 items-center gap-2">
-        <AgentAvatar name={row.name} />
-        <div className="min-w-0">
-          <p className="truncate font-tech text-[12px] font-bold uppercase text-white">{row.name}</p>
-          <p className="truncate font-mono text-[10px] text-white/40 sm:hidden">{row.callsign}</p>
-        </div>
-      </div>
-      <p className="hidden truncate font-mono text-[11px] text-white/50 sm:block">{row.callsign}</p>
-      <p className="text-right font-tech text-[11px] font-bold text-white/80">{row.cost}</p>
-      <p className="hidden text-right font-tech text-[11px] font-bold text-white/70 sm:block">{row.selection}</p>
-      <p className="text-right font-tech text-sm font-black text-cyan-300">{row.points}</p>
-      <p
-        className={cn(
-          "hidden items-center justify-end gap-0.5 font-tech text-[11px] font-bold sm:inline-flex",
-          row.trend >= 0 ? "text-emerald-400" : "text-rose-400",
-        )}
+  const Row = ({ driver }: { driver: F1Driver }) => (
+    <li>
+      <button
+        type="button"
+        onClick={() => onSelectDriver(driver.id)}
+        className="grid w-full grid-cols-[2rem_minmax(0,1.4fr)_4.5rem_3.5rem] items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2.5 text-left transition hover:border-violet-400/30 sm:grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4rem]"
       >
-        {row.trend >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-        {Math.abs(row.trend)}%
-      </p>
+        <span className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-black/40 font-tech text-xs font-black text-white/60">
+          {driver.standing?.position}
+        </span>
+        <div className="flex min-w-0 items-center gap-2">
+          <DriverAvatar driver={driver} />
+          <div className="min-w-0">
+            <p className="truncate font-tech text-[12px] font-bold uppercase text-white">{driver.name}</p>
+            <p className="truncate font-mono text-[10px] text-white/40 sm:hidden">{driver.currentTeam?.name ?? "—"}</p>
+          </div>
+        </div>
+        <p className="hidden truncate font-mono text-[11px] text-white/50 sm:block">{driver.currentTeam?.name ?? "—"}</p>
+        <p className="text-right font-tech text-sm font-black text-cyan-300">{driver.standing?.points ?? "—"}</p>
+        <p className="hidden text-right font-tech text-[11px] font-bold text-white/70 sm:block">{driver.standing?.wins ?? 0}W</p>
+      </button>
     </li>
   );
 
@@ -684,31 +730,41 @@ function LeaderboardSection() {
     <section className="rounded-2xl border border-white/10 bg-[#080910] p-3 sm:p-4">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Season 2026 leaderboard</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Agent cards · selection · live form</p>
+          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">
+            Season {ranked[0]?.standing?.season ?? new Date().getFullYear()} standings
+          </h3>
+          <p className="mt-0.5 text-[11px] text-white/45">Real driver standings · tap for an AI prediction</p>
         </div>
       </div>
-      <div className="mb-2 hidden grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4.5rem_4rem_5rem] gap-2 px-2.5 font-mono text-[9px] uppercase tracking-wider text-white/35 sm:grid">
+      <div className="mb-2 hidden grid-cols-[2.25rem_minmax(0,1.5fr)_1fr_4.5rem_4rem] gap-2 px-2.5 font-mono text-[9px] uppercase tracking-wider text-white/35 sm:grid">
         <span>Rank</span>
-        <span>Agent</span>
-        <span>Callsign</span>
-        <span className="text-right">Cost</span>
-        <span className="text-right">Selection %</span>
+        <span>Driver</span>
+        <span>Team</span>
         <span className="text-right">Points</span>
-        <span className="text-right">Trend</span>
+        <span className="text-right">Wins</span>
       </div>
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <ul className="space-y-2">
-          {left.map((row) => (
-            <Row key={row.rank} row={row} />
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-14 animate-pulse rounded-xl border border-white/8 bg-white/[0.03]" />
           ))}
-        </ul>
-        <ul className="space-y-2 border-white/8 lg:border-l lg:pl-3">
-          {right.map((row) => (
-            <Row key={row.rank} row={row} />
-          ))}
-        </ul>
-      </div>
+        </div>
+      ) : ranked.length === 0 ? (
+        <p className="font-mono text-xs text-white/40">Standings not synced yet — trigger POST /v1/f1/sync.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <ul className="space-y-2">
+            {left.map((driver) => (
+              <Row key={driver.id} driver={driver} />
+            ))}
+          </ul>
+          <ul className="space-y-2 border-white/8 lg:border-l lg:pl-3">
+            {right.map((driver) => (
+              <Row key={driver.id} driver={driver} />
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
@@ -782,7 +838,6 @@ function DashboardSidebar() {
             </span>
             Live race feed
           </p>
-          <span className="font-mono text-[10px] text-white/45">Lap 26 / 78</span>
         </div>
         <ul className="max-h-[280px] space-y-0 overflow-y-auto pr-0.5 scrollbar-market">
           {FEED.map((item) => (
@@ -806,9 +861,6 @@ function DashboardSidebar() {
             <p className="font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white">Trending picks</p>
             <p className="text-[10px] text-white/40">What other players are selecting</p>
           </div>
-          <button type="button" className="shrink-0 font-tech text-[10px] font-bold uppercase tracking-wider text-violet-300">
-            View all →
-          </button>
         </div>
         <ul className="space-y-3">
           {TRENDING.map((row, i) => (
@@ -851,15 +903,30 @@ function DashboardSidebar() {
 }
 
 export function Formula1Board() {
+  const [openDriverId, setOpenDriverId] = useState<string | null>(null);
+
+  const { data: weekend, isLoading: weekendLoading } = useQuery({
+    queryKey: ["f1", "grand-prix", "belgium"],
+    queryFn: () => f1Api.getBelgianGrandPrix(),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  const { data: drivers, isLoading: driversLoading } = useQuery({
+    queryKey: ["f1", "drivers"],
+    queryFn: () => f1Api.getDrivers(),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="relative grid w-full min-w-0 grid-cols-1 items-start gap-3 lg:grid-cols-12 lg:gap-4">
-      <LeagueEventBanner />
+      <LeagueEventBanner weekend={weekend ?? null} />
 
       <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 xl:col-span-9">
-        <HeroSection />
-        <TopAgentsSection />
+        <HeroSection weekend={weekend ?? null} isLoading={weekendLoading} />
+        <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
         <InsightsSection />
-        <LeaderboardSection />
+        <DriverLeaderboardSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
       </div>
 
       <div className="min-w-0 lg:col-span-4 xl:col-span-3">
@@ -871,6 +938,8 @@ export function Formula1Board() {
       <p className="text-center font-mono text-[10px] tracking-wide text-white/30 lg:col-span-12">
         // kult league · picks lock at lights out · {LEAGUE_ARENA_AGENTS.length} agents live
       </p>
+
+      <F1DriverModal driverId={openDriverId} onOpenChange={(open) => !open && setOpenDriverId(null)} />
     </div>
   );
 }

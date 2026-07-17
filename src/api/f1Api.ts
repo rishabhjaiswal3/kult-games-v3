@@ -44,6 +44,13 @@ export interface F1TeamHistoryEntry {
   team: { id: number; name: string; logo?: string };
 }
 
+export interface F1DriverStanding {
+  position: number;
+  points: number;
+  wins: number;
+  season: number;
+}
+
 export interface F1Driver {
   id: string;
   name: string;
@@ -58,6 +65,8 @@ export interface F1Driver {
   currentTeamId: string | null;
   currentTeam: F1Team | null;
   teamHistory: F1TeamHistoryEntry[] | null;
+  /** Only present from GET /v1/f1/drivers (the grid) -- current-season live standing. */
+  standing?: F1DriverStanding | null;
 }
 
 export interface F1Prediction {
