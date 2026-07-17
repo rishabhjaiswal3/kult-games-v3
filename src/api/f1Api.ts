@@ -87,6 +87,19 @@ export interface F1Prediction {
   predictedDriver?: F1Driver;
 }
 
+export interface F1FantasyTeam {
+  id: string;
+  agentId: string;
+  season: number;
+  name: string;
+  driverId: string;
+  constructorId: string;
+  reasoning: string | null;
+  totalPoints: number;
+  driver: F1Driver;
+  constructor: F1Team;
+}
+
 export const f1Api = {
   getBelgianGrandPrix: async (): Promise<F1GrandPrixWeekend | null> => {
     try {
@@ -135,5 +148,25 @@ export const f1Api = {
       market,
     });
     return data;
+  },
+
+  /** "AI drafts my fantasy team" -- one driver + their real constructor. Re-drafting overwrites the previous pick. */
+  draftFantasyTeam: async (agentId: string, season?: number): Promise<F1FantasyTeam> => {
+    const { data } = await http().post<{ team: F1FantasyTeam }>("/v1/f1/fantasy/draft", { agentId, season });
+    return data.team;
+  },
+
+  getFantasyTeam: async (agentId: string, season?: number): Promise<F1FantasyTeam | null> => {
+    const { data } = await http().get<{ team: F1FantasyTeam | null }>(`/v1/f1/fantasy/team/${agentId}`, {
+      params: season ? { season } : undefined,
+    });
+    return data.team ?? null;
+  },
+
+  getFantasyLeaderboard: async (season?: number): Promise<F1FantasyTeam[]> => {
+    const { data } = await http().get<{ teams: F1FantasyTeam[] }>("/v1/f1/fantasy/leaderboard", {
+      params: season ? { season } : undefined,
+    });
+    return data.teams ?? [];
   },
 };

@@ -11,6 +11,8 @@ import {
   Loader2,
   Shield,
   Sparkles,
+  Trophy,
+  Users,
   Zap,
 } from "lucide-react";
 import formula1Video from "@/assets/formula1.mp4";
@@ -32,7 +34,7 @@ import supportStill from "@/assets/f1/agent-stills/support.jpg";
 import tacticianStill from "@/assets/f1/agent-stills/tactician.jpg";
 import { LEAGUE_ARENA_AGENTS } from "@/constants/leagueAgents";
 import { cn } from "@/lib/utils";
-import { f1Api, F1_PREDICTION_MARKETS, type F1Driver, type F1GrandPrixWeekend, type F1PredictionMarket, type F1RaceSession } from "@/api/f1Api";
+import { f1Api, F1_PREDICTION_MARKETS, type F1Driver, type F1FantasyTeam, type F1GrandPrixWeekend, type F1PredictionMarket, type F1RaceSession } from "@/api/f1Api";
 import { F1DriverModal } from "@/components/f1/F1DriverModal";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAuth } from "@/contexts/AuthContext";
@@ -815,6 +817,133 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
   );
 }
 
+/**
+ * AI-drafted fantasy team: one driver + their real current constructor,
+ * accumulating real points from F1FantasyScore as races complete (backend:
+ * services/league-service f1-fantasy.service.ts). No simulated/invented
+ * scoring -- totalPoints only ever moves via POST /fantasy/races/:id/score
+ * against real per-driver race classification.
+ */
+function FantasyTeamSection({ season, onOpenDriver }: { season: number | undefined; onOpenDriver: (id: string) => void }) {
+  const { isAuthenticated, login } = useAuth();
+  const { data: myAgents } = useMyArenaAgents();
+  const agent = myAgents?.agents?.[0];
+  const queryClient = useQueryClient();
+
+  const { data: team, isLoading: teamLoading } = useQuery({
+    queryKey: ["f1", "fantasy-team", agent?.id, season],
+    queryFn: () => f1Api.getFantasyTeam(agent!.id, season),
+    enabled: !!agent?.id,
+  });
+
+  const { data: leaderboard } = useQuery({
+    queryKey: ["f1", "fantasy-leaderboard", season],
+    queryFn: () => f1Api.getFantasyLeaderboard(season),
+    staleTime: 30_000,
+  });
+
+  const draftMutation = useMutation({
+    mutationFn: () => f1Api.draftFantasyTeam(agent!.id, season),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["f1", "fantasy-team", agent?.id, season] });
+      queryClient.invalidateQueries({ queryKey: ["f1", "fantasy-leaderboard", season] });
+    },
+  });
+
+  return (
+    <section className="rounded-2xl border border-amber-400/25 bg-[radial-gradient(circle_at_100%_0%,rgba(251,191,36,0.08),transparent_55%),#080910] p-3.5 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Fantasy team</h3>
+          <p className="mt-0.5 text-[11px] text-white/45">Your AI drafts one driver + their real constructor -- points accumulate as races complete.</p>
+        </div>
+        <Trophy className="h-4 w-4 shrink-0 text-amber-300" />
+      </div>
+
+      {!isAuthenticated ? (
+        <button
+          type="button"
+          onClick={login}
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-amber-400/40 hover:text-white"
+        >
+          Connect your wallet to draft a fantasy team
+        </button>
+      ) : !agent ? (
+        <p className="font-mono text-xs text-white/40">Mint an agent first to draft a fantasy team.</p>
+      ) : teamLoading ? (
+        <div className="h-16 animate-pulse rounded-xl border border-white/10 bg-white/[0.03]" />
+      ) : team ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
+          <div className="flex items-center gap-3">
+            <DriverAvatar driver={team.driver} />
+            <div>
+              <p className="font-tech text-sm font-black text-white">{team.name}</p>
+              <p className="mt-0.5 font-mono text-[11px] text-white/50">
+                <button type="button" onClick={() => onOpenDriver(team.driverId)} className="font-bold text-amber-300 hover:underline">
+                  {team.driver.name}
+                </button>{" "}
+                &middot; {team.constructor.name}
+              </p>
+              {team.reasoning ? <p className="mt-1 max-w-md font-mono text-[10px] italic text-white/40">&ldquo;{team.reasoning}&rdquo;</p> : null}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="font-tech text-xl font-black text-amber-300">{team.totalPoints}</p>
+              <p className="font-mono text-[9px] uppercase tracking-wider text-white/40">pts</p>
+            </div>
+            <button
+              type="button"
+              disabled={draftMutation.isPending}
+              onClick={() => draftMutation.mutate()}
+              className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/60 transition hover:border-amber-400/40 hover:text-white disabled:opacity-40"
+            >
+              {draftMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Re-draft"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={draftMutation.isPending}
+          onClick={() => draftMutation.mutate()}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2.5 font-tech text-[11px] font-black uppercase tracking-wider text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+        >
+          {draftMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {draftMutation.isPending ? "AI is drafting…" : "AI drafts my team"}
+        </button>
+      )}
+      {draftMutation.isError ? <p className="mt-2 text-xs text-rose-400">Draft failed — try again.</p> : null}
+
+      {leaderboard && leaderboard.length > 0 ? (
+        <div className="mt-4">
+          <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
+            <Users className="h-3 w-3" /> Leaderboard
+          </p>
+          <div className="space-y-1">
+            {leaderboard.slice(0, 8).map((t, i) => (
+              <div
+                key={t.id}
+                className={cn(
+                  "flex items-center justify-between rounded-lg px-2.5 py-1.5",
+                  t.agentId === agent?.id ? "bg-amber-500/10" : "bg-white/[0.02]",
+                )}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="w-4 shrink-0 font-mono text-[10px] text-white/40">{i + 1}</span>
+                  <span className="truncate font-tech text-[11px] font-bold text-white">{t.name}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-white/40">{t.driver.abbr ?? t.driver.name}</span>
+                </div>
+                <span className="shrink-0 font-tech text-[11px] font-black text-amber-300">{t.totalPoints} pts</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1Driver[]; isLoading: boolean; onSelectDriver: (id: string) => void }) {
   const top = useMemo(
     () => [...drivers].sort((a, b) => (a.standing?.position ?? 999) - (b.standing?.position ?? 999)).slice(0, 4),
@@ -1160,6 +1289,7 @@ export function Formula1Board() {
         <div ref={pickSectionRef}>
           <MakeYourPickSection raceId={weekend?.race.id} onOpenDriver={setOpenDriverId} />
         </div>
+        <FantasyTeamSection season={weekend?.race.season} onOpenDriver={setOpenDriverId} />
         <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
         {/* < lg: stacked · ≥1280: sit beside sidebar */}
         <div className="lg:hidden xl:block">
