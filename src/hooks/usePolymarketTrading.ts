@@ -161,27 +161,38 @@ export function usePolymarketTrading() {
    * already satisfied and submits them as ONE signed relayer batch (one
    * signature, gasless -- Polymarket sponsors the relayed call).
    */
+  // Every contract that can end up as an order's "spender": the two order
+  // book exchanges plus the two neg-risk (grouped/multi-outcome market)
+  // contracts. Missing any one of these produces the exact same symptom on
+  // whichever market happens to route through it: "not enough balance /
+  // allowance" naming that contract as spender, even with a fully-funded,
+  // otherwise-fully-approved deposit wallet.
+  const APPROVAL_SPENDERS: readonly `0x${string}`[] = [
+    POLYMARKET_CONTRACTS.exchangeV2,
+    POLYMARKET_CONTRACTS.negRiskExchangeV2,
+    POLYMARKET_CONTRACTS.negRiskAdapter,
+    POLYMARKET_CONTRACTS.exchangeV3,
+  ];
+
   async function ensureDepositWalletApprovals(owner: `0x${string}`, depositWallet: `0x${string}`, provider: Eip1193LikeProvider) {
-    const [pusdAllowanceExchange, pusdAllowanceNegRisk, ctApprovedExchange, ctApprovedNegRisk] = await Promise.all([
-      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
-      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
-      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
-      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
-    ]);
+    const checks = await Promise.all(
+      APPROVAL_SPENDERS.flatMap((spender) => [
+        polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, spender] }),
+        polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, spender] }),
+      ]),
+    );
 
     const calls: DepositWalletCall[] = [];
-    if (pusdAllowanceExchange === 0n) {
-      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.exchangeV2, maxUint256] }) });
-    }
-    if (pusdAllowanceNegRisk === 0n) {
-      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, maxUint256] }) });
-    }
-    if (!ctApprovedExchange) {
-      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.exchangeV2, true] }) });
-    }
-    if (!ctApprovedNegRisk) {
-      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, true] }) });
-    }
+    APPROVAL_SPENDERS.forEach((spender, i) => {
+      const pusdAllowance = checks[i * 2] as bigint;
+      const ctApproved = checks[i * 2 + 1] as boolean;
+      if (pusdAllowance === 0n) {
+        calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [spender, maxUint256] }) });
+      }
+      if (!ctApproved) {
+        calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [spender, true] }) });
+      }
+    });
     if (calls.length === 0) return;
 
     setStatus("approving");

@@ -38,6 +38,17 @@ export const COLLATERAL_ONRAMP_ADDRESS = "0x93070a847efEf7F70739046A929D47a521F5
 export const POLYMARKET_CONTRACTS = {
   exchangeV2: "0xE111180000d2663C0091e4f400237545B87B996B",
   negRiskExchangeV2: "0xe2222d279d744050d28e00520010520000310F59",
+  // Grouped/multi-outcome ("neg-risk") markets -- World Cup Winner, election
+  // outcomes, anything with >2 mutually exclusive options -- route through
+  // this adapter as an additional spender on top of negRiskExchangeV2. It
+  // was defined here but never actually approved anywhere, so any neg-risk
+  // order failed with "not enough balance / allowance" naming this address
+  // as the spender even with a fully-funded, fully-approved-for-the-other-
+  // two-contracts deposit wallet.
   negRiskAdapter: "0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296",
+  // Confirmed real (source: @polymarket/clob-client-v2's own MATIC_CONTRACTS
+  // config), not yet observed in a live order failure the way negRiskAdapter
+  // was, but approved pre-emptively for the same reason.
+  exchangeV3: "0xe3333700cA9d93003F00f0F71f8515005F6c00Aa",
   conditionalTokens: "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045",
 } as const;
