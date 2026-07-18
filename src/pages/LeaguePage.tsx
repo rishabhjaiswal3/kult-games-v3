@@ -373,14 +373,14 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   const imgClass =
-    "pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-right brightness-125 contrast-125 saturate-150";
+    "pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-[82%] max-w-[390px] object-contain object-right sm:w-[46%] [mask-image:linear-gradient(to_right,transparent_0%,black_30%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_30%)]";
 
   return (
     <div className="mb-3 grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3" data-tour="league-mode-tabs">
       <button
         type="button"
         onClick={() => onModeChange("league")}
-        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080d12] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-black p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
           mode === "league"
             ? "border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.35)]"
             : "border-emerald-400/45 shadow-[0_0_18px_rgba(52,211,153,0.18)] hover:border-emerald-400/70"
@@ -416,7 +416,7 @@ function LeagueModeTabs({
       <button
         type="button"
         onClick={() => onModeChange("polymarket")}
-        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080b14] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-black p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
           mode === "polymarket"
             ? "border-[#2E5CFF] shadow-[0_0_28px_rgba(46,92,255,0.4)]"
             : "border-[#2E5CFF]/45 shadow-[0_0_18px_rgba(46,92,255,0.2)] hover:border-[#2E5CFF]/70"

@@ -7,6 +7,7 @@ import {
   Box,
   ChevronRight,
   Crosshair,
+  Flag,
   Headphones,
   Loader2,
   Shield,
@@ -65,6 +66,67 @@ const BANNER_AGENTS = [
   { name: "SUPPORT", role: "Analyzer", accent: "#f59e0b", Icon: BarChart3 },
   { name: "BERSERKER", role: "Predictor", accent: "#e5e7eb", Icon: Zap },
 ] as const;
+
+const AGENT_THEME: Record<string, { accent: string; soft: string; border: string; glow: string }> = {
+  HYBRID: { accent: "#c084fc", soft: "rgba(168,85,247,0.18)", border: "rgba(168,85,247,0.55)", glow: "rgba(168,85,247,0.35)" },
+  DEFENDER: { accent: "#60a5fa", soft: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.55)", glow: "rgba(59,130,246,0.35)" },
+  ASSASSIN: { accent: "#f87171", soft: "rgba(239,68,68,0.18)", border: "rgba(239,68,68,0.55)", glow: "rgba(239,68,68,0.35)" },
+  TACTICIAN: { accent: "#2dd4bf", soft: "rgba(20,184,166,0.18)", border: "rgba(20,184,166,0.55)", glow: "rgba(20,184,166,0.35)" },
+  SUPPORT: { accent: "#fbbf24", soft: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.55)", glow: "rgba(245,158,11,0.35)" },
+  BERSERKER: { accent: "#e5e7eb", soft: "rgba(229,231,235,0.14)", border: "rgba(229,231,235,0.45)", glow: "rgba(229,231,235,0.25)" },
+};
+
+function agentTheme(name: string) {
+  return AGENT_THEME[name] ?? AGENT_THEME.HYBRID;
+}
+
+/** Session tile color themes — practice / quali / race / sprint each get their own look. */
+function sessionTileTheme(sessionType: string, status: string, isNext: boolean) {
+  if (status === "LIVE" || isNext) {
+    return {
+      border: "border-violet-400/60",
+      bg: "bg-gradient-to-br from-violet-600/35 via-fuchsia-600/20 to-[#12081a]",
+      label: "text-violet-100",
+      meta: "text-violet-300",
+      icon: "bg-violet-400/25 text-violet-200 border-violet-400/40",
+    };
+  }
+  if (/practice/i.test(sessionType)) {
+    return {
+      border: "border-sky-400/40",
+      bg: "bg-gradient-to-br from-sky-500/25 via-cyan-600/10 to-[#0a1218]",
+      label: "text-sky-100",
+      meta: "text-sky-300/80",
+      icon: "bg-sky-400/20 text-sky-200 border-sky-400/35",
+    };
+  }
+  if (/qualifying/i.test(sessionType)) {
+    return {
+      border: "border-amber-400/45",
+      bg: "bg-gradient-to-br from-amber-500/25 via-orange-600/10 to-[#16100a]",
+      label: "text-amber-100",
+      meta: "text-amber-300/80",
+      icon: "bg-amber-400/20 text-amber-200 border-amber-400/35",
+    };
+  }
+  if (/sprint/i.test(sessionType)) {
+    return {
+      border: "border-rose-400/45",
+      bg: "bg-gradient-to-br from-rose-500/25 via-pink-600/10 to-[#160a10]",
+      label: "text-rose-100",
+      meta: "text-rose-300/80",
+      icon: "bg-rose-400/20 text-rose-200 border-rose-400/35",
+    };
+  }
+  // Race / default
+  return {
+    border: "border-emerald-400/45",
+    bg: "bg-gradient-to-br from-emerald-500/25 via-teal-600/10 to-[#0a1412]",
+    label: "text-emerald-100",
+    meta: "text-emerald-300/80",
+    icon: "bg-emerald-400/20 text-emerald-200 border-emerald-400/35",
+  };
+}
 
 /** Cycled per driver card since real drivers don't carry an "accent color" from the API. */
 const DRIVER_ACCENTS = ["#a855f7", "#3b82f6", "#ef4444", "#14b8a6", "#f59e0b", "#22d3ee"];
@@ -137,27 +199,37 @@ function Sparkline({
 
 function Formula1Background() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    video.muted = muted;
     void video.play().catch(() => {
       /* autoplay may be blocked */
     });
-  }, []);
+  }, [muted]);
 
   return (
-    <div className="absolute inset-0 size-full overflow-hidden" aria-hidden>
+    <div className="absolute inset-0 size-full overflow-hidden" aria-hidden={!muted}>
       <video
         ref={videoRef}
         src={formula1Video}
         loop
-        muted
+        muted={muted}
         playsInline
         preload="none"
         className="absolute inset-0 size-full max-w-none object-cover object-[center_25%]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#05050a] via-[#05050a]/35 to-transparent" />
+      <button
+        type="button"
+        onClick={() => setMuted((m) => !m)}
+        className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/55 px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur transition hover:border-violet-400/50 hover:bg-black/75"
+        aria-label={muted ? "Unmute video" : "Mute video"}
+      >
+        {muted ? "Unmute" : "Mute"}
+      </button>
     </div>
   );
 }
@@ -253,8 +325,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
                 Circuit de Spa-Francorchamps
               </p>
               <p className="mx-auto mt-2.5 max-w-sm text-[12px] leading-snug text-white/55 sm:text-[13px]">
-                Elite AI agents. Your picks. Beat the field on the world&apos;s
-                hardest circuit.
+                Elite AI agents. Your picks. Beat the field.
               </p>
             </div>
 
@@ -323,11 +394,9 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
             <p className="mt-2 font-tech text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
               {circuitName}
             </p>
-            <p className="mt-3 text-[12px] leading-snug text-white/55">
-              Elite AI agents compete on the world&apos;s most challenging circuit.
-            </p>
-            <p className="mt-1 text-[13px] leading-snug text-white/55">
-              Build your team. Make your picks. Beat the AI. Win rewards.
+            <p className="mt-3 max-w-md text-[13px] leading-snug text-white/55">
+              Elite AI agents. Your picks. Beat the field on Spa —
+              build a team, lock predictions, win rewards.
             </p>
           </div>
 
@@ -480,12 +549,12 @@ const INSIGHTS = [
 ] as const;
 
 const FEED = [
-  { ago: "1m ago", agent: "HYBRID", text: "Hybrid AI increased confidence on McLaren to 72%", delta: 8 },
-  { ago: "2m ago", agent: "DEFENDER", text: "Defender flagged soft tyre deg on sector 2", delta: null },
-  { ago: "3m ago", agent: "ASSASSIN", text: "Overtake alert: Assassin predicts Norris move on lap 28", delta: 5 },
-  { ago: "5m ago", agent: "TACTICIAN", text: "Tactician locked undercut window for Ferrari", delta: null },
-  { ago: "7m ago", agent: "SUPPORT", text: "Support raised safety car probability to 41%", delta: -3 },
-  { ago: "9m ago", agent: "BERSERKER", text: "Berserker flipped Verstappen win odds to 38%", delta: 4 },
+  { ago: "1m", agent: "HYBRID", text: "McLaren conf ↑72%", delta: 8 },
+  { ago: "2m", agent: "DEFENDER", text: "Soft deg · S2", delta: null },
+  { ago: "3m", agent: "ASSASSIN", text: "Norris overtake · L28", delta: 5 },
+  { ago: "5m", agent: "TACTICIAN", text: "Ferrari undercut window", delta: null },
+  { ago: "7m", agent: "SUPPORT", text: "SC prob ↑41%", delta: -3 },
+  { ago: "9m", agent: "BERSERKER", text: "VER win odds →38%", delta: 4 },
 ] as const;
 
 const TRENDING = [
@@ -523,6 +592,7 @@ const QUESTIONS = [
 
 function RaceQuestionCard({ question }: { question: (typeof QUESTIONS)[number] }) {
   const noCents = 100 - question.yes;
+  const theme = agentTheme(question.agentName);
 
   return (
     <article className="overflow-hidden rounded-xl border border-white/12 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.12),transparent_55%),#0b0d12] p-3.5 transition hover:border-violet-400/35">
@@ -556,18 +626,22 @@ function RaceQuestionCard({ question }: { question: (typeof QUESTIONS)[number] }
       <div className="mt-3 border-t border-white/10 pt-2.5">
         <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent signal</p>
         <div
-          className={cn(
-            "flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5",
-            question.signal === "YES" ? "border-violet-400/25 bg-violet-400/[0.06]" : "border-fuchsia-400/20 bg-fuchsia-400/[0.05]",
-          )}
+          className="flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5"
+          style={{
+            borderColor: theme.border,
+            background: `linear-gradient(135deg, ${theme.soft}, rgba(0,0,0,0.35))`,
+            boxShadow: `inset 0 0 0 1px ${theme.glow}, 0 0 18px ${theme.glow}`,
+          }}
         >
-          <AgentAvatar name={question.agentName} size="sm" />
+          <AgentAvatar name={question.agentName} size="sm" glow={theme.accent} />
           <div className="min-w-0">
-            <p className="truncate font-tech text-[9px] font-bold uppercase text-white">{question.agentName}</p>
+            <p className="truncate font-tech text-[9px] font-bold uppercase" style={{ color: theme.accent }}>
+              {question.agentName}
+            </p>
             <p
               className={cn(
                 "mt-0.5 truncate font-tech text-[9px] font-bold",
-                question.signal === "YES" ? "text-violet-300" : "text-fuchsia-300",
+                question.signal === "YES" ? "text-emerald-300" : "text-rose-300",
               )}
             >
               {question.signal} · {question.confidence}%
@@ -675,26 +749,37 @@ function HeroSection({ weekend, isLoading, onPickClick }: { weekend: F1GrandPrix
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 border-t border-white/8 p-2 sm:grid-cols-5 sm:gap-2 sm:p-3">
+      <div className="grid grid-cols-2 gap-2 border-t border-white/8 p-2.5 sm:grid-cols-5 sm:gap-2.5 sm:p-3">
         {(weekend?.sessions ?? []).map((session) => {
           const isNext = session.id === nextSession?.id;
+          const tile = sessionTileTheme(session.sessionType, session.status, isNext);
           return (
             <div
               key={session.id}
               className={cn(
-                "rounded-lg border px-2.5 py-2 text-center",
-                isNext || session.status === "LIVE" ? "border-violet-400/50 bg-violet-500/15" : "border-white/8 bg-white/[0.03]",
+                "relative overflow-hidden rounded-xl border px-2.5 py-2.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.35)]",
+                tile.border,
+                tile.bg,
               )}
             >
-              <p className="truncate font-tech text-[10px] font-bold uppercase tracking-wider text-white/80">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_55%)]" />
+              <div
+                className={cn(
+                  "relative mx-auto mb-1.5 grid h-7 w-7 place-items-center rounded-lg border",
+                  tile.icon,
+                )}
+              >
+                <Flag className="h-3.5 w-3.5" />
+              </div>
+              <p className={cn("relative truncate font-tech text-[10px] font-black uppercase tracking-wider", tile.label)}>
                 {sessionShortLabel(session.sessionType)}
               </p>
               {session.status === "LIVE" ? (
-                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-violet-300">Live</p>
+                <p className={cn("relative mt-0.5 font-mono text-[9px] font-bold uppercase tracking-wider", tile.meta)}>Live</p>
               ) : session.status === "COMPLETED" ? (
-                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-white/35">Done</p>
+                <p className="relative mt-0.5 font-mono text-[9px] uppercase tracking-wider text-white/40">Done</p>
               ) : (
-                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-300/70">
+                <p className={cn("relative mt-0.5 font-mono text-[9px] font-bold uppercase tracking-wider", tile.meta)}>
                   {new Date(session.startsAt).toLocaleDateString(undefined, { weekday: "short" })}
                 </p>
               )}
@@ -959,7 +1044,7 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
         </div>
       </div>
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-[280px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]" />
           ))}
@@ -967,7 +1052,7 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
       ) : top.length === 0 ? (
         <p className="font-mono text-xs text-white/40">Drivers not synced yet — trigger POST /v1/f1/sync.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {top.map((driver, i) => {
             const accent = DRIVER_ACCENTS[i % DRIVER_ACCENTS.length];
             return (
@@ -975,12 +1060,12 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
                 type="button"
                 key={driver.id}
                 onClick={() => onSelectDriver(driver.id)}
-                className="relative min-h-[280px] overflow-hidden rounded-2xl border bg-[#0a0b12] p-3.5 text-left transition hover:-translate-y-0.5"
+                className="relative min-h-[300px] overflow-hidden rounded-2xl border bg-[#0a0b12] p-3.5 text-left transition hover:-translate-y-0.5"
                 style={{ borderColor: `${accent}55` }}
               >
                 <div
-                  className="pointer-events-none absolute inset-0 opacity-40"
-                  style={{ background: `radial-gradient(circle at 85% 40%, ${accent}33, transparent 55%)` }}
+                  className="pointer-events-none absolute inset-0 opacity-50"
+                  style={{ background: `radial-gradient(circle at 80% 55%, ${accent}40, transparent 58%)` }}
                 />
                 <div className="relative z-10 flex items-start justify-between gap-2">
                   <div>
@@ -996,7 +1081,7 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
                   ) : null}
                 </div>
 
-                <div className="relative z-10 mt-4 max-w-[52%] space-y-3">
+                <div className="relative z-10 mt-4 max-w-[48%] space-y-3">
                   <div>
                     <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Season points</p>
                     <p className="font-tech text-xl font-black text-white">{driver.standing?.points ?? "—"}</p>
@@ -1011,19 +1096,23 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
                   </div>
                 </div>
 
-                <div className="pointer-events-none absolute bottom-0 right-0 h-[78%] w-[58%]">
-                  {driver.image ? (
+                {driver.image ? (
+                  <div
+                    className="pointer-events-none absolute bottom-10 right-3 h-32 w-24 overflow-hidden rounded-xl border sm:h-36 sm:w-28"
+                    style={{ borderColor: `${accent}66` }}
+                  >
                     <img
                       src={driver.image}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover object-[center_15%]"
-                      style={{ maskImage: "linear-gradient(to left, black 55%, transparent)", WebkitMaskImage: "linear-gradient(to left, black 55%, transparent)" }}
                     />
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
 
-                <div className="absolute inset-x-0 bottom-0 z-10 px-3 pb-2">
-                  <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/60">Tap for AI prediction →</span>
+                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#0a0b12] via-[#0a0b12]/80 to-transparent px-3 pb-2.5 pt-6 flex items-center justify-end ">
+                  <span className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/70">Tap for AI prediction →</span>
                 </div>
               </button>
             );
@@ -1048,12 +1137,12 @@ function InsightsSection({
       <div className={cn("grid w-full gap-3", columnsClassName)}>
         {INSIGHTS.map((item) => (
           <article key={item.label} className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-[#0a0b12]">
-            <div className="flex items-start gap-2.5 p-3 pb-2">
-              <AgentAvatar name={item.agent} size="lg" glow={item.color} />
+            <div className="flex items-center gap-3 p-3 pb-2">
+              <AgentAvatar name={item.agent} size="lg" glow={item.color} className="h-16 w-16 border-2" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-mono text-[8px] uppercase tracking-wider text-white/40">{item.label}</p>
-                <p className="truncate font-tech text-sm font-black text-white">{item.name}</p>
-                <p className="mt-0.5 font-tech text-lg font-black" style={{ color: item.color }}>
+                <p className="truncate font-tech text-base font-black text-white">{item.name}</p>
+                <p className="mt-0.5 font-tech text-xl font-black" style={{ color: item.color }}>
                   {item.metric}
                 </p>
                 <p className="truncate text-[10px] text-white/45">{item.sub}</p>
@@ -1092,7 +1181,7 @@ function DriverLeaderboardSection({ drivers, isLoading, onSelectDriver }: { driv
         </div>
         <p className="hidden truncate font-mono text-[11px] text-white/50 sm:block">{driver.currentTeam?.name ?? "—"}</p>
         <p className="text-right font-tech text-sm font-black text-cyan-300">{driver.standing?.points ?? "—"}</p>
-        <p className="hidden text-right font-tech text-[11px] font-bold text-white/70 sm:block">{driver.standing?.wins ?? 0}W</p>
+        <p className="hidden text-right font-tech text-[11px] font-bold text-white">{driver.standing?.wins ?? 0}W</p>
       </button>
     </li>
   );
@@ -1199,19 +1288,22 @@ function DashboardSidebar() {
             Live race feed
           </p>
         </div>
-        <ul className="max-h-[235px] space-y-0 overflow-y-auto pr-0.5 scrollbar-market">
-          {FEED.map((item) => (
-            <li key={`${item.ago}-${item.text}`} className="flex items-start gap-2.5 border-b border-white/6 py-2.5 last:border-0">
-              <span className="w-12 shrink-0 pt-1 font-mono text-[9px] text-white/35">{item.ago}</span>
-              <AgentAvatar name={item.agent} size="sm" />
-              <p className="min-w-0 flex-1 text-[11px] leading-snug text-white/75">{item.text}</p>
-              {item.delta != null ? (
-                <span className={cn("shrink-0 pt-0.5 font-tech text-[10px] font-bold", item.delta >= 0 ? "text-emerald-400" : "text-rose-400")}>
-                  {item.delta >= 0 ? "↑" : "↓"} {Math.abs(item.delta)}%
-                </span>
-              ) : null}
-            </li>
-          ))}
+        <ul className="max-h-[235px] space-y-0 overflow-y-auto pr-2 scrollbar-f1-feed">
+          {FEED.map((item) => {
+            const theme = agentTheme(item.agent);
+            return (
+              <li key={`${item.ago}-${item.text}`} className="flex items-center gap-2 border-b border-white/6 py-2 last:border-0">
+                <span className="w-7 shrink-0 font-mono text-[9px] text-white/35">{item.ago}</span>
+                <AgentAvatar name={item.agent} size="sm" glow={theme.accent} />
+                <p className="min-w-0 flex-1 truncate text-[11px] font-medium leading-snug text-white/80">{item.text}</p>
+                {item.delta != null ? (
+                  <span className={cn("shrink-0 font-tech text-[10px] font-bold", item.delta >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                    {item.delta >= 0 ? "↑" : "↓"}{Math.abs(item.delta)}%
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       </div>
 
@@ -1290,10 +1382,12 @@ export function Formula1Board() {
           <MakeYourPickSection raceId={weekend?.race.id} onOpenDriver={setOpenDriverId} />
         </div>
         <FantasyTeamSection season={weekend?.race.season} onOpenDriver={setOpenDriverId} />
-        <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
-        {/* < lg: stacked · ≥1280: sit beside sidebar */}
-        <div className="lg:hidden xl:block">
-          <InsightsSection columnsClassName="grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4" />
+        {/* < lg only: stacked in column */}
+        <div className="lg:hidden">
+          <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
+        </div>
+        <div className="lg:hidden">
+          <InsightsSection columnsClassName="grid-cols-1 sm:grid-cols-2" />
         </div>
       </div>
 
@@ -1301,9 +1395,12 @@ export function Formula1Board() {
         <DashboardSidebar />
       </div>
 
-      {/* 1024–1279 only: full-width 4-up row */}
-      <div className="hidden min-w-0 w-full lg:col-span-12 lg:block xl:hidden">
-        <InsightsSection columnsClassName="grid-cols-4" />
+      {/* Desktop: full-width rows */}
+      <div className="hidden min-w-0 w-full lg:col-span-12 lg:block">
+        <TopDriversSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
+      </div>
+      <div className="hidden min-w-0 w-full lg:col-span-12 lg:block">
+        <InsightsSection columnsClassName="grid-cols-2 xl:grid-cols-4" />
       </div>
 
       <div className="min-w-0 lg:col-span-12">
