@@ -872,6 +872,19 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
             <span className="font-bold text-emerald-300">{agent.name}</span>&apos;s AI predicted{" "}
             <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
           </p>
+          {activePick.settledAt ? (
+            <span
+              className={`mt-1.5 inline-flex items-center rounded border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${
+                activePick.isCorrect ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-400" : "border-red-500/35 bg-red-500/15 text-red-400"
+              }`}
+            >
+              {activePick.isCorrect ? "Correct" : "Incorrect"}
+            </span>
+          ) : (
+            <span className="mt-1.5 inline-flex items-center rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">
+              Pending — settles after the race
+            </span>
+          )}
           {activePick.reasoning ? <p className="mt-1.5 font-mono text-[11px] italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
           {activePick.predictedDriverId ? (
             <button

@@ -84,6 +84,9 @@ export interface F1Prediction {
   market: F1PredictionMarket;
   predictedDriverId: string;
   reasoning: string | null;
+  /** null until the race is settled (POST /v1/f1/races/:raceId/settle) -- then true/false. */
+  isCorrect: boolean | null;
+  settledAt: string | null;
   predictedDriver?: F1Driver;
 }
 
