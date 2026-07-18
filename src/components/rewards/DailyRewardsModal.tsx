@@ -7,7 +7,6 @@ import finalRewardChest from "@/assets/icon-earn.png";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import {
   DAILY_REWARDS,
-  OPTIMISTIC_DAILY_REWARD_DAY,
   RARITY_STYLES,
   TOTAL_REWARD_DAYS,
   getRewardDef,
@@ -302,45 +301,33 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   // Fresh confetti layout for every claim.
   const confetti = useMemo(() => (justClaimedDay ? makeConfetti() : []), [justClaimedDay]);
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
     if (!claimable) return;
     const dayToClaim = currentDay;
 
     if (dayToClaim === 1 && !userHasAgent) {
-      void (async () => {
-        const result = await refetchAgents();
-        if (!hasArenaAgent(result.data)) {
-          pendingDay1ClaimRef.current = true;
-          onClose();
-          navigate("/my-agents");
-          window.setTimeout(() => openCreateAgent(), 150);
-        }
-      })();
-      return;
-    }
-
-    // Day 6 Highway Hustle — optimistic UI only; no API wait, no redirect.
-    if (dayToClaim === OPTIMISTIC_DAILY_REWARD_DAY) {
-      void claim().then((result) => {
-        setJustClaimedDay(result.claimedDay);
-      });
-      return;
-    }
-
-    void (async () => {
-      try {
-        const result = await claim();
-        setJustClaimedDay(result.claimedDay);
-
-        const redirect = rewardRedirectPath(result.claimedDay);
-        if (redirect) {
-          onClose();
-          navigate(redirect);
-        }
-      } catch {
-        /* claim failed — e.g. rewards API 404 until backend is deployed */
+      const result = await refetchAgents();
+      if (!hasArenaAgent(result.data)) {
+        pendingDay1ClaimRef.current = true;
+        onClose();
+        navigate("/my-agents");
+        window.setTimeout(() => openCreateAgent(), 150);
+        return;
       }
-    })();
+    }
+
+    try {
+      const result = await claim();
+      setJustClaimedDay(result.claimedDay);
+
+      const redirect = rewardRedirectPath(result.claimedDay);
+      if (redirect) {
+        onClose();
+        navigate(redirect);
+      }
+    } catch {
+      /* claim failed — e.g. rewards API 404 until backend is deployed */
+    }
   };
 
   const dayStatus = (day: number): DayStatus =>

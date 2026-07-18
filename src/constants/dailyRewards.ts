@@ -148,11 +148,6 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
 
 export const TOTAL_REWARD_DAYS = DAILY_REWARDS.length;
 
-/** Day 6 Highway Hustle — optimistic frontend claim while HH grant API is unavailable. */
-export const OPTIMISTIC_DAILY_REWARD_DAY = 6;
-
-export const MS_PER_REWARD_DAY = 86_400_000;
-
 export function getRewardDef(day: number): DailyRewardDef {
   return DAILY_REWARDS[Math.min(Math.max(day, 1), TOTAL_REWARD_DAYS) - 1];
 }
