@@ -1310,8 +1310,6 @@ export function Formula1Board() {
         <DriverLeaderboardSection drivers={drivers ?? []} isLoading={driversLoading} onSelectDriver={setOpenDriverId} />
       </div>
 
-      <QuestionsSection />
-
       <p className="text-center font-mono text-[10px] tracking-wide text-white/30 lg:col-span-12">
         // kult league · picks lock at lights out · {LEAGUE_ARENA_AGENTS.length} agents live
       </p>
