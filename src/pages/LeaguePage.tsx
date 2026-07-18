@@ -143,11 +143,10 @@ function PolymarketSportOptions() {
       <div
         role="tablist"
         aria-label="Polymarket sport"
-        className="inline-flex w-fit max-w-full items-center gap-1 border-b border-white/10"
+        className="inline-flex w-fit max-w-full items-center gap-1.5 rounded-xl border border-white/[0.08] bg-[#080910] p-1"
       >
         {SPORT_TABS.map((tab) => {
           const active = sport === tab.id;
-          const Icon = tab.Icon;
           return (
             <button
               key={tab.id}
@@ -155,14 +154,32 @@ function PolymarketSportOptions() {
               role="tab"
               aria-selected={active}
               onClick={() => setSport(tab.id)}
-              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] transition ${
-                active
-                  ? "border-white text-white"
-                  : "border-transparent text-white/40 hover:text-white/70"
+              className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition sm:px-3 sm:py-2 ${
+                active ? "text-white" : "text-white/45 hover:bg-white/[0.04] hover:text-white/75"
               }`}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${tab.accent}33, ${tab.accent}14)`,
+                      boxShadow: `inset 0 0 0 1px ${tab.accent}88`,
+                    }
+                  : undefined
+              }
             >
-              <Icon className={`h-3 w-3 ${active ? "text-[#7c9bff]" : "text-white/35"}`} />
-              {tab.label}
+              <span
+                className="relative h-6 w-6 shrink-0 overflow-hidden rounded-md border bg-black/50 sm:h-7 sm:w-7"
+                style={{ borderColor: active ? `${tab.accent}99` : "rgba(255,255,255,0.18)" }}
+              >
+                <img
+                  src={tab.image}
+                  alt=""
+                  aria-hidden
+                  className="h-full w-full object-cover object-center brightness-110 contrast-110"
+                />
+              </span>
+              <span className="font-tech text-[11px] font-bold uppercase tracking-[0.14em] sm:text-[12px]">
+                {tab.label}
+              </span>
             </button>
           );
         })}
