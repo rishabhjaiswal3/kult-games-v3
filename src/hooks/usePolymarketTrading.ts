@@ -14,7 +14,7 @@ import {
   PUSD_ADDRESS,
   PUSD_DECIMALS,
 } from "@/lib/polygonUsdc";
-import { getBuilderCode, getClobClient, hasCachedCreds } from "@/lib/polymarketClob";
+import { clearCachedCreds, getBuilderCode, getClobClient, hasCachedCreds } from "@/lib/polymarketClob";
 import {
   deriveDepositWalletAddress,
   ensureDepositWalletDeployed,
@@ -228,15 +228,37 @@ export function usePolymarketTrading() {
 
       setStatus("placing-order");
       const provider = await activeWallet.getEthereumProvider();
-      const client = await getClobClient(activeWallet.address, provider, depositWallet);
-
       const builderCode = getBuilderCode();
-      const result = await client.createAndPostMarketOrder({
-        tokenID: tokenId,
-        amount: amountUsd,
-        side: Side.BUY,
-        ...(builderCode ? { builderCode } : {}),
-      });
+      const owner = activeWallet.address;
+
+      async function submitOrder() {
+        const client = await getClobClient(owner, provider, depositWallet);
+        return client.createAndPostMarketOrder({
+          tokenID: tokenId,
+          amount: amountUsd,
+          side: Side.BUY,
+          ...(builderCode ? { builderCode } : {}),
+        });
+      }
+
+      let result;
+      try {
+        result = await submitOrder();
+      } catch (orderErr) {
+        // A cached CLOB API key can go stale (derived before a deposit-wallet
+        // re-derivation, or invalidated server-side) and gets rejected on
+        // /order even though wrapping/approvals upstream all succeeded --
+        // that shows up here as a cross-origin "Network Error" (the browser
+        // can't read a 403 response's body from a different origin), not a
+        // clear auth error. Drop the cached key and retry once with a
+        // freshly derived one before giving up.
+        clearCachedCreds(owner);
+        try {
+          result = await submitOrder();
+        } catch {
+          throw orderErr; // surface the original failure, not the retry's
+        }
+      }
 
       setStatus("done");
       return result as { orderId?: string };

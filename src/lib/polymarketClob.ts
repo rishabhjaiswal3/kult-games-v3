@@ -41,6 +41,18 @@ export function hasCachedCreds(address: string): boolean {
   return loadCachedCreds(address) !== null;
 }
 
+/**
+ * Drops a cached CLOB API key so the next getClobClient() call re-derives a
+ * fresh one. Used when an order is rejected by Polymarket's server despite a
+ * cached key existing locally -- e.g. a key derived before some account-side
+ * change (deposit wallet re-derivation, a Polymarket-side key rotation) can
+ * go stale and get rejected on /order even though everything upstream
+ * (wrapping, approvals) succeeded.
+ */
+export function clearCachedCreds(address: string): void {
+  localStorage.removeItem(credsStorageKey(address));
+}
+
 /** The wallet's cached CLOB API key creds, if already derived. */
 export function getCachedCreds(address: string): ApiKeyCreds | null {
   return loadCachedCreds(address);
