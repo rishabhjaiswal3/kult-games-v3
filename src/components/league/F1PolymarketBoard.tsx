@@ -174,7 +174,7 @@ function F1MarketCard({ market }: { market: PolyMarket }) {
 export function F1PolymarketBoard() {
   const { data: markets, isLoading } = useQuery({
     queryKey: ["polymarket", "f1", "markets"],
-    queryFn: () => fetchF1Markets(30),
+    queryFn: () => fetchF1Markets(100),
     staleTime: 30_000,
     refetchInterval: 30_000,
   });
