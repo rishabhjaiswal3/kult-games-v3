@@ -9,6 +9,8 @@ const DATA_API_BASE = "https://data-api.polymarket.com";
 
 export type PolyMarket = {
   id: string;
+  /** Polymarket's condition id -- NOT the same value as `id` (that's Gamma's own numeric id). This is what a real position's `marketId` (from fetchUserPositions) is keyed by, so matching a card to an existing position must use this field, not `id`. */
+  conditionId?: string;
   question: string;
   category: string;
   short: string;
@@ -179,6 +181,7 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (quest
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
+    conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
     question,
     category: categoryFn(question),
     short: shorten(question, typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined),

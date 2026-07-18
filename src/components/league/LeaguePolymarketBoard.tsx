@@ -26,7 +26,6 @@ import {
   fetchResolvedFootballMarkets,
   fetchWorldCupMarkets,
   fetchPriceHistory,
-  fetchUserPositions,
   type PolyComment,
   type PolyEvent,
   type PolyMarket,
@@ -43,6 +42,7 @@ import { leagueApi } from "@/api/leagueApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketPositions } from "@/hooks/useMyPolymarketPositions";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -188,7 +188,7 @@ const MATCHES: Match[] = [
 
 const TRADER_ADDRESSES = ["0x7a2f…c41", "0x3b9d…e07", "0xf12a…9b4", "0x55c8…1de", "0x9e34…a6f", "0x0b71…d22", "0xc4a0…77e", "0x6df2…334", "0xab19…502", "0x2e8c…f90"];
 
-type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; noTokenId?: string; eventTitle?: string; gameTime?: number; dayChange?: number };
+type BaseMarket = { id: string; conditionId?: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; noTokenId?: string; eventTitle?: string; gameTime?: number; dayChange?: number };
 
 type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
 
@@ -695,6 +695,10 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
   const [stakeUsd, setStakeUsd] = useState(10);
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
+  // Real position (survives refresh) -- placedOrder above is just the
+  // optimistic "order just went through" flash before this catches up.
+  const myPosition = useMyPositionForMarket(market.conditionId);
+  const refreshPositions = useRefreshPolymarketPositions();
 
   const { data: signals } = useQuery({
     queryKey: ["polymarket", "signals", market.id],
@@ -736,6 +740,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
     try {
       const result = await placeMarketBuy(tokenId, stakeUsd);
       setPlacedOrder({ side, orderId: result.orderId });
+      refreshPositions();
     } catch {
       // tradeError from the hook already surfaces this
     }
@@ -765,14 +770,25 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
           </p>
         ) : null}
 
+        {myPosition ? (
+          <div className={`mt-2 flex items-center justify-between rounded-md border px-2.5 py-1.5 ${myPosition.side === "YES" ? "border-emerald-400/30 bg-emerald-400/10" : "border-rose-400/30 bg-rose-400/10"}`}>
+            <span className={`font-tech text-[9px] font-bold uppercase tracking-wider ${myPosition.side === "YES" ? "text-emerald-300" : "text-rose-300"}`}>
+              You hold {myPosition.shares.toFixed(2)} {myPosition.side} @ {myPosition.entry}¢
+            </span>
+            <span className={`font-tech text-[9px] font-bold ${myPosition.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+              {myPosition.pnl >= 0 ? "+" : ""}${myPosition.pnl.toFixed(2)}
+            </span>
+          </div>
+        ) : null}
+
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
             type="number"
-            min={1}
-            step={1}
+            min={0.1}
+            step={0.1}
             value={stakeUsd}
-            onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+            onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
             disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
@@ -1113,10 +1129,10 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
           type="number"
-          min={1}
-          step={1}
+          min={0.1}
+          step={0.1}
           value={stakeUsd}
-          onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+          onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
           disabled={isTrading}
           className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
         />
@@ -1222,14 +1238,8 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
 
 /** Real positions for the connected wallet (docs/polymarket) -- was previously always-fake data labeled "Your positions" regardless of login state. */
 function OpenPositions() {
-  const { isAuthenticated, walletAddress, login } = useAuth();
-
-  const { data: rows, isLoading } = useQuery({
-    queryKey: ["polymarket", "positions", walletAddress],
-    queryFn: () => fetchUserPositions(walletAddress!),
-    enabled: isAuthenticated && !!walletAddress,
-    staleTime: 30_000,
-  });
+  const { isAuthenticated, login } = useAuth();
+  const { data: rows, isLoading } = useMyPolymarketPositions();
 
   const totalPnl = (rows ?? []).reduce((sum, row) => sum + row.pnl, 0);
 

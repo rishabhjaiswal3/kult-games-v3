@@ -6,6 +6,7 @@ import { fetchF1Markets, type PolyMarket } from "@/api/polymarketApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMyPositionForMarket, useRefreshPolymarketPositions } from "@/hooks/useMyPolymarketPositions";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
@@ -38,6 +39,8 @@ function F1MarketCard({ market }: { market: PolyMarket }) {
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
   const [stakeUsd, setStakeUsd] = useState(10);
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
+  const myPosition = useMyPositionForMarket(market.conditionId);
+  const refreshPositions = useRefreshPolymarketPositions();
 
   const { data: signals } = useQuery({
     queryKey: ["polymarket", "signals", market.id],
@@ -77,6 +80,7 @@ function F1MarketCard({ market }: { market: PolyMarket }) {
     try {
       const result = await placeMarketBuy(tokenId, stakeUsd);
       setPlacedOrder({ side, orderId: result.orderId });
+      refreshPositions();
     } catch {
       // tradeError from the hook already surfaces this
     }
@@ -99,14 +103,25 @@ function F1MarketCard({ market }: { market: PolyMarket }) {
         </p>
       ) : null}
 
+      {myPosition ? (
+        <div className={`mt-2 flex items-center justify-between rounded-md border px-2.5 py-1.5 ${myPosition.side === "YES" ? "border-emerald-400/30 bg-emerald-400/10" : "border-rose-400/30 bg-rose-400/10"}`}>
+          <span className={`font-tech text-[9px] font-bold uppercase tracking-wider ${myPosition.side === "YES" ? "text-emerald-300" : "text-rose-300"}`}>
+            You hold {myPosition.shares.toFixed(2)} {myPosition.side} @ {myPosition.entry}¢
+          </span>
+          <span className={`font-tech text-[9px] font-bold ${myPosition.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+            {myPosition.pnl >= 0 ? "+" : ""}${myPosition.pnl.toFixed(2)}
+          </span>
+        </div>
+      ) : null}
+
       <div className="mt-3 flex items-center gap-2">
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
           type="number"
-          min={1}
-          step={1}
+          min={0.1}
+          step={0.1}
           value={stakeUsd}
-          onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+          onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
           disabled={isTrading || !isRealMarket}
           className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
         />
