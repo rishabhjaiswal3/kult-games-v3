@@ -48,6 +48,7 @@ import { useDepositWalletPusdBalance } from "@/hooks/useDepositWalletPusdBalance
 import { useDepositWalletAddress } from "@/hooks/useDepositWalletAddress";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
+import { useNumericInput } from "@/hooks/useNumericInput";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { PolymarketDepositModal } from "./PolymarketDepositModal";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
@@ -753,7 +754,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
   const { isAuthenticated, login } = useAuth();
   const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const [stakeUsd, setStakeUsd] = useState(10);
+  const stake = useNumericInput(10, { min: 1, integer: true });
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
 
   const { data: signals } = useQuery({
@@ -794,7 +795,8 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
     if (!tokenId || isTrading) return;
     setPlacedOrder(null);
     try {
-      const result = await placeMarketBuy(tokenId, stakeUsd);
+      const amount = stake.commit();
+      const result = await placeMarketBuy(tokenId, amount);
       setPlacedOrder({ side, orderId: result.orderId });
     } catch {
       // tradeError from the hook already surfaces this
@@ -828,11 +830,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
-            type="number"
-            min={1}
-            step={1}
-            value={stakeUsd}
-            onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+            {...stake.inputProps}
             disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
@@ -1062,7 +1060,7 @@ function formatKickoffCountdown(kickoff: number, now: number): string {
 function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
   const { isAuthenticated, login } = useAuth();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const [stakeUsd, setStakeUsd] = useState(10);
+  const stake = useNumericInput(10, { min: 1, integer: true });
   const [placed, setPlaced] = useState<{ id: string; side: "YES" | "NO" } | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -1120,7 +1118,8 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
     if (!tokenId || isTrading) return;
     setPlaced(null);
     try {
-      await placeMarketBuy(tokenId, stakeUsd);
+      const amount = stake.commit();
+      await placeMarketBuy(tokenId, amount);
       setPlaced({ id: market.id, side });
     } catch {
       // tradeError from the hook already surfaces this
@@ -1172,11 +1171,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
       <div className="relative mb-2 flex items-center gap-2">
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
-          type="number"
-          min={1}
-          step={1}
-          value={stakeUsd}
-          onChange={(e) => setStakeUsd(Math.max(1, Number(e.target.value) || 1))}
+          {...stake.inputProps}
           disabled={isTrading}
           className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
         />
@@ -1210,7 +1205,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
                   />
                 </div>
                 {placedHere ? (
-                  <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-emerald-300">✓ {placedHere} order placed · ${stakeUsd}</p>
+                  <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-emerald-300">✓ {placedHere} order placed · ${stake.resolved}</p>
                 ) : null}
               </button>
               {/* Yes stacked over No on the right */}
