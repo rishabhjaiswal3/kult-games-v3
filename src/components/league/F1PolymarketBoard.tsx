@@ -6,13 +6,8 @@ import { fetchF1Markets, type PolyMarket } from "@/api/polymarketApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
-import { useDepositWalletPusdBalance } from "@/hooks/useDepositWalletPusdBalance";
-import { useDepositWalletAddress } from "@/hooks/useDepositWalletAddress";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
-import { PolymarketDepositModal } from "./PolymarketDepositModal";
-import { PolymarketWithdrawModal } from "./PolymarketWithdrawModal";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { PolymarketLogo } from "./PolymarketLogo";
 
@@ -22,7 +17,7 @@ import { PolymarketLogo } from "./PolymarketLogo";
  * instead of the full World Cup visual scaffolding (group tables, match
  * carousels, etc. don't have an F1 equivalent to replicate 1:1). Real
  * markets only (fetchF1Markets) -- renders nothing fake if Polymarket has
- * no live F1 markets right now.
+ * no live F1 markets right now. Wallet balance lives in LeaguePageHeader.
  */
 
 const SIGNAL_CONFIDENCE_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
@@ -35,62 +30,6 @@ const TRADING_STATUS_LABEL: Record<string, string> = {
   "deriving-key": "Setting up trading…",
   "placing-order": "Placing order…",
 };
-
-function F1WalletBalance() {
-  const { isAuthenticated, walletAddress, login } = useAuth();
-  const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
-  const { data: pusd, isLoading: pusdLoading } = useDepositWalletPusdBalance(walletAddress);
-  const { data: depositWalletAddress } = useDepositWalletAddress(walletAddress);
-  const [depositOpen, setDepositOpen] = useState(false);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
-
-  if (!isAuthenticated) {
-    return (
-      <button
-        type="button"
-        onClick={login}
-        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-[#2E5CFF]/40 hover:text-white"
-      >
-        Connect wallet to see your Polygon USDC balance
-      </button>
-    );
-  }
-
-  return (
-    <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Your Polygon USDC</span>
-        <span className="font-tech text-sm font-bold text-white">
-          {usdcLoading ? "…" : usdc != null ? `$${usdc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-wider text-white/35">Tradeable (pUSD)</span>
-        <span className="font-tech text-xs font-semibold text-white/70">
-          {pusdLoading ? "…" : pusd != null ? `$${pusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-1.5">
-        <button
-          type="button"
-          onClick={() => setDepositOpen(true)}
-          className="w-full rounded-lg border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#7c9bff] transition hover:bg-[#2E5CFF]/20"
-        >
-          Fund wallet
-        </button>
-        <button
-          type="button"
-          onClick={() => setWithdrawOpen(true)}
-          className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/60 transition hover:border-white/30 hover:text-white"
-        >
-          Withdraw
-        </button>
-      </div>
-      <PolymarketDepositModal open={depositOpen} onOpenChange={setDepositOpen} walletAddress={depositWalletAddress ?? null} />
-      <PolymarketWithdrawModal open={withdrawOpen} onOpenChange={setWithdrawOpen} availablePusd={pusd ?? null} />
-    </div>
-  );
-}
 
 function F1MarketCard({ market }: { market: PolyMarket }) {
   const navigate = useNavigate();
@@ -254,32 +193,24 @@ export function F1PolymarketBoard() {
         </div>
       </div>
 
-      <div className="grid w-full min-w-0 grid-cols-1 items-start gap-2.5 lg:grid-cols-12 lg:gap-3">
-        <div className="min-w-0 w-full lg:col-span-9">
-          {isLoading ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-64 animate-pulse rounded-xl border border-white/10 bg-white/[0.03]" />
-              ))}
-            </div>
-          ) : !markets || markets.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-10 text-center">
-              <Loader2 className="h-5 w-5 text-white/30" />
-              <p className="font-mono text-xs text-white/40">No live Formula 1 markets on Polymarket right now — check back later.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {markets.map((market) => (
-                <F1MarketCard key={market.id} market={market} />
-              ))}
-            </div>
-          )}
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-64 animate-pulse rounded-xl border border-white/10 bg-white/[0.03]" />
+          ))}
         </div>
-
-        <div className="min-w-0 w-full lg:col-span-3">
-          <F1WalletBalance />
+      ) : !markets || markets.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-10 text-center">
+          <Loader2 className="h-5 w-5 text-white/30" />
+          <p className="font-mono text-xs text-white/40">No live Formula 1 markets on Polymarket right now — check back later.</p>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {markets.map((market) => (
+            <F1MarketCard key={market.id} market={market} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
