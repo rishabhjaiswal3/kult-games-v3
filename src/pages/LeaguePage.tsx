@@ -21,7 +21,7 @@ import { LeagueWinRatePanel } from "@/components/league/LeagueWinRatePanel";
 import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
 import { LeagueTrashTalkPanel } from "@/components/league/LeagueTrashTalkPanel";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
-import { PolymarketLogo } from "@/components/league/PolymarketLogo";
+import { PolymarketMark } from "@/components/league/PolymarketLogo";
 import leagueModeKultBg from "@/assets/leagueImg.png";
 import leagueModePolymarketBg from "@/assets/polymarketImg.png";
 import footballSportImg from "@/assets/football.png";
@@ -430,7 +430,10 @@ function LeagueModeTabs({
 
         <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <PolymarketLogo className="h-4 w-auto text-[#7d97ff] sm:h-6" />
+            <PolymarketMark className="h-4 w-auto text-[#7d97ff] sm:h-5" />
+            <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">
+              Polymarket
+            </span>
             <span className="rounded-full border border-amber-400/30 bg-amber-400/15 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-amber-200 sm:px-2 sm:text-[9px]">
               Markets
             </span>
