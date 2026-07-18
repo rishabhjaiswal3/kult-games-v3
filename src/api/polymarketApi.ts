@@ -75,6 +75,57 @@ function isFootball(haystack: string): boolean {
   return FOOTBALL_TERMS.some((term) => text.includes(term));
 }
 
+// ── Formula 1 filtering ──────────────────────────────────────────────────────
+// Polymarket's tag-based endpoints (tag_slug=formula-one, tag_id, /events)
+// returned unrelated or empty results when checked live -- the "formula-one"
+// tag exists but isn't consistently applied to F1 markets. Keyword filtering
+// over the general active-markets feed (same approach as football above) is
+// what actually surfaces real live F1 markets (verified live: "Will Max
+// Verstappen be the 2026 F1 Drivers' Champion?" and sibling driver markets).
+const F1_TERMS = [
+  "f1 ",
+  " f1",
+  "formula 1",
+  "formula one",
+  "grand prix",
+  "drivers' champion",
+  "drivers champion",
+  "constructors' championship",
+  "constructors championship",
+  "verstappen",
+  "norris",
+  "piastri",
+  "leclerc",
+  "hamilton",
+  "russell",
+  "alonso",
+  "hadjar",
+  "red bull racing",
+  "mclaren f1",
+  "ferrari f1",
+  "mercedes-amg petronas",
+  "pole position",
+  "fastest lap",
+];
+
+const F1_EXCLUDE_TERMS = ["nfl", "super bowl", "nba", "mlb", "nhl", "cricket"];
+
+function isF1(haystack: string): boolean {
+  const text = haystack.toLowerCase();
+  if (F1_EXCLUDE_TERMS.some((term) => text.includes(term))) return false;
+  return F1_TERMS.some((term) => text.includes(term));
+}
+
+function deriveF1Category(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes("constructors")) return "Constructors' Championship";
+  if (q.includes("drivers") && q.includes("champion")) return "Drivers' Championship";
+  if (q.includes("pole")) return "Pole Position";
+  if (q.includes("fastest lap")) return "Fastest Lap";
+  if (q.includes("grand prix")) return "Race Winner";
+  return "Formula 1";
+}
+
 function deriveCategory(question: string): string {
   const q = question.toLowerCase();
   if (q.includes("world cup") || q.includes("fifa")) return "World Cup";
@@ -138,7 +189,7 @@ function parseTimestamp(value: unknown): number {
 
 type RawMarket = Record<string, unknown>;
 
-function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null {
+function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (question: string) => string = deriveCategory): PolyMarket | null {
   const question = typeof raw.question === "string" ? raw.question : "";
   if (!question) return null;
 
@@ -166,7 +217,7 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
     question,
-    category: deriveCategory(question),
+    category: categoryFn(question),
     short: shorten(question, typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined),
     yes,
     volume: formatVolume(volumeNum),
@@ -210,6 +261,36 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
     football.sort((a, b) => b.createdAt - a.createdAt);
 
     return football.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch the top Formula 1 markets by volume. Returns [] on any failure. */
+export async function fetchF1Markets(limit = 30): Promise<PolyMarket[]> {
+  try {
+    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume1wk&ascending=false`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const json: unknown = await res.json();
+    const list: RawMarket[] = Array.isArray(json)
+      ? (json as RawMarket[])
+      : Array.isArray((json as { data?: unknown })?.data)
+        ? ((json as { data: RawMarket[] }).data)
+        : [];
+
+    const f1 = list
+      .filter((raw) => {
+        const q = typeof raw.question === "string" ? raw.question : "";
+        const slug = typeof raw.slug === "string" ? raw.slug : "";
+        return isF1(`${q} ${slug}`);
+      })
+      .map((raw) => normalizeMarket(raw, undefined, deriveF1Category))
+      .filter((m): m is PolyMarket => m !== null);
+
+    f1.sort((a, b) => b.volumeNum - a.volumeNum);
+
+    return f1.slice(0, limit);
   } catch {
     return [];
   }

@@ -65,8 +65,25 @@ export function usePolymarketTrading() {
   const address = activeWallet?.address ?? null;
   const isReady = Boolean(address ? hasCachedCreds(address) : false);
 
-  /** Wraps just enough USDC.e -> pUSD to cover `amountUsd`, straight into the deposit wallet, if it's short. USDC.e is still pulled from the owner EOA's own balance. */
-  async function ensurePusdWrapped(owner: `0x${string}`, depositWallet: `0x${string}`, amountUsd: number) {
+  const WRAP_ABI = [{ type: "function", name: "wrap", stateMutability: "nonpayable", inputs: [{ name: "_asset", type: "address" }, { name: "_to", type: "address" }, { name: "_amount", type: "uint256" }], outputs: [] }] as const;
+
+  /**
+   * Wraps just enough USDC.e -> pUSD to cover `amountUsd`, straight into the
+   * deposit wallet, if it's short. Two possible sources for the shortfall,
+   * checked in order:
+   *   1. The owner EOA's own USDC.e (original path -- owner signs a plain
+   *      approve+wrap transaction).
+   *   2. The deposit wallet's OWN unwrapped USDC.e balance. This covers a
+   *      real failure mode: a user who sends USDC.e directly to their
+   *      deposit-wallet address (a valid-looking Polygon address, easy to
+   *      mistake for "the" deposit target) instead of going through the
+   *      bridge modal -- that USDC.e sits there unwrapped forever, because
+   *      nothing previously ever checked the deposit wallet's own USDC.e.
+   *      Wrapping it requires the deposit wallet itself to call wrap() (it
+   *      holds the USDC.e), so this is a signed relayer batch, same
+   *      mechanism as ensureDepositWalletApprovals.
+   */
+  async function ensurePusdWrapped(owner: `0x${string}`, depositWallet: `0x${string}`, amountUsd: number, provider: Eip1193LikeProvider) {
     const requiredRaw = parseUnits(amountUsd.toFixed(PUSD_DECIMALS), PUSD_DECIMALS);
 
     const currentPusd = await polygonPublicClient.readContract({
@@ -79,40 +96,61 @@ export function usePolymarketTrading() {
 
     const shortfall = requiredRaw - currentPusd;
 
-    const currentUsdc = await polygonPublicClient.readContract({
-      address: POLYGON_USDC_ADDRESS,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [owner],
-    });
-    if (currentUsdc < shortfall) {
-      throw new Error("Not enough USDC on Polygon to fund this trade.");
-    }
+    const [ownerUsdc, depositWalletUsdc] = await Promise.all([
+      polygonPublicClient.readContract({ address: POLYGON_USDC_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [owner] }),
+      polygonPublicClient.readContract({ address: POLYGON_USDC_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [depositWallet] }),
+    ]);
 
-    setStatus("wrapping");
+    if (ownerUsdc >= shortfall) {
+      setStatus("wrapping");
 
-    const onrampAllowance = await polygonPublicClient.readContract({
-      address: POLYGON_USDC_ADDRESS,
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [owner, COLLATERAL_ONRAMP_ADDRESS],
-    });
-    if (onrampAllowance < shortfall) {
-      const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] });
+      const onrampAllowance = await polygonPublicClient.readContract({
+        address: POLYGON_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [owner, COLLATERAL_ONRAMP_ADDRESS],
+      });
+      if (onrampAllowance < shortfall) {
+        const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] });
+        await sendPrivyTransaction(
+          { to: POLYGON_USDC_ADDRESS, value: 0n, data: approveData, chainId: POLYGON_CHAIN.decimalChainId },
+          { address: owner, uiOptions: { showWalletUIs: true } },
+        );
+      }
+
+      const wrapData = encodeFunctionData({ abi: WRAP_ABI, functionName: "wrap", args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall] });
       await sendPrivyTransaction(
-        { to: POLYGON_USDC_ADDRESS, value: 0n, data: approveData, chainId: POLYGON_CHAIN.decimalChainId },
+        { to: COLLATERAL_ONRAMP_ADDRESS, value: 0n, data: wrapData, chainId: POLYGON_CHAIN.decimalChainId },
         { address: owner, uiOptions: { showWalletUIs: true } },
       );
+      return;
     }
 
-    const wrapData = encodeFunctionData({
-      abi: [{ type: "function", name: "wrap", stateMutability: "nonpayable", inputs: [{ name: "_asset", type: "address" }, { name: "_to", type: "address" }, { name: "_amount", type: "uint256" }], outputs: [] }],
-      functionName: "wrap",
-      args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall],
-    });
-    await sendPrivyTransaction(
-      { to: COLLATERAL_ONRAMP_ADDRESS, value: 0n, data: wrapData, chainId: POLYGON_CHAIN.decimalChainId },
-      { address: owner, uiOptions: { showWalletUIs: true } },
+    if (depositWalletUsdc >= shortfall) {
+      setStatus("wrapping");
+
+      const depositWalletAllowance = await polygonPublicClient.readContract({
+        address: POLYGON_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [depositWallet, COLLATERAL_ONRAMP_ADDRESS],
+      });
+
+      const calls: DepositWalletCall[] = [];
+      if (depositWalletAllowance < shortfall) {
+        calls.push({ target: POLYGON_USDC_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] }) });
+      }
+      calls.push({ target: COLLATERAL_ONRAMP_ADDRESS, value: "0", data: encodeFunctionData({ abi: WRAP_ABI, functionName: "wrap", args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall] }) });
+
+      const walletClient = createWalletClient({ account: owner, chain: polygon, transport: custom(provider) });
+      await signAndSubmitDepositWalletBatch(walletClient, owner, depositWallet, calls);
+      return;
+    }
+
+    throw new Error(
+      `Not enough USDC to fund this trade. Your wallet (${owner}) has $${(Number(ownerUsdc) / 10 ** POLYGON_USDC_DECIMALS).toFixed(2)} ` +
+        `and your deposit wallet (${depositWallet}) has $${(Number(depositWalletUsdc) / 10 ** POLYGON_USDC_DECIMALS).toFixed(2)} USDC.e -- ` +
+        `need $${amountUsd} more. Fund via "Fund wallet" above so it arrives as pUSD automatically.`,
     );
   }
 
@@ -166,7 +204,7 @@ export function usePolymarketTrading() {
     const depositWallet = await deriveDepositWalletAddress(polygonPublicClient, owner);
     await ensureDepositWalletDeployed(owner, depositWallet);
 
-    await ensurePusdWrapped(owner, depositWallet, amountUsd);
+    await ensurePusdWrapped(owner, depositWallet, amountUsd, provider);
     await ensureDepositWalletApprovals(owner, depositWallet, provider);
 
     setStatus("deriving-key");

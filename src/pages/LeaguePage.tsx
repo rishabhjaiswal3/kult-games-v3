@@ -8,6 +8,7 @@ import { LeagueFightCarousel } from "@/components/league/LeagueFightCarousel";
 import { LeagueMomentsTicker } from "@/components/league/LeagueMomentsTicker";
 import { LeaguePageHeader } from "@/components/league/LeaguePageHeader";
 import { LeaguePolymarketBoard } from "@/components/league/LeaguePolymarketBoard";
+import { F1PolymarketBoard } from "@/components/league/F1PolymarketBoard";
 import { LeagueQuestionsCarousel } from "@/components/league/LeagueQuestionsCarousel";
 import { LeagueRecentPicks } from "@/components/league/LeagueRecentPicks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,7 +43,7 @@ const LeaguePage = () => {
         <LeaguePageHeader />
       </div>
       <LeagueModeTabs mode={mode} onModeChange={setMode} />
-      {mode === "league" ? <DifferentLeagueOptions /> : <LeaguePolymarketBoard />}
+      {mode === "league" ? <DifferentLeagueOptions /> : <PolymarketSportOptions />}
     </div>
   );
 };
@@ -107,6 +108,44 @@ function DifferentLeagueOptions() {
       </div>
 
       {sport === "football" ? <KultLeagueBoard /> : <Formula1Board />}
+    </div>
+  );
+}
+
+function PolymarketSportOptions() {
+  const [sport, setSport] = useState<SportTab>("football");
+
+  return (
+    <div className="min-w-0 space-y-3">
+      <div
+        role="tablist"
+        aria-label="Polymarket sport"
+        className="inline-flex w-fit max-w-full items-center gap-1 border-b border-white/10"
+      >
+        {SPORT_TABS.map((tab) => {
+          const active = sport === tab.id;
+          const Icon = tab.Icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setSport(tab.id)}
+              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] transition ${
+                active
+                  ? "border-white text-white"
+                  : "border-transparent text-white/40 hover:text-white/70"
+              }`}
+            >
+              <Icon className={`h-3 w-3 ${active ? "text-[#7c9bff]" : "text-white/35"}`} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {sport === "football" ? <LeaguePolymarketBoard /> : <F1PolymarketBoard />}
     </div>
   );
 }
