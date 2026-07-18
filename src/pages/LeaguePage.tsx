@@ -373,7 +373,7 @@ function LeagueModeTabs({
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
   const imgClass =
-    "pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-[82%] max-w-[390px] object-contain object-right sm:w-[46%] [mask-image:linear-gradient(to_right,transparent_0%,black_30%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_30%)]";
+    "pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-auto max-w-[62%] object-cover object-right sm:max-w-[56%] [mask-image:linear-gradient(to_right,transparent_0%,black_35%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_35%)]";
 
   return (
     <div className="mb-3 grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3" data-tour="league-mode-tabs">
@@ -392,7 +392,7 @@ function LeagueModeTabs({
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[42%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <span className="text-base leading-none text-emerald-300 sm:text-lg">♜</span>
             <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">
@@ -428,7 +428,7 @@ function LeagueModeTabs({
           aria-hidden
         />
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[42%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <PolymarketMark className="h-4 w-auto text-[#7d97ff] sm:h-5" />
             <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">

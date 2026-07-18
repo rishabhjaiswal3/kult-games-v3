@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import {
   ArenaDialogBody,
@@ -10,6 +10,7 @@ import {
   ArenaDialogTitle,
 } from "@/components/ui/arena-dialog";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePolymarketWithdraw } from "@/hooks/usePolymarketWithdraw";
 
 type PolymarketWithdrawModalProps = {
@@ -24,6 +25,11 @@ const STATUS_LABEL: Record<string, string> = {
   withdrawing: "Withdrawing (check your wallet)…",
 };
 
+function shortenAddress(address: string) {
+  if (address.length < 18) return address;
+  return `${address.slice(0, 8)}…${address.slice(-6)}`;
+}
+
 /**
  * Moves tradeable pUSD from the Polymarket deposit wallet back to the
  * user's own wallet -- the withdrawal counterpart to PolymarketDepositModal.
@@ -32,14 +38,17 @@ const STATUS_LABEL: Record<string, string> = {
  * usePolymarketWithdraw.ts for why).
  */
 export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: PolymarketWithdrawModalProps) {
+  const { walletAddress } = useAuth();
   const { status, error, withdraw } = usePolymarketWithdraw();
   const [amount, setAmount] = useState<number>(availablePusd ?? 0);
   const [done, setDone] = useState<{ transactionID: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (open) {
       setAmount(availablePusd ?? 0);
       setDone(null);
+      setCopied(false);
     }
   }, [open, availablePusd]);
 
@@ -53,6 +62,17 @@ export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: P
       setDone(result);
     } catch {
       // error from the hook already surfaces below
+    }
+  }
+
+  async function copyAddress() {
+    if (!walletAddress) return;
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // clipboard may be blocked
     }
   }
 
@@ -76,6 +96,33 @@ export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: P
                 {availablePusd != null ? `$${availablePusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
               </span>
             </div>
+
+            <div className="mt-3 border-t border-white/8 pt-3">
+              <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-neon-cyan">Transfer to</span>
+              {walletAddress ? (
+                <div className="mt-1.5 flex min-w-0 items-center gap-2">
+                  <span
+                    className="min-w-0 flex-1 whitespace-nowrap font-mono text-xs text-foreground sm:text-sm"
+                    title={walletAddress}
+                  >
+                    {shortenAddress(walletAddress)}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 shrink-0 gap-1 rounded-lg border-white/10 bg-background/75 px-2 text-[10px]"
+                    onClick={() => void copyAddress()}
+                  >
+                    <Copy className="h-3 w-3" />
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="mt-1.5 font-tech text-[11px] text-white/45">Connect a wallet to withdraw</p>
+              )}
+            </div>
+
             <div className="mt-3 flex items-center gap-2">
               <span className="font-tech text-[10px] uppercase tracking-wider text-muted-foreground">Amount</span>
               <input
