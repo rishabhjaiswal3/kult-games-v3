@@ -162,16 +162,16 @@ export function usePolymarketTrading() {
    * signature, gasless -- Polymarket sponsors the relayed call).
    */
   // Every contract that can end up as an order's "spender": the two order
-  // book exchanges plus the two neg-risk (grouped/multi-outcome market)
-  // contracts. Missing any one of these produces the exact same symptom on
-  // whichever market happens to route through it: "not enough balance /
-  // allowance" naming that contract as spender, even with a fully-funded,
-  // otherwise-fully-approved deposit wallet.
+  // book exchanges plus the neg-risk (grouped/multi-outcome market) adapter.
+  // Missing any one of these produces the exact same symptom on whichever
+  // market happens to route through it: "not enough balance / allowance"
+  // naming that contract as spender, even with a fully-funded,
+  // otherwise-fully-approved deposit wallet. NOT exchangeV3 -- see the note
+  // on POLYMARKET_CONTRACTS in polygonUsdc.ts for why.
   const APPROVAL_SPENDERS: readonly `0x${string}`[] = [
     POLYMARKET_CONTRACTS.exchangeV2,
     POLYMARKET_CONTRACTS.negRiskExchangeV2,
     POLYMARKET_CONTRACTS.negRiskAdapter,
-    POLYMARKET_CONTRACTS.exchangeV3,
   ];
 
   async function ensureDepositWalletApprovals(owner: `0x${string}`, depositWallet: `0x${string}`, provider: Eip1193LikeProvider) {
