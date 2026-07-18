@@ -107,7 +107,21 @@ export async function getClobClient(address: string, provider: Eip1193Provider, 
   }
 
   const bootstrapClient = new ClobClient(clientOpts);
-  const creds = await bootstrapClient.createOrDeriveApiKey();
+  // NOT bootstrapClient.createOrDeriveApiKey(): that SDK method's own
+  // create-then-fall-back-to-derive logic only fires when create() RESOLVES
+  // with an empty key -- but throwOnError above makes a failed create()
+  // THROW instead ("Could not create api key", the literal message
+  // Polymarket's server sends back when a key already exists for this
+  // wallet), so the built-in fallback to fetch the existing key never runs.
+  // Replicate the intended behavior manually: try create, fall back to
+  // derive on any failure.
+  let creds: ApiKeyCreds;
+  try {
+    creds = await bootstrapClient.createApiKey();
+    if (!creds.key) throw new Error('empty key from createApiKey');
+  } catch {
+    creds = await bootstrapClient.deriveApiKey();
+  }
   saveCachedCreds(address, creds);
   return new ClobClient({ ...clientOpts, creds });
 }
