@@ -22,6 +22,10 @@ import { LeagueYourLineup } from "@/components/league/LeagueYourLineup";
 import { LeagueTrashTalkPanel } from "@/components/league/LeagueTrashTalkPanel";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { PolymarketLogo } from "@/components/league/PolymarketLogo";
+import leagueModeKultBg from "@/assets/leagueImg.png";
+import leagueModePolymarketBg from "@/assets/polymarketImg.png";
+import footballSportImg from "@/assets/football.png";
+import f1SportImg from "@/assets/f1/f1-car-hero.jpg";
 
 const LeaguePage = () => {
   const [mode, setMode] = useState<"league" | "polymarket">("league");
@@ -69,9 +73,11 @@ const SPORT_TABS: {
   id: SportTab;
   label: string;
   Icon: typeof Goal;
+  image: string;
+  accent: string;
 }[] = [
-  { id: "football", label: "Football", Icon: Goal },
-  { id: "f1", label: "Formula 1", Icon: Gauge },
+  { id: "football", label: "Football", Icon: Goal, image: footballSportImg, accent: "#34d399" },
+  { id: "f1", label: "Formula 1", Icon: Gauge, image: f1SportImg, accent: "#a855f7" },
 ];
 
 function DifferentLeagueOptions() {
@@ -82,11 +88,10 @@ function DifferentLeagueOptions() {
       <div
         role="tablist"
         aria-label="League sport"
-        className="inline-flex w-fit max-w-full items-center gap-1 border-b border-white/10"
+        className="inline-flex w-fit max-w-full items-center gap-1.5 rounded-xl border border-white/[0.08] bg-[#080910] p-1"
       >
         {SPORT_TABS.map((tab) => {
           const active = sport === tab.id;
-          const Icon = tab.Icon;
           return (
             <button
               key={tab.id}
@@ -94,14 +99,32 @@ function DifferentLeagueOptions() {
               role="tab"
               aria-selected={active}
               onClick={() => setSport(tab.id)}
-              className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-2.5 py-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.14em] transition ${
-                active
-                  ? "border-white text-white"
-                  : "border-transparent text-white/40 hover:text-white/70"
+              className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition sm:px-3 sm:py-2 ${
+                active ? "text-white" : "text-white/45 hover:bg-white/[0.04] hover:text-white/75"
               }`}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${tab.accent}33, ${tab.accent}14)`,
+                      boxShadow: `inset 0 0 0 1px ${tab.accent}88`,
+                    }
+                  : undefined
+              }
             >
-              <Icon className={`h-3 w-3 ${active ? "text-emerald-300" : "text-white/35"}`} />
-              {tab.label}
+              <span
+                className="relative h-6 w-6 shrink-0 overflow-hidden rounded-md border bg-black/50 sm:h-7 sm:w-7"
+                style={{ borderColor: active ? `${tab.accent}99` : "rgba(255,255,255,0.18)" }}
+              >
+                <img
+                  src={tab.image}
+                  alt=""
+                  aria-hidden
+                  className="h-full w-full object-cover object-center brightness-110 contrast-110"
+                />
+              </span>
+              <span className="font-tech text-[11px] font-bold uppercase tracking-[0.14em] sm:text-[12px]">
+                {tab.label}
+              </span>
             </button>
           );
         })}
@@ -332,28 +355,78 @@ function LeagueModeTabs({
   mode: "league" | "polymarket";
   onModeChange: (mode: "league" | "polymarket") => void;
 }) {
+  const imgClass =
+    "pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-right brightness-125 contrast-125 saturate-150";
+
   return (
-    <div className="mb-3 grid grid-cols-2 gap-2 sm:gap-3" data-tour="league-mode-tabs">
+    <div className="mb-3 grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3" data-tour="league-mode-tabs">
       <button
         type="button"
         onClick={() => onModeChange("league")}
-        className={`rounded-xl border p-3 text-left transition sm:p-5 ${mode === "league" ? "border-emerald-400/55 bg-[radial-gradient(circle_at_0%_0%,rgba(52,211,153,0.14),transparent_48%),#080d12] shadow-[0_0_22px_rgba(52,211,153,0.1)]" : "border-white/10 bg-[#070911] hover:border-emerald-400/30"}`}
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080d12] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
+          mode === "league"
+            ? "border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.35)]"
+            : "border-emerald-400/45 shadow-[0_0_18px_rgba(52,211,153,0.18)] hover:border-emerald-400/70"
+        }`}
       >
-        <span className="flex flex-wrap items-center gap-1.5 font-tech text-sm font-bold uppercase text-white sm:gap-2 sm:text-lg"><span className="text-emerald-300">♜</span> Kult League <span className="rounded-full bg-emerald-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-emerald-300 sm:px-2 sm:text-[9px]">KP</span></span>
-        <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents predict on the board. Build knowledge points, reputation, and your record.</span>
-        <span className="mt-3 block font-tech text-[9px] font-bold uppercase tracking-wider text-emerald-300 sm:mt-4 sm:text-[10px]">{mode === "league" ? "Active" : "Open →"}<span className="hidden sm:inline"> board</span></span>
+        <img src={leagueModeKultBg} alt="" aria-hidden className={imgClass} />
+        <div
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.45)_38%,rgba(0,0,0,0.12)_62%,transparent_100%)]"
+          aria-hidden
+        />
+
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-base leading-none text-emerald-300 sm:text-lg">♜</span>
+            <span className="font-tech text-[13px] font-black uppercase tracking-wide text-white sm:text-lg">
+              Kult League
+            </span>
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/15 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-emerald-200 sm:px-2 sm:text-[9px]">
+              KP
+            </span>
+          </div>
+
+          <p className="mt-2 text-[11px] leading-relaxed text-white/85 sm:mt-3 sm:text-[13px]">
+            Agents predict on the board. Build knowledge points, reputation, and your record.
+          </p>
+
+          <span className="mt-auto pt-3 font-tech text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300 sm:pt-4 sm:text-[11px]">
+            {mode === "league" ? "Active board" : "Open → board"}
+          </span>
+        </div>
       </button>
+
       <button
         type="button"
         onClick={() => onModeChange("polymarket")}
-        className={`rounded-xl border p-3 text-left transition sm:p-5 ${mode === "polymarket" ? "border-[#2E5CFF]/60 bg-[radial-gradient(circle_at_0%_0%,rgba(46,92,255,0.16),transparent_48%),#080b14] shadow-[0_0_22px_rgba(46,92,255,0.12)]" : "border-white/10 bg-[#070911] hover:border-[#2E5CFF]/35"}`}
+        className={`group relative flex min-h-[132px] min-w-0 flex-col overflow-hidden rounded-xl border bg-[#080b14] p-3 text-left transition sm:min-h-[168px] sm:p-5 ${
+          mode === "polymarket"
+            ? "border-[#2E5CFF] shadow-[0_0_28px_rgba(46,92,255,0.4)]"
+            : "border-[#2E5CFF]/45 shadow-[0_0_18px_rgba(46,92,255,0.2)] hover:border-[#2E5CFF]/70"
+        }`}
       >
-        <span className="flex flex-wrap items-center gap-1.5 font-tech text-sm font-bold text-white sm:gap-2 sm:text-lg">
-          <PolymarketLogo className="h-5 w-auto text-[#7d97ff] sm:h-6" />
-          <span className="rounded-full bg-amber-400/15 px-1.5 py-1 text-[8px] uppercase tracking-wider text-amber-300 sm:px-2 sm:text-[9px]">Markets</span>
-        </span>
-        <span className="mt-3 hidden max-w-xl text-sm leading-relaxed text-white/55 sm:block">Agents use the same record to recommend market calls. Every decision stays with you.</span>
-        <span className="mt-3 block font-tech text-[9px] font-bold uppercase tracking-wider text-[#7d97ff] sm:mt-4 sm:text-[10px]">{mode === "polymarket" ? "Active" : "Open →"}<span className="hidden sm:inline"> markets</span></span>
+        <img src={leagueModePolymarketBg} alt="" aria-hidden className={imgClass} />
+        <div
+          className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.45)_38%,rgba(0,0,0,0.12)_62%,transparent_100%)]"
+          aria-hidden
+        />
+
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col pr-[28%] sm:pr-[36%] [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+            <PolymarketLogo className="h-4 w-auto text-[#7d97ff] sm:h-6" />
+            <span className="rounded-full border border-amber-400/30 bg-amber-400/15 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-amber-200 sm:px-2 sm:text-[9px]">
+              Markets
+            </span>
+          </div>
+
+          <p className="mt-2 text-[11px] leading-relaxed text-white/85 sm:mt-3 sm:text-[13px]">
+            Agents use the same record to recommend market calls. Every decision stays with you.
+          </p>
+
+          <span className="mt-auto pt-3 font-tech text-[10px] font-bold uppercase tracking-[0.16em] text-[#7d97ff] sm:pt-4 sm:text-[11px]">
+            {mode === "polymarket" ? "Active markets" : "Open → markets"}
+          </span>
+        </div>
       </button>
     </div>
   );

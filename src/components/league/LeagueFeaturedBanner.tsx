@@ -153,14 +153,14 @@ export function LeagueFeaturedBanner() {
                     teamName={match.home}
                     className="mx-auto h-11 w-11 border-blue-400/35 sm:h-[3.25rem] sm:w-[3.25rem]"
                   />
-                  <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.home}</p>
+                  <p className="mt-1 truncate font-tech text-[11px] font-black uppercase text-white sm:text-xs">{match.home}</p>
                 </div>
-                <div className="min-w-[88px] text-center sm:min-w-[130px]">
+                <div className="min-w-0 px-1 text-center sm:min-w-[7rem] sm:px-0">
                   <p className="font-tech text-[8px] uppercase tracking-[0.26em] text-[#aaa9dc] sm:text-[10px]">
                     {formatStage(match.stage)}
                     {match.matchday ? ` · MD ${match.matchday}` : ""}
                   </p>
-                  <p className="my-0.5 font-display text-3xl font-black text-[#a78bfa]">
+                  <p className="my-0.5 font-display text-2xl font-black text-[#a78bfa] sm:text-3xl">
                     {match.isLive && match.homeScore !== null && match.awayScore !== null
                       ? `${match.homeScore} - ${match.awayScore}`
                       : "VS"}
@@ -176,7 +176,7 @@ export function LeagueFeaturedBanner() {
                     teamName={match.away}
                     className="mx-auto h-11 w-11 border-cyan-400/35 sm:h-[3.25rem] sm:w-[3.25rem]"
                   />
-                  <p className="mt-1 font-tech text-xs font-black uppercase text-white">{match.away}</p>
+                  <p className="mt-1 truncate font-tech text-[11px] font-black uppercase text-white sm:text-xs">{match.away}</p>
                 </div>
               </div>
 
