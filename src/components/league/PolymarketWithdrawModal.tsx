@@ -30,45 +30,51 @@ function shortenAddress(address: string) {
   return `${address.slice(0, 8)}…${address.slice(-6)}`;
 }
 
+const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
+
 /**
- * Moves tradeable pUSD from the Polymarket deposit wallet back to the
- * user's own wallet -- the withdrawal counterpart to PolymarketDepositModal.
- * Unlike deposits (send-to-address or a plain wrap tx), this requires one
- * wallet signature authorizing the deposit wallet's own transfer() (see
- * usePolymarketWithdraw.ts for why).
+ * Moves tradeable pUSD from the Polymarket deposit wallet to any address --
+ * matches how real Polymarket's own withdrawal flow works (paste a
+ * destination address, funds go there), not just back to the connected
+ * wallet. Defaults the field to the user's own wallet since that's the
+ * common case, but it's editable. Requires one wallet signature authorizing
+ * the deposit wallet's own transfer() (see usePolymarketWithdraw.ts for why).
  */
 export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: PolymarketWithdrawModalProps) {
   const { walletAddress } = useAuth();
   const { status, error, withdraw } = usePolymarketWithdraw();
   const [amount, setAmount] = useState<number>(availablePusd ?? 0);
+  const [toAddress, setToAddress] = useState<string>(walletAddress ?? "");
   const [done, setDone] = useState<{ transactionID: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (open) {
       setAmount(availablePusd ?? 0);
+      setToAddress(walletAddress ?? "");
       setDone(null);
       setCopied(false);
     }
-  }, [open, availablePusd]);
+  }, [open, availablePusd, walletAddress]);
 
   const isBusy = status !== "idle" && status !== "done";
+  const addressValid = ADDRESS_RE.test(toAddress);
 
   async function handleWithdraw() {
-    if (amount <= 0) return;
+    if (amount <= 0 || !addressValid) return;
     setDone(null);
     try {
-      const result = await withdraw(amount);
+      const result = await withdraw(amount, toAddress);
       setDone(result);
     } catch {
       // error from the hook already surfaces below
     }
   }
 
-  async function copyAddress() {
-    if (!walletAddress) return;
+  async function copyToAddress() {
+    if (!addressValid) return;
     try {
-      await navigator.clipboard.writeText(walletAddress);
+      await navigator.clipboard.writeText(toAddress);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -82,9 +88,9 @@ export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: P
         <ArenaDialogHeader>
           <ArenaDialogTitle className="font-display text-left text-xl">Withdraw from Polymarket</ArenaDialogTitle>
           <ArenaDialogDescription className="text-left text-xs sm:text-sm">
-            Move your tradeable <span className="font-semibold text-neon-cyan">pUSD</span> back to your own wallet as{" "}
-            <span className="font-semibold text-neon-cyan">USDC.e</span> on Polygon. Requires one wallet signature --
-            no gas needed.
+            Move your tradeable <span className="font-semibold text-neon-cyan">pUSD</span> to any Polygon address --
+            defaults to your own wallet below, but you can paste a different one. Requires one wallet signature, no
+            gas needed.
           </ArenaDialogDescription>
         </ArenaDialogHeader>
 
@@ -95,32 +101,6 @@ export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: P
               <span className="font-tech text-sm font-bold text-foreground">
                 {availablePusd != null ? `$${availablePusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
               </span>
-            </div>
-
-            <div className="mt-3 border-t border-white/8 pt-3">
-              <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-neon-cyan">Transfer to</span>
-              {walletAddress ? (
-                <div className="mt-1.5 flex min-w-0 items-center gap-2">
-                  <span
-                    className="min-w-0 flex-1 whitespace-nowrap font-mono text-xs text-foreground sm:text-sm"
-                    title={walletAddress}
-                  >
-                    {shortenAddress(walletAddress)}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 shrink-0 gap-1 rounded-lg border-white/10 bg-background/75 px-2 text-[10px]"
-                    onClick={() => void copyAddress()}
-                  >
-                    <Copy className="h-3 w-3" />
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              ) : (
-                <p className="mt-1.5 font-tech text-[11px] text-white/45">Connect a wallet to withdraw</p>
-              )}
             </div>
 
             <div className="mt-3 flex items-center gap-2">
@@ -146,9 +126,56 @@ export function PolymarketWithdrawModal({ open, onOpenChange, availablePusd }: P
             </div>
           </div>
 
+          <div className="rounded-xl border border-white/10 bg-[#05070d]/95 p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-neon-cyan">Send To</span>
+              {walletAddress ? (
+                <button
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => setToAddress(walletAddress)}
+                  className="font-tech text-[9px] font-bold uppercase tracking-wider text-white/50 hover:text-white disabled:opacity-40"
+                >
+                  Use my wallet
+                </button>
+              ) : null}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="0x…"
+                value={toAddress}
+                onChange={(e) => setToAddress(e.target.value.trim())}
+                disabled={isBusy}
+                className="h-8 min-w-0 flex-1 rounded-md border border-white/15 bg-black/30 px-2 font-mono text-xs text-foreground outline-none focus:border-neon-cyan/50 disabled:opacity-50"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!addressValid}
+                className="h-8 shrink-0 gap-1 rounded-lg border-white/10 bg-background/75 px-2 text-[10px]"
+                onClick={() => void copyToAddress()}
+              >
+                <Copy className="h-3 w-3" />
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            {addressValid ? (
+              <p className="mt-1 font-mono text-[10px] text-white/40" title={toAddress}>
+                {shortenAddress(toAddress)}
+              </p>
+            ) : toAddress ? (
+              <p className="mt-1.5 text-[10px] text-rose-400">Not a valid Polygon address.</p>
+            ) : null}
+            <p className="mt-1.5 text-[10px] text-amber-200/80">
+              Double-check this address -- pUSD sent to the wrong address can't be recovered.
+            </p>
+          </div>
+
           <Button
             type="button"
-            disabled={isBusy || amount <= 0 || (availablePusd != null && amount > availablePusd)}
+            disabled={isBusy || amount <= 0 || !addressValid || (availablePusd != null && amount > availablePusd)}
             onClick={() => void handleWithdraw()}
             className="w-full gap-2"
           >
