@@ -187,10 +187,29 @@ async function submitToRelayer(payload: Record<string, unknown>): Promise<{ tran
  * address" call keyed only by the owner's address, safe to call repeatedly.
  * `depositWalletAddress` must be the address already derived via
  * deriveDepositWalletAddress() -- that's what /deployed checks, not owner.
+ *
+ * Submitting to the relayer only means the deploy tx was ACCEPTED, not that
+ * it's mined yet -- returning immediately let every caller downstream
+ * (wrapping, approvals, and critically the order itself) run against a
+ * deposit wallet that might not have on-chain code yet. Polymarket validates
+ * an order's maker signature via that contract's EIP-1271 check, so a first
+ * trade landing before deployment confirms would fail order validation
+ * (surfaces as a 403 on POST /order, which the CLOB client's axios call then
+ * reports as a generic cross-origin "Network Error" rather than the real
+ * status). Poll /deployed after submitting until it's actually true.
  */
 export async function ensureDepositWalletDeployed(owner: `0x${string}`, depositWalletAddress: `0x${string}`): Promise<void> {
   if (await isDepositWalletDeployed(depositWalletAddress)) return;
   await submitToRelayer({ type: "WALLET-CREATE", from: owner, to: DEPOSIT_WALLET_FACTORY });
+
+  const POLL_INTERVAL_MS = 1500;
+  const TIMEOUT_MS = 30_000;
+  const deadline = Date.now() + TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+    if (await isDepositWalletDeployed(depositWalletAddress)) return;
+  }
+  throw new Error("Your Polymarket trading wallet is still deploying -- please try again in a moment.");
 }
 
 /**

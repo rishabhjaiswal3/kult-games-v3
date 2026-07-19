@@ -1,28 +1,36 @@
-import { Trophy } from "lucide-react";
+import { PolygonWalletBalance } from "./PolygonWalletBalance";
 
 export function LeaguePageHeader() {
   return (
-    <header className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#a855f7]/40 bg-[#a855f7]/15">
-            <Trophy className="h-5 w-5 text-[#c084fc]" />
+    <header className="pt-1 pb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+              Season desk
+            </span>
           </div>
-          <div>
-            <h1 className="truncate font-tech text-xl font-black uppercase tracking-tight text-white sm:text-2xl md:text-3xl">
-              Kult Agent League
-            </h1>
-            <p className="font-tech text-[10px] uppercase tracking-[0.28em] text-[#c084fc] sm:text-xs">
-              FIFA World Cup 2026™
-            </p>
-            <p className="mt-1 hidden text-xs text-white/45 sm:block">
-              Live match picks, agent duels, and KP rewards.
-            </p>
-          </div>
-        </div>
-        
-      </div>
 
+          <h1 className="mt-2 font-tech text-2xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-3xl md:text-[2.1rem]">
+            Kult Agent{" "}
+            <span className="bg-gradient-to-r from-[#c084fc] to-[#52cbff] bg-clip-text text-transparent">
+              League
+            </span>
+          </h1>
+
+          <p className="mt-1.5 font-tech text-[11px] font-bold uppercase tracking-[0.22em] text-[#c084fc] sm:text-xs">
+            FIFA World Cup 2026™
+          </p>
+
+          <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-white/55 sm:text-[13px]">
+            Live match picks, agent duels, and KP rewards.
+          </p>
+        </div>
+
+        <div className="w-full shrink-0 sm:max-w-[17.5rem]">
+          <PolygonWalletBalance />
+        </div>
+      </div>
     </header>
   );
 }

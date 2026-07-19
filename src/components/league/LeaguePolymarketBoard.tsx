@@ -26,7 +26,6 @@ import {
   fetchResolvedFootballMarkets,
   fetchWorldCupMarkets,
   fetchPriceHistory,
-  fetchUserPositions,
   type PolyComment,
   type PolyEvent,
   type PolyMarket,
@@ -43,14 +42,11 @@ import { leagueApi } from "@/api/leagueApi";
 import { polymarketSignalApi } from "@/api/polymarketSignalApi";
 import { getLeagueAgent } from "@/constants/leagueAgents";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePolygonUsdcBalance } from "@/hooks/usePolygonUsdcBalance";
-import { useDepositWalletPusdBalance } from "@/hooks/useDepositWalletPusdBalance";
-import { useDepositWalletAddress } from "@/hooks/useDepositWalletAddress";
+import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketPositions } from "@/hooks/useMyPolymarketPositions";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { useNumericInput } from "@/hooks/useNumericInput";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
-import { PolymarketDepositModal } from "./PolymarketDepositModal";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
 import { PolymarketLogo } from "./PolymarketLogo";
@@ -193,7 +189,7 @@ const MATCHES: Match[] = [
 
 const TRADER_ADDRESSES = ["0x7a2f…c41", "0x3b9d…e07", "0xf12a…9b4", "0x55c8…1de", "0x9e34…a6f", "0x0b71…d22", "0xc4a0…77e", "0x6df2…334", "0xab19…502", "0x2e8c…f90"];
 
-type BaseMarket = { id: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; noTokenId?: string; eventTitle?: string; gameTime?: number; dayChange?: number };
+type BaseMarket = { id: string; conditionId?: string; question: string; category: string; short: string; yes: number; volume: string; tokenId?: string; noTokenId?: string; eventTitle?: string; gameTime?: number; dayChange?: number };
 
 type LiveMarket = BaseMarket & { dir: "up" | "down" | "flat"; delta: number; session: number };
 
@@ -336,7 +332,6 @@ export function LeaguePolymarketBoard() {
   return (
     <div className="min-w-0 space-y-3">
       <PolymarketComplianceNotice source={source} />
-      <PolygonWalletBalance />
       <BoardViewTabs view={view} onChange={setView} marketCount={liveMarkets.length} newsCount={MATCH_NEWS.length} />
 
       {source === "loading" ? (
@@ -598,61 +593,6 @@ function PolymarketComplianceNotice({ source }: { source: MarketSource }) {
   );
 }
 
-/**
- * Read-only balance readout (docs/polymarket §5 Phase 3, later migrated to
- * CTF Exchange V2 + pUSD, then to the deposit-wallet flow -- see
- * polymarketDepositWallet.ts). Funding is entirely on the user -- this just
- * confirms what's already there before Phase 4 lets them actually trade
- * against it. Shows both: plain USDC.e in the player's own wallet, and pUSD
- * in their Polymarket deposit wallet (the actual tradeable balance --
- * usePolymarketTrading auto-wraps USDC.e into pUSD there as needed before an
- * order, so this being $0 before a first trade is normal, not an error).
- */
-function PolygonWalletBalance() {
-  const { isAuthenticated, walletAddress, login } = useAuth();
-  const { data: usdc, isLoading: usdcLoading } = usePolygonUsdcBalance(walletAddress);
-  const { data: pusd, isLoading: pusdLoading } = useDepositWalletPusdBalance(walletAddress);
-  const { data: depositWalletAddress } = useDepositWalletAddress(walletAddress);
-  const [depositOpen, setDepositOpen] = useState(false);
-
-  if (!isAuthenticated) {
-    return (
-      <button
-        type="button"
-        onClick={login}
-        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-[#2E5CFF]/40 hover:text-white"
-      >
-        Connect wallet to see your Polygon USDC balance
-      </button>
-    );
-  }
-
-  return (
-    <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-tech text-[10px] font-bold uppercase tracking-wider text-white/50">Your Polygon USDC</span>
-        <span className="font-tech text-sm font-bold text-white">
-          {usdcLoading ? "…" : usdc != null ? `$${usdc.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-tech text-[9px] uppercase tracking-wider text-white/35">Tradeable (pUSD)</span>
-        <span className="font-tech text-xs font-semibold text-white/70">
-          {pusdLoading ? "…" : pusd != null ? `$${pusd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-        </span>
-      </div>
-      <button
-        type="button"
-        onClick={() => setDepositOpen(true)}
-        className="mt-1 w-full rounded-lg border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 px-2 py-1.5 font-tech text-[9px] font-bold uppercase tracking-wider text-[#7c9bff] transition hover:bg-[#2E5CFF]/20"
-      >
-        Fund wallet
-      </button>
-      <PolymarketDepositModal open={depositOpen} onOpenChange={setDepositOpen} walletAddress={depositWalletAddress ?? null} />
-    </div>
-  );
-}
-
 function OrbitalFlag({
   outcome,
   x,
@@ -756,6 +696,10 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
   const stake = useNumericInput(10, { min: 1, integer: true });
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
+  // Real position (survives refresh) -- placedOrder above is just the
+  // optimistic "order just went through" flash before this catches up.
+  const myPosition = useMyPositionForMarket(market.conditionId);
+  const refreshPositions = useRefreshPolymarketPositions();
 
   const { data: signals } = useQuery({
     queryKey: ["polymarket", "signals", market.id],
@@ -798,6 +742,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
       const amount = stake.commit();
       const result = await placeMarketBuy(tokenId, amount);
       setPlacedOrder({ side, orderId: result.orderId });
+      refreshPositions();
     } catch {
       // tradeError from the hook already surfaces this
     }
@@ -827,10 +772,25 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
           </p>
         ) : null}
 
+        {myPosition ? (
+          <div className={`mt-2 flex items-center justify-between rounded-md border px-2.5 py-1.5 ${myPosition.side === "YES" ? "border-emerald-400/30 bg-emerald-400/10" : "border-rose-400/30 bg-rose-400/10"}`}>
+            <span className={`font-tech text-[9px] font-bold uppercase tracking-wider ${myPosition.side === "YES" ? "text-emerald-300" : "text-rose-300"}`}>
+              You hold {myPosition.shares.toFixed(2)} {myPosition.side} @ {myPosition.entry}¢
+            </span>
+            <span className={`font-tech text-[9px] font-bold ${myPosition.pnl >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+              {myPosition.pnl >= 0 ? "+" : ""}${myPosition.pnl.toFixed(2)}
+            </span>
+          </div>
+        ) : null}
+
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
-            {...stake.inputProps}
+            type="number"
+            min={0.1}
+            step={0.1}
+            value={stakeUsd}
+            onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
             disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
@@ -1171,7 +1131,11 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
       <div className="relative mb-2 flex items-center gap-2">
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
-          {...stake.inputProps}
+          type="number"
+          min={0.1}
+          step={0.1}
+          value={stakeUsd}
+          onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
           disabled={isTrading}
           className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
         />
@@ -1277,14 +1241,8 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
 
 /** Real positions for the connected wallet (docs/polymarket) -- was previously always-fake data labeled "Your positions" regardless of login state. */
 function OpenPositions() {
-  const { isAuthenticated, walletAddress, login } = useAuth();
-
-  const { data: rows, isLoading } = useQuery({
-    queryKey: ["polymarket", "positions", walletAddress],
-    queryFn: () => fetchUserPositions(walletAddress!),
-    enabled: isAuthenticated && !!walletAddress,
-    staleTime: 30_000,
-  });
+  const { isAuthenticated, login } = useAuth();
+  const { data: rows, isLoading } = useMyPolymarketPositions();
 
   const totalPnl = (rows ?? []).reduce((sum, row) => sum + row.pnl, 0);
 

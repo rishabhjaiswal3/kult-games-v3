@@ -41,6 +41,18 @@ export function hasCachedCreds(address: string): boolean {
   return loadCachedCreds(address) !== null;
 }
 
+/**
+ * Drops a cached CLOB API key so the next getClobClient() call re-derives a
+ * fresh one. Used when an order is rejected by Polymarket's server despite a
+ * cached key existing locally -- e.g. a key derived before some account-side
+ * change (deposit wallet re-derivation, a Polymarket-side key rotation) can
+ * go stale and get rejected on /order even though everything upstream
+ * (wrapping, approvals) succeeded.
+ */
+export function clearCachedCreds(address: string): void {
+  localStorage.removeItem(credsStorageKey(address));
+}
+
 /** The wallet's cached CLOB API key creds, if already derived. */
 export function getCachedCreds(address: string): ApiKeyCreds | null {
   return loadCachedCreds(address);
@@ -95,7 +107,21 @@ export async function getClobClient(address: string, provider: Eip1193Provider, 
   }
 
   const bootstrapClient = new ClobClient(clientOpts);
-  const creds = await bootstrapClient.createOrDeriveApiKey();
+  // NOT bootstrapClient.createOrDeriveApiKey(): that SDK method's own
+  // create-then-fall-back-to-derive logic only fires when create() RESOLVES
+  // with an empty key -- but throwOnError above makes a failed create()
+  // THROW instead ("Could not create api key", the literal message
+  // Polymarket's server sends back when a key already exists for this
+  // wallet), so the built-in fallback to fetch the existing key never runs.
+  // Replicate the intended behavior manually: try create, fall back to
+  // derive on any failure.
+  let creds: ApiKeyCreds;
+  try {
+    creds = await bootstrapClient.createApiKey();
+    if (!creds.key) throw new Error('empty key from createApiKey');
+  } catch {
+    creds = await bootstrapClient.deriveApiKey();
+  }
   saveCachedCreds(address, creds);
   return new ClobClient({ ...clientOpts, creds });
 }

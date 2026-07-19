@@ -9,6 +9,8 @@ const DATA_API_BASE = "https://data-api.polymarket.com";
 
 export type PolyMarket = {
   id: string;
+  /** Polymarket's condition id -- NOT the same value as `id` (that's Gamma's own numeric id). This is what a real position's `marketId` (from fetchUserPositions) is keyed by, so matching a card to an existing position must use this field, not `id`. */
+  conditionId?: string;
   question: string;
   category: string;
   short: string;
@@ -75,6 +77,20 @@ function isFootball(haystack: string): boolean {
   return FOOTBALL_TERMS.some((term) => text.includes(term));
 }
 
+// ── Formula 1 ────────────────────────────────────────────────────────────────
+// Category label for a flattened F1 sub-market -- see fetchF1Markets below
+// for how the underlying events are found (public-search, not keyword
+// filtering over the general markets feed -- that undercounted badly).
+function deriveF1Category(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes("constructors")) return "Constructors' Championship";
+  if (q.includes("drivers") && q.includes("champion")) return "Drivers' Championship";
+  if (q.includes("pole")) return "Pole Position";
+  if (q.includes("fastest lap")) return "Fastest Lap";
+  if (q.includes("grand prix")) return "Race Winner";
+  return "Formula 1";
+}
+
 function deriveCategory(question: string): string {
   const q = question.toLowerCase();
   if (q.includes("world cup") || q.includes("fifa")) return "World Cup";
@@ -138,7 +154,7 @@ function parseTimestamp(value: unknown): number {
 
 type RawMarket = Record<string, unknown>;
 
-function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null {
+function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (question: string) => string = deriveCategory): PolyMarket | null {
   const question = typeof raw.question === "string" ? raw.question : "";
   if (!question) return null;
 
@@ -165,8 +181,9 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string): PolyMarket | null
 
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
+    conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
     question,
-    category: deriveCategory(question),
+    category: categoryFn(question),
     short: shorten(question, typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined),
     yes,
     volume: formatVolume(volumeNum),
@@ -215,6 +232,55 @@ export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
   }
 }
 
+// Keyword-filtering the general top-100-by-volume markets feed (like
+// fetchFootballMarkets does) badly undercounts F1: a single F1 event like
+// "F1 Drivers' Champion" holds 30+ individual driver sub-markets, but only
+// the highest-volume few of those ever crack the top 100 overall, so the
+// old version of this function surfaced 4-6 markets when Polymarket
+// actually has ~80 real active ones. Polymarket's own public-search finds
+// the right EVENTS directly (confirmed live: "formula 1"/"f1" both surface
+// all 4 currently-active F1 events with a real totalResults count) --
+// fetch those, then flatten every one of their sub-markets, the same
+// approach fetchWorldCupMarkets already uses for its own event-grouped
+// markets (flattenOpenMarketsFromEvents).
+// "grand prix" was tried too but pulled in unrelated noise (fuzzy-matched a
+// GTA VI pricing market) without finding any real F1 event the other two
+// terms didn't already cover -- dropped.
+const F1_SEARCH_TERMS = ["formula 1", "f1"];
+
+async function fetchF1EventsRaw(): Promise<RawMarket[]> {
+  const seen = new Map<string, RawMarket>();
+  await Promise.all(
+    F1_SEARCH_TERMS.map(async (term) => {
+      try {
+        const url = `${GAMMA_BASE}/public-search?q=${encodeURIComponent(term)}&events_status=active&limit_per_type=50`;
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!res.ok) return;
+        const json = (await res.json()) as { events?: RawMarket[] };
+        for (const event of json.events ?? []) {
+          const id = typeof event.id === "string" ? event.id : String(event.id ?? "");
+          if (id && !seen.has(id)) seen.set(id, event);
+        }
+      } catch {
+        // one search term failing shouldn't drop the others
+      }
+    }),
+  );
+  return [...seen.values()];
+}
+
+/** Fetch every open Formula 1 market (flattened from all active F1 events). Returns [] on any failure. */
+export async function fetchF1Markets(limit = 100): Promise<PolyMarket[]> {
+  try {
+    const events = await fetchF1EventsRaw();
+    const f1 = flattenOpenMarketsFromEvents(events, deriveF1Category);
+    f1.sort((a, b) => b.volumeNum - a.volumeNum);
+    return f1.slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
 // ── Strict FIFA World Cup fetch ─────────────────────────────────────────────
 // Polymarket groups every FIFA World Cup event (match markets, exact scores,
 // team-to-advance, etc.) under the "soccer-fifwc" series. Fetching by series id
@@ -226,7 +292,7 @@ const WORLD_CUP_SERIES_ID = "11433";
 // the board, so they're skipped.
 const PLAYER_PROPS_SLUG = /-player-props$/;
 
-function flattenOpenMarketsFromEvents(events: RawMarket[]): PolyMarket[] {
+function flattenOpenMarketsFromEvents(events: RawMarket[], categoryFn: (question: string) => string = deriveCategory): PolyMarket[] {
   return events
     .filter((event) => !PLAYER_PROPS_SLUG.test(typeof event.slug === "string" ? event.slug : ""))
     .flatMap((event) => {
@@ -235,7 +301,7 @@ function flattenOpenMarketsFromEvents(events: RawMarket[]): PolyMarket[] {
       const markets = Array.isArray(event.markets) ? (event.markets as RawMarket[]) : [];
       return markets
         .filter((raw) => raw.active !== false && raw.closed !== true)
-        .map((raw) => normalizeMarket(raw, matchName || undefined));
+        .map((raw) => normalizeMarket(raw, matchName || undefined, categoryFn));
     })
     .filter((m): m is PolyMarket => m !== null);
 }

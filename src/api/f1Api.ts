@@ -44,6 +44,13 @@ export interface F1TeamHistoryEntry {
   team: { id: number; name: string; logo?: string };
 }
 
+export interface F1DriverStanding {
+  position: number;
+  points: number;
+  wins: number;
+  season: number;
+}
+
 export interface F1Driver {
   id: string;
   name: string;
@@ -58,15 +65,42 @@ export interface F1Driver {
   currentTeamId: string | null;
   currentTeam: F1Team | null;
   teamHistory: F1TeamHistoryEntry[] | null;
+  /** Only present from GET /v1/f1/drivers (the grid) -- current-season live standing. */
+  standing?: F1DriverStanding | null;
 }
+
+export type F1PredictionMarket = "WINNER" | "PODIUM" | "FASTEST_LAP";
+
+export const F1_PREDICTION_MARKETS: { key: F1PredictionMarket; label: string; question: string }[] = [
+  { key: "WINNER", label: "Race Winner", question: "Who wins the race?" },
+  { key: "PODIUM", label: "Podium", question: "Who finishes on the podium (top 3)?" },
+  { key: "FASTEST_LAP", label: "Fastest Lap", question: "Who sets the fastest lap?" },
+];
 
 export interface F1Prediction {
   id: string;
   raceId: string;
   agentId: string;
+  market: F1PredictionMarket;
   predictedDriverId: string;
   reasoning: string | null;
+  /** null until the race is settled (POST /v1/f1/races/:raceId/settle) -- then true/false. */
+  isCorrect: boolean | null;
+  settledAt: string | null;
   predictedDriver?: F1Driver;
+}
+
+export interface F1FantasyTeam {
+  id: string;
+  agentId: string;
+  season: number;
+  name: string;
+  driverId: string;
+  constructorId: string;
+  reasoning: string | null;
+  totalPoints: number;
+  driver: F1Driver;
+  constructor: F1Team;
 }
 
 export const f1Api = {
@@ -94,17 +128,48 @@ export const f1Api = {
     return data.prediction;
   },
 
-  makePick: async (raceId: string, agentId: string, driverId: string, reasoning?: string): Promise<F1Prediction> => {
+  makePick: async (raceId: string, agentId: string, driverId: string, market: F1PredictionMarket = "WINNER", reasoning?: string): Promise<F1Prediction> => {
     const { data } = await http().post<{ pick: F1Prediction }>(`/v1/f1/races/${raceId}/pick`, {
       agentId,
       driverId,
+      market,
       reasoning,
     });
     return data.pick;
   },
 
-  getPick: async (raceId: string, agentId: string): Promise<F1Prediction | null> => {
-    const { data } = await http().get<{ pick: F1Prediction | null }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
-    return data.pick;
+  /** All of an agent's picks for a race -- one per market (Winner/Podium/Fastest Lap). */
+  getPicks: async (raceId: string, agentId: string): Promise<F1Prediction[]> => {
+    const { data } = await http().get<{ picks: F1Prediction[] }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
+    return data.picks ?? [];
+  },
+
+  /** "Let AI Predict" -- the AI names the driver itself and the pick is saved immediately. */
+  predictPick: async (raceId: string, agentId: string, market: F1PredictionMarket = "WINNER"): Promise<{ pick: F1Prediction; source: "AI" | "FALLBACK" }> => {
+    const { data } = await http().post<{ pick: F1Prediction; source: "AI" | "FALLBACK" }>(`/v1/f1/races/${raceId}/predict-pick`, {
+      agentId,
+      market,
+    });
+    return data;
+  },
+
+  /** "AI drafts my fantasy team" -- one driver + their real constructor. Re-drafting overwrites the previous pick. */
+  draftFantasyTeam: async (agentId: string, season?: number): Promise<F1FantasyTeam> => {
+    const { data } = await http().post<{ team: F1FantasyTeam }>("/v1/f1/fantasy/draft", { agentId, season });
+    return data.team;
+  },
+
+  getFantasyTeam: async (agentId: string, season?: number): Promise<F1FantasyTeam | null> => {
+    const { data } = await http().get<{ team: F1FantasyTeam | null }>(`/v1/f1/fantasy/team/${agentId}`, {
+      params: season ? { season } : undefined,
+    });
+    return data.team ?? null;
+  },
+
+  getFantasyLeaderboard: async (season?: number): Promise<F1FantasyTeam[]> => {
+    const { data } = await http().get<{ teams: F1FantasyTeam[] }>("/v1/f1/fantasy/leaderboard", {
+      params: season ? { season } : undefined,
+    });
+    return data.teams ?? [];
   },
 };

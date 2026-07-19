@@ -14,7 +14,7 @@ import {
   PUSD_ADDRESS,
   PUSD_DECIMALS,
 } from "@/lib/polygonUsdc";
-import { getBuilderCode, getClobClient, hasCachedCreds } from "@/lib/polymarketClob";
+import { clearCachedCreds, getBuilderCode, getClobClient, hasCachedCreds } from "@/lib/polymarketClob";
 import {
   deriveDepositWalletAddress,
   ensureDepositWalletDeployed,
@@ -65,8 +65,25 @@ export function usePolymarketTrading() {
   const address = activeWallet?.address ?? null;
   const isReady = Boolean(address ? hasCachedCreds(address) : false);
 
-  /** Wraps just enough USDC.e -> pUSD to cover `amountUsd`, straight into the deposit wallet, if it's short. USDC.e is still pulled from the owner EOA's own balance. */
-  async function ensurePusdWrapped(owner: `0x${string}`, depositWallet: `0x${string}`, amountUsd: number) {
+  const WRAP_ABI = [{ type: "function", name: "wrap", stateMutability: "nonpayable", inputs: [{ name: "_asset", type: "address" }, { name: "_to", type: "address" }, { name: "_amount", type: "uint256" }], outputs: [] }] as const;
+
+  /**
+   * Wraps just enough USDC.e -> pUSD to cover `amountUsd`, straight into the
+   * deposit wallet, if it's short. Two possible sources for the shortfall,
+   * checked in order:
+   *   1. The owner EOA's own USDC.e (original path -- owner signs a plain
+   *      approve+wrap transaction).
+   *   2. The deposit wallet's OWN unwrapped USDC.e balance. This covers a
+   *      real failure mode: a user who sends USDC.e directly to their
+   *      deposit-wallet address (a valid-looking Polygon address, easy to
+   *      mistake for "the" deposit target) instead of going through the
+   *      bridge modal -- that USDC.e sits there unwrapped forever, because
+   *      nothing previously ever checked the deposit wallet's own USDC.e.
+   *      Wrapping it requires the deposit wallet itself to call wrap() (it
+   *      holds the USDC.e), so this is a signed relayer batch, same
+   *      mechanism as ensureDepositWalletApprovals.
+   */
+  async function ensurePusdWrapped(owner: `0x${string}`, depositWallet: `0x${string}`, amountUsd: number, provider: Eip1193LikeProvider) {
     const requiredRaw = parseUnits(amountUsd.toFixed(PUSD_DECIMALS), PUSD_DECIMALS);
 
     const currentPusd = await polygonPublicClient.readContract({
@@ -79,40 +96,61 @@ export function usePolymarketTrading() {
 
     const shortfall = requiredRaw - currentPusd;
 
-    const currentUsdc = await polygonPublicClient.readContract({
-      address: POLYGON_USDC_ADDRESS,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [owner],
-    });
-    if (currentUsdc < shortfall) {
-      throw new Error("Not enough USDC on Polygon to fund this trade.");
-    }
+    const [ownerUsdc, depositWalletUsdc] = await Promise.all([
+      polygonPublicClient.readContract({ address: POLYGON_USDC_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [owner] }),
+      polygonPublicClient.readContract({ address: POLYGON_USDC_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [depositWallet] }),
+    ]);
 
-    setStatus("wrapping");
+    if (ownerUsdc >= shortfall) {
+      setStatus("wrapping");
 
-    const onrampAllowance = await polygonPublicClient.readContract({
-      address: POLYGON_USDC_ADDRESS,
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [owner, COLLATERAL_ONRAMP_ADDRESS],
-    });
-    if (onrampAllowance < shortfall) {
-      const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] });
+      const onrampAllowance = await polygonPublicClient.readContract({
+        address: POLYGON_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [owner, COLLATERAL_ONRAMP_ADDRESS],
+      });
+      if (onrampAllowance < shortfall) {
+        const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] });
+        await sendPrivyTransaction(
+          { to: POLYGON_USDC_ADDRESS, value: 0n, data: approveData, chainId: POLYGON_CHAIN.decimalChainId },
+          { address: owner, uiOptions: { showWalletUIs: true } },
+        );
+      }
+
+      const wrapData = encodeFunctionData({ abi: WRAP_ABI, functionName: "wrap", args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall] });
       await sendPrivyTransaction(
-        { to: POLYGON_USDC_ADDRESS, value: 0n, data: approveData, chainId: POLYGON_CHAIN.decimalChainId },
+        { to: COLLATERAL_ONRAMP_ADDRESS, value: 0n, data: wrapData, chainId: POLYGON_CHAIN.decimalChainId },
         { address: owner, uiOptions: { showWalletUIs: true } },
       );
+      return;
     }
 
-    const wrapData = encodeFunctionData({
-      abi: [{ type: "function", name: "wrap", stateMutability: "nonpayable", inputs: [{ name: "_asset", type: "address" }, { name: "_to", type: "address" }, { name: "_amount", type: "uint256" }], outputs: [] }],
-      functionName: "wrap",
-      args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall],
-    });
-    await sendPrivyTransaction(
-      { to: COLLATERAL_ONRAMP_ADDRESS, value: 0n, data: wrapData, chainId: POLYGON_CHAIN.decimalChainId },
-      { address: owner, uiOptions: { showWalletUIs: true } },
+    if (depositWalletUsdc >= shortfall) {
+      setStatus("wrapping");
+
+      const depositWalletAllowance = await polygonPublicClient.readContract({
+        address: POLYGON_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [depositWallet, COLLATERAL_ONRAMP_ADDRESS],
+      });
+
+      const calls: DepositWalletCall[] = [];
+      if (depositWalletAllowance < shortfall) {
+        calls.push({ target: POLYGON_USDC_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [COLLATERAL_ONRAMP_ADDRESS, maxUint256] }) });
+      }
+      calls.push({ target: COLLATERAL_ONRAMP_ADDRESS, value: "0", data: encodeFunctionData({ abi: WRAP_ABI, functionName: "wrap", args: [POLYGON_USDC_ADDRESS, depositWallet, shortfall] }) });
+
+      const walletClient = createWalletClient({ account: owner, chain: polygon, transport: custom(provider) });
+      await signAndSubmitDepositWalletBatch(walletClient, owner, depositWallet, calls);
+      return;
+    }
+
+    throw new Error(
+      `Not enough USDC to fund this trade. Your wallet (${owner}) has $${(Number(ownerUsdc) / 10 ** POLYGON_USDC_DECIMALS).toFixed(2)} ` +
+        `and your deposit wallet (${depositWallet}) has $${(Number(depositWalletUsdc) / 10 ** POLYGON_USDC_DECIMALS).toFixed(2)} USDC.e -- ` +
+        `need $${amountUsd} more. Fund via "Fund wallet" above so it arrives as pUSD automatically.`,
     );
   }
 
@@ -123,27 +161,38 @@ export function usePolymarketTrading() {
    * already satisfied and submits them as ONE signed relayer batch (one
    * signature, gasless -- Polymarket sponsors the relayed call).
    */
+  // Every contract that can end up as an order's "spender": the two order
+  // book exchanges plus the neg-risk (grouped/multi-outcome market) adapter.
+  // Missing any one of these produces the exact same symptom on whichever
+  // market happens to route through it: "not enough balance / allowance"
+  // naming that contract as spender, even with a fully-funded,
+  // otherwise-fully-approved deposit wallet. NOT exchangeV3 -- see the note
+  // on POLYMARKET_CONTRACTS in polygonUsdc.ts for why.
+  const APPROVAL_SPENDERS: readonly `0x${string}`[] = [
+    POLYMARKET_CONTRACTS.exchangeV2,
+    POLYMARKET_CONTRACTS.negRiskExchangeV2,
+    POLYMARKET_CONTRACTS.negRiskAdapter,
+  ];
+
   async function ensureDepositWalletApprovals(owner: `0x${string}`, depositWallet: `0x${string}`, provider: Eip1193LikeProvider) {
-    const [pusdAllowanceExchange, pusdAllowanceNegRisk, ctApprovedExchange, ctApprovedNegRisk] = await Promise.all([
-      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
-      polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
-      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.exchangeV2] }),
-      polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, POLYMARKET_CONTRACTS.negRiskExchangeV2] }),
-    ]);
+    const checks = await Promise.all(
+      APPROVAL_SPENDERS.flatMap((spender) => [
+        polygonPublicClient.readContract({ address: PUSD_ADDRESS, abi: erc20Abi, functionName: "allowance", args: [depositWallet, spender] }),
+        polygonPublicClient.readContract({ address: CONDITIONAL_TOKENS_ADDRESS, abi: erc1155Abi, functionName: "isApprovedForAll", args: [depositWallet, spender] }),
+      ]),
+    );
 
     const calls: DepositWalletCall[] = [];
-    if (pusdAllowanceExchange === 0n) {
-      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.exchangeV2, maxUint256] }) });
-    }
-    if (pusdAllowanceNegRisk === 0n) {
-      calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, maxUint256] }) });
-    }
-    if (!ctApprovedExchange) {
-      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.exchangeV2, true] }) });
-    }
-    if (!ctApprovedNegRisk) {
-      calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [POLYMARKET_CONTRACTS.negRiskExchangeV2, true] }) });
-    }
+    APPROVAL_SPENDERS.forEach((spender, i) => {
+      const pusdAllowance = checks[i * 2] as bigint;
+      const ctApproved = checks[i * 2 + 1] as boolean;
+      if (pusdAllowance === 0n) {
+        calls.push({ target: PUSD_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [spender, maxUint256] }) });
+      }
+      if (!ctApproved) {
+        calls.push({ target: CONDITIONAL_TOKENS_ADDRESS, value: "0", data: encodeFunctionData({ abi: erc1155Abi, functionName: "setApprovalForAll", args: [spender, true] }) });
+      }
+    });
     if (calls.length === 0) return;
 
     setStatus("approving");
@@ -166,7 +215,7 @@ export function usePolymarketTrading() {
     const depositWallet = await deriveDepositWalletAddress(polygonPublicClient, owner);
     await ensureDepositWalletDeployed(owner, depositWallet);
 
-    await ensurePusdWrapped(owner, depositWallet, amountUsd);
+    await ensurePusdWrapped(owner, depositWallet, amountUsd, provider);
     await ensureDepositWalletApprovals(owner, depositWallet, provider);
 
     setStatus("deriving-key");
@@ -190,15 +239,37 @@ export function usePolymarketTrading() {
 
       setStatus("placing-order");
       const provider = await activeWallet.getEthereumProvider();
-      const client = await getClobClient(activeWallet.address, provider, depositWallet);
-
       const builderCode = getBuilderCode();
-      const result = await client.createAndPostMarketOrder({
-        tokenID: tokenId,
-        amount: amountUsd,
-        side: Side.BUY,
-        ...(builderCode ? { builderCode } : {}),
-      });
+      const owner = activeWallet.address;
+
+      async function submitOrder() {
+        const client = await getClobClient(owner, provider, depositWallet);
+        return client.createAndPostMarketOrder({
+          tokenID: tokenId,
+          amount: amountUsd,
+          side: Side.BUY,
+          ...(builderCode ? { builderCode } : {}),
+        });
+      }
+
+      let result;
+      try {
+        result = await submitOrder();
+      } catch (orderErr) {
+        // A cached CLOB API key can go stale (derived before a deposit-wallet
+        // re-derivation, or invalidated server-side) and gets rejected on
+        // /order even though wrapping/approvals upstream all succeeded --
+        // that shows up here as a cross-origin "Network Error" (the browser
+        // can't read a 403 response's body from a different origin), not a
+        // clear auth error. Drop the cached key and retry once with a
+        // freshly derived one before giving up.
+        clearCachedCreds(owner);
+        try {
+          result = await submitOrder();
+        } catch {
+          throw orderErr; // surface the original failure, not the retry's
+        }
+      }
 
       setStatus("done");
       return result as { orderId?: string };
