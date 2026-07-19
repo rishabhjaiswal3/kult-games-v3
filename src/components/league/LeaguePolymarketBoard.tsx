@@ -45,6 +45,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketPositions } from "@/hooks/useMyPolymarketPositions";
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
+import { useNumericInput } from "@/hooks/useNumericInput";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -693,7 +694,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
   const { isAuthenticated, login } = useAuth();
   const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const [stakeUsd, setStakeUsd] = useState(10);
+  const stake = useNumericInput(10, { min: 1, integer: true });
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
   // Real position (survives refresh) -- placedOrder above is just the
   // optimistic "order just went through" flash before this catches up.
@@ -738,7 +739,8 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
     if (!tokenId || isTrading) return;
     setPlacedOrder(null);
     try {
-      const result = await placeMarketBuy(tokenId, stakeUsd);
+      const amount = stake.commit();
+      const result = await placeMarketBuy(tokenId, amount);
       setPlacedOrder({ side, orderId: result.orderId });
       refreshPositions();
     } catch {
@@ -1018,7 +1020,7 @@ function formatKickoffCountdown(kickoff: number, now: number): string {
 function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
   const { isAuthenticated, login } = useAuth();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const [stakeUsd, setStakeUsd] = useState(10);
+  const stake = useNumericInput(10, { min: 1, integer: true });
   const [placed, setPlaced] = useState<{ id: string; side: "YES" | "NO" } | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -1076,7 +1078,8 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
     if (!tokenId || isTrading) return;
     setPlaced(null);
     try {
-      await placeMarketBuy(tokenId, stakeUsd);
+      const amount = stake.commit();
+      await placeMarketBuy(tokenId, amount);
       setPlaced({ id: market.id, side });
     } catch {
       // tradeError from the hook already surfaces this
@@ -1166,7 +1169,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
                   />
                 </div>
                 {placedHere ? (
-                  <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-emerald-300">✓ {placedHere} order placed · ${stakeUsd}</p>
+                  <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-emerald-300">✓ {placedHere} order placed · ${stake.resolved}</p>
                 ) : null}
               </button>
               {/* Yes stacked over No on the right */}

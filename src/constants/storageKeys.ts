@@ -32,6 +32,8 @@ export const StorageKeys = {
     browserAccessSession: "kult_browser_access_session",
     /** Local product tour progress for website walkthroughs. */
     productTourState: "kult_product_tour_state",
+    /** Daily reward days marked claimed locally (temporary optimistic UI). */
+    dailyRewardOptimisticClaims: "kult_daily_reward_optimistic_claims",
   },
   session: {
     /** KULT AI chat session id (used for server-side memory). */

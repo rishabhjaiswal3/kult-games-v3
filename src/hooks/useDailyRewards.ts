@@ -3,9 +3,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   dailyRewardsApi,
   mergeLegacyGenesisAgentState,
+  type ClaimDailyRewardResponse,
   type DailyRewardsState,
 } from "@/api/dailyRewardsApi";
-import { hasArenaAgent, MY_ARENA_AGENTS_QUERY_KEY, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
+import {
+  MS_PER_REWARD_DAY,
+  OPTIMISTIC_DAILY_REWARD_DAY,
+  TOTAL_REWARD_DAYS,
+} from "@/constants/dailyRewards";
+import { StorageKeys } from "@/constants/storageKeys";
+import { hasArenaAgent, useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { getStoredAiAgentInfo } from "@/lib/aiAgentStorage";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -31,6 +38,76 @@ function needsLegacyDay1Claim(
   );
 }
 
+function readOptimisticClaimDays(): number[] {
+  try {
+    const raw = localStorage.getItem(StorageKeys.local.dailyRewardOptimisticClaims);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((day) => Number(day))
+      .filter((day) => Number.isFinite(day) && day >= 1 && day <= TOTAL_REWARD_DAYS);
+  } catch {
+    return [];
+  }
+}
+
+function persistOptimisticClaimDay(day: number): void {
+  const claimed = new Set(readOptimisticClaimDays());
+  claimed.add(day);
+  localStorage.setItem(
+    StorageKeys.local.dailyRewardOptimisticClaims,
+    JSON.stringify([...claimed].sort((a, b) => a - b)),
+  );
+}
+
+function applyOptimisticClaims(state: DailyRewardsState): DailyRewardsState {
+  const optimistic = readOptimisticClaimDays();
+  if (!optimistic.length) return state;
+
+  const claimedDays = [...new Set([...state.claimedDays, ...optimistic])].sort((a, b) => a - b);
+  const highestClaimed = claimedDays.length ? Math.max(...claimedDays) : 0;
+  const completed = highestClaimed >= TOTAL_REWARD_DAYS;
+
+  if (completed) {
+    return {
+      ...state,
+      claimedDays,
+      currentDay: TOTAL_REWARD_DAYS,
+      claimableToday: false,
+      nextUnlockAt: null,
+      completed: true,
+      hasRecord: true,
+    };
+  }
+
+  const currentDay = highestClaimed + 1;
+  const newlyOptimistic = optimistic.some((day) => !state.claimedDays.includes(day));
+  const claimableToday = newlyOptimistic ? false : state.claimableToday;
+
+  return {
+    ...state,
+    claimedDays,
+    currentDay,
+    claimableToday,
+    nextUnlockAt:
+      newlyOptimistic && !state.nextUnlockAt
+        ? new Date(Date.now() + MS_PER_REWARD_DAY).toISOString()
+        : state.nextUnlockAt,
+    completed: false,
+    hasRecord: state.hasRecord || newlyOptimistic,
+  };
+}
+
+function buildOptimisticClaimResponse(
+  state: DailyRewardsState,
+  day: number,
+): ClaimDailyRewardResponse {
+  persistOptimisticClaimDay(day);
+  const nextState = applyOptimisticClaims(state);
+  return { ...nextState, claimedDay: day };
+}
+
 /** Daily login rewards — day 1 legacy status comes from the My Agents API when no DB record exists. */
 export function useDailyRewards() {
   const queryClient = useQueryClient();
@@ -47,13 +124,12 @@ export function useDailyRewards() {
   });
 
   const state = useMemo<DailyRewardsState | undefined>(() => {
-    if (rewardsQ.data) {
-      return mergeLegacyGenesisAgentState(rewardsQ.data, hasGenesisAgent);
-    }
+    let base: DailyRewardsState | undefined;
 
-    // Rewards API still loading or failed — still show legacy day-2 state when agent exists.
-    if (hasGenesisAgent && (rewardsQ.isLoading || rewardsQ.isError)) {
-      return mergeLegacyGenesisAgentState(
+    if (rewardsQ.data) {
+      base = mergeLegacyGenesisAgentState(rewardsQ.data, hasGenesisAgent);
+    } else if (hasGenesisAgent && (rewardsQ.isLoading || rewardsQ.isError)) {
+      base = mergeLegacyGenesisAgentState(
         {
           currentDay: 1,
           claimedDays: [],
@@ -64,10 +140,12 @@ export function useDailyRewards() {
         },
         true,
       );
+    } else if (rewardsQ.isLoading) {
+      return undefined;
     }
 
-    if (rewardsQ.isLoading) return undefined;
-    return undefined;
+    if (!base) return undefined;
+    return applyOptimisticClaims(base);
   }, [rewardsQ.data, rewardsQ.isLoading, rewardsQ.isError, hasGenesisAgent]);
 
   const claimMutation = useMutation({
@@ -77,10 +155,19 @@ export function useDailyRewards() {
     },
   });
 
-  const claim = async (options?: { legacyDay1?: boolean }) => {
+  const claim = (options?: { legacyDay1?: boolean }): Promise<ClaimDailyRewardResponse> => {
     const legacyDay1 =
       options?.legacyDay1 ??
       needsLegacyDay1Claim(hasGenesisAgent, rewardsQ.data, state);
+    const dayToClaim = state?.currentDay ?? 1;
+
+    // Temporary: Day 6 Highway Hustle — show claimed immediately; skip backend grant call.
+    if (!legacyDay1 && dayToClaim === OPTIMISTIC_DAILY_REWARD_DAY && state) {
+      const response = buildOptimisticClaimResponse(state, OPTIMISTIC_DAILY_REWARD_DAY);
+      queryClient.setQueryData(DAILY_REWARDS_QUERY_KEY, response);
+      return Promise.resolve(response);
+    }
+
     return claimMutation.mutateAsync({ legacyDay1 });
   };
 

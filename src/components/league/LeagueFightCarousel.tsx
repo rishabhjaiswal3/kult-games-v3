@@ -6,6 +6,7 @@ import { LeaguePanel } from "./LeaguePanel";
 import { leagueApi, type OpenBattle } from "@/api/leagueApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useArenaStaking } from "@/hooks/useArenaStaking";
+import { useNumericInput } from "@/hooks/useNumericInput";
 import { LeagueFightScene } from "./leagueFightUi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -51,7 +52,7 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
   const [challengerAgentId, setChallengerAgentId] = useState("");
   const [opponentAgentId, setOpponentAgentId] = useState("");
   const [matchId, setMatchId] = useState("");
-  const [stakeArena, setStakeArena] = useState(50);
+  const stake = useNumericInput(50, { min: 1, integer: true });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status: stakingStatus, ensureStakeApproved, getEscrowAddress } = useArenaStaking();
@@ -62,13 +63,14 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
     }
   }, [lineup, challengerAgentId]);
 
-  const canSubmit = !!challengerAgentId && !!opponentAgentId && !!matchId && stakeArena > 0 && !submitting;
+  const canSubmit = !!challengerAgentId && !!opponentAgentId && !!matchId && stake.resolved > 0 && !submitting;
 
   async function handleSubmit() {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
+      const stakeArena = stake.commit();
       // Your stake gets pulled from your own wallet when the opponent accepts --
       // approve the escrow contract now so that doesn't fail later.
       const escrowAddress = await getEscrowAddress();
@@ -150,10 +152,7 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
           <div>
             <label className="block font-tech text-[8px] uppercase tracking-wider text-white/40">Stake ($ARENA)</label>
             <input
-              type="number"
-              min={1}
-              value={stakeArena}
-              onChange={(e) => setStakeArena(Math.max(1, Number(e.target.value) || 1))}
+              {...stake.inputProps}
               className="mt-1 h-8 w-full rounded-md border border-white/15 bg-black/40 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-[#a855f7]/50"
             />
           </div>
