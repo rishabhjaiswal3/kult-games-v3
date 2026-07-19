@@ -786,7 +786,11 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
-            {...stake.inputProps}
+            type="number"
+            min={0.1}
+            step={0.1}
+            value={stakeUsd}
+            onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
             disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
@@ -1127,7 +1131,11 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
       <div className="relative mb-2 flex items-center gap-2">
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
-          {...stake.inputProps}
+          type="number"
+          min={0.1}
+          step={0.1}
+          value={stakeUsd}
+          onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
           disabled={isTrading}
           className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
         />
