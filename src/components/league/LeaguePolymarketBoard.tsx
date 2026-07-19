@@ -2297,4 +2297,3 @@ function AnalysisView({
     </div>
   );
 }
-
