@@ -95,11 +95,15 @@ function deriveCategory(question: string): string {
   const q = question.toLowerCase();
   if (q.includes("world cup") || q.includes("fifa")) return "World Cup";
   if (q.includes("champions league") || q.includes("uefa")) return "Champions League";
+  if (q.includes("europa league")) return "Europa League";
   if (q.includes("premier league") || q.includes(" epl")) return "Premier League";
   if (q.includes("la liga")) return "La Liga";
+  if (q.includes("serie a")) return "Serie A";
+  if (q.includes("bundesliga")) return "Bundesliga";
+  if (q.includes("ligue 1")) return "Ligue 1";
   if (q.includes("ballon")) return "Ballon d'Or";
   if (/\b(transfer|sign|signing|stay|join|leave|move to)\b/.test(q)) return "Transfers";
-  return "World Cup";
+  return "Football";
 }
 
 function shorten(question: string, groupItemTitle?: string): string {
@@ -197,35 +201,61 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (quest
   };
 }
 
-/** Fetch the top football markets by volume. Returns [] on any failure. */
-export async function fetchFootballMarkets(limit = 12): Promise<PolyMarket[]> {
+// Same fix as F1 (fetchF1Markets below): keyword-filtering the top-100-by-
+// volume feed badly undercounts real coverage once the headline event (the
+// World Cup) closes -- individual league/match markets rarely crack that
+// shared top 100. Search Polymarket's own events directly instead, per
+// competition, and flatten every sub-market -- confirmed live: Premier
+// League, La Liga, Serie A, Bundesliga, and Champions League (qualifying
+// rounds included) all have real active events right now. "football" and
+// "soccer" as bare search terms were tried and dropped -- too noisy (American
+// football free-agency news, CS:GO matches whose team names happen to
+// contain a league name).
+const FOOTBALL_SEARCH_TERMS = [
+  "premier league",
+  "champions league",
+  "la liga",
+  "serie a",
+  "bundesliga",
+  "ligue 1",
+  "europa league",
+  "ballon d'or",
+  "world cup",
+];
+
+async function fetchFootballEventsRaw(status: "active" | "resolved" = "active"): Promise<RawMarket[]> {
+  const seen = new Map<string, RawMarket>();
+  await Promise.all(
+    FOOTBALL_SEARCH_TERMS.map(async (term) => {
+      try {
+        const url = `${GAMMA_BASE}/public-search?q=${encodeURIComponent(term)}&events_status=${status}&limit_per_type=50`;
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!res.ok) return;
+        const json = (await res.json()) as { events?: RawMarket[] };
+        for (const event of json.events ?? []) {
+          // Defense against near-miss search noise (e.g. "Série A" esports
+          // brackets whose team names match "serie a" loosely) -- re-check
+          // with the same term list against the actual event title/slug.
+          const title = typeof event.title === "string" ? event.title : "";
+          const slug = typeof event.slug === "string" ? event.slug : "";
+          if (!isFootball(`${title} ${slug}`)) continue;
+          const id = typeof event.id === "string" ? event.id : String(event.id ?? "");
+          if (id && !seen.has(id)) seen.set(id, event);
+        }
+      } catch {
+        // one search term failing shouldn't drop the others
+      }
+    }),
+  );
+  return [...seen.values()];
+}
+
+/** Fetch every open football market (flattened from all active real events across the major leagues). Returns [] on any failure. */
+export async function fetchFootballMarkets(limit = 60): Promise<PolyMarket[]> {
   try {
-    // Pull a broad pool ranked by 7-day (1-week) volume — a wider window than 24h
-    // so football markets that traded any time this week surface, not just today's
-    // hot ones — then sort those newest-first below so brand-new markets lead.
-    // active=true&closed=false already excludes resolved/closed markets.
-    const url = `${GAMMA_BASE}/markets?active=true&closed=false&limit=500&order=volume1wk&ascending=false`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) return [];
-    const json: unknown = await res.json();
-    const list: RawMarket[] = Array.isArray(json)
-      ? (json as RawMarket[])
-      : Array.isArray((json as { data?: unknown })?.data)
-        ? ((json as { data: RawMarket[] }).data)
-        : [];
-
-    const football = list
-      .filter((raw) => {
-        const q = typeof raw.question === "string" ? raw.question : "";
-        const slug = typeof raw.slug === "string" ? raw.slug : "";
-        return isFootball(`${q} ${slug}`);
-      })
-      .map((raw) => normalizeMarket(raw))
-      .filter((m): m is PolyMarket => m !== null);
-
-    // Newest markets first (markets missing a timestamp sink to the bottom).
-    football.sort((a, b) => b.createdAt - a.createdAt);
-
+    const events = await fetchFootballEventsRaw("active");
+    const football = flattenOpenMarketsFromEvents(events, deriveCategory);
+    football.sort((a, b) => b.volumeNum - a.volumeNum);
     return football.slice(0, limit);
   } catch {
     return [];
@@ -282,12 +312,6 @@ export async function fetchF1Markets(limit = 100): Promise<PolyMarket[]> {
 }
 
 // ── Strict FIFA World Cup fetch ─────────────────────────────────────────────
-// Polymarket groups every FIFA World Cup event (match markets, exact scores,
-// team-to-advance, etc.) under the "soccer-fifwc" series. Fetching by series id
-// is exact — no keyword filtering needed, and match-day markets (whose slugs
-// use the "fifwc-" prefix and never say "fifa"/"world cup") are included.
-const WORLD_CUP_SERIES_ID = "11433";
-
 // Player-props sub-events carry 200+ single-player markets each; they'd drown
 // the board, so they're skipped.
 const PLAYER_PROPS_SLUG = /-player-props$/;
@@ -316,45 +340,20 @@ function sortWorldCupMarkets(markets: PolyMarket[]): PolyMarket[] {
   });
 }
 
-async function fetchEventsJson(url: string): Promise<RawMarket[]> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) return [];
-  const json: unknown = await res.json();
-  if (Array.isArray(json)) return json as RawMarket[];
-  if (Array.isArray((json as { data?: unknown })?.data)) return (json as { data: RawMarket[] }).data;
-  return [];
-}
-
 /**
- * Fetch FIFA / soccer prediction markets. Prefers the soccer-fifwc series
- * (match-day boards). That series is often player-props-only mid-tournament,
- * so we fall back to volume-ranked football markets, then soccer-tagged events
- * (winner / golden boot boards). Returns [] on any failure — never fakes data.
+ * Fetch real football prediction markets across whatever major competitions
+ * are actually live right now (Premier League, Champions League, La Liga,
+ * Serie A, Bundesliga, Ligue 1, Europa League, plus World Cup/Ballon d'Or
+ * when those are in season). Not hardcoded to any one tournament -- this
+ * used to be FIFA-World-Cup-only via a hardcoded series id, which stopped
+ * returning anything once the tournament closed. Returns [] on any
+ * failure — never fakes data.
  */
 export async function fetchWorldCupMarkets(limit = 60): Promise<PolyMarket[]> {
   try {
-    const seriesEvents = await fetchEventsJson(
-      `${GAMMA_BASE}/events?series_id=${WORLD_CUP_SERIES_ID}&active=true&closed=false&order=startDate&ascending=false&limit=30`,
-    );
-    let worldCup = sortWorldCupMarkets(flattenOpenMarketsFromEvents(seriesEvents));
-
-    if (worldCup.length === 0) {
-      worldCup = await fetchFootballMarkets(limit);
-    }
-
-    if (worldCup.length === 0) {
-      const soccerEvents = await fetchEventsJson(
-        `${GAMMA_BASE}/events?tag_slug=soccer&active=true&closed=false&order=volume24hr&ascending=false&limit=30`,
-      );
-      const headline = soccerEvents.filter((event) => {
-        const title = typeof event.title === "string" ? event.title : "";
-        const slug = typeof event.slug === "string" ? event.slug : "";
-        return isFootball(`${title} ${slug}`);
-      });
-      worldCup = sortWorldCupMarkets(flattenOpenMarketsFromEvents(headline));
-    }
-
-    return worldCup.slice(0, limit);
+    const events = await fetchFootballEventsRaw("active");
+    const markets = sortWorldCupMarkets(flattenOpenMarketsFromEvents(events, deriveCategory));
+    return markets.slice(0, limit);
   } catch {
     return [];
   }
@@ -543,28 +542,12 @@ export async function fetchEventComments(eventId: string, limit = 8): Promise<Po
   }
 }
 
-/** Fetch the top football events by volume. Returns [] on any failure. */
+/** Fetch the top football events by volume, across whatever major competitions are live right now. Returns [] on any failure. */
 export async function fetchFootballEvents(limit = 10): Promise<PolyEvent[]> {
   try {
-    const url = `${GAMMA_BASE}/events?active=true&closed=false&limit=200&order=volume24hr&ascending=false`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) return [];
-    const json: unknown = await res.json();
-    const list: RawMarket[] = Array.isArray(json)
-      ? (json as RawMarket[])
-      : Array.isArray((json as { data?: unknown })?.data)
-        ? ((json as { data: RawMarket[] }).data)
-        : [];
-
-    return list
-      .filter((raw) => {
-        const title = typeof raw.title === "string" ? raw.title : "";
-        const slug = typeof raw.slug === "string" ? raw.slug : "";
-        const tags = Array.isArray(raw.tags)
-          ? (raw.tags as Array<Record<string, unknown>>).map((t) => String(t.label ?? t.slug ?? "")).join(" ")
-          : "";
-        return isFootball(`${title} ${slug} ${tags}`);
-      })
+    const events = await fetchFootballEventsRaw("active");
+    events.sort((a, b) => toNumber(b.volumeNum ?? b.volume) - toNumber(a.volumeNum ?? a.volume));
+    return events
       .map(normalizeEvent)
       .filter((e): e is PolyEvent => e !== null)
       .slice(0, limit);
