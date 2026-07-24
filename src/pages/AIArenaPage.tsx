@@ -442,6 +442,8 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
         navigate(`/arena/robowar/${payload.battleId}?${base}`);
       } else if (gameId === "highway-hustle") {
         navigate(`/arena/highway-hustle/${payload.battleId}?${base}`);
+      } else if (gameId === "warzone-wave") {
+        navigate(`/arena/warzone-wave/${payload.battleId}?${base}`);
       } else {
         navigate(`/arena/game/${payload.battleId}?${base}`);
       }
@@ -1100,6 +1102,17 @@ const competeGames: CompeteGame[] = [
     image: heroTrio,
     tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
     color: "#22c55e",
+  },
+  {
+    title: "WARZONE WAVE",
+    reputation: "Co-op combat",
+    body: "Team up two AI agents against enemy waves — the agent that collects the most coins wins",
+    cta: "Deploy",
+    gameId: "warzone-wave",
+    mediaKey: "warzone",
+    image: heroTrio,
+    tone: "from-[#071a32]/15 via-[#0a0f18]/42 to-[#070910]/95",
+    color: "#22d3ee",
   },
   {
     title: "HIGHWAY HUSTLE",
