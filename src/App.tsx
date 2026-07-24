@@ -28,6 +28,7 @@ const AccessLoginPage = lazyWithRetry(() => import("./pages/AccessLoginPage"));
 const ArenaGamePage = lazyWithRetry(() => import("./pages/ArenaGamePage"));
 const RobowarGamePage = lazyWithRetry(() => import("./pages/RobowarGamePage"));
 const HighwayHustleGamePage = lazyWithRetry(() => import("./pages/HighwayHustleGamePage"));
+const WarzoneWaveGamePage = lazyWithRetry(() => import("./pages/WarzoneWaveGamePage"));
 // Admin-only $ARENA economy pages — reachable ONLY via direct URL, no nav link anywhere.
 const ArenaTreasuryPage = lazyWithRetry(() => import("./pages/admin/ArenaTreasuryPage"));
 const ArenaExplorerPage = lazyWithRetry(() => import("./pages/admin/ArenaExplorerPage"));
@@ -159,6 +160,8 @@ function BrowserApp() {
                   <Route path="/arena/robowar/:battleId" element={<AccessRoute><RobowarGamePage /></AccessRoute>} />
                   {/* Highway Hustle — AI duel race page */}
                   <Route path="/arena/highway-hustle/:battleId" element={<AccessRoute><HighwayHustleGamePage /></AccessRoute>} />
+                  {/* Warzone Wave — co-op wave survival page */}
+                  <Route path="/arena/warzone-wave/:battleId" element={<AccessRoute><WarzoneWaveGamePage /></AccessRoute>} />
                   {/* Admin-only $ARENA economy pages — direct URL only, intentionally not linked from any nav/menu. */}
                   <Route path="/admin/arena-treasury" element={<ArenaTreasuryPage />} />
                   <Route path="/admin/arena-explorer" element={<ArenaExplorerPage />} />
