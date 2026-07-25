@@ -316,6 +316,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
                 Round · Spa
               </p>
               <h2 className="mt-1 font-tech text-[2.35rem] font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
+                <span aria-hidden className="mr-2">🇭🇺</span>
                 Belgium
               </h2>
               <p className="mt-1.5 font-tech text-xl font-black uppercase italic tracking-wide text-[#d8b4fe] sm:text-2xl">
@@ -386,6 +387,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
               </span>
             </div>
             <h2 className="font-tech text-4xl font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
+              <span aria-hidden className="mr-2">🇭🇺</span>
               {grandPrixName}
             </h2>
             <p className="mt-1.5 font-tech text-2xl font-black uppercase italic tracking-wide text-violet-400 sm:text-3xl">
@@ -696,6 +698,7 @@ function HeroSection({ weekend, isLoading, onPickClick }: { weekend: F1GrandPrix
             {isLoading ? "Loading race weekend…" : "Race weekend"}
           </p>
           <h2 className="mt-0.5 font-tech text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
+            <span aria-hidden className="mr-1.5">🇭🇺</span>
             {weekend?.race.grandPrixName ?? "F1 League"}
           </h2>
           {nextSession ? (

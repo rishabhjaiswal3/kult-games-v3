@@ -80,7 +80,10 @@ function UpcomingRaceSection() {
       <div className="flex flex-wrap items-center justify-between gap-2 p-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-red-300">Upcoming Race</p>
-          <h2 className="mt-1 font-tech text-xl font-bold uppercase text-white sm:text-2xl">{race.grandPrixName}</h2>
+          <h2 className="mt-1 font-tech text-xl font-bold uppercase text-white sm:text-2xl">
+            <span aria-hidden className="mr-1.5">🇭🇺</span>
+            {race.grandPrixName}
+          </h2>
           <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-white/50">
             <MapPin className="h-3.5 w-3.5" /> {race.circuitName ?? "TBD"}
             <span className="text-white/25">·</span>
