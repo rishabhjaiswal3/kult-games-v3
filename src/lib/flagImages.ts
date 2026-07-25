@@ -40,6 +40,14 @@ const ALIASES: Record<string, string> = {
   bosnia: "bosnia_and_herzegovina",
   "democratic republic of congo": "dr_congo",
   "congo dr": "dr_congo",
+  // Player-based prediction markets use the player's national flag.
+  "harry kane": "england",
+  "lamine yamal": "spain",
+  "kylian mbappe": "france",
+  "kylian mbappé": "france",
+  rodri: "spain",
+  "lionel messi": "argentina",
+  messi: "argentina",
 };
 
 /** Lowercase, strip accents/punctuation, collapse whitespace. */
@@ -59,4 +67,51 @@ export function flagUrlFor(teamName: string): string | undefined {
   const key = normalize(teamName);
   const file = ALIASES[key] ?? key.replace(/\s+/g, "_");
   return FLAG_BY_FILE[file];
+}
+
+/** football-data.org IDs for the club fixtures currently supplied by the league API. */
+const CLUB_CREST_IDS: Record<string, number> = {
+  arsenal: 57,
+  "aston villa": 58,
+  bournemouth: 1044,
+  "afc bournemouth": 1044,
+  brentford: 402,
+  brighton: 397,
+  "brighton & hove albion": 397,
+  "brighton and hove albion": 397,
+  chelsea: 61,
+  coventry: 1076,
+  "coventry city": 1076,
+  "crystal palace": 354,
+  everton: 62,
+  fulham: 63,
+  "hull city": 322,
+  ipswich: 349,
+  "ipswich town": 349,
+  leeds: 341,
+  "leeds united": 341,
+  "man city": 65,
+  "manchester city": 65,
+  "man united": 66,
+  "manchester united": 66,
+  newcastle: 67,
+  "newcastle united": 67,
+  "nottingham forest": 351,
+  liverpool: 64,
+  "real madrid": 86,
+  barcelona: 81,
+  sunderland: 71,
+  tottenham: 73,
+  "tottenham hotspur": 73,
+};
+
+/**
+ * Correct third-party club crest for a team that has no bundled country flag.
+ * Unknown names deliberately return undefined so the UI shows initials rather
+ * than displaying an incorrect badge.
+ */
+export function teamCrestUrlFor(teamName: string): string | undefined {
+  if (!teamName) return undefined;
+  const id = CLUB_CREST_IDS[normalize(teamName)];
+  return id ? `https://crests.football-data.org/${id}.png` : undefined;
 }

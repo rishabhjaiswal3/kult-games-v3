@@ -46,6 +46,7 @@ import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketP
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { useNumericInput } from "@/hooks/useNumericInput";
+import { flagUrlFor, teamCrestUrlFor } from "@/lib/flagImages";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -440,21 +441,44 @@ function PolymarketBoardSkeleton() {
 
 type BoardView = "market" | "pulse" | "analysis";
 
+const WORLD_CUP_FLAG_FALLBACK = [
+  "Argentina",
+  "Brazil",
+  "France",
+  "Germany",
+  "Portugal",
+  "Spain",
+  "England",
+];
+
 function WorldCupOddsHero() {
   const events = useFootballEvents();
-  const worldCupEvent =
-    events.find((event) => /world cup/i.test(event.title) && event.outcomesDetail.length >= 4) ??
-    events.find((event) => event.outcomesDetail.length >= 4);
+  const worldCupEvent = events.find(
+    (event) =>
+      /world cup/i.test(event.title) &&
+      event.outcomesDetail.filter((outcome) => flagUrlFor(outcome.label)).length >= 4,
+  );
 
-  const outcomes = (worldCupEvent?.outcomesDetail ?? [])
-    .slice(0, 7)
-    .map((outcome, index) => ({
-      label: outcome.label,
-      yes: outcome.yes,
-      icon: outcome.icon,
-      code: NAME_TO_CODE[outcome.label.toLowerCase()],
-      color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
-    }));
+  const outcomes = useMemo(
+    () =>
+      worldCupEvent
+        ? worldCupEvent.outcomesDetail
+            .filter((outcome) => flagUrlFor(outcome.label))
+            .slice(0, 7)
+            .map((outcome, index) => ({
+              label: outcome.label,
+              yes: outcome.yes,
+              code: NAME_TO_CODE[outcome.label.toLowerCase()],
+              color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
+            }))
+        : WORLD_CUP_FLAG_FALLBACK.map((label, index) => ({
+            label,
+            yes: undefined,
+            code: NAME_TO_CODE[label.toLowerCase()],
+            color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
+          })),
+    [worldCupEvent],
+  );
 
   // Double the items around the orbit so flags are packed closer together
   const orbitItems = useMemo(() => [...outcomes, ...outcomes], [outcomes]);
@@ -513,7 +537,7 @@ function WorldCupOddsHero() {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [count, orbitItems.length]);
+  }, [count, orbitItems]);
 
   if (outcomes.length === 0) {
     return (
@@ -561,10 +585,12 @@ function WorldCupOddsHero() {
 
       <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-end sm:min-h-[220px] lg:min-h-[240px]">
         <h3 className="max-w-[420px] font-tech text-2xl font-black leading-tight text-white sm:text-4xl">
-          World Cup<br />Odds &amp; Predictions
+          Football<br />Odds &amp; Prediction
         </h3>
         <p className="mt-3 max-w-lg text-xs leading-relaxed text-white/45 sm:text-sm">
-          Percentages are pulled from live Polymarket football event.
+          {worldCupEvent
+            ? "Percentages are pulled from the live Polymarket Football event."
+            : "Live Football odds are unavailable right now · participating nations shown."}
         </p>
       </div>
     </section>
@@ -604,7 +630,7 @@ function OrbitalFlag({
 }: {
   outcome: {
     label: string;
-    yes: number;
+    yes?: number;
     icon?: string;
     code?: CountryCode;
     color: string;
@@ -617,6 +643,7 @@ function OrbitalFlag({
   opacity: number;
 }) {
   const flag = flagFor(outcome.label);
+  const crest = teamCrestUrlFor(outcome.label);
 
   return (
     <div
@@ -630,17 +657,19 @@ function OrbitalFlag({
       }}
     >
       <div className="grid h-9 w-12 place-items-center rounded-lg border border-white/12 bg-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.34)] backdrop-blur sm:h-10 sm:w-14">
-        {outcome.icon ? (
+        {crest ? (
+          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
+        ) : outcome.code || flag ? (
+          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
+        ) : outcome.icon ? (
           <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
-        ) : outcome.code ? (
-          <FlagCircle code={outcome.code} className="h-full w-full rounded-lg" />
-        ) : flag ? (
-          <span className="text-xl leading-none sm:text-2xl">{flag}</span>
         ) : (
           <span className="font-tech text-xs font-black uppercase text-white">{outcome.label.slice(0, 3)}</span>
         )}
       </div>
-      <div className="mt-4 text-center font-tech text-[11px] font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-xs">{outcome.yes}%</div>
+      <div className="mt-4 text-center font-tech text-[11px] font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-xs">
+        {typeof outcome.yes === "number" ? `${outcome.yes}%` : outcome.label}
+      </div>
     </div>
   );
 }
@@ -1624,8 +1653,10 @@ function LiveChatTicker({ comments }: { comments: PolyComment[] }) {
 
 function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
   const flag = flagFor(outcome.label);
+  if (flagUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;
   if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
   if (outcome.code) return <FlagCircle code={outcome.code} className="h-7 w-7 rounded-md" />;
+  if (teamCrestUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;
   if (outcome.icon) return <img src={outcome.icon} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-md border border-white/10 object-cover" />;
   return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 font-tech text-[10px] font-bold uppercase text-white/70" style={{ backgroundColor: `${outcome.color}33` }}>{outcome.label.charAt(0)}</span>;
 }
@@ -2086,7 +2117,6 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
         </thead>
         <tbody>
           {(group.standings ?? []).map((row) => {
-            const flag = flagFor(row.team);
             const advancing = row.position <= 2;
             return (
               <tr key={row.team} className={`border-t border-white/8 transition ${advancing ? "bg-emerald-400/[0.08]" : "hover:bg-white/[0.03]"}`}>
@@ -2095,7 +2125,7 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
                 </td>
                 <td className="py-2">
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="text-base leading-none">{flag ?? "⚽"}</span>
+                    <TeamFlagCircle teamName={row.team} className="h-5 w-5 rounded-md" />
                     <span className="truncate font-tech text-[12px] font-bold text-white">{row.team}</span>
                   </span>
                 </td>
@@ -2112,8 +2142,6 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
 }
 
 function ApiMatchCard({ match }: { match: UpcomingMatch }) {
-  const homeFlag = flagFor(match.home);
-  const awayFlag = flagFor(match.away);
   const hasScore = match.homeScore != null && match.awayScore != null && (match.finished || match.live);
   return (
     <article className={`rounded-xl border bg-[#0b0d12] p-2.5 transition hover:border-[#2E5CFF]/45 sm:p-3.5 ${match.live ? "border-emerald-400/40" : "border-white/10"}`}>
@@ -2129,7 +2157,7 @@ function ApiMatchCard({ match }: { match: UpcomingMatch }) {
       </div>
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{homeFlag ?? "⚽"}</span>
+          <TeamFlagCircle teamName={match.home} className="h-7 w-7 rounded-lg bg-black/40 sm:h-9 sm:w-9" />
           <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.home}</p>
         </div>
         <span className={`shrink-0 font-tech font-black ${hasScore ? "text-sm text-white sm:text-base" : "font-mono text-[10px] text-white/30"}`}>
@@ -2137,7 +2165,7 @@ function ApiMatchCard({ match }: { match: UpcomingMatch }) {
         </span>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
           <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.away}</p>
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{awayFlag ?? "⚽"}</span>
+          <TeamFlagCircle teamName={match.away} className="h-7 w-7 rounded-lg bg-black/40 sm:h-9 sm:w-9" />
         </div>
       </div>
     </article>

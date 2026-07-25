@@ -316,6 +316,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
                 Round · Spa
               </p>
               <h2 className="mt-1 font-tech text-[2.35rem] font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
+                <span aria-hidden className="mr-2">🇭🇺</span>
                 Belgium
               </h2>
               <p className="mt-1.5 font-tech text-xl font-black uppercase italic tracking-wide text-[#d8b4fe] sm:text-2xl">
@@ -386,6 +387,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
               </span>
             </div>
             <h2 className="font-tech text-4xl font-black uppercase leading-[0.88] tracking-tight text-white sm:text-5xl">
+              <span aria-hidden className="mr-2">🇭🇺</span>
               {grandPrixName}
             </h2>
             <p className="mt-1.5 font-tech text-2xl font-black uppercase italic tracking-wide text-violet-400 sm:text-3xl">
@@ -696,6 +698,7 @@ function HeroSection({ weekend, isLoading, onPickClick }: { weekend: F1GrandPrix
             {isLoading ? "Loading race weekend…" : "Race weekend"}
           </p>
           <h2 className="mt-0.5 font-tech text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
+            <span aria-hidden className="mr-1.5">🇭🇺</span>
             {weekend?.race.grandPrixName ?? "F1 League"}
           </h2>
           {nextSession ? (
@@ -826,8 +829,8 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
     <section className="rounded-2xl border border-violet-400/25 bg-[radial-gradient(circle_at_0%_0%,rgba(139,92,246,0.1),transparent_55%),#080910] p-3.5 sm:p-4">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Make your pick</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">
+          <h3 className="font-tech text-base font-black uppercase tracking-[0.14em] text-white">Make your pick</h3>
+          <p className="mt-0.5 text-sm text-white/45">
             Pick a market below and let your AI name the driver, grounded in real current-season standings.
           </p>
         </div>
@@ -842,7 +845,7 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
               type="button"
               onClick={() => setActiveMarket(m.key)}
               className={cn(
-                "rounded-lg border px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider transition",
+                "rounded-lg border px-3 py-1.5 font-tech text-xs font-bold uppercase tracking-wider transition",
                 activeMarket === m.key
                   ? "border-violet-400/50 bg-violet-500/15 text-white"
                   : "border-white/10 bg-white/[0.03] text-white/60 hover:border-violet-400/30",
@@ -858,39 +861,39 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
         <button
           type="button"
           onClick={login}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-[10px] font-bold uppercase tracking-wider text-white/50 transition hover:border-violet-400/40 hover:text-white"
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left font-tech text-xs font-bold uppercase tracking-wider text-white/50 transition hover:border-violet-400/40 hover:text-white"
         >
           Connect your wallet to make a pick
         </button>
       ) : !agent ? (
-        <p className="font-mono text-xs text-white/40">Mint an agent first to make a pick.</p>
+        <p className="font-mono text-sm text-white/40">Mint an agent first to make a pick.</p>
       ) : !raceId ? (
-        <p className="font-mono text-xs text-white/40">Race not synced yet.</p>
+        <p className="font-mono text-sm text-white/40">Race not synced yet.</p>
       ) : activePick ? (
         <div>
-          <p className="font-mono text-xs text-white/70">
+          <p className="font-mono text-sm text-white/70">
             <span className="font-bold text-emerald-300">{agent.name}</span>&apos;s AI predicted{" "}
             <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
           </p>
           {activePick.settledAt ? (
             <span
-              className={`mt-1.5 inline-flex items-center rounded border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${
+              className={`mt-1.5 inline-flex items-center rounded border px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider ${
                 activePick.isCorrect ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-400" : "border-red-500/35 bg-red-500/15 text-red-400"
               }`}
             >
               {activePick.isCorrect ? "Correct" : "Incorrect"}
             </span>
           ) : (
-            <span className="mt-1.5 inline-flex items-center rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider text-white/40">
+            <span className="mt-1.5 inline-flex items-center rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider text-white/40">
               Pending — settles after the race
             </span>
           )}
-          {activePick.reasoning ? <p className="mt-1.5 font-mono text-[11px] italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
+          {activePick.reasoning ? <p className="mt-1.5 font-mono text-sm italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
           {activePick.predictedDriverId ? (
             <button
               type="button"
               onClick={() => onOpenDriver(activePick.predictedDriverId)}
-              className="mt-2 font-tech text-[10px] font-bold uppercase tracking-wider text-violet-300 hover:text-violet-200"
+              className="mt-2 font-tech text-xs font-bold uppercase tracking-wider text-violet-300 hover:text-violet-200"
             >
               View driver &rarr;
             </button>
@@ -898,17 +901,17 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
         </div>
       ) : (
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">{activeQuestion}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-white/40">{activeQuestion}</p>
           <button
             type="button"
             disabled={predictMutation.isPending}
             onClick={() => predictMutation.mutate(activeMarket)}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2.5 font-tech text-[11px] font-black uppercase tracking-wider text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-50"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2.5 font-tech text-sm font-black uppercase tracking-wider text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-50"
           >
             {predictMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             {predictMutation.isPending ? "AI is deciding…" : "Let AI predict"}
           </button>
-          {predictMutation.isError ? <p className="mt-2 text-xs text-rose-400">AI prediction failed — try again.</p> : null}
+          {predictMutation.isError ? <p className="mt-2 text-sm text-rose-400">AI prediction failed — try again.</p> : null}
         </div>
       )}
     </section>
