@@ -19,7 +19,6 @@ import {
   useEffect,
   useRef,
   useCallback,
-  useMemo,
   type KeyboardEvent,
 } from "react";
 // Note: useCallback kept for addSystem / addResult helpers below

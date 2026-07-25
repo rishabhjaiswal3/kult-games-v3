@@ -46,6 +46,7 @@ import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketP
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { useNumericInput } from "@/hooks/useNumericInput";
+import { teamCrestUrlFor } from "@/lib/flagImages";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -617,6 +618,7 @@ function OrbitalFlag({
   opacity: number;
 }) {
   const flag = flagFor(outcome.label);
+  const crest = teamCrestUrlFor(outcome.label);
 
   return (
     <div
@@ -634,6 +636,8 @@ function OrbitalFlag({
           <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
         ) : outcome.code ? (
           <FlagCircle code={outcome.code} className="h-full w-full rounded-lg" />
+        ) : crest ? (
+          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
         ) : flag ? (
           <span className="text-xl leading-none sm:text-2xl">{flag}</span>
         ) : (
@@ -1635,6 +1639,7 @@ function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
   if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
   if (outcome.code) return <FlagCircle code={outcome.code} className="h-7 w-7 rounded-md" />;
   if (outcome.icon) return <img src={outcome.icon} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-md border border-white/10 object-cover" />;
+  if (teamCrestUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;
   return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 font-tech text-[10px] font-bold uppercase text-white/70" style={{ backgroundColor: `${outcome.color}33` }}>{outcome.label.charAt(0)}</span>;
 }
 
@@ -2094,7 +2099,6 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
         </thead>
         <tbody>
           {(group.standings ?? []).map((row) => {
-            const flag = flagFor(row.team);
             const advancing = row.position <= 2;
             return (
               <tr key={row.team} className={`border-t border-white/8 transition ${advancing ? "bg-emerald-400/[0.08]" : "hover:bg-white/[0.03]"}`}>
@@ -2103,7 +2107,7 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
                 </td>
                 <td className="py-2">
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="text-base leading-none">{flag ?? "⚽"}</span>
+                    <TeamFlagCircle teamName={row.team} className="h-5 w-5 rounded-md" />
                     <span className="truncate font-tech text-[12px] font-bold text-white">{row.team}</span>
                   </span>
                 </td>
@@ -2120,8 +2124,6 @@ function GroupTable({ group, accent }: { group: WorldCupGroup; accent: (typeof G
 }
 
 function ApiMatchCard({ match }: { match: UpcomingMatch }) {
-  const homeFlag = flagFor(match.home);
-  const awayFlag = flagFor(match.away);
   const hasScore = match.homeScore != null && match.awayScore != null && (match.finished || match.live);
   return (
     <article className={`rounded-xl border bg-[#0b0d12] p-2.5 transition hover:border-[#2E5CFF]/45 sm:p-3.5 ${match.live ? "border-emerald-400/40" : "border-white/10"}`}>
@@ -2137,7 +2139,7 @@ function ApiMatchCard({ match }: { match: UpcomingMatch }) {
       </div>
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{homeFlag ?? "⚽"}</span>
+          <TeamFlagCircle teamName={match.home} className="h-7 w-7 rounded-lg bg-black/40 sm:h-9 sm:w-9" />
           <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.home}</p>
         </div>
         <span className={`shrink-0 font-tech font-black ${hasScore ? "text-sm text-white sm:text-base" : "font-mono text-[10px] text-white/30"}`}>
@@ -2145,7 +2147,7 @@ function ApiMatchCard({ match }: { match: UpcomingMatch }) {
         </span>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
           <p className="truncate font-tech text-[13px] font-bold text-white sm:text-sm">{match.away}</p>
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-black/40 text-base sm:h-9 sm:w-9 sm:text-lg">{awayFlag ?? "⚽"}</span>
+          <TeamFlagCircle teamName={match.away} className="h-7 w-7 rounded-lg bg-black/40 sm:h-9 sm:w-9" />
         </div>
       </div>
     </article>

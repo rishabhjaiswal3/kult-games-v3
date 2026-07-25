@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { resolveCountryCode, teamInitials } from "@/lib/teamCode";
-import { flagUrlFor } from "@/lib/flagImages";
+import { flagUrlFor, teamCrestUrlFor } from "@/lib/flagImages";
 
 const HEX_CLIP = "[clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)]";
 
@@ -31,6 +32,21 @@ const FLAG_STYLES: Record<CountryCode, string> = {
   IRQ: "bg-[linear-gradient(180deg,#ce1126_33%,#fff_33%,#fff_66%,#000_66%)]",
 };
 
+function useTeamFlag(teamName: string) {
+  const bundled = flagUrlFor(teamName);
+  const remote = teamCrestUrlFor(teamName);
+  const sources = [bundled, remote].filter((source): source is string => Boolean(source));
+  const [sourceIndex, setSourceIndex] = useState(0);
+
+  useEffect(() => setSourceIndex(0), [teamName]);
+
+  return {
+    src: sources[sourceIndex],
+    isBundled: Boolean(bundled) && sourceIndex === 0,
+    tryNext: () => setSourceIndex((index) => index + 1),
+  };
+}
+
 /** Circular flag badge for lists. */
 export function FlagCircle({ code, className }: { code: CountryCode; className?: string }) {
   return (
@@ -51,8 +67,8 @@ export function FlagCircle({ code, className }: { code: CountryCode; className?:
  * call site instead of `FlagCircle` directly.
  */
 export function TeamFlagCircle({ teamName, className }: { teamName: string; className?: string }) {
-  const flag = flagUrlFor(teamName);
-  if (flag)
+  const flag = useTeamFlag(teamName);
+  if (flag.src)
     return (
       <div
         className={cn(
@@ -60,8 +76,16 @@ export function TeamFlagCircle({ teamName, className }: { teamName: string; clas
           className,
         )}
       >
-        {/* Noto flag art sits in the central ~78% of its canvas; scale up so it fills the circle. */}
-        <img src={flag} alt={teamName} loading="lazy" className="h-full w-full scale-[1.4] object-cover" />
+        <img
+          src={flag.src}
+          alt={`${teamName} flag`}
+          loading="lazy"
+          onError={flag.tryNext}
+          className={cn(
+            "h-full w-full",
+            flag.isBundled ? "scale-[1.4] object-cover" : "scale-[1.18] object-contain",
+          )}
+        />
       </div>
     );
   const code = resolveCountryCode(teamName);
@@ -115,14 +139,22 @@ export function FlagHex({ code, size = "md", className }: FlagHexProps) {
 
 /** Safe wrapper around `FlagHex` for a live team-name string — see `TeamFlagCircle` above for why this exists. */
 export function TeamFlagHex({ teamName, size = "md", className }: { teamName: string; size?: FlagHexProps["size"]; className?: string }) {
-  const flag = flagUrlFor(teamName);
-  if (flag)
+  const flag = useTeamFlag(teamName);
+  if (flag.src)
     return (
       <div className={cn("relative shrink-0", SIZE_MAP[size ?? "md"], className)}>
         <div className={cn("absolute inset-0 bg-[#1a1f2e] shadow-[0_0_12px_rgba(154,53,255,0.25)]", HEX_CLIP)} />
         <div className={cn("absolute inset-[3px] overflow-hidden", HEX_CLIP)}>
-          {/* Noto flag art sits in the central ~78% of its canvas; scale up so it fills the hexagon. */}
-          <img src={flag} alt={teamName} loading="lazy" className="h-full w-full scale-[1.4] object-cover" />
+          <img
+            src={flag.src}
+            alt={`${teamName} flag`}
+            loading="lazy"
+            onError={flag.tryNext}
+            className={cn(
+              "h-full w-full",
+              flag.isBundled ? "scale-[1.4] object-cover" : "scale-[1.18] object-contain",
+            )}
+          />
         </div>
       </div>
     );
