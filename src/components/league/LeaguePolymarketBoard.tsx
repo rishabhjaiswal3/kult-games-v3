@@ -585,12 +585,12 @@ function WorldCupOddsHero() {
 
       <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-end sm:min-h-[220px] lg:min-h-[240px]">
         <h3 className="max-w-[420px] font-tech text-2xl font-black leading-tight text-white sm:text-4xl">
-          World Cup<br />Odds &amp; Predictions
+          Football<br />Odds &amp; Prediction
         </h3>
         <p className="mt-3 max-w-lg text-xs leading-relaxed text-white/45 sm:text-sm">
           {worldCupEvent
-            ? "Percentages are pulled from the live Polymarket World Cup event."
-            : "Live World Cup odds are unavailable right now · participating nations shown."}
+            ? "Percentages are pulled from the live Polymarket Football event."
+            : "Live Football odds are unavailable right now · participating nations shown."}
         </p>
       </div>
     </section>
