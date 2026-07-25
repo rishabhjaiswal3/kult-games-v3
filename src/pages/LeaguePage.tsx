@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Gauge, Goal, Lightbulb } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { leagueApi } from "@/api/leagueApi";
 import { Formula1Board } from "@/components/league/Formula1Board";
 import { LeagueFeaturedBanner } from "@/components/league/LeagueFeaturedBanner";
@@ -28,7 +29,16 @@ import footballSportImg from "@/assets/football.png";
 import f1SportImg from "@/assets/f1/f1-car-hero.jpg";
 
 const LeaguePage = () => {
-  const [mode, setMode] = useState<"league" | "polymarket">("league");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mode: "league" | "polymarket" =
+    searchParams.get("mode") === "polymarket" ? "polymarket" : "league";
+
+  const setMode = (nextMode: "league" | "polymarket") => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextMode === "polymarket") nextParams.set("mode", "polymarket");
+    else nextParams.delete("mode");
+    setSearchParams(nextParams);
+  };
 
   return (
     <div

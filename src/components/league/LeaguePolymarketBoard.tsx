@@ -46,7 +46,7 @@ import { useMyPolymarketPositions, useMyPositionForMarket, useRefreshPolymarketP
 import { usePolymarketSignal } from "@/hooks/usePolymarketSignal";
 import { usePolymarketTrading } from "@/hooks/usePolymarketTrading";
 import { useNumericInput } from "@/hooks/useNumericInput";
-import { teamCrestUrlFor } from "@/lib/flagImages";
+import { flagUrlFor, teamCrestUrlFor } from "@/lib/flagImages";
 import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
@@ -441,21 +441,44 @@ function PolymarketBoardSkeleton() {
 
 type BoardView = "market" | "pulse" | "analysis";
 
+const WORLD_CUP_FLAG_FALLBACK = [
+  "Argentina",
+  "Brazil",
+  "France",
+  "Germany",
+  "Portugal",
+  "Spain",
+  "England",
+];
+
 function WorldCupOddsHero() {
   const events = useFootballEvents();
-  const worldCupEvent =
-    events.find((event) => /world cup/i.test(event.title) && event.outcomesDetail.length >= 4) ??
-    events.find((event) => event.outcomesDetail.length >= 4);
+  const worldCupEvent = events.find(
+    (event) =>
+      /world cup/i.test(event.title) &&
+      event.outcomesDetail.filter((outcome) => flagUrlFor(outcome.label)).length >= 4,
+  );
 
-  const outcomes = (worldCupEvent?.outcomesDetail ?? [])
-    .slice(0, 7)
-    .map((outcome, index) => ({
-      label: outcome.label,
-      yes: outcome.yes,
-      icon: outcome.icon,
-      code: NAME_TO_CODE[outcome.label.toLowerCase()],
-      color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
-    }));
+  const outcomes = useMemo(
+    () =>
+      worldCupEvent
+        ? worldCupEvent.outcomesDetail
+            .filter((outcome) => flagUrlFor(outcome.label))
+            .slice(0, 7)
+            .map((outcome, index) => ({
+              label: outcome.label,
+              yes: outcome.yes,
+              code: NAME_TO_CODE[outcome.label.toLowerCase()],
+              color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
+            }))
+        : WORLD_CUP_FLAG_FALLBACK.map((label, index) => ({
+            label,
+            yes: undefined,
+            code: NAME_TO_CODE[label.toLowerCase()],
+            color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
+          })),
+    [worldCupEvent],
+  );
 
   // Double the items around the orbit so flags are packed closer together
   const orbitItems = useMemo(() => [...outcomes, ...outcomes], [outcomes]);
@@ -514,7 +537,7 @@ function WorldCupOddsHero() {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [count, orbitItems.length]);
+  }, [count, orbitItems]);
 
   if (outcomes.length === 0) {
     return (
@@ -565,7 +588,9 @@ function WorldCupOddsHero() {
           World Cup<br />Odds &amp; Predictions
         </h3>
         <p className="mt-3 max-w-lg text-xs leading-relaxed text-white/45 sm:text-sm">
-          Percentages are pulled from live Polymarket football event.
+          {worldCupEvent
+            ? "Percentages are pulled from the live Polymarket World Cup event."
+            : "Live World Cup odds are unavailable right now · participating nations shown."}
         </p>
       </div>
     </section>
@@ -605,7 +630,7 @@ function OrbitalFlag({
 }: {
   outcome: {
     label: string;
-    yes: number;
+    yes?: number;
     icon?: string;
     code?: CountryCode;
     color: string;
@@ -632,19 +657,19 @@ function OrbitalFlag({
       }}
     >
       <div className="grid h-9 w-12 place-items-center rounded-lg border border-white/12 bg-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.34)] backdrop-blur sm:h-10 sm:w-14">
-        {outcome.code ? (
-          <FlagCircle code={outcome.code} className="h-full w-full rounded-lg" />
-        ) : crest ? (
+        {crest ? (
           <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
-        ) : flag ? (
-          <span className="text-xl leading-none sm:text-2xl">{flag}</span>
+        ) : outcome.code || flag ? (
+          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
         ) : outcome.icon ? (
           <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
         ) : (
           <span className="font-tech text-xs font-black uppercase text-white">{outcome.label.slice(0, 3)}</span>
         )}
       </div>
-      <div className="mt-4 text-center font-tech text-[11px] font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-xs">{outcome.yes}%</div>
+      <div className="mt-4 text-center font-tech text-[11px] font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-xs">
+        {typeof outcome.yes === "number" ? `${outcome.yes}%` : outcome.label}
+      </div>
     </div>
   );
 }
@@ -790,11 +815,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
         <div className="mt-3 flex items-center gap-2">
           <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
           <input
-            type="number"
-            min={0.1}
-            step={0.1}
-            value={stakeUsd}
-            onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
+            {...stake.inputProps}
             disabled={isTrading || !isRealMarket}
             className="h-7 w-20 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-xs font-bold text-white outline-none focus:border-[#2E5CFF]/50 disabled:opacity-50"
           />
@@ -1135,11 +1156,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
       <div className="relative mb-2 flex items-center gap-2">
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">Stake</span>
         <input
-          type="number"
-          min={0.1}
-          step={0.1}
-          value={stakeUsd}
-          onChange={(e) => setStakeUsd(Math.max(0.1, Number(e.target.value) || 0.1))}
+          {...stake.inputProps}
           disabled={isTrading}
           className="h-6 w-16 rounded-md border border-white/15 bg-black/30 px-2 font-tech text-[11px] font-bold text-white outline-none focus:border-emerald-400/50 disabled:opacity-50"
         />
@@ -1636,6 +1653,7 @@ function LiveChatTicker({ comments }: { comments: PolyComment[] }) {
 
 function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
   const flag = flagFor(outcome.label);
+  if (flagUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;
   if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
   if (outcome.code) return <FlagCircle code={outcome.code} className="h-7 w-7 rounded-md" />;
   if (teamCrestUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;

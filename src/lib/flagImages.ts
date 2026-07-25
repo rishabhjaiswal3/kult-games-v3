@@ -40,6 +40,14 @@ const ALIASES: Record<string, string> = {
   bosnia: "bosnia_and_herzegovina",
   "democratic republic of congo": "dr_congo",
   "congo dr": "dr_congo",
+  // Player-based prediction markets use the player's national flag.
+  "harry kane": "england",
+  "lamine yamal": "spain",
+  "kylian mbappe": "france",
+  "kylian mbappé": "france",
+  rodri: "spain",
+  "lionel messi": "argentina",
+  messi: "argentina",
 };
 
 /** Lowercase, strip accents/punctuation, collapse whitespace. */
