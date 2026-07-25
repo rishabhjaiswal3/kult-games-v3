@@ -632,14 +632,14 @@ function OrbitalFlag({
       }}
     >
       <div className="grid h-9 w-12 place-items-center rounded-lg border border-white/12 bg-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.34)] backdrop-blur sm:h-10 sm:w-14">
-        {outcome.icon ? (
-          <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
-        ) : outcome.code ? (
+        {outcome.code ? (
           <FlagCircle code={outcome.code} className="h-full w-full rounded-lg" />
         ) : crest ? (
           <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
         ) : flag ? (
           <span className="text-xl leading-none sm:text-2xl">{flag}</span>
+        ) : outcome.icon ? (
+          <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
         ) : (
           <span className="font-tech text-xs font-black uppercase text-white">{outcome.label.slice(0, 3)}</span>
         )}
@@ -1638,8 +1638,8 @@ function OutcomeAvatar({ outcome }: { outcome: FeaturedOutcome }) {
   const flag = flagFor(outcome.label);
   if (flag) return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 bg-black/40 text-base leading-none">{flag}</span>;
   if (outcome.code) return <FlagCircle code={outcome.code} className="h-7 w-7 rounded-md" />;
-  if (outcome.icon) return <img src={outcome.icon} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-md border border-white/10 object-cover" />;
   if (teamCrestUrlFor(outcome.label)) return <TeamFlagCircle teamName={outcome.label} className="h-7 w-7 rounded-md" />;
+  if (outcome.icon) return <img src={outcome.icon} alt="" loading="lazy" className="h-7 w-7 shrink-0 rounded-md border border-white/10 object-cover" />;
   return <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-white/10 font-tech text-[10px] font-bold uppercase text-white/70" style={{ backgroundColor: `${outcome.color}33` }}>{outcome.label.charAt(0)}</span>;
 }
 
