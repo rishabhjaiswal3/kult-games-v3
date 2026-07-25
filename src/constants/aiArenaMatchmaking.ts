@@ -5,6 +5,7 @@ export const AI_ARENA_GAME_IDS = [
   { value: "warzone", label: "Warzone" },
   { value: "robowar", label: "Robowar" },
   { value: "highway-hustle", label: "Highway Hustle" },
+  { value: "warzone-wave", label: "Warzone Wave" },
 ] as const;
 
 export type AiArenaGameId = (typeof AI_ARENA_GAME_IDS)[number]["value"];

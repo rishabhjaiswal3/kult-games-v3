@@ -723,7 +723,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
   const { isAuthenticated, login } = useAuth();
   const { getSignal, isLoading, result, error, hasAgent, myAgentId } = usePolymarketSignal();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const stake = useNumericInput(10, { min: 1, integer: true });
+  const stake = useNumericInput(10, { min: 0.1, integer: false });
   const [placedOrder, setPlacedOrder] = useState<{ side: "YES" | "NO"; orderId?: string } | null>(null);
   // Real position (survives refresh) -- placedOrder above is just the
   // optimistic "order just went through" flash before this catches up.
@@ -1045,7 +1045,7 @@ function formatKickoffCountdown(kickoff: number, now: number): string {
 function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect: (id: string) => void }) {
   const { isAuthenticated, login } = useAuth();
   const { status: tradingStatus, error: tradeError, placeMarketBuy } = usePolymarketTrading();
-  const stake = useNumericInput(10, { min: 1, integer: true });
+  const stake = useNumericInput(10, { min: 0.1, integer: false });
   const [placed, setPlaced] = useState<{ id: string; side: "YES" | "NO" } | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
