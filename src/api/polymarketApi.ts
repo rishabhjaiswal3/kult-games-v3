@@ -32,6 +32,8 @@ export type PolyMarket = {
   dayChange: number;
   /** Parent event / match name, e.g. "France vs. Morocco" (sub-market suffixes stripped). */
   eventTitle?: string;
+  /** Raw per-outcome label (e.g. "Lando Norris" for a driver-championship sub-market) -- untruncated, unlike `short`. Undefined for non-grouped markets. */
+  outcomeLabel?: string;
 };
 
 // ── Football filtering ──────────────────────────────────────────────────────
@@ -183,12 +185,16 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (quest
   // Gamma reports the 24h change as a price fraction (-1..1) — convert to cents.
   const dayChange = Math.round(toNumber(raw.oneDayPriceChange) * 100);
 
+  const groupItemTitle = typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined;
+
   return {
     id: typeof raw.id === "string" ? raw.id : String(raw.id ?? question),
     conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
     question,
     category: categoryFn(question),
-    short: shorten(question, typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined),
+    short: shorten(question, groupItemTitle),
+    /** Raw outcome label (e.g. "Lando Norris") -- untruncated, for exact-name matching (e.g. against a real driver roster for a photo), unlike `short`. */
+    ...(groupItemTitle && { outcomeLabel: groupItemTitle }),
     yes,
     volume: formatVolume(volumeNum),
     volumeNum,
