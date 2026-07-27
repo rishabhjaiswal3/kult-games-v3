@@ -1396,7 +1396,7 @@ export default function WarzoneWaveGamePage() {
     };
     localStorage.setItem('arenaBattlePayload', JSON.stringify(arenaPayload));
 
-    const buildUrl = `${UNITY_BASE_URL}/Warzone2`;
+    const buildUrl = `${UNITY_BASE_URL}/Warzone3`;
     const script = document.createElement("script");
     script.src = `${buildUrl}/WarzoneV4.loader.js`;
 
