@@ -1,16 +1,11 @@
 /**
- * WarzoneWaveGamePage — Full-screen Warzone Wave co-op battle experience.
+ * WarzoneWaveGamePage — Full-screen Warzone Wave survival battle experience.
  *
- * Same Unity build as Warzone Warriors (same VITE_UNITY_BUILD_URL).
- * React writes mode:"WAVECOOP" in arenaBattlePayload so Unity activates
- * WaveCoopModeController (2 AI fighters vs enemy waves, 60 s, most coins wins).
+ * Win condition: SURVIVAL — first AI fighter to die loses.
+ * If both survive the 60-second timer, higher HP remaining wins.
  *
- * React listens for "waveCoopBattleEnd" CustomEvent (fired by Unity's
- * DispatchWaveCoopEndEvent jslib function) instead of "arenaBattleEnd".
- *
- * Payload shape from Unity:
- *   { battleId, myAgentWon, winnerAgentId, winnerName, winnerCoins,
- *     loserAgentId, loserName, loserCoins, durationSeconds, endReason }
+ * winnerCoins / loserCoins in the payload carry HP-remaining values
+ * (repurposed field from WaveCoopBattleReporter).
  */
 
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -353,11 +348,10 @@ function PreMatchOverlay({
           style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="arena-prematch-footer-rules font-mono text-xs text-center text-white leading-relaxed max-w-lg">
-            ⏱ <span className="text-white font-bold">60 second</span> co-op match ·
+            ⏱ <span className="text-white font-bold">60 second</span> survival match ·
             Both agents fight enemy waves together ·
-            The agent that{" "}
-            <span className="font-bold" style={{ color: meta.accentColor }}>collects the most coins</span>{" "}
-            wins · Winner earns <span className="text-white font-bold">ARENA rewards</span>
+            <span className="font-bold" style={{ color: meta.accentColor }}> First to die loses</span>{" "}
+            · If both survive, higher HP wins · Winner earns <span className="text-white font-bold">ARENA rewards</span>
           </p>
 
           <div className="w-full max-w-sm">
@@ -1073,7 +1067,7 @@ function WaveCoopResultOverlay({
                   background: result.myAgentWon ? `${winnerColor}12` : "rgba(239,68,68,0.08)",
                 }}
               >
-                ⏱ Wave Complete
+                {result.endReason === "fighter-died" ? "⚔️ Eliminated" : "⏱ Survived"}
               </span>
               <span className="font-mono text-[10px] text-white/25">{durationStr}</span>
             </div>
@@ -1097,12 +1091,12 @@ function WaveCoopResultOverlay({
               <div
                 className="mt-2 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.06] px-2 py-1.5"
               >
-                <span className="text-lg leading-none">🪙</span>
+                <span className="text-lg leading-none">❤️</span>
                 <div>
                   <div className="font-display text-xl font-black leading-none" style={{ color: winnerColor }}>
                     {result.winnerCoins}
                   </div>
-                  <div className="font-tech text-[8px] uppercase text-white/35">coins</div>
+                  <div className="font-tech text-[8px] uppercase text-white/35">HP left</div>
                 </div>
               </div>
             </div>
@@ -1121,12 +1115,12 @@ function WaveCoopResultOverlay({
                 {result.loserName}
               </div>
               <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5">
-                <span className="text-lg leading-none opacity-50">🪙</span>
+                <span className="text-lg leading-none opacity-50">💀</span>
                 <div>
                   <div className="font-display text-xl font-black leading-none text-white/50">
                     {result.loserCoins}
                   </div>
-                  <div className="font-tech text-[8px] uppercase text-white/25">coins</div>
+                  <div className="font-tech text-[8px] uppercase text-white/25">HP left</div>
                 </div>
               </div>
             </div>
