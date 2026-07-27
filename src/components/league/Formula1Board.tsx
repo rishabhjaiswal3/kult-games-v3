@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Activity,
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
   Box,
+  Brain,
+  CheckCircle2,
   ChevronRight,
   Crosshair,
   Flag,
@@ -14,6 +17,7 @@ import {
   Sparkles,
   Trophy,
   Users,
+  XCircle,
   Zap,
 } from "lucide-react";
 import formula1Video from "@/assets/formula1.mp4";
@@ -35,7 +39,18 @@ import supportStill from "@/assets/f1/agent-stills/support.jpg";
 import tacticianStill from "@/assets/f1/agent-stills/tactician.jpg";
 import { LEAGUE_ARENA_AGENTS } from "@/constants/leagueAgents";
 import { cn } from "@/lib/utils";
-import { f1Api, F1_PREDICTION_MARKETS, type F1Driver, type F1FantasyTeam, type F1GrandPrixWeekend, type F1PredictionMarket, type F1RaceSession } from "@/api/f1Api";
+import {
+  f1Api,
+  F1_PREDICTION_MARKETS,
+  type F1AgentAccuracy,
+  type F1Confidence,
+  type F1Driver,
+  type F1DriverForm,
+  type F1FantasyTeam,
+  type F1GrandPrixWeekend,
+  type F1PredictionMarket,
+  type F1RaceSession,
+} from "@/api/f1Api";
 import { F1DriverModal } from "@/components/f1/F1DriverModal";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAuth } from "@/contexts/AuthContext";
@@ -194,6 +209,222 @@ function Sparkline({
       {fill ? <polygon points={area} fill={color} opacity="0.22" /> : null}
       <polyline points={line} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
     </svg>
+  );
+}
+
+const CONFIDENCE_THEME: Record<F1Confidence, { label: string; color: string; bars: number }> = {
+  LOW: { label: "Low conviction", color: "#f87171", bars: 1 },
+  MEDIUM: { label: "Medium conviction", color: "#fbbf24", bars: 2 },
+  HIGH: { label: "High conviction", color: "#34d399", bars: 3 },
+};
+
+/** The AI's own stated conviction in a pick -- a 3-bar meter, not a bare label, so it reads as a signal strength at a glance. */
+function ConfidenceMeter({ confidence }: { confidence: F1Confidence | null }) {
+  if (!confidence) return null;
+  const theme = CONFIDENCE_THEME[confidence];
+  return (
+    <div className="inline-flex items-center gap-1.5">
+      <div className="flex items-end gap-0.5">
+        {[1, 2, 3].map((bar) => (
+          <span
+            key={bar}
+            className="w-1 rounded-full transition-colors"
+            style={{
+              height: `${4 + bar * 3}px`,
+              background: bar <= theme.bars ? theme.color : "rgba(255,255,255,0.12)",
+            }}
+          />
+        ))}
+      </div>
+      <span className="font-mono text-[9px] font-bold uppercase tracking-wider" style={{ color: theme.color }}>
+        {theme.label}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Real recency-weighted form for one driver (services/league-service
+ * jolpica-data.service.ts, computed from stored historical F1RaceResult
+ * rows) -- last-5-race finish/points trend as a real sparkline, feeding
+ * "why the AI picked them" with an actual chart instead of prose alone.
+ * Renders nothing if there's no historical data synced for this driver
+ * yet (POST /v1/f1/sync-historical) rather than fabricating a trend.
+ */
+function DriverFormIntelligence({ form }: { form: F1DriverForm | null | undefined }) {
+  if (!form || form.races.length === 0) return null;
+  const points = form.races.map((r) => r.points);
+  const trendColor = form.races.length > 1 && points[points.length - 1] >= points[0] ? "#34d399" : "#f87171";
+
+  return (
+    <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">
+          <Activity className="h-3 w-3" /> Recent form ({form.racesConsidered} races)
+        </p>
+        {form.recentFormScore != null ? (
+          <span className="font-tech text-[10px] font-bold text-white/70">Avg finish P{form.recentFormScore.toFixed(1)}</span>
+        ) : null}
+      </div>
+      <Sparkline points={points} color={trendColor} className="mt-1.5 h-8" />
+      <div className="mt-1 flex items-center justify-between font-mono text-[9px] text-white/35">
+        <span>{form.races[0]?.raceName}</span>
+        <span>{form.races[form.races.length - 1]?.raceName}</span>
+      </div>
+      {form.last5DnfRate > 0 ? (
+        <p className="mt-1 font-mono text-[9px] text-amber-300/70">{Math.round(form.last5DnfRate * 100)}% DNF rate in this stretch</p>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Predicted driver vs what actually happened, as a real side-by-side visual
+ * (photos + a resolved checkmark/X) instead of a paragraph of text --
+ * mirrors what Polymarket-style prediction UIs show when a market resolves.
+ */
+function PredictionVsRealityCard({
+  market,
+  predictedDriver,
+  raceResult,
+  isCorrect,
+}: {
+  market: F1PredictionMarket;
+  predictedDriver: F1Driver | undefined;
+  raceResult: NonNullable<Awaited<ReturnType<typeof f1Api.getRaceResult>>>;
+  isCorrect: boolean | null;
+}) {
+  const actualDriver =
+    market === "WINNER" ? raceResult.winner : market === "FASTEST_LAP" ? raceResult.fastestLapDriver : raceResult.pickedDriverResult;
+
+  const actualLabel =
+    market === "PODIUM"
+      ? raceResult.pickedDriverResult
+        ? `Finished P${raceResult.pickedDriverResult.position}`
+        : "Result unavailable"
+      : actualDriver
+        ? actualDriver.name
+        : "Result unavailable";
+
+  return (
+    <div className="mt-2 overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3">
+        <div className="flex flex-col items-center gap-1.5 text-center">
+          <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/35">AI predicted</p>
+          {predictedDriver ? <DriverAvatar driver={predictedDriver} size="lg" /> : <div className="h-11 w-11 rounded-full bg-white/5" />}
+          <p className="max-w-[7rem] truncate font-tech text-[11px] font-bold text-white">{predictedDriver?.name ?? "Unknown"}</p>
+        </div>
+
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border" style={{
+          borderColor: isCorrect ? "rgba(52,211,153,0.4)" : "rgba(248,113,113,0.4)",
+          background: isCorrect ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
+        }}>
+          {isCorrect ? <CheckCircle2 className="h-[18px] w-[18px] text-emerald-400" /> : <XCircle className="h-[18px] w-[18px] text-rose-400" />}
+        </div>
+
+        <div className="flex flex-col items-center gap-1.5 text-center">
+          <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/35">Actually happened</p>
+          {market !== "PODIUM" && actualDriver ? (
+            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/15 bg-black/40">
+              {actualDriver.image ? (
+                <img src={actualDriver.image} alt={actualDriver.name} className="h-full w-full object-cover object-top" />
+              ) : null}
+            </div>
+          ) : (
+            <div className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-black/30">
+              <Trophy className="h-4 w-4 text-amber-300/70" />
+            </div>
+          )}
+          <p className="max-w-[7rem] truncate font-tech text-[11px] font-bold text-white">{actualLabel}</p>
+        </div>
+      </div>
+
+      {market === "PODIUM" && raceResult.podium.length > 0 ? (
+        <div className="flex items-center justify-center gap-2 border-t border-white/10 bg-black/20 px-3 py-1.5 font-mono text-[9px] text-white/45">
+          Podium: {raceResult.podium.map((d) => `P${d.position} ${d.abbr ?? d.name}`).join(" · ")}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Real agent accuracy track record -- overall + per-market win rate, plus a
+ * cumulative-win-rate "learning curve" over the agent's chronological
+ * settled-pick history. Built entirely from f1Api.getAgentAccuracy (settled
+ * F1Prediction rows only), so this can only ever show a real record, never
+ * more picks or a higher win rate than the agent has actually earned.
+ */
+function AgentIntelligenceSection({ agentId, agentName }: { agentId: string; agentName: string }) {
+  const { data: accuracy, isLoading } = useQuery({
+    queryKey: ["f1", "agent-accuracy", agentId],
+    queryFn: () => f1Api.getAgentAccuracy(agentId),
+    enabled: !!agentId,
+    staleTime: 30_000,
+  });
+
+  const trend = useMemo(() => {
+    if (!accuracy || accuracy.history.length === 0) return [];
+    let correct = 0;
+    return accuracy.history.map((h, i) => {
+      if (h.isCorrect) correct++;
+      return (correct / (i + 1)) * 100;
+    });
+  }, [accuracy]);
+
+  if (isLoading) {
+    return <div className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]" />;
+  }
+  if (!accuracy || accuracy.overall.total === 0) return null;
+
+  const marketLabels: Record<F1PredictionMarket, string> = { WINNER: "Winner", PODIUM: "Podium", FASTEST_LAP: "Fastest Lap" };
+
+  return (
+    <section className="rounded-2xl border border-cyan-400/25 bg-[radial-gradient(circle_at_100%_100%,rgba(34,211,238,0.08),transparent_55%),#080910] p-3.5 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Brain className="h-4 w-4 text-cyan-300" />
+          <div>
+            <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Agent intelligence</h3>
+            <p className="mt-0.5 text-[11px] text-white/45">{agentName}&apos;s real track record across settled picks</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-tech text-2xl font-black text-cyan-300">
+            {accuracy.overall.winRate != null ? `${Math.round(accuracy.overall.winRate * 100)}%` : "--"}
+          </p>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-white/40">
+            {accuracy.overall.correct}/{accuracy.overall.total} correct
+          </p>
+        </div>
+      </div>
+
+      {trend.length > 1 ? (
+        <div className="mb-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5">
+          <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Win-rate learning curve</p>
+          <Sparkline points={trend} color="#22d3ee" className="h-9" />
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-3 gap-2">
+        {(Object.keys(marketLabels) as F1PredictionMarket[]).map((market) => {
+          const m = accuracy.byMarket[market];
+          const pct = m.winRate != null ? Math.round(m.winRate * 100) : null;
+          return (
+            <div key={market} className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+              <p className="font-mono text-[9px] uppercase tracking-wider text-white/40">{marketLabels[market]}</p>
+              <p className="mt-1 font-tech text-lg font-black text-white">{pct != null ? `${pct}%` : "--"}</p>
+              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-cyan-400" style={{ width: `${pct ?? 0}%` }} />
+              </div>
+              <p className="mt-1 font-mono text-[8px] text-white/35">
+                {m.correct}/{m.total}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -814,14 +1045,27 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
     enabled: !!raceId && !!agent?.id,
   });
 
+  const pickForMarket = (market: F1PredictionMarket) => picks?.find((p) => p.market === market);
+  const activePick = pickForMarket(activeMarket);
+  const activeQuestion = F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.question;
+
   // Real winner/podium/fastest-lap once the race is classified -- null until
-  // settled, same "here's what actually happened" comparison the football
-  // board shows next to a predicted score.
+  // settled. pickedDriverId also gets the picked driver's own real finish,
+  // needed for PODIUM where "the result" isn't one driver to compare 1:1.
   const { data: raceResult } = useQuery({
-    queryKey: ["f1", "race-result", raceId],
-    queryFn: () => f1Api.getRaceResult(raceId!),
-    enabled: !!raceId,
+    queryKey: ["f1", "race-result", raceId, activePick?.predictedDriverId],
+    queryFn: () => f1Api.getRaceResult(raceId!, activePick?.predictedDriverId),
+    enabled: !!raceId && !!activePick?.settledAt,
     staleTime: 30_000,
+  });
+
+  // Real recency-weighted form for the predicted driver -- feeds "why the AI
+  // picked them" with an actual historical chart instead of prose alone.
+  const { data: driverForm } = useQuery({
+    queryKey: ["f1", "driver-form", activePick?.predictedDriverId],
+    queryFn: () => f1Api.getDriverForm(activePick!.predictedDriverId),
+    enabled: !!activePick?.predictedDriverId,
+    staleTime: 5 * 60_000,
   });
 
   const predictMutation = useMutation({
@@ -830,10 +1074,6 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
       queryClient.invalidateQueries({ queryKey: ["f1", "picks", raceId, agent?.id] });
     },
   });
-
-  const pickForMarket = (market: F1PredictionMarket) => picks?.find((p) => p.market === market);
-  const activePick = pickForMarket(activeMarket);
-  const activeQuestion = F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.question;
 
   return (
     <section className="rounded-2xl border border-violet-400/25 bg-[radial-gradient(circle_at_0%_0%,rgba(139,92,246,0.1),transparent_55%),#080910] p-3.5 sm:p-4">
@@ -881,10 +1121,14 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
         <p className="font-mono text-sm text-white/40">Race not synced yet.</p>
       ) : activePick ? (
         <div>
-          <p className="font-mono text-sm text-white/70">
-            <span className="font-bold text-emerald-300">{agent.name}</span>&apos;s AI predicted{" "}
-            <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-mono text-sm text-white/70">
+              <span className="font-bold text-emerald-300">{agent.name}</span>&apos;s AI predicted{" "}
+              <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
+            </p>
+            <ConfidenceMeter confidence={activePick.confidence} />
+          </div>
+
           {activePick.settledAt ? (
             <>
               <span
@@ -895,24 +1139,12 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
                 {activePick.isCorrect ? "Correct" : "Incorrect"}
               </span>
               {raceResult ? (
-                <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">What actually happened</p>
-                  {activeMarket === "WINNER" ? (
-                    <p className="mt-1 font-tech text-sm font-bold text-white">
-                      {raceResult.winner ? `${raceResult.winner.name} won the race` : "Result unavailable"}
-                    </p>
-                  ) : activeMarket === "PODIUM" ? (
-                    <p className="mt-1 font-tech text-sm font-bold text-white">
-                      {raceResult.podium.length > 0
-                        ? raceResult.podium.map((d, i) => `P${d.position ?? i + 1} ${d.name}`).join(" · ")
-                        : "Result unavailable"}
-                    </p>
-                  ) : (
-                    <p className="mt-1 font-tech text-sm font-bold text-white">
-                      {raceResult.fastestLapDriver ? `${raceResult.fastestLapDriver.name} set the fastest lap` : "Result unavailable"}
-                    </p>
-                  )}
-                </div>
+                <PredictionVsRealityCard
+                  market={activeMarket}
+                  predictedDriver={activePick.predictedDriver}
+                  raceResult={raceResult}
+                  isCorrect={activePick.isCorrect}
+                />
               ) : null}
             </>
           ) : (
@@ -921,6 +1153,7 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
             </span>
           )}
           {activePick.reasoning ? <p className="mt-1.5 font-mono text-sm italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
+          <DriverFormIntelligence form={driverForm} />
           {activePick.predictedDriverId ? (
             <button
               type="button"
@@ -1406,6 +1639,8 @@ export function Formula1Board() {
   const [openDriverId, setOpenDriverId] = useState<string | null>(null);
   const pickSectionRef = useRef<HTMLDivElement>(null);
   const scrollToPick = () => pickSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const { data: myAgents } = useMyArenaAgents();
+  const agent = myAgents?.agents?.[0];
 
   const { data: weekend, isLoading: weekendLoading } = useQuery({
     queryKey: ["f1", "grand-prix", "belgium"],
@@ -1429,6 +1664,7 @@ export function Formula1Board() {
         <div ref={pickSectionRef}>
           <MakeYourPickSection raceId={weekend?.race.id} onOpenDriver={setOpenDriverId} />
         </div>
+        {agent ? <AgentIntelligenceSection agentId={agent.id} agentName={agent.name} /> : null}
         <FantasyTeamSection season={weekend?.race.season} onOpenDriver={setOpenDriverId} />
         {/* < lg only: stacked in column */}
         <div className="lg:hidden">

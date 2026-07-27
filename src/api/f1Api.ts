@@ -77,6 +77,8 @@ export const F1_PREDICTION_MARKETS: { key: F1PredictionMarket; label: string; qu
   { key: "FASTEST_LAP", label: "Fastest Lap", question: "Who sets the fastest lap?" },
 ];
 
+export type F1Confidence = "LOW" | "MEDIUM" | "HIGH";
+
 export interface F1Prediction {
   id: string;
   raceId: string;
@@ -84,10 +86,50 @@ export interface F1Prediction {
   market: F1PredictionMarket;
   predictedDriverId: string;
   reasoning: string | null;
+  /** The AI's own stated conviction -- null for picks made before this field existed. */
+  confidence: F1Confidence | null;
   /** null until the race is settled (POST /v1/f1/races/:raceId/settle) -- then true/false. */
   isCorrect: boolean | null;
   settledAt: string | null;
   predictedDriver?: F1Driver;
+}
+
+export interface F1AgentAccuracyEntry {
+  raceId: string;
+  grandPrixName: string;
+  market: F1PredictionMarket;
+  confidence: F1Confidence | null;
+  isCorrect: boolean | null;
+  settledAt: string | null;
+}
+
+export interface F1MarketAccuracy {
+  total: number;
+  correct: number;
+  winRate: number | null;
+}
+
+export interface F1AgentAccuracy {
+  overall: F1MarketAccuracy;
+  byMarket: Record<F1PredictionMarket, F1MarketAccuracy>;
+  history: F1AgentAccuracyEntry[];
+}
+
+export interface F1DriverFormRace {
+  season: number;
+  round: number;
+  raceName: string;
+  finishPosition: number | null;
+  points: number;
+  status: string;
+}
+
+export interface F1DriverForm {
+  racesConsidered: number;
+  recentFormScore: number | null;
+  last5PointsTotal: number;
+  last5DnfRate: number;
+  races: F1DriverFormRace[];
 }
 
 export interface F1RaceResultDriver {
@@ -102,6 +144,8 @@ export interface F1RaceResult {
   winner: F1RaceResultDriver | null;
   podium: F1RaceResultDriver[];
   fastestLapDriver: F1RaceResultDriver | null;
+  /** The specific picked driver's own real finish -- only present when a pickedDriverId was requested. */
+  pickedDriverResult: F1RaceResultDriver | null;
 }
 
 export interface F1FantasyTeam {
@@ -158,10 +202,28 @@ export const f1Api = {
     return data.picks ?? [];
   },
 
-  /** Real winner/podium/fastest-lap once a race is classified -- null until settled. */
-  getRaceResult: async (raceId: string): Promise<F1RaceResult | null> => {
-    const { data } = await http().get<{ result: F1RaceResult | null }>(`/v1/f1/races/${raceId}/result`);
+  /** Real winner/podium/fastest-lap once a race is classified -- null until settled. Pass pickedDriverId to also get that driver's own real finish. */
+  getRaceResult: async (raceId: string, pickedDriverId?: string): Promise<F1RaceResult | null> => {
+    const { data } = await http().get<{ result: F1RaceResult | null }>(`/v1/f1/races/${raceId}/result`, {
+      params: pickedDriverId ? { pickedDriverId } : undefined,
+    });
     return data.result ?? null;
+  },
+
+  /** Real prediction win-rate history for one agent -- overall + per market, built only from settled picks. */
+  getAgentAccuracy: async (agentId: string): Promise<F1AgentAccuracy> => {
+    const { data } = await http().get<{ accuracy: F1AgentAccuracy }>(`/v1/f1/agents/${agentId}/accuracy`);
+    return data.accuracy;
+  },
+
+  /** Recency-weighted recent-form for one driver, computed from real historical race results. */
+  getDriverForm: async (driverId: string): Promise<F1DriverForm | null> => {
+    try {
+      const { data } = await http().get<{ form: F1DriverForm }>(`/v1/f1/drivers/${driverId}/form`);
+      return data.form;
+    } catch {
+      return null;
+    }
   },
 
   /** "Let AI Predict" -- the AI names the driver itself and the pick is saved immediately. */
