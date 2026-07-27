@@ -814,6 +814,16 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
     enabled: !!raceId && !!agent?.id,
   });
 
+  // Real winner/podium/fastest-lap once the race is classified -- null until
+  // settled, same "here's what actually happened" comparison the football
+  // board shows next to a predicted score.
+  const { data: raceResult } = useQuery({
+    queryKey: ["f1", "race-result", raceId],
+    queryFn: () => f1Api.getRaceResult(raceId!),
+    enabled: !!raceId,
+    staleTime: 30_000,
+  });
+
   const predictMutation = useMutation({
     mutationFn: (market: F1PredictionMarket) => f1Api.predictPick(raceId!, agent!.id, market),
     onSuccess: () => {
@@ -876,13 +886,35 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
             <span className="font-bold text-white">{activePick.predictedDriver?.name ?? "a driver"}</span> for {F1_PREDICTION_MARKETS.find((m) => m.key === activeMarket)?.label}.
           </p>
           {activePick.settledAt ? (
-            <span
-              className={`mt-1.5 inline-flex items-center rounded border px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider ${
-                activePick.isCorrect ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-400" : "border-red-500/35 bg-red-500/15 text-red-400"
-              }`}
-            >
-              {activePick.isCorrect ? "Correct" : "Incorrect"}
-            </span>
+            <>
+              <span
+                className={`mt-1.5 inline-flex items-center rounded border px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider ${
+                  activePick.isCorrect ? "border-emerald-500/35 bg-emerald-500/15 text-emerald-400" : "border-red-500/35 bg-red-500/15 text-red-400"
+                }`}
+              >
+                {activePick.isCorrect ? "Correct" : "Incorrect"}
+              </span>
+              {raceResult ? (
+                <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">What actually happened</p>
+                  {activeMarket === "WINNER" ? (
+                    <p className="mt-1 font-tech text-sm font-bold text-white">
+                      {raceResult.winner ? `${raceResult.winner.name} won the race` : "Result unavailable"}
+                    </p>
+                  ) : activeMarket === "PODIUM" ? (
+                    <p className="mt-1 font-tech text-sm font-bold text-white">
+                      {raceResult.podium.length > 0
+                        ? raceResult.podium.map((d, i) => `P${d.position ?? i + 1} ${d.name}`).join(" · ")
+                        : "Result unavailable"}
+                    </p>
+                  ) : (
+                    <p className="mt-1 font-tech text-sm font-bold text-white">
+                      {raceResult.fastestLapDriver ? `${raceResult.fastestLapDriver.name} set the fastest lap` : "Result unavailable"}
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </>
           ) : (
             <span className="mt-1.5 inline-flex items-center rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider text-white/40">
               Pending — settles after the race

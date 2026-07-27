@@ -90,6 +90,20 @@ export interface F1Prediction {
   predictedDriver?: F1Driver;
 }
 
+export interface F1RaceResultDriver {
+  id: string;
+  name: string;
+  abbr: string | null;
+  image: string | null;
+  position: number | null;
+}
+
+export interface F1RaceResult {
+  winner: F1RaceResultDriver | null;
+  podium: F1RaceResultDriver[];
+  fastestLapDriver: F1RaceResultDriver | null;
+}
+
 export interface F1FantasyTeam {
   id: string;
   agentId: string;
@@ -142,6 +156,12 @@ export const f1Api = {
   getPicks: async (raceId: string, agentId: string): Promise<F1Prediction[]> => {
     const { data } = await http().get<{ picks: F1Prediction[] }>(`/v1/f1/races/${raceId}/pick/${agentId}`);
     return data.picks ?? [];
+  },
+
+  /** Real winner/podium/fastest-lap once a race is classified -- null until settled. */
+  getRaceResult: async (raceId: string): Promise<F1RaceResult | null> => {
+    const { data } = await http().get<{ result: F1RaceResult | null }>(`/v1/f1/races/${raceId}/result`);
+    return data.result ?? null;
   },
 
   /** "Let AI Predict" -- the AI names the driver itself and the pick is saved immediately. */
