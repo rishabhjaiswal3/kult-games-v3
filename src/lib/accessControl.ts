@@ -7,7 +7,7 @@ export type AccessFeature =
   | "creator_studio"
   | "full_browser";
 
-export type AccessTier = "tier_1" | "tier_2" | "tier_3" | "tier_4" | "tier_5";
+export type AccessTier = "tier_1" | "tier_2" | "tier_3" | "tier_4" | "tier_5" | "tier_6";
 
 export type BrowserAccessSession = {
   tier: AccessTier;
@@ -34,7 +34,14 @@ export function featureForPath(pathname: string): AccessFeature | null {
   if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
   if (pathname === "/league" || pathname === "/leaderboard" || pathname === "/achievements") return "league";
   if (pathname === "/creator-platform") return "creator_platform";
-  if (pathname === "/studio" || pathname.startsWith("/studio/")) return "creator_studio";
+  if (
+    pathname === "/create" ||
+    pathname.startsWith("/create/") ||
+    pathname === "/studio" ||
+    pathname.startsWith("/studio/")
+  ) {
+    return "creator_studio";
+  }
   if (pathname === "/autonomous") return "ai_arena";
   if (pathname === "/inventory") return "full_browser";
   return null;

@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Clapperboard, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { hasFeature } from "@/lib/accessControl";
+import { seedCreatorStudioIdentity, tryFetchAndStoreCreatorStudioAuthToken } from "@/lib/creatorStudioAutoAuth";
 import { studioUrl } from "@/lib/serviceUrls";
 import { navItemsForAccess } from "@/layout/navConfig";
 import { cn } from "@/lib/utils";
@@ -33,7 +35,7 @@ function SidebarNav({
   const visibleNavItems = navItemsForAccess(session, isAuthenticated);
 
   return (
-    <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1" data-tour="sidebar-nav">
+    <nav className="sidebar-nav space-y-0.5 px-3 py-1" data-tour="sidebar-nav">
       {visibleNavItems.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
@@ -152,6 +154,7 @@ function SidebarBrand({
 /* ─── Main Sidebar Component ─── */
 export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse }: AppSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [studioLaunching, setStudioLaunching] = useState(false);
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
@@ -173,34 +176,85 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
     window.dispatchEvent(new CustomEvent("mobile-sidebar-state", { detail: { isOpen } }));
   }, [isOpen]);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, walletAddress, player } = useAuth();
   const { session } = useAccess();
   const showStudio = hasFeature(session, "creator_studio");
+  const {
+    ready: privyReady,
+    authenticated: privyAuthenticated,
+    user: privyUser,
+    getAccessToken,
+  } = usePrivy();
 
-  const sidebarContent = (onNavigate?: () => void) => (
-    <>
-      <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
-      <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
+  const sidebarContent = (onNavigate?: () => void) => {
+    const openStudio = async (event: MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      if (studioLaunching) return;
+      onNavigate?.();
+      setStudioLaunching(true);
 
-      {/* Studio — sticky bottom */}
-      {isAuthenticated && showStudio && (
-        <div className={cn("shrink-0 border-t border-white/5", isCollapsed ? "p-2" : "p-3")} data-tour="sidebar-studio">
-          <a
-            href={studioUrl()}
-            onClick={onNavigate}
-            aria-label="Open Studio"
-            className={cn(
-              "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
-              isCollapsed ? "mx-auto h-10 w-10 justify-center" : "justify-center gap-2 px-4 py-2.5",
-            )}
-          >
-            <Clapperboard className="h-4 w-4 shrink-0" />
-            {!isCollapsed && <span>Studio</span>}
-          </a>
+      try {
+        // Seed the identity keys the creator-studio reads from localStorage.
+        seedCreatorStudioIdentity({
+          walletAddress,
+          privyDid: privyUser?.id ?? null,
+          username: player?.name ?? null,
+        });
+
+        // Best-effort: warm the creator-studio API JWT cache before leaving.
+        // If this doesn't finish quickly, `/create/auto-auth` will do it again.
+        if (privyReady && privyAuthenticated) {
+          const accessToken = await Promise.race<string | null>([
+            getAccessToken().catch(() => null),
+            new Promise((resolve) => window.setTimeout(() => resolve(null), 1200)),
+          ]);
+
+          if (typeof accessToken === "string" && accessToken.trim()) {
+            await Promise.race([
+              tryFetchAndStoreCreatorStudioAuthToken({
+                privyAccessToken: accessToken,
+                walletAddress,
+                privyDid: privyUser?.id ?? null,
+              }).catch(() => null),
+              new Promise((resolve) => window.setTimeout(resolve, 1200)),
+            ]);
+          }
+        }
+      } finally {
+        window.location.assign(studioUrl());
+      }
+    };
+
+    return (
+      <>
+        <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
+        <div className="min-h-0 flex-1 overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
+          <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
+
+          {isAuthenticated && showStudio && (
+            <div
+              className={cn("mt-2 lg:hidden", isCollapsed ? "px-2 pb-2" : "px-3 pb-3")}
+              data-tour="sidebar-studio"
+            >
+              <a
+                href={studioUrl()}
+                onClick={openStudio}
+                aria-label="Open Studio"
+                className={cn(
+                  "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
+                  isCollapsed ? "mx-auto h-10 w-10 justify-center" : "justify-center gap-2 px-4 py-2.5",
+                  studioLaunching && "pointer-events-none opacity-70",
+                )}
+              >
+                <Clapperboard className="h-4 w-4 shrink-0" />
+                {!isCollapsed && <span>Studio</span>}
+              </a>
+            </div>
+          )}
         </div>
-      )}
-    </>
-  );
+      </>
+    );
+  };
 
   const desktopAside = (
     <aside className={cn("sidebar-shell hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col overflow-hidden transition-[width] duration-300", isCollapsed ? "w-[72px]" : "w-[225px]")}>

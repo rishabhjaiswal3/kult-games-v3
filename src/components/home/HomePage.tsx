@@ -21,6 +21,7 @@ import { playerApi } from "@/api/playerApi";
 import { leagueApi } from "@/api/leagueApi";
 import { fetchFootballMarkets } from "@/api/polymarketApi";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
+import { CreatorStudioPromoModal } from "@/components/creator-studio/CreatorStudioPromoModal";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { MomentFeedCard, MomentFeedCardSkeleton } from "@/components/moments/MomentFeedCard";
@@ -41,6 +42,9 @@ import agentLumen from "@/assets/assassin.mp4";
 import aiArenaSquadBanner from "@/assets/home/ai-arena-squad-banner.webp";
 import worldCupLeagueTrophy from "@/assets/home/world-cup-league-trophy.png";
 import homeLeagueBkg from "@/assets/home-league-bkg.png";
+import { requestOpenLoginModal } from "@/lib/loginModalBus";
+import { studioUrl } from "@/lib/serviceUrls";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 const trailerVideo = new URL("../../assets/Trailer.mp4", import.meta.url).href;
 
 type HomeExperienceCard = {
@@ -134,13 +138,64 @@ function homeHeroCtaItemClass(count: number, index: number) {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { canUse } = useAccess();
+  const { canUse, session } = useAccess();
   const { login, isAuthenticated } = useAuth();
   const featuredScrollerRef = useRef<HTMLDivElement | null>(null);
   const canViewAiArena = canUse("ai_arena");
   const canViewGames = canUse("games");
   const canViewLeague = canUse("league");
   const canViewMoments = canUse("moments");
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+  const [creatorPromoOpen, setCreatorPromoOpen] = useState(false);
+  const creatorPromoEligible = session?.tier === "tier_6" && canUse("creator_studio") && !isDesktop;
+  const CREATOR_PROMO_DISMISSED_KEY = "kult_creator_studio_promo_dismissed_v1";
+  const CREATOR_PROMO_AFTER_LOGIN_KEY = "kult_creator_studio_after_login_v1";
+
+  useEffect(() => {
+    if (!creatorPromoEligible) return;
+    try {
+      if (localStorage.getItem(CREATOR_PROMO_DISMISSED_KEY) === "1") return;
+    } catch {
+      // ignore
+    }
+    const t = window.setTimeout(() => setCreatorPromoOpen(true), 650);
+    return () => window.clearTimeout(t);
+  }, [creatorPromoEligible]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    try {
+      if (sessionStorage.getItem(CREATOR_PROMO_AFTER_LOGIN_KEY) !== "1") return;
+      sessionStorage.removeItem(CREATOR_PROMO_AFTER_LOGIN_KEY);
+    } catch {
+      // ignore
+    }
+    window.location.assign(studioUrl());
+  }, [isAuthenticated]);
+
+  const dismissCreatorPromo = () => {
+    setCreatorPromoOpen(false);
+    try {
+      localStorage.setItem(CREATOR_PROMO_DISMISSED_KEY, "1");
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCreatorPromoPrimary = () => {
+    dismissCreatorPromo();
+    if (!isAuthenticated) {
+      try {
+        sessionStorage.setItem(CREATOR_PROMO_AFTER_LOGIN_KEY, "1");
+      } catch {
+        // ignore
+      }
+      requestOpenLoginModal();
+      return;
+    }
+    window.location.assign(studioUrl());
+  };
 
   const { data: gamesData, isLoading } = useQuery({
     queryKey: ["games", "all", "home"],
@@ -250,6 +305,22 @@ export function HomePage() {
 
   return (
     <div className="home-page max-w-full space-y-6 overflow-x-clip pb-10">
+      {creatorPromoEligible ? (
+        <CreatorStudioPromoModal
+          open={creatorPromoOpen}
+          onOpenChange={(open) => {
+            setCreatorPromoOpen(open);
+            if (!open) {
+              try {
+                localStorage.setItem(CREATOR_PROMO_DISMISSED_KEY, "1");
+              } catch {
+                // ignore
+              }
+            }
+          }}
+          onPrimaryAction={handleCreatorPromoPrimary}
+        />
+      ) : null}
       <section data-tour="home-hero" className="arena-panel relative min-h-[430px] overflow-hidden border-white/8 bg-[#04080f] sm:min-h-[520px] lg:min-h-[560px] xl:min-h-[660px] 2xl:min-h-[780px]">
         <ResponsiveBackgroundVideo
           mobileSrc={mobileHeroVideo}

@@ -32,6 +32,16 @@ export type PolyMarket = {
   dayChange: number;
   /** Parent event / match name, e.g. "France vs. Morocco" (sub-market suffixes stripped). */
   eventTitle?: string;
+  /** Gamma event id. Markets sharing this value belong in the same event card. */
+  eventId?: string;
+  /** Parent event artwork supplied by Polymarket. */
+  eventImage?: string;
+  /** Parent event close time (epoch ms). */
+  eventEndDate?: number;
+  /** Parent event liquidity in USD. */
+  eventLiquidity?: number;
+  /** Parent event lifetime volume in USD, matching the total shown on Polymarket event cards. */
+  eventVolume?: number;
   /** Raw per-outcome label (e.g. "Lando Norris" for a driver-championship sub-market) -- untruncated, unlike `short`. Undefined for non-grouped markets. */
   outcomeLabel?: string;
 };
@@ -160,7 +170,20 @@ function parseTimestamp(value: unknown): number {
 
 type RawMarket = Record<string, unknown>;
 
-function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (question: string) => string = deriveCategory): PolyMarket | null {
+type EventContext = {
+  id?: string;
+  title?: string;
+  image?: string;
+  endDate?: number;
+  liquidity?: number;
+  volume?: number;
+};
+
+function normalizeMarket(
+  raw: RawMarket,
+  eventContext?: EventContext,
+  categoryFn: (question: string) => string = deriveCategory,
+): PolyMarket | null {
   const question = typeof raw.question === "string" ? raw.question : "";
   if (!question) return null;
 
@@ -203,7 +226,12 @@ function normalizeMarket(raw: RawMarket, eventTitle?: string, categoryFn: (quest
     gameTime,
     dayChange,
     ...(noTokenId && { noTokenId }),
-    ...(eventTitle && { eventTitle }),
+    ...(eventContext?.title && { eventTitle: eventContext.title }),
+    ...(eventContext?.id && { eventId: eventContext.id }),
+    ...(eventContext?.image && { eventImage: eventContext.image }),
+    ...(eventContext?.endDate && { eventEndDate: eventContext.endDate }),
+    ...(eventContext?.liquidity && { eventLiquidity: eventContext.liquidity }),
+    ...(eventContext?.volume && { eventVolume: eventContext.volume }),
   };
 }
 
@@ -328,10 +356,23 @@ function flattenOpenMarketsFromEvents(events: RawMarket[], categoryFn: (question
     .flatMap((event) => {
       // "France vs. Morocco - Exact Score" → "France vs. Morocco"
       const matchName = typeof event.title === "string" ? event.title.split(" - ")[0].trim() : "";
+      const eventContext: EventContext = {
+        id: typeof event.id === "string" ? event.id : String(event.id ?? ""),
+        title: matchName || undefined,
+        image:
+          typeof event.image === "string"
+            ? event.image
+            : typeof event.icon === "string"
+              ? event.icon
+              : undefined,
+        endDate: parseTimestamp(event.endDate),
+        liquidity: toNumber(event.liquidityClob ?? event.liquidity),
+        volume: toNumber(event.volume),
+      };
       const markets = Array.isArray(event.markets) ? (event.markets as RawMarket[]) : [];
       return markets
         .filter((raw) => raw.active !== false && raw.closed !== true)
-        .map((raw) => normalizeMarket(raw, matchName || undefined, categoryFn));
+        .map((raw) => normalizeMarket(raw, eventContext, categoryFn));
     })
     .filter((m): m is PolyMarket => m !== null);
 }
