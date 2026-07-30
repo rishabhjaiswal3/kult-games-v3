@@ -232,7 +232,13 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
 
       {/* Studio — sticky bottom */}
       {isAuthenticated && showStudio && (
-        <div className={cn("shrink-0 border-t border-white/5", isCollapsed ? "p-2" : "p-3")} data-tour="sidebar-studio">
+        <div
+          className={cn(
+            "shrink-0 border-t border-white/5 lg:hidden",
+            isCollapsed ? "p-2" : "p-3",
+          )}
+          data-tour="sidebar-studio"
+        >
           <a
             href={studioUrl()}
             onClick={openStudio}
