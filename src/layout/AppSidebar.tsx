@@ -35,7 +35,7 @@ function SidebarNav({
   const visibleNavItems = navItemsForAccess(session, isAuthenticated);
 
   return (
-    <nav className="sidebar-nav min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 py-1" data-tour="sidebar-nav">
+    <nav className="sidebar-nav space-y-0.5 px-3 py-1" data-tour="sidebar-nav">
       {visibleNavItems.map((item, idx) => {
         const isActive =
           item.label === activeLabel ||
@@ -227,33 +227,31 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
 
     return (
       <>
-      <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
-      <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
+        <SidebarBrand isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse} />
+        <div className="min-h-0 flex-1 overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
+          <SidebarNav activeLabel={activeLabel} isCollapsed={isCollapsed} onNavigate={onNavigate} />
 
-      {/* Studio — sticky bottom */}
-      {isAuthenticated && showStudio && (
-        <div
-          className={cn(
-            "shrink-0 border-t border-white/5 lg:hidden",
-            isCollapsed ? "p-2" : "p-3",
+          {isAuthenticated && showStudio && (
+            <div
+              className={cn("mt-2 lg:hidden", isCollapsed ? "px-2 pb-2" : "px-3 pb-3")}
+              data-tour="sidebar-studio"
+            >
+              <a
+                href={studioUrl()}
+                onClick={openStudio}
+                aria-label="Open Studio"
+                className={cn(
+                  "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
+                  isCollapsed ? "mx-auto h-10 w-10 justify-center" : "justify-center gap-2 px-4 py-2.5",
+                  studioLaunching && "pointer-events-none opacity-70",
+                )}
+              >
+                <Clapperboard className="h-4 w-4 shrink-0" />
+                {!isCollapsed && <span>Studio</span>}
+              </a>
+            </div>
           )}
-          data-tour="sidebar-studio"
-        >
-          <a
-            href={studioUrl()}
-            onClick={openStudio}
-            aria-label="Open Studio"
-            className={cn(
-              "group relative flex min-w-0 items-center overflow-hidden rounded-lg bg-gradient-to-r from-[#9a35ff] to-[#7c2bcc] font-tech text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(154,53,255,0.25)] transition-all hover:shadow-[0_0_28px_rgba(154,53,255,0.4)] hover:brightness-110",
-              isCollapsed ? "mx-auto h-10 w-10 justify-center" : "justify-center gap-2 px-4 py-2.5",
-              studioLaunching && "pointer-events-none opacity-70",
-            )}
-          >
-            <Clapperboard className="h-4 w-4 shrink-0" />
-            {!isCollapsed && <span>Studio</span>}
-          </a>
         </div>
-      )}
       </>
     );
   };
