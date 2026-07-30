@@ -1,9 +1,13 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Copy, Database, Loader2, Shield, Swords, TrendingUp,
   Zap, Activity, ExternalLink, Trophy, Clock, MessageSquare,
+  Target,
 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
+import { leagueApi } from "@/api/leagueApi";
+import { f1Api, type F1Confidence } from "@/api/f1Api";
 import { resolveAgentImage } from "@/lib/agentPortrait";
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { Dialog } from "@/components/ui/dialog";
@@ -102,6 +106,182 @@ function StatChip({
         {value}
       </span>
     </div>
+  );
+}
+
+// ── AI Prediction Performance ────────────────────────────────────────────────
+// Combines real settled predictions from both League football
+// (leagueApi.getAgentPredictionPerformance) and F1 (f1Api.getAgentAccuracy)
+// into one track record for this agent -- was completely absent from the My
+// Agents detail view (only battle record + traits), even though "my recent
+// pick" already existed on the League page for the same real data.
+
+const F1_CONFIDENCE_PCT: Record<F1Confidence, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
+
+interface PredictionRow {
+  id: string;
+  sport: "FOOTBALL" | "F1";
+  label: string;
+  predictedLabel: string;
+  confidencePct: number;
+  isCorrect: boolean | null;
+  settledAt: string | null;
+}
+
+/** Real prediction accuracy as a ring -- colorful conic-gradient donut with the percentage in the center. */
+function AccuracyRing({ pct }: { pct: number | null }) {
+  const value = pct ?? 0;
+  return (
+    <div
+      className="relative grid h-24 w-24 shrink-0 place-items-center rounded-full"
+      style={{
+        background:
+          pct == null
+            ? "conic-gradient(rgba(255,255,255,0.08) 0deg, rgba(255,255,255,0.08) 360deg)"
+            : `conic-gradient(#00f080 0deg, #00d4ff ${value * 1.8 * 0.5}deg, #9a35ff ${value * 3.6}deg, rgba(255,255,255,0.08) ${value * 3.6}deg)`,
+      }}
+    >
+      <div className="grid h-[72px] w-[72px] place-items-center rounded-full bg-[#0a0b12]">
+        <div className="text-center">
+          <p className="font-tech text-lg font-black text-white">{pct != null ? `${Math.round(pct)}%` : "—"}</p>
+          <p className="font-mono text-[8px] uppercase tracking-wider text-white/40">Accuracy</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PredictionMiniStat({ label, value, color }: { label: string; value: string | number; color: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-center">
+      <p className="font-tech text-base font-black" style={{ color }}>{value}</p>
+      <p className="mt-0.5 font-mono text-[8px] uppercase tracking-wider text-white/40">{label}</p>
+    </div>
+  );
+}
+
+function AiPredictionPerformanceSection({ agentId }: { agentId: string }) {
+  const footballQ = useQuery({
+    queryKey: ["league", "agent-predictions", agentId],
+    queryFn: () => leagueApi.getAgentPredictionPerformance(agentId),
+    enabled: !!agentId,
+    staleTime: 30_000,
+  });
+
+  const f1Q = useQuery({
+    queryKey: ["f1", "agent-accuracy", agentId],
+    queryFn: () => f1Api.getAgentAccuracy(agentId),
+    enabled: !!agentId,
+    staleTime: 30_000,
+  });
+
+  const rows = useMemo<PredictionRow[]>(() => {
+    const football: PredictionRow[] = (footballQ.data?.recent ?? []).map((p) => ({
+      id: `fb-${p.id}`,
+      sport: "FOOTBALL",
+      label: `${p.home} vs ${p.away}`,
+      predictedLabel: `${p.predictedScore}${p.actualScore ? ` (actual ${p.actualScore})` : ""}`,
+      confidencePct: p.confidence,
+      isCorrect: p.isCorrect,
+      settledAt: p.settledAt,
+    }));
+    const f1: PredictionRow[] = (f1Q.data?.history ?? []).map((h) => ({
+      id: `f1-${h.raceId}-${h.market}`,
+      sport: "F1",
+      label: `${h.grandPrixName.replace(/\s*Grand Prix\s*/i, " GP ")}· ${h.market === "WINNER" ? "Winner" : h.market === "PODIUM" ? "Podium" : "Fastest Lap"}`,
+      predictedLabel: h.predictedDriverName,
+      confidencePct: h.confidence ? F1_CONFIDENCE_PCT[h.confidence] : 70,
+      isCorrect: h.isCorrect,
+      settledAt: h.settledAt,
+    }));
+    return [...football, ...f1].sort((a, b) => new Date(b.settledAt ?? 0).getTime() - new Date(a.settledAt ?? 0).getTime());
+  }, [footballQ.data, f1Q.data]);
+
+  const isLoading = footballQ.isLoading || f1Q.isLoading;
+  const total = (footballQ.data?.overall.total ?? 0) + (f1Q.data?.overall.total ?? 0);
+  const correct = (footballQ.data?.overall.correct ?? 0) + (f1Q.data?.overall.correct ?? 0);
+  const incorrect = total - correct;
+  const winRatePct = total > 0 ? (correct / total) * 100 : null;
+
+  const currentStreak = useMemo(() => {
+    let streak = 0;
+    for (const row of rows) {
+      if (row.isCorrect == null) continue;
+      if (row.isCorrect) streak++;
+      else break;
+    }
+    return streak;
+  }, [rows]);
+
+  const avgConfidence = rows.length > 0 ? Math.round(rows.reduce((sum, r) => sum + r.confidencePct, 0) / rows.length) : null;
+
+  if (isLoading) {
+    return <div className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]" />;
+  }
+  if (total === 0) return null;
+
+  return (
+    <section className="rounded-2xl border border-[#00d4ff]/25 bg-gradient-to-br from-[#00d4ff]/[0.05] to-black/30 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+      <div className="mb-4 flex items-center gap-2">
+        <Target className="h-4 w-4 text-[#00d4ff]" />
+        <h4 className="font-tech text-[11px] font-bold uppercase tracking-[0.18em] text-white">AI Prediction Performance</h4>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        <AccuracyRing pct={winRatePct} />
+        <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-5">
+          <PredictionMiniStat label="Predictions" value={total} color="#ffffff" />
+          <PredictionMiniStat label="Correct" value={correct} color="#00f080" />
+          <PredictionMiniStat label="Incorrect" value={incorrect} color="#f43f5e" />
+          <PredictionMiniStat label="Streak" value={currentStreak} color="#9a35ff" />
+          <PredictionMiniStat label="Avg Confidence" value={avgConfidence != null ? `${avgConfidence}%` : "—"} color="#00d4ff" />
+        </div>
+      </div>
+
+      {rows.length > 0 ? (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[520px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-white/10">
+                {["Sport", "Match", "Prediction", "Confidence", "Result"].map((h) => (
+                  <th key={h} className="pb-2 font-mono text-[9px] font-bold uppercase tracking-wider text-white/40">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.slice(0, 12).map((row) => (
+                <tr key={row.id} className="border-b border-white/5 last:border-0">
+                  <td className="py-2 pr-2">
+                    <span className="font-tech text-[9px] font-bold uppercase text-white/60">{row.sport === "F1" ? "F1" : "⚽"}</span>
+                  </td>
+                  <td className="max-w-[180px] truncate py-2 pr-2 font-mono text-[11px] text-white">{row.label}</td>
+                  <td className="max-w-[160px] truncate py-2 pr-2 font-mono text-[11px] text-white/70">{row.predictedLabel}</td>
+                  <td className="py-2 pr-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1 w-12 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-[#00d4ff]" style={{ width: `${row.confidencePct}%` }} />
+                      </div>
+                      <span className="font-mono text-[10px] text-white/50">{row.confidencePct}%</span>
+                    </div>
+                  </td>
+                  <td className="py-2">
+                    {row.isCorrect == null ? (
+                      <span className="rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 font-tech text-[9px] font-bold uppercase text-white/40">Pending</span>
+                    ) : row.isCorrect ? (
+                      <span className="rounded border border-emerald-500/35 bg-emerald-500/15 px-1.5 py-0.5 font-tech text-[9px] font-bold uppercase text-emerald-400">Win</span>
+                    ) : (
+                      <span className="rounded border border-rose-500/35 bg-rose-500/15 px-1.5 py-0.5 font-tech text-[9px] font-bold uppercase text-rose-400">Loss</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -238,6 +418,9 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
               </div>
             </div>
           </section>
+
+          {/* ── AI Prediction Performance (League football + F1) ─────── */}
+          <AiPredictionPerformanceSection agentId={profile.id} />
 
           {/* ── Traits ───────────────────────────────────────────────── */}
           {traitKeys.length > 0 && (

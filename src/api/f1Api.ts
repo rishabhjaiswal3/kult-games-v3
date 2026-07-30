@@ -98,6 +98,7 @@ export interface F1AgentAccuracyEntry {
   raceId: string;
   grandPrixName: string;
   market: F1PredictionMarket;
+  predictedDriverName: string;
   confidence: F1Confidence | null;
   isCorrect: boolean | null;
   settledAt: string | null;

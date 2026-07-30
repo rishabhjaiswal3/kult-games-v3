@@ -198,6 +198,30 @@ export interface LeagueMoment {
   kp?: number;
 }
 
+export interface AgentPredictionRow {
+  id: string;
+  home: string;
+  away: string;
+  kickoffAt: string;
+  predictedScore: string;
+  actualScore: string | null;
+  confidence: number;
+  isCorrect: boolean;
+  settledAt: string | null;
+}
+
+export interface AgentPredictionPerformance {
+  overall: {
+    total: number;
+    correct: number;
+    incorrect: number;
+    winRate: number | null;
+    currentStreak: number;
+    avgConfidence: number | null;
+  };
+  recent: AgentPredictionRow[];
+}
+
 export const leagueApi = {
   /** GET /v1/league/me/summary — auth required. Powers the KP week-progress sidebar. */
   getMeSummary: async (): Promise<MeSummary> => {
@@ -225,6 +249,12 @@ export const leagueApi = {
     const { data } = await http().post<GeneratedPrediction>(
       `/v1/league/predictions/${encodeURIComponent(matchId)}/${encodeURIComponent(agentId)}/generate`,
     );
+    return data;
+  },
+
+  /** GET /v1/league/agents/:agentId/predictions — public. Real football prediction track record for one agent. */
+  getAgentPredictionPerformance: async (agentId: string): Promise<AgentPredictionPerformance> => {
+    const { data } = await http().get<AgentPredictionPerformance>(`/v1/league/agents/${encodeURIComponent(agentId)}/predictions`);
     return data;
   },
 
