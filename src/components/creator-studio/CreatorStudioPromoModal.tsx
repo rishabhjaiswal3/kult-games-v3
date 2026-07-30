@@ -30,7 +30,7 @@ export function CreatorStudioPromoModal({
             src={backgroundCreatorModel}
             alt=""
             aria-hidden="true"
-            className="relative z-10 block h-[240px] w-full select-none object-contain drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
+            className="relative z-10 block h-[280px] w-full select-none object-contain drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
             draggable={false}
           />
 
