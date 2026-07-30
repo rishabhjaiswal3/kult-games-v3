@@ -183,21 +183,16 @@ function F1MarketRow({
         {variant === "grouped" ? <DriverAvatar label={label} photo={photo} /> : null}
 
         {variant === "grouped" ? <div className="min-w-0 flex-1">
-          <p className={`truncate font-medium text-white/90 ${variant === "single" ? "text-sm" : "text-[13px]"}`} title={market.question}>{label}</p>
+          <p className="truncate font-medium text-[13px] text-white/90" title={market.question}>{label}</p>
           {myPosition ? (
             <p className={`truncate font-tech text-[9px] font-bold uppercase tracking-wider ${myPosition.side === "YES" ? "text-emerald-300" : "text-rose-300"}`}>
               Holding {myPosition.shares.toFixed(2)} {myPosition.side} · {myPosition.pnl >= 0 ? "+" : ""}${myPosition.pnl.toFixed(2)}
             </p>
-          ) : variant === "single" ? (
-            <p className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-wide text-white/35">{market.volume} volume</p>
           ) : null}
         </div> : null}
 
         {variant === "grouped" ? <div className="text-right">
           <span className="font-tech text-base font-black tabular-nums text-white">{market.yes}%</span>
-          <p className={`font-mono text-[7px] ${variant === "grouped" ? "hidden" : ""} ${market.dayChange > 0 ? "text-emerald-400" : market.dayChange < 0 ? "text-rose-400" : "text-white/25"}`}>
-            {market.dayChange > 0 ? "+" : ""}{market.dayChange}¢ today
-          </p>
         </div> : null}
 
         <button
