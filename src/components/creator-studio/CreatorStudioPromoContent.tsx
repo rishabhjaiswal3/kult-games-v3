@@ -58,11 +58,13 @@ export function CreatorStudioPromoContent({
         </p>
 
         <p className="mx-auto mt-3 max-w-[22rem] text-sm font-semibold leading-relaxed text-white/85">
-          Describe your game idea — our AI builds it for you. Pick Hybrid for speed, Pro for polish, or Ultra for
-          premium quality.
+          Turn your idea into a playable game in minutes.
+        </p>
+        <p className="mx-auto mt-2 max-w-[22rem] text-sm font-semibold leading-relaxed text-white/85">
+          Describe what you want to create and let Kult AI build it — no coding required.
         </p>
         <p className="mt-2 text-xs font-medium text-white/60">
-          Publish, share, and climb the leaderboard with games only you could make.
+          Publish it. Share it. Let the world play.
         </p>
 
         <button
