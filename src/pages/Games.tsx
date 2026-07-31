@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
+import { CreatorStudioIconButton } from "@/components/creator-studio/CreatorStudioIconButton";
 import { GameListingCard, GameListingCardSkeleton } from "@/components/games/GameListingCard";
 import { gamesApi } from "@/api/gamesApi";
 import { useAccess } from "@/contexts/AccessContext";
@@ -244,11 +245,14 @@ const Games = () => {
             Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
           </p>
         </div>
-        <Link to="/inventory" className="topbar-wallet-cta group h-10 shrink-0 gap-2 px-4 text-[11px] tracking-wider">
-          <Package className="h-4 w-4" />
-          Inventory
-          <ArrowUpRight className="h-3.5 w-3.5 opacity-75 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <CreatorStudioIconButton />
+          <Link to="/inventory" className="topbar-wallet-cta group h-10 shrink-0 gap-2 px-4 text-[11px] tracking-wider">
+            <Package className="h-4 w-4" />
+            Inventory
+            <ArrowUpRight className="h-3.5 w-3.5 opacity-75 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
+          </Link>
+        </div>
       </div>
 
       <div className="arena-panel home-stats-panel home-stats-panel--static grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="games-stats">

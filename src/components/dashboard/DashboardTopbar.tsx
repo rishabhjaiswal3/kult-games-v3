@@ -8,6 +8,7 @@ import { useTour } from "@/tour/TourProvider";
 import { DailyRewardsModal } from "@/components/rewards/DailyRewardsModal";
 import { useDailyRewards } from "@/hooks/useDailyRewards";
 import dashboardAvatar from "@/assets/dashboard-avatar.png";
+import { CreatorStudioIconButton } from "@/components/creator-studio/CreatorStudioIconButton";
 
 export function DashboardTopbar() {
   const [openPanel, setOpenPanel] = useState<"notifications" | null>(null);
@@ -63,6 +64,7 @@ export function DashboardTopbar() {
             ) : null}
           </div>
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
+            <CreatorStudioIconButton />
             <button
               type="button"
               onClick={() => (isAuthenticated ? setRewardsOpen(true) : requestOpenLoginModal())}

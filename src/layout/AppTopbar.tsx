@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CreatorStudioIconButton } from "@/components/creator-studio/CreatorStudioIconButton";
 
 export function AppTopbar() {
   const { isAuthenticated, walletAddress, player, logout } = useAuth();
@@ -42,6 +43,7 @@ export function AppTopbar() {
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:flex-wrap sm:gap-3">
+            <CreatorStudioIconButton />
             <button
               type="button"
               onClick={() => (isAuthenticated ? setRewardsOpen(true) : requestOpenLoginModal())}

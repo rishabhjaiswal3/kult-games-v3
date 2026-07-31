@@ -43,8 +43,7 @@ import agentLumen from "@/assets/assassin.mp4";
 import aiArenaSquadBanner from "@/assets/home/ai-arena-squad-banner.webp";
 import worldCupLeagueTrophy from "@/assets/home/world-cup-league-trophy.png";
 import homeLeagueBkg from "@/assets/home-league-bkg.png";
-import { requestOpenLoginModal } from "@/lib/loginModalBus";
-import { studioUrl } from "@/lib/serviceUrls";
+import { useCreatorStudioLaunch } from "@/hooks/useCreatorStudioLaunch";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 const trailerVideo = new URL("../../assets/Trailer.mp4", import.meta.url).href;
 
@@ -141,6 +140,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const { canUse, session } = useAccess();
   const { login, isAuthenticated } = useAuth();
+  const { launch: launchCreatorStudio } = useCreatorStudioLaunch();
   const featuredScrollerRef = useRef<HTMLDivElement | null>(null);
   const canViewAiArena = canUse("ai_arena");
   const canViewGames = canUse("games");
@@ -152,7 +152,6 @@ export function HomePage() {
   const canViewCreatorStudio = canUse("creator_studio") && !isDesktop;
   const creatorPromoEligible = session?.tier === "tier_6" && canViewCreatorStudio;
   const CREATOR_PROMO_DISMISSED_KEY = "kult_creator_studio_promo_dismissed_v1";
-  const CREATOR_PROMO_AFTER_LOGIN_KEY = "kult_creator_studio_after_login_v1";
 
   useEffect(() => {
     if (!creatorPromoEligible) return;
@@ -165,17 +164,6 @@ export function HomePage() {
     return () => window.clearTimeout(t);
   }, [creatorPromoEligible]);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    try {
-      if (sessionStorage.getItem(CREATOR_PROMO_AFTER_LOGIN_KEY) !== "1") return;
-      sessionStorage.removeItem(CREATOR_PROMO_AFTER_LOGIN_KEY);
-    } catch {
-      // ignore
-    }
-    window.location.assign(studioUrl());
-  }, [isAuthenticated]);
-
   const dismissCreatorPromo = () => {
     setCreatorPromoOpen(false);
     try {
@@ -187,16 +175,7 @@ export function HomePage() {
 
   const handleCreatorPromoPrimary = () => {
     dismissCreatorPromo();
-    if (!isAuthenticated) {
-      try {
-        sessionStorage.setItem(CREATOR_PROMO_AFTER_LOGIN_KEY, "1");
-      } catch {
-        // ignore
-      }
-      requestOpenLoginModal();
-      return;
-    }
-    window.location.assign(studioUrl());
+    void launchCreatorStudio();
   };
 
   const { data: gamesData, isLoading } = useQuery({
