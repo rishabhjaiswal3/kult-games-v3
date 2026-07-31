@@ -1,6 +1,12 @@
 import { ArrowUpRight, X } from "lucide-react";
 
-import backgroundCreatorModel from "@/assets/background_Creator_model.png";
+import {
+  CREATOR_STUDIO_PROMO_IMAGE_HEIGHT,
+  CREATOR_STUDIO_PROMO_IMAGE_WIDTH,
+  creatorStudioPromoImage440,
+  creatorStudioPromoSizes,
+  creatorStudioPromoSrcSet,
+} from "@/components/creator-studio/creatorStudioPromoAssets";
 import { cn } from "@/lib/utils";
 
 export const creatorStudioPromoGradient =
@@ -27,13 +33,21 @@ export function CreatorStudioPromoContent({
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
       <div className="relative z-10 w-full overflow-hidden pt-3">
-        <img
-          src={backgroundCreatorModel}
-          alt=""
-          aria-hidden="true"
-          className="relative left-1/2 mx-auto block h-auto w-[112%] max-w-none -translate-x-[calc(50%+4px)] select-none object-contain object-center drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
-          draggable={false}
-        />
+        <div className="relative mx-auto h-[min(52vw,220px)] w-full max-w-[440px] sm:h-[240px]">
+          <img
+            src={creatorStudioPromoImage440}
+            srcSet={creatorStudioPromoSrcSet}
+            sizes={creatorStudioPromoSizes}
+            alt=""
+            aria-hidden="true"
+            width={CREATOR_STUDIO_PROMO_IMAGE_WIDTH}
+            height={CREATOR_STUDIO_PROMO_IMAGE_HEIGHT}
+            decoding="async"
+            fetchPriority="high"
+            draggable={false}
+            className="absolute left-1/2 top-0 h-full w-[108%] max-w-none -translate-x-[calc(50%+2px)] select-none object-contain object-top drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
+          />
+        </div>
 
         {onClose ? (
           <button

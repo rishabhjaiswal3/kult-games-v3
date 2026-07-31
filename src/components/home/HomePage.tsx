@@ -23,6 +23,7 @@ import { fetchFootballMarkets } from "@/api/polymarketApi";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { CreatorStudioPromoModal } from "@/components/creator-studio/CreatorStudioPromoModal";
 import { CreatorStudioPromoCard } from "@/components/creator-studio/CreatorStudioPromoCard";
+import { preloadCreatorStudioPromoImage } from "@/components/creator-studio/creatorStudioPromoAssets";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { MomentFeedCard, MomentFeedCardSkeleton } from "@/components/moments/MomentFeedCard";
@@ -155,6 +156,7 @@ export function HomePage() {
 
   useEffect(() => {
     if (!creatorPromoEligible) return;
+    preloadCreatorStudioPromoImage();
     try {
       if (localStorage.getItem(CREATOR_PROMO_DISMISSED_KEY) === "1") return;
     } catch {
