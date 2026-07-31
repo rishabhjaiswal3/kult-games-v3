@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowUpRight, Clapperboard, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Clapperboard, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
@@ -291,16 +291,6 @@ export function AppSidebar({ activeLabel = "Home", isCollapsed, onToggleCollapse
 
         {/* Content */}
         <div className="relative z-10 flex h-full flex-col">
-          <div className="flex justify-end p-3">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="group rounded-lg p-1.5 text-white/45 transition-all hover:bg-white/5 hover:text-white"
-              aria-label="Close menu"
-            >
-              <X className="h-5 w-5 transition-transform group-hover:rotate-90" />
-            </button>
-          </div>
           {sidebarContent(() => setIsOpen(false))}
         </div>
       </aside>
