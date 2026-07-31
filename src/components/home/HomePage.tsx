@@ -22,6 +22,7 @@ import { leagueApi } from "@/api/leagueApi";
 import { fetchFootballMarkets } from "@/api/polymarketApi";
 import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { CreatorStudioPromoModal } from "@/components/creator-studio/CreatorStudioPromoModal";
+import { CreatorStudioPromoCard } from "@/components/creator-studio/CreatorStudioPromoCard";
 import { useAccess } from "@/contexts/AccessContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { MomentFeedCard, MomentFeedCardSkeleton } from "@/components/moments/MomentFeedCard";
@@ -148,7 +149,8 @@ export function HomePage() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const [creatorPromoOpen, setCreatorPromoOpen] = useState(false);
-  const creatorPromoEligible = session?.tier === "tier_6" && canUse("creator_studio") && !isDesktop;
+  const canViewCreatorStudio = canUse("creator_studio") && !isDesktop;
+  const creatorPromoEligible = session?.tier === "tier_6" && canViewCreatorStudio;
   const CREATOR_PROMO_DISMISSED_KEY = "kult_creator_studio_promo_dismissed_v1";
   const CREATOR_PROMO_AFTER_LOGIN_KEY = "kult_creator_studio_after_login_v1";
 
@@ -376,6 +378,10 @@ export function HomePage() {
           <div className="hidden min-h-0 lg:block" aria-hidden />
         </div>
       </section>
+
+      {canViewCreatorStudio ? (
+        <CreatorStudioPromoCard className="lg:hidden" onPrimaryAction={handleCreatorPromoPrimary} />
+      ) : null}
 
       <section className="arena-panel relative overflow-hidden border-white/8 bg-[#03070d]/95 px-4 py-4 sm:px-6 sm:py-5">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(0,137,255,0.16),transparent_40%),radial-gradient(circle_at_6%_16%,rgba(154,53,255,0.16),transparent_38%)]" />

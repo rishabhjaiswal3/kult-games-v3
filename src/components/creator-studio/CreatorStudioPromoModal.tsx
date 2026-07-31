@@ -4,6 +4,9 @@ import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import backgroundCreatorModel from "@/assets/background_Creator_model.png";
 import { cn } from "@/lib/utils";
 
+const promoGradient =
+  "linear-gradient(to top, #06050b 0%, #0e0c16 38%, #181528 72%, #6d668f 100%)";
+
 export function CreatorStudioPromoModal({
   open,
   onOpenChange,
@@ -21,16 +24,21 @@ export function CreatorStudioPromoModal({
         hideClose
         overlayClassName="bg-black/85 backdrop-blur-[2px]"
         className={cn(
-          "fixed left-1/2 top-1/2 z-[200] w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,#2a0a5b_0%,#16062f_52%,#0b0712_100%)] p-0 shadow-[0_24px_90px_rgba(0,0,0,0.72)]",
+          "fixed left-1/2 top-1/2 z-[200] w-[min(98vw,440px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[28px] border border-white/15 bg-transparent p-0 shadow-[0_24px_90px_rgba(0,0,0,0.72)]",
         )}
       >
-        <div className="relative px-6 pb-4 pt-6">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(34,211,238,0.28),transparent_52%),radial-gradient(circle_at_82%_22%,rgba(217,70,239,0.24),transparent_58%),radial-gradient(circle_at_18%_72%,rgba(124,58,237,0.26),transparent_60%)]" />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: promoGradient }}
+          aria-hidden
+        />
+
+        <div className="relative overflow-hidden pb-2 pt-5">
           <img
             src={backgroundCreatorModel}
             alt=""
             aria-hidden="true"
-            className="relative z-10 block h-[280px] w-full select-none object-contain drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
+            className="relative z-10 left-1/2 mx-auto block h-auto w-[112%] max-w-none -translate-x-[calc(50%+4px)] select-none object-contain object-center drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
             draggable={false}
           />
 
@@ -42,7 +50,7 @@ export function CreatorStudioPromoModal({
           </DialogClose>
         </div>
 
-        <div className="px-6 pb-6 pt-4 text-center">
+        <div className="relative z-10 px-6 pb-6 pt-4 text-center">
           <div className="font-tech text-[28px] font-black leading-[1.02] tracking-[0.06em] text-white">
             CREATOR STUDIO
           </div>
@@ -69,4 +77,3 @@ export function CreatorStudioPromoModal({
     </Dialog>
   );
 }
-
