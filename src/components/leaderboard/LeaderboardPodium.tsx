@@ -27,12 +27,14 @@ function PodiumCard({
   pointLabel,
   showLeagueBadge,
   showKultScoreColumns,
+  onPlayerClick,
 }: {
   player: DisplayPlayer;
   slot: PodiumSlot;
   pointLabel: string;
   showLeagueBadge: boolean;
   showKultScoreColumns?: boolean;
+  onPlayerClick?: (player: DisplayPlayer) => void;
 }) {
   const styles =
     slot === "first"
@@ -70,8 +72,18 @@ function PodiumCard({
 
   return (
     <div
-      className={`arena-panel relative flex w-full flex-col items-center justify-between overflow-hidden p-4 text-center bg-[#04080f] sm:p-5 ${styles.height} ${styles.border} podium-glow-border`}
+      className={`arena-panel relative flex w-full flex-col items-center justify-between overflow-hidden p-4 text-center bg-[#04080f] sm:p-5 ${styles.height} ${styles.border} podium-glow-border ${onPlayerClick ? "cursor-pointer transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff]" : ""}`}
       style={{ "--podium-glow-color": styles.glowColor } as React.CSSProperties}
+      onClick={() => onPlayerClick?.(player)}
+      onKeyDown={(event) => {
+        if (onPlayerClick && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onPlayerClick(player);
+        }
+      }}
+      role={onPlayerClick ? "button" : undefined}
+      tabIndex={onPlayerClick ? 0 : undefined}
+      aria-label={onPlayerClick ? `View details for ${player.name}` : undefined}
     >
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-20">
         <AgentAvatar src={player.avatar} alt="" className="h-full w-full scale-105 object-cover object-[center_12%] blur-[0.5px]" />
@@ -147,11 +159,13 @@ export function LeaderboardPodium({
   pointLabel = "PTS",
   showLeagueBadge = true,
   showKultScoreColumns = false,
+  onPlayerClick,
 }: {
   top3: [DisplayPlayer, DisplayPlayer, DisplayPlayer] | null;
   pointLabel?: string;
   showLeagueBadge?: boolean;
   showKultScoreColumns?: boolean;
+  onPlayerClick?: (player: DisplayPlayer) => void;
 }) {
   if (!top3) return null;
 
@@ -160,13 +174,13 @@ export function LeaderboardPodium({
   return (
     <div className="grid grid-cols-1 items-end gap-4 pt-4 sm:grid-cols-3">
       <div className="order-2 sm:order-1">
-        <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+        <PodiumCard player={second} slot="second" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} onPlayerClick={onPlayerClick} />
       </div>
       <div className="order-1 sm:order-2">
-        <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+        <PodiumCard player={first} slot="first" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} onPlayerClick={onPlayerClick} />
       </div>
       <div className="order-3">
-        <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} />
+        <PodiumCard player={third} slot="third" pointLabel={pointLabel} showLeagueBadge={showLeagueBadge} showKultScoreColumns={showKultScoreColumns} onPlayerClick={onPlayerClick} />
       </div>
     </div>
   );

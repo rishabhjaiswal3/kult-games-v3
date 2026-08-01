@@ -291,9 +291,11 @@ export interface AiArenaAgentDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   agent: AiArenaAgent | null;
+  /** Public leaderboard view: use read-only profile APIs and hide custodial wallet data. */
+  publicView?: boolean;
 }
 
-export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAgentDetailModalProps) {
+export function AiArenaAgentDetailModal({ open, onOpenChange, agent, publicView = false }: AiArenaAgentDetailModalProps) {
   // Live agent profile (richer data)
   const profileQ = useQuery({
     queryKey: ["arena-agent-profile", agent?.id],
@@ -322,7 +324,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
   const walletQ = useQuery({
     queryKey: ["arena-agent-wallet", agent?.id],
     queryFn: () => aiArenaGatewayApi.getAgentWalletBalance(agent!.id),
-    enabled: open && !!agent?.id,
+    enabled: open && !!agent?.id && !publicView,
     staleTime: 30_000,
   });
 
@@ -636,7 +638,7 @@ export function AiArenaAgentDetailModal({ open, onOpenChange, agent }: AiArenaAg
           </section>
 
           {/* ── Wallet ───────────────────────────────────────────────── */}
-          {walletQ.data?.wallet && (
+          {!publicView && walletQ.data?.wallet && (
             <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.045] to-black/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
               <h4 className="mb-3 font-tech text-[11px] font-bold uppercase tracking-[0.18em] text-white">Custodial Wallet</h4>
               <div className="space-y-2 text-[12px]">

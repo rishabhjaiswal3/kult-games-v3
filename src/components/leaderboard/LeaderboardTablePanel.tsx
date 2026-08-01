@@ -15,6 +15,7 @@ function TableRowSkeleton({
   showPerformanceColumns: boolean;
   showLeagueColumn: boolean;
   showKultScoreColumns?: boolean;
+  onPlayerClick?: (player: DisplayPlayer) => void;
 }) {
   return (
     <tr aria-hidden>
@@ -76,6 +77,7 @@ function TableRow({
   showPerformanceColumns,
   showLeagueColumn,
   showKultScoreColumns,
+  onPlayerClick,
 }: {
   player: DisplayPlayer;
   highlighted?: boolean;
@@ -83,13 +85,24 @@ function TableRow({
   showPerformanceColumns: boolean;
   showLeagueColumn: boolean;
   showKultScoreColumns?: boolean;
+  onPlayerClick?: (player: DisplayPlayer) => void;
 }) {
   return (
     <tr
+      onClick={() => onPlayerClick?.(player)}
+      onKeyDown={(event) => {
+        if (onPlayerClick && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onPlayerClick(player);
+        }
+      }}
+      role={onPlayerClick ? "button" : undefined}
+      tabIndex={onPlayerClick ? 0 : undefined}
+      aria-label={onPlayerClick ? `View details for ${player.name}` : undefined}
       className={
         highlighted
-          ? "border border-[#9a35ff]/35 bg-[#9a35ff]/8 shadow-[0_0_15px_rgba(154,53,255,0.08)]"
-          : "transition hover:bg-white/[0.02]"
+          ? `border border-[#9a35ff]/35 bg-[#9a35ff]/8 shadow-[0_0_15px_rgba(154,53,255,0.08)] ${onPlayerClick ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9a35ff]" : ""}`
+          : `transition hover:bg-white/[0.02] ${onPlayerClick ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9a35ff]" : ""}`
       }
     >
       <td className={`px-5 py-4 font-tech text-[11px] ${highlighted ? "text-[#d6acff]" : ""}`}>
@@ -171,6 +184,7 @@ export function LeaderboardTablePanel({
   showPerformanceColumns = true,
   showLeagueColumn = true,
   showKultScoreColumns = false,
+  onPlayerClick,
 }: LeaderboardTablePanelProps) {
   const showUserGap = userRow && !rows.some((r) => r.wallet === userRow.wallet);
   const columnCount =
@@ -223,6 +237,7 @@ export function LeaderboardTablePanel({
                   showPerformanceColumns={showPerformanceColumns}
                   showLeagueColumn={showLeagueColumn}
                   showKultScoreColumns={showKultScoreColumns}
+                  onPlayerClick={onPlayerClick}
                 />
               ))
             ) : rows.length === 0 ? (
@@ -240,6 +255,7 @@ export function LeaderboardTablePanel({
                   showPerformanceColumns={showPerformanceColumns}
                   showLeagueColumn={showLeagueColumn}
                   showKultScoreColumns={showKultScoreColumns}
+                  onPlayerClick={onPlayerClick}
                 />
               ))
             )}

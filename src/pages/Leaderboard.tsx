@@ -2,12 +2,13 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Info } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
-import type { AiArenaLeaderboardEntry } from "@/types/aiArenaGateway";
+import type { AiArenaAgent } from "@/types/aiArenaGateway";
 import { leaderboardApi } from "@/api/leaderboardApi";
 import { playerApi } from "@/api/playerApi";
 import { LeaderboardPodium } from "@/components/leaderboard/LeaderboardPodium";
 import { LeaderboardSidebar } from "@/components/leaderboard/LeaderboardSidebar";
 import { LeaderboardTablePanel } from "@/components/leaderboard/LeaderboardTablePanel";
+import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   arenaEntriesToDisplayPlayers,
@@ -40,6 +41,7 @@ const Leaderboard = () => {
   const [arenaPage, setArenaPage] = useState(1);
   const [selectedLeagueTier, setSelectedLeagueTier] = useState<number | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<LeaderboardPeriod>("all_time");
+  const [detailAgent, setDetailAgent] = useState<AiArenaAgent | null>(null);
 
   // ── KULT backend leaderboard data ───────────────────────────────────────────
   const kultLeaderboardQ = useQuery({
@@ -84,21 +86,7 @@ const Leaderboard = () => {
 
   // ── Real AI Arena leaderboard data ─────────────────────────────────────────
   const enrichedQ = useEnrichedArenaLeaderboard({ enabled: activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL", period: selectedPeriod });
-  // TEMP DEMO: hardcoded OKX clan entry so the golden OKX card/row is visible even
-  // while the gateway 500s on the OKX ClanType enum. Remove when backend is fixed.
-  const DEMO_OKX_ENTRY: AiArenaLeaderboardEntry = {
-    rank: 1,
-    agentId: "okx-demo-agent",
-    score: 1842,
-    eloRating: 1842,
-    name: "OKX Vanguard",
-    clan: "OKX",
-    archetype: "BERSERKER",
-    wins: 27,
-    losses: 5,
-    draws: 0,
-  };
-  const allEntries = [DEMO_OKX_ENTRY, ...(enrichedQ.data?.entries ?? [])];
+  const allEntries = enrichedQ.data?.entries ?? [];
 
   // ── Current user's agents ───────────────────────────────────────────────────
   const myAgentsQ = useMyArenaAgents(1, 50);
@@ -208,6 +196,30 @@ const Leaderboard = () => {
     setSelectedPeriod(period);
     setKultPage(1);
     setArenaPage(1);
+  };
+
+  const openArenaAgentDetails = (player: DisplayPlayer) => {
+    const ownedAgent = myAgents.find((agent) => agent.id === player.wallet);
+    if (ownedAgent) {
+      setDetailAgent(ownedAgent);
+      return;
+    }
+
+    const entry = allEntries.find((agent) => agent.agentId === player.wallet);
+    if (!entry) return;
+
+    setDetailAgent({
+      id: entry.agentId,
+      name: entry.name?.trim() || player.name.replace(/\s+\(YOU\)$/, ""),
+      clan: entry.clan?.trim() || player.clanName,
+      archetype: entry.archetype?.trim() || "HYBRID",
+      evolutionStage: "GENESIS",
+      eloRating: Math.round(entry.eloRating ?? entry.score ?? 0),
+      wins: entry.wins ?? 0,
+      losses: entry.losses ?? 0,
+      draws: entry.draws ?? 0,
+      status: "ACTIVE",
+    });
   };
 
   const selectedLeagueInfo = selectedLeagueTier !== null
@@ -501,7 +513,20 @@ const Leaderboard = () => {
                             const agentElo = agent.eloRating ?? 1000;
                             const agentLeague = getRankFromElo(agentElo);
                             return (
-                              <tr key={agent.id} className="transition hover:bg-white/[0.02]">
+                              <tr
+                                key={agent.id}
+                                onClick={() => setDetailAgent(agent)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    setDetailAgent(agent);
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`View details for ${agent.name}`}
+                                className="cursor-pointer transition hover:bg-white/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9a35ff]"
+                              >
                                 <td className="px-5 py-4">
                                   <div className="font-semibold text-white">{agent.name}</div>
                                   <div className="mt-0.5 font-tech text-[10px] text-white/40 uppercase">
@@ -546,7 +571,7 @@ const Leaderboard = () => {
               /* GLOBAL tab */
               <>
                 {arenaPage === 1 && top3 ? (
-                  <LeaderboardPodium top3={top3} />
+                  <LeaderboardPodium top3={top3} onPlayerClick={openArenaAgentDetails} />
                 ) : null}
 
                 <LeaderboardTablePanel
@@ -556,6 +581,7 @@ const Leaderboard = () => {
                   totalPages={totalPages}
                   isLoading={enrichedQ.isLoading && tableRows.length === 0}
                   onPageChange={setArenaPage}
+                  onPlayerClick={openArenaAgentDetails}
                 />
 
                 <div className="flex items-center gap-2.5 rounded border border-blue-900/30 bg-[#0a101f] px-4 py-3 text-[11px] font-medium text-blue-400/90">
@@ -594,6 +620,12 @@ const Leaderboard = () => {
           />
         </div>
       </div>
+      <AiArenaAgentDetailModal
+        open={!!detailAgent}
+        onOpenChange={(open) => { if (!open) setDetailAgent(null); }}
+        agent={detailAgent}
+        publicView
+      />
     </div>
   );
 };
