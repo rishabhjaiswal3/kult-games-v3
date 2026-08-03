@@ -200,6 +200,23 @@ const PostHogProviderConfig = ({ children }: { children: React.ReactNode }) => {
         capture_pageview: false,
         capture_pageleave: true,
         capture_dead_clicks: true,
+        capture_heatmaps: true,
+        capture_performance: {
+          network_timing: true,
+          web_vitals: true,
+          web_vitals_attribution: true,
+        },
+        capture_exceptions: {
+          capture_unhandled_errors: true,
+          capture_unhandled_rejections: true,
+          capture_console_errors: true,
+        },
+        disable_session_recording: false,
+        session_recording: {
+          maskAllInputs: true,
+          maskTextSelector: ".ph-mask, [data-private]",
+          blockSelector: ".ph-no-capture, [data-analytics-block]",
+        },
       }}>
         <GlobalAnalyticsTracker />
         {children}

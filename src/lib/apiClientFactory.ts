@@ -14,6 +14,114 @@ const SERVICE_BASE_URL: Record<ApiServiceId, string> = {
   aiArenaGateway: AI_ARENA_GATEWAY_URL,
 };
 
+function analyticsEndpoint(url?: string) {
+  if (!url) return "unknown";
+  try {
+    return new URL(url, window.location.origin).pathname
+      .replace(/\/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "/:id")
+      .replace(/\/[A-Za-z0-9_-]{18,}(?=\/|$)/g, "/:id")
+      .replace(/\/\d+(?=\/|$)/g, "/:id");
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
+ * Converts successful mutation requests into stable product outcomes. These are
+ * intentionally based only on method + normalized path: request/response bodies
+ * may contain prompts, wallet details, comments, or other private user data.
+ */
+function productEventFor(method: string | undefined, endpoint: string) {
+  const key = `${method?.toUpperCase() || "GET"} ${endpoint}`;
+  const exact: Record<string, string> = {
+    "POST /access-code/verify": "access_code_verified",
+    "POST /player/login": "login_completed",
+    "PATCH /player/name": "profile_name_updated",
+    "POST /rewards/daily/claim": "daily_reward_claimed",
+    "POST /leaderboard/refresh": "leaderboard_refreshed",
+    "POST /marketplace/orders/prepare": "marketplace_order_prepared",
+    "POST /marketplace/orders/complete": "marketplace_purchase_completed",
+    "POST /moments/register": "moment_created",
+    "POST /v1/agents": "agent_created",
+    "POST /v1/battles": "battle_created",
+    "POST /v1/matchmaking": "matchmaking_joined",
+    "POST /v1/matchmaking/match/direct": "direct_challenge_created",
+    "POST /v1/wallets/deposits": "wallet_deposit_requested",
+    "POST /v1/wallets/withdrawals": "wallet_withdrawal_requested",
+    "POST /v1/wallets/permit": "wallet_permit_submitted",
+    "POST /v1/f1/fantasy/draft": "fantasy_team_drafted",
+  };
+  if (exact[key]) return exact[key];
+
+  const patterns: Array<[RegExp, string]> = [
+    [/^POST \/moments\/:id\/like$/, "moment_like_toggled"],
+    [/^POST \/moments\/:id\/bookmark$/, "moment_bookmark_toggled"],
+    [/^POST \/moments\/:id\/watch$/, "moment_watched"],
+    [/^PATCH \/moments\/:id$/, "moment_updated"],
+    [/^DELETE \/moments\/:id$/, "moment_deleted"],
+    [/^POST \/moments\/:id\/zg\/retry$/, "moment_storage_retry_requested"],
+    [/^POST \/moments\/:id\/comments$/, "moment_comment_created"],
+    [/^POST \/moments\/comments\/:id\/replies$/, "moment_reply_created"],
+    [/^PATCH \/moments\/comments\/:id$/, "moment_comment_updated"],
+    [/^DELETE \/moments\/comments\/:id$/, "moment_comment_deleted"],
+    [/^DELETE \/v1\/agents\/:id$/, "agent_deleted"],
+    [/^POST \/v1\/agents\/:id\/autonomous$/, "agent_autonomy_updated"],
+    [/^POST \/v1\/agents\/:id\/train/, "agent_training_started"],
+    [/^POST \/v1\/training/, "agent_training_started"],
+    [/^DELETE \/v1\/training\/:id/, "agent_training_cancelled"],
+    [/^POST \/v1\/battles\/:id\/dispute$/, "battle_disputed"],
+    [/^POST \/v1\/battles\/:id\/end$/, "battle_completed"],
+    [/^POST \/v1\/battles\/:id\/commentary$/, "battle_commentary_generated"],
+    [/^DELETE \/v1\/matchmaking\//, "matchmaking_left"],
+    [/^POST \/v1\/league\/matches\/:id\/predict$/, "league_prediction_created"],
+    [/^POST \/v1\/league\/battles\/:id\/accept$/, "league_battle_accepted"],
+    [/^POST \/v1\/league\/battles$/, "league_battle_created"],
+    [/^POST \/v1\/f1\/drivers\/:id\/predict$/, "f1_prediction_generated"],
+    [/^POST \/v1\/f1\/races\/:id\/(pick|predict-pick)$/, "f1_pick_submitted"],
+    [/^POST \/v1\/polymarket\/signals\//, "market_signal_created"],
+  ];
+  return patterns.find(([pattern]) => pattern.test(key))?.[1];
+}
+
+function attachApiAnalytics(client: AxiosInstance, service: ApiServiceId) {
+  client.interceptors.request.use((config) => {
+    (config as typeof config & { __analyticsStartedAt?: number }).__analyticsStartedAt = performance.now();
+    return config;
+  });
+  client.interceptors.response.use(
+    (response) => {
+      const startedAt = (response.config as typeof response.config & { __analyticsStartedAt?: number }).__analyticsStartedAt;
+      const endpoint = analyticsEndpoint(response.config.url);
+      window.dispatchEvent(new CustomEvent("kult:api-analytics", { detail: {
+        service,
+        outcome: "success",
+        method: response.config.method?.toUpperCase(),
+        endpoint,
+        status: response.status,
+        duration_ms: startedAt ? Math.round(performance.now() - startedAt) : undefined,
+        product_event: productEventFor(response.config.method, endpoint),
+      } }));
+      return response;
+    },
+    (error) => {
+      const config = error?.config as (typeof error.config & { __analyticsStartedAt?: number; _retry?: boolean; _x402Retry?: boolean }) | undefined;
+      window.dispatchEvent(new CustomEvent("kult:api-analytics", { detail: {
+        service,
+        outcome: "failure",
+        method: config?.method?.toUpperCase(),
+        endpoint: analyticsEndpoint(config?.url),
+        status: error?.response?.status,
+        duration_ms: config?.__analyticsStartedAt ? Math.round(performance.now() - config.__analyticsStartedAt) : undefined,
+        error_code: typeof error?.code === "string" ? error.code : undefined,
+        is_timeout: error?.code === "ECONNABORTED",
+        retried_auth: Boolean(config?._retry),
+        retried_payment: Boolean(config?._x402Retry),
+      } }));
+      return Promise.reject(error);
+    },
+  );
+}
+
 function attachAuthHeader(client: AxiosInstance) {
   client.interceptors.request.use(
     (config) => {
@@ -179,6 +287,7 @@ function buildClient(service: ApiServiceId): AxiosInstance {
     attachAiArenaRefreshOn401(instance);
     attachX402AutoPay(instance);
   }
+  attachApiAnalytics(instance, service);
 
   return instance;
 }
