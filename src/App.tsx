@@ -40,6 +40,7 @@ import { gamesApi } from "@/api/gamesApi";
 import { AccessRoute } from "@/components/AccessRoute";
 import { CreateAgentProvider } from "@/contexts/CreateAgentContext";
 import { PostHogProvider } from '@posthog/react'
+import { AnalyticsIdentity, GlobalAnalyticsTracker } from "@/components/analytics/GlobalAnalyticsTracker";
 
 
 
@@ -125,6 +126,7 @@ function BrowserApp() {
   return (
     <Suspense fallback={<PageRouteFallback />}>
       <AuthenticatedAppProviders>
+        <AnalyticsIdentity />
         <BrowserRouter>
           <CreateAgentProvider>
           <Suspense fallback={null}>
@@ -191,7 +193,15 @@ const PostHogProviderConfig = ({ children }: { children: React.ReactNode }) => {
 
   if( postHogKey && postHogHost ) {
     return (
-      <PostHogProvider apiKey={postHogKey} options = {{ api_host: postHogHost, defaults: postHogDefaults }}>
+      <PostHogProvider apiKey={postHogKey} options={{
+        api_host: postHogHost,
+        defaults: postHogDefaults,
+        autocapture: false,
+        capture_pageview: false,
+        capture_pageleave: true,
+        capture_dead_clicks: true,
+      }}>
+        <GlobalAnalyticsTracker />
         {children}
       </PostHogProvider>
     )
