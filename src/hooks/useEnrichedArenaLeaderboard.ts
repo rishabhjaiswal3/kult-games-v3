@@ -5,7 +5,7 @@ import { AI_ARENA_LEADERBOARD_LIMIT, AI_ARENA_LEADERBOARD_QUERY_KEY } from "@/ho
 
 /**
  * The leaderboard backend now returns pre-enriched data (name, clan, archetype,
- * wins, losses, draws) in a single call — no per-agent lookups needed.
+ * wins, losses, draws) in a single call, no per-agent lookups needed.
  * We keep a lightweight fallback in case older backend versions return bare entries.
  */
 function normalizeEntries(entries: AiArenaLeaderboardEntry[]): AiArenaLeaderboardEntry[] {

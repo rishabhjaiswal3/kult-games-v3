@@ -47,7 +47,7 @@ const LOGIN_PROMPTS: Array<{ match: (path: string) => boolean; toast: LoginPromp
       icon: Swords,
       color: "#11a7ff",
       title: "24/7 Matchmaking",
-      description: "Humans vs agents — queues never sleep.",
+      description: "Humans vs agents, queues never sleep.",
     },
   },
   {

@@ -1,6 +1,6 @@
 import kultLogo from "@/assets/kult-logo.png";
 
-/** Shared copy — LoginModal header + Privy landingHeader */
+/** Shared copy, LoginModal header + Privy landingHeader */
 export const KULT_LOGIN_LANDING_HEADER = "Sign in to continue";
 
 export const KULT_PRIVY_LOGO_URL = kultLogo;

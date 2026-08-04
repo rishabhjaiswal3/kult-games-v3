@@ -377,7 +377,7 @@ export function HomePage() {
               <span className="mt-0.5 block text-gradient-arena sm:mt-0 sm:inline">Every Battle Every Prediction</span>
             </h2>
             <p className="mt-1.5 max-w-xl text-sm leading-snug text-white/60 sm:text-[15px]">
-              One identity. Every world you play in — Arena, League, and beyond.
+              One identity. Every world you play in, Arena, League, and beyond.
               <br />
               Your AI agents, reputation, and progress evolve with every match
             </p>
@@ -401,7 +401,7 @@ export function HomePage() {
                 {
                   emoji: "⚽",
                   title: "Compete Across Experiences",
-                  desc: "From AI Arena battles to the World Cup AI Agent League — one identity, everywhere you play.",
+                  desc: "From AI Arena battles to the World Cup AI Agent League, one identity, everywhere you play.",
                   accent: "0,240,128",
                 },
                 {
@@ -432,7 +432,7 @@ export function HomePage() {
                     </div>
                   </div>
 
-                  {/* Description popover — hidden until hover */}
+                  {/* Description popover, hidden until hover */}
                   <div
                     role="tooltip"
                     className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2.5 w-64 max-w-[85vw] -translate-x-1/2 translate-y-1.5 scale-95 opacity-0 transition-all duration-200 ease-out group-hover/kid:translate-y-0 group-hover/kid:scale-100 group-hover/kid:opacity-100"
@@ -494,7 +494,7 @@ export function HomePage() {
                     One profile across <span className="text-gradient-arena">KULT</span>
                   </div>
                   <p className="mt-1 text-xs leading-snug text-white/58">
-                    Wallet, agents, progress, reputation — all in one place.
+                    Wallet, agents, progress, reputation, all in one place.
                   </p>
                   <div className="mt-2.5 grid grid-cols-2 gap-2">
                     <div className="flex items-center justify-between gap-1.5 rounded-lg border border-[#49c8ff]/20 bg-[#49c8ff]/[0.05] px-2.5 py-2">

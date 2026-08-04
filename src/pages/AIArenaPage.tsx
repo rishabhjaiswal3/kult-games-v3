@@ -18,6 +18,11 @@ import {
   Gamepad2,
   Trophy,
   Video,
+  Users,
+  Timer,
+  Shield,
+  TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
@@ -129,7 +134,7 @@ const agents = [
   },
 ];
 
-/** Placeholder cards (shown before the real leaderboard loads) still open the detail modal — build a synthetic agent from their display fields. */
+/** Placeholder cards (shown before the real leaderboard loads) still open the detail modal, using a synthetic agent built from their display fields. */
 function buildMockAgentDetail(a: (typeof agents)[number]): AiArenaAgent {
   return {
     id: `mock-${a.name.toLowerCase()}`,
@@ -447,7 +452,7 @@ function AiArenaMatchmakingProvider({ children }: { children: ReactNode }) {
 
       const base = `myAgentId=${encodeURIComponent(payload.agent.id)}&opponentId=${encodeURIComponent(payload.opponent.id)}&mode=${encodeURIComponent(payload.mode)}`;
 
-      // payload.gameId (server-reported) is authoritative — selectedGameIdRef.current defaults to
+      // payload.gameId (server-reported) is authoritative. selectedGameIdRef.current defaults to
       // "warzone" and is only reliable when the host queued via startMatchmaking; for joiners it
       // is always the stale initial value, so checking it first caused joiners to always land on
       // the Warzone page regardless of the actual game mode.
@@ -786,7 +791,7 @@ function Hero() {
       className="arena-panel ai-arena-hero-panel relative overflow-hidden border border-white/8 bg-[#04080f] backdrop-blur-none"
       data-tour="ai-arena-hero"
     >
-      {/* Mobile — show character faces; content sits low */}
+      {/* Mobile: show character faces; content sits low */}
       <div className="relative min-h-[560px] h-[min(168vw,780px)] md:hidden">
         <div className="absolute inset-0 overflow-hidden bg-[#04080f]">
           <HeroBackgroundVideo
@@ -808,7 +813,7 @@ function Hero() {
         </div>
       </div>
 
-      {/* Desktop — reserve 16:9 hero frame + skeleton until the video can paint */}
+      {/* Desktop: reserve 16:9 hero frame + skeleton until the video can paint */}
       <div className="relative hidden aspect-video w-full bg-[#04080f] md:block">
         <HeroBackgroundVideo
           src={heroVideo}
@@ -923,7 +928,7 @@ function FeaturesBlock() {
           <div className="mt-3 hidden space-y-2 min-[1200px]:block">
             <div className="flex items-start gap-2 text-sm text-white/60">
               <span className="mt-0.5 shrink-0 text-[#9a35ff]">▸</span>
-              Your agent evolves through every battle — strategy, traits, and record stay on-chain.
+              Your agent evolves through every battle: strategy, traits, and record stay on-chain.
             </div>
             <div className="flex items-start gap-2 text-sm text-white/60">
               <span className="mt-0.5 shrink-0 text-[#9a35ff]">▸</span>
@@ -1148,8 +1153,9 @@ type CompeteGame = {
   gameId: AiArenaGameId;
   mediaKey?: AiArenaMediaKey;
   image?: string;
-  tone: string;
   color: string;
+  mode: string;
+  modeIcon: LucideIcon;
 };
 
 const competeGames: CompeteGame[] = [
@@ -1161,19 +1167,21 @@ const competeGames: CompeteGame[] = [
     gameId: "warzone",
     mediaKey: "warzone",
     image: heroTrio,
-    tone: "from-[#321004]/15 via-[#170d0a]/42 to-[#070910]/95",
     color: "#22c55e",
+    mode: "PVP · Ranked",
+    modeIcon: Swords,
   },
   {
     title: "WARZONE WAVE",
     reputation: "Co-op combat",
-    body: "Team up two AI agents against enemy waves — the agent that collects the most coins wins",
+    body: "Team up two AI agents against enemy waves, and the agent that collects the most coins wins",
     cta: "Deploy",
     gameId: "warzone-wave",
     mediaKey: "warzoneWave",
     image: heroTrio,
-    tone: "from-[#071a32]/15 via-[#0a0f18]/42 to-[#070910]/95",
     color: "#22d3ee",
+    mode: "Co-op · Survival",
+    modeIcon: Users,
   },
   {
     title: "HIGHWAY HUSTLE",
@@ -1182,8 +1190,9 @@ const competeGames: CompeteGame[] = [
     cta: "Race",
     gameId: "highway-hustle",
     mediaKey: "highwayHustle",
-    tone: "from-[#29102e]/10 via-[#22091f]/42 to-[#070910]/95",
     color: "#ffc000",
+    mode: "Solo · Time trial",
+    modeIcon: Timer,
   },
   {
     title: "ROBOWARS",
@@ -1192,8 +1201,9 @@ const competeGames: CompeteGame[] = [
     cta: "Deploy",
     gameId: "robowar",
     mediaKey: "robowar",
-    tone: "from-[#25100d]/10 via-[#170b23]/45 to-[#070910]/95",
     color: "#52cbff",
+    mode: "PVP · Tactical",
+    modeIcon: Shield,
   },
 ];
 
@@ -1202,28 +1212,48 @@ function WhereAgentsCompete() {
   const canStartFromCards = !startButtonDisabled;
 
   return (
-    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
-      <div className="mb-8 text-center sm:mb-10">
-        <span className="inline-block rounded-sm border border-primary/40 px-3 py-1 font-tech text-[9px] tracking-[0.22em] text-primary sm:text-[10px] sm:tracking-[0.3em]">
-          ONE AGENT · MANY EXPERIENCES
-        </span>
-        <h3 className="mt-4 font-tech text-2xl font-black uppercase leading-tight sm:text-3xl">
+    <section className="arena-panel relative overflow-hidden px-4 py-4 sm:px-6 sm:py-5">
+      <div className="relative mb-8 text-center sm:mb-10">
+        <div className="pointer-events-none absolute inset-y-[-1.25rem] right-[-1.5rem] hidden w-[46%] lg:block">
+          <img src={heroTrio} alt="" className="h-full w-full object-cover object-[78%_18%] opacity-45" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#04070d] via-[#04070d]/75 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#04070d] via-transparent to-[#04070d]/60" />
+        </div>
+        <div className="pointer-events-none absolute inset-y-[-1.25rem] left-[-2rem] hidden w-[30%] lg:block">
+          <img src={heroTrio} alt="" className="h-full w-full scale-x-[-1] object-cover object-[15%_18%] opacity-25" />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#04070d] via-[#04070d]/75 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#04070d] via-transparent to-[#04070d]/60" />
+        </div>
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 h-72 w-[36rem] -translate-x-1/2 -translate-y-1/3 opacity-70"
+          style={{ background: "radial-gradient(circle, rgba(154,53,255,0.16), transparent 60%)" }}
+        />
+
+        <div className="relative flex items-center justify-center gap-3 sm:gap-4">
+          <div className="h-px flex-1 max-w-16 bg-gradient-to-r from-transparent to-primary/70 sm:max-w-24" />
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-primary/40 bg-primary/[0.06] px-4 py-1.5 font-tech text-[9px] tracking-[0.22em] text-primary shadow-[0_0_20px_rgba(154,53,255,0.15),inset_0_1px_0_rgba(255,255,255,0.06)] sm:text-[10px] sm:tracking-[0.3em]">
+            <Sparkles className="h-3 w-3" />
+            ONE AGENT · MANY EXPERIENCES
+          </span>
+          <div className="h-px flex-1 max-w-16 bg-gradient-to-l from-transparent to-primary/70 sm:max-w-24" />
+        </div>
+        <h3 className="relative mt-5 font-tech text-3xl font-black uppercase leading-[1.05] tracking-tight sm:text-4xl">
           WHERE YOUR <span className="text-gradient glow-text">AGENTS COMPETE</span>
         </h3>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground [text-shadow:0_0_14px_rgba(203,213,225,0.2)]">
-          AI Arena is bigger than battles. Your agent competes across games and predictions — every result feeds one persistent reputation.
+        <p className="relative mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/60 sm:text-base">
+          AI Arena is bigger than battles. Your agent competes across games and predictions, and every result feeds one persistent reputation.
         </p>
         {agentBusy ? (
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/8 px-4 py-1.5 font-tech text-[10px] uppercase tracking-widest text-amber-300">
+          <p className="relative mt-4 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/8 px-4 py-1.5 font-tech text-[10px] uppercase tracking-widest text-amber-300">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
             {queuedAgent
-              ? `${queuedAgent.name} is live in the arena — finish the current battle first`
-              : "Your agent is in a live battle — finish it before starting another"}
+              ? `${queuedAgent.name} is live in the arena, finish the current battle first`
+              : "Your agent is in a live battle, finish it before starting another"}
           </p>
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {competeGames.map((game) => (
           <button
             type="button"
@@ -1233,54 +1263,72 @@ function WhereAgentsCompete() {
               startMatchmaking(game.gameId);
             }}
             disabled={!canStartFromCards}
+            style={{ "--accent": game.color } as CSSProperties}
             className={cn(
-              "arena-panel group relative h-[260px] overflow-hidden rounded-xl border border-white/10 text-left shadow-[0_18px_45px_rgba(0,0,0,0.35)] transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/50",
+              "group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0a0d16] text-left transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50",
               canStartFromCards
-                ? "hover:-translate-y-2 hover:scale-[1.01] hover:border-[#a83cff]/70 hover:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_38px_rgba(154,53,255,0.28)]"
+                ? "hover:-translate-y-2 hover:scale-[1.01] hover:border-[var(--accent)]/60 hover:shadow-[0_0_42px_-8px_var(--accent)]"
                 : "cursor-not-allowed opacity-65",
             )}
           >
-            {game.mediaKey ? (
-              <LazyInViewVideo
-                srcLoader={aiArenaMedia[game.mediaKey]}
-                autoPlay
-                loop
-                muted
-                playsInline
-                placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
-                className="opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
-              />
-            ) : game.image ? (
-              <img
-                src={game.image}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-110 group-hover:saturate-125"
-              />
-            ) : null}
-            <div className={`absolute inset-0 bg-gradient-to-b ${game.tone} opacity-85 transition-opacity duration-500 group-hover:opacity-65`} />
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/72 via-black/42 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#070910]/15 to-transparent transition duration-500 group-hover:from-[#070910]/85" />
-            <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5 transition duration-500 group-hover:ring-[#c268ff]/45" />
-            <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
+            <div
+              className="pointer-events-none absolute inset-x-6 top-0 z-10 h-px opacity-70 transition-opacity duration-500 group-hover:opacity-100"
+              style={{ background: `linear-gradient(90deg, transparent, ${game.color}, transparent)` }}
+            />
 
-            <span
-              className="absolute left-4 top-4 z-10 inline-flex w-fit rounded-md border px-3 py-1.5 font-tech text-[9px] font-black uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.14)]"
-              style={{
-                color: game.color,
-                borderColor: `${game.color}cc`,
-                background: `linear-gradient(135deg, rgba(5,8,16,0.96), ${game.color}26)`,
-                textShadow: "none",
-              }}
-            >
-              {game.reputation}
-            </span>
+            <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-[#070910]">
+              {game.mediaKey ? (
+                <LazyInViewVideo
+                  srcLoader={aiArenaMedia[game.mediaKey]}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
+                  className="transition duration-700 group-hover:scale-110"
+                />
+              ) : game.image ? (
+                <img
+                  src={game.image}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                />
+              ) : null}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#0a0d16] to-transparent" />
+              <div className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-700 group-hover:left-[125%] group-hover:opacity-100" />
+            </div>
 
-            <div className="relative z-10 flex h-full flex-col justify-end p-4">
-              <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg transition duration-500 group-hover:-translate-y-0.5 group-hover:text-[#f0d7ff] sm:text-lg">
+            <div className="flex flex-1 flex-col p-4">
+              <span
+                className="inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+                style={{
+                  color: game.color,
+                  borderColor: `${game.color}55`,
+                  background: `${game.color}12`,
+                }}
+              >
+                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: game.color }} />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: game.color, boxShadow: `0 0 8px ${game.color}` }} />
+                </span>
+                {game.reputation}
+              </span>
+              <h4 className="mt-2.5 truncate font-tech text-sm font-black uppercase leading-tight tracking-wide text-white transition duration-500 group-hover:text-[var(--accent)]">
                 {game.title}
               </h4>
-              <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">{game.body}</p>
-              <span className="mt-2 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-white transition group-hover:gap-2.5">
+              <p className="mt-1.5 line-clamp-2 min-h-[2rem] text-[11px] leading-relaxed text-white/55">{game.body}</p>
+              <div className="mt-3 flex items-center gap-1.5 border-t border-white/8 pt-2.5 font-tech text-[9px] uppercase tracking-wider text-white/45">
+                <game.modeIcon className="h-3 w-3 shrink-0" style={{ color: game.color }} />
+                {game.mode}
+              </div>
+              <span
+                className="mt-auto inline-flex w-fit items-center gap-1.5 self-start rounded-lg border px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider transition-all duration-300 group-hover:gap-2.5"
+                style={{
+                  color: game.color,
+                  borderColor: `${game.color}45`,
+                  background: `${game.color}12`,
+                }}
+              >
                 {canStartFromCards ? game.cta : queuedAgent ? "Agent in battle" : "Unavailable"}
                 <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </span>
@@ -1288,46 +1336,88 @@ function WhereAgentsCompete() {
           </button>
         ))}
 
-        {/* Prediction AI — connects Arena to League */}
+        {/* Prediction AI: connects Arena to League */}
         <Link
           to="/league"
-          className="arena-panel group relative flex h-[260px] flex-col overflow-hidden rounded-xl border border-[#b338ff]/55 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#b338ff]/80"
+          style={{ "--accent": "#c65cff" } as CSSProperties}
+          className="group relative flex flex-col overflow-hidden rounded-xl border border-[#b338ff]/45 bg-[#0a0d16] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-[var(--accent)]/70 hover:shadow-[0_0_42px_-8px_var(--accent)]"
         >
-          <LazyInViewVideo
-            srcLoader={aiArenaMedia.leagueBackground}
-            autoPlay
-            loop
-            muted
-            playsInline
-            placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
-            className="pointer-events-none opacity-50 transition duration-700 group-hover:scale-105 group-hover:opacity-60"
+          <div
+            className="pointer-events-none absolute inset-x-6 top-0 z-10 h-px opacity-70 transition-opacity duration-500 group-hover:opacity-100"
+            style={{ background: "linear-gradient(90deg, transparent, #c65cff, transparent)" }}
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070910]/95 via-[#0b0518]/72 to-[#0b0518]/45" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/74 via-black/42 to-transparent" />
-          <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 20% 0%, rgba(179,56,255,0.16), transparent 55%)" }} />
 
-          <span
-            className="absolute left-4 top-4 z-10 inline-flex w-fit rounded-md border px-3 py-1.5 font-tech text-[9px] font-black uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-md"
-            style={{
-              color: "#e0a8ff",
-              borderColor: "#c65cffcc",
-              background: "linear-gradient(135deg, rgba(5,8,16,0.92), rgba(179,56,255,0.28))",
-              textShadow: "0 0 12px rgba(198,92,255,0.75)",
-            }}
-          >
-            Forecasting reputation
-          </span>
+          <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-[#070910]">
+            <LazyInViewVideo
+              srcLoader={aiArenaMedia.leagueBackground}
+              autoPlay
+              loop
+              muted
+              playsInline
+              placeholderClassName="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_30%_18%,rgba(154,53,255,0.22),transparent_52%),linear-gradient(145deg,rgba(7,10,20,0.95),rgba(4,8,15,0.88))]"
+              className="pointer-events-none transition duration-700 group-hover:scale-110"
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#0a0d16] to-transparent" />
+          </div>
 
-          <div className="relative z-10 flex h-full flex-col justify-end">
-            <h4 className="font-tech text-base font-black uppercase leading-tight text-white drop-shadow-lg sm:text-lg">Prediction AI</h4>
-            <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-white/80">
+          <div className="flex flex-1 flex-col p-4">
+            <span
+              className="inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+              style={{
+                color: "#e0a8ff",
+                borderColor: "#c65cff55",
+                background: "#c65cff12",
+              }}
+            >
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c65cff] opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#c65cff] shadow-[0_0_8px_#c65cff]" />
+              </span>
+              Forecasting reputation
+            </span>
+            <h4 className="mt-2.5 truncate font-tech text-sm font-black uppercase leading-tight tracking-wide text-white transition duration-500 group-hover:text-[var(--accent)]">Prediction AI</h4>
+            <p className="mt-1.5 line-clamp-2 min-h-[2rem] text-[11px] leading-relaxed text-white/55">
               Forecast live events alongside your AI agent, Debate, Predict and Build forecasting reputation.
             </p>
-            <span className="mt-2 inline-flex items-center gap-1.5 font-tech text-[11px] font-bold uppercase tracking-wider text-[#d08bff] transition group-hover:gap-2.5">
+            <div className="mt-3 flex items-center gap-1.5 border-t border-white/8 pt-2.5 font-tech text-[9px] uppercase tracking-wider text-white/45">
+              <TrendingUp className="h-3 w-3 shrink-0 text-[#c65cff]" />
+              Forecast · Live odds
+            </div>
+            <span className="mt-auto inline-flex w-fit items-center gap-1.5 self-start rounded-lg border border-[#c65cff]/45 bg-[#c65cff]/[0.07] px-3 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#d08bff] transition-all duration-300 group-hover:gap-2.5">
               Enter League
               <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </span>
           </div>
+        </Link>
+      </div>
+
+      <div className="relative mt-6 flex flex-wrap items-center justify-center gap-4 border-t border-white/8 pt-6 sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex -space-x-3">
+            {[
+              { pos: "object-[15%_18%]", ring: "border-[#22c55e]/50" },
+              { pos: "object-[38%_18%]", ring: "border-[#22d3ee]/50" },
+              { pos: "object-[62%_18%]", ring: "border-[#ffc000]/50" },
+              { pos: "object-[85%_18%]", ring: "border-[#52cbff]/50" },
+            ].map((avatar, index) => (
+              <span
+                key={index}
+                className={`h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-[#070910] shadow-[0_4px_14px_rgba(0,0,0,0.5)] ${avatar.ring}`}
+              >
+                <img src={heroTrio} alt="" className={`h-full w-full scale-[2.1] object-cover ${avatar.pos}`} />
+              </span>
+            ))}
+          </div>
+          <p className="font-tech text-[11px] uppercase tracking-wider text-white/50">
+            Every agent. Every game. <span className="text-white/85">One profile.</span>
+          </p>
+        </div>
+        <Link
+          to="/my-agents"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-white/70 transition hover:border-primary/50 hover:text-white"
+        >
+          View my agents
+          <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </section>
@@ -1436,7 +1526,7 @@ function RankProgressionTimeline() {
             WIN TO CLIMB
           </h4>
           <p className="text-xs leading-relaxed text-white/75">
-            Each battle win grants ELO points. The stronger your opponent, the more ELO you earn. Losses deduct ELO — protect your rank.
+            Each battle win grants ELO points. The stronger your opponent, the more ELO you earn. Losses deduct ELO, so protect your rank.
           </p>
         </div>
         <div className="card-glass rounded-xl p-4 sm:p-5 text-center sm:text-left">
@@ -1977,7 +2067,7 @@ function MyBattleSection() {
                                 </span>
                               </div>
                               <p className="mt-2 font-tech text-sm font-black uppercase leading-snug tracking-wide text-white sm:text-[15px]">
-                                Rematch the arena — start your next battle
+                                Rematch the arena, start your next battle
                               </p>
                               <p className="mt-1 text-xs leading-relaxed text-white/55">
                                 History is done. Queue up and write a better ending.
@@ -2073,7 +2163,7 @@ function LiveBattles() {
                 item.kind === "ranked"
                   ? {
                       eyebrow: "Your turn",
-                      title: "Don't just watch — start your own battle",
+                      title: "Don't just watch, start your own battle",
                       description: "Queue your agent now and claim the next live spotlight.",
                       buttonLabel: "Start Matchmaking",
                       onClick: jumpToMatchmaking,
@@ -2093,7 +2183,7 @@ function LiveBattles() {
             onClick={jumpToMatchmaking}
             className="w-full rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-tech text-[11px] font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-200/55 hover:bg-cyan-400/18"
           >
-            Be first — start matchmaking
+            Be first, start matchmaking
           </button>
         </div>
       )}

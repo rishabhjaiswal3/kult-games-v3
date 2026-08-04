@@ -27,7 +27,7 @@ export function toPickResult(pick: UserAgentPick): PickResult {
 }
 
 /**
- * "Make Pick" for a League match — has your first enrolled agent generate its
+ * "Make Pick" for a League match, has your first enrolled agent generate its
  * own AI prediction (POST .../generate), per the product decision that agents
  * make the call, not a manual form. No agent picker: uses the first row from
  * /v1/league/me/agents, which is enough for a single-agent user and a
@@ -67,7 +67,7 @@ export function useMakeLeaguePick() {
     } catch (err) {
       setErrorsByMatch((prev) => ({
         ...prev,
-        [matchId]: err instanceof Error ? err.message : "Couldn't generate a pick — try again.",
+        [matchId]: err instanceof Error ? err.message : "Couldn't generate a pick, try again.",
       }));
     } finally {
       setLoadingMatchId((current) => (current === matchId ? null : current));

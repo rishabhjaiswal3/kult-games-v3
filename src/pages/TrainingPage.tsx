@@ -373,7 +373,7 @@ const TrainingPage = () => {
             </div>
             <div className="min-w-0">
               <p className="font-tech text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300">Daily reward</p>
-              <p className="mt-0.5 text-sm font-semibold text-white/90">Free training unlocked — queue a custom job below.</p>
+              <p className="mt-0.5 text-sm font-semibold text-white/90">Free training unlocked, queue a custom job below.</p>
               <p className="mt-1 text-[11px] leading-relaxed text-white/55">
                 Training uses $ARENA from your wallet on 0G Chain. Fund your agent wallet when you are ready.
               </p>

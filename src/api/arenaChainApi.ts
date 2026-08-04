@@ -2,12 +2,12 @@ import axios from "axios";
 import { getApiClient } from "@/lib/apiClientFactory";
 
 /**
- * $ARENA on 0G Chain — read-only client for the on-chain economy endpoints.
+ * $ARENA on 0G Chain, read-only client for the on-chain economy endpoints.
  * Reuses the existing AI Arena gateway axios instance (auth headers, 401
  * refresh, x402 auto-pay already wired in apiClientFactory.ts).
  *
  * All balances/amounts are decimal strings returned by the backend
- * (e.g. "123.45") — no wei math needed on the client, just parseFloat/
+ * (e.g. "123.45"), no wei math needed on the client, just parseFloat/
  * toLocaleString for display.
  */
 
@@ -32,7 +32,7 @@ export interface ArenaPermitDomainResponse {
 export interface ArenaPermitRequest {
   owner: string;
   spender: string;
-  /** Raw uint256 wei string signed into the permit message — not a decimal ARENA amount. */
+  /** Raw uint256 wei string signed into the permit message, not a decimal ARENA amount. */
   value: string;
   deadline: number;
   v: number;
@@ -93,7 +93,7 @@ function is404(err: unknown): boolean {
 }
 
 export const arenaChainApi = {
-  /** GET /v1/arena/wallet/:address — player's real on-chain ARENA balance on 0G Chain. */
+  /** GET /v1/arena/wallet/:address, player's real on-chain ARENA balance on 0G Chain. */
   getWalletBalance: async (address: string): Promise<ArenaWalletResponse> => {
     const { data } = await http().get<ArenaWalletResponse>(
       `/v1/arena/wallet/${encodeURIComponent(address)}`
@@ -101,7 +101,7 @@ export const arenaChainApi = {
     return data;
   },
 
-  /** GET /v1/arena/wallet/:address/allowance/:spender — ARENA approved for a spender contract. */
+  /** GET /v1/arena/wallet/:address/allowance/:spender, ARENA approved for a spender contract. */
   getWalletAllowance: async (address: string, spender: string): Promise<ArenaAllowanceResponse> => {
     const { data } = await http().get<ArenaAllowanceResponse>(
       `/v1/arena/wallet/${encodeURIComponent(address)}/allowance/${encodeURIComponent(spender)}`
@@ -109,7 +109,7 @@ export const arenaChainApi = {
     return data;
   },
 
-  /** GET /v1/arena/wallet/:address/nonce — current EIP-2612 permit nonce for this wallet. */
+  /** GET /v1/arena/wallet/:address/nonce, current EIP-2612 permit nonce for this wallet. */
   getPermitNonce: async (address: string): Promise<string> => {
     const { data } = await http().get<{ nonce: string }>(
       `/v1/arena/wallet/${encodeURIComponent(address)}/nonce`
@@ -117,7 +117,7 @@ export const arenaChainApi = {
     return data.nonce;
   },
 
-  /** GET /v1/arena/permit/domain — EIP-712 domain for signing an ARENA permit. */
+  /** GET /v1/arena/permit/domain, EIP-712 domain for signing an ARENA permit. */
   getPermitDomain: async (): Promise<ArenaPermitDomainResponse> => {
     const { data } = await http().get<ArenaPermitDomainResponse>("/v1/arena/permit/domain");
     return data;
@@ -125,7 +125,7 @@ export const arenaChainApi = {
 
   /**
    * POST /v1/wallets/permit (financial-service, not arena-chain-service
-   * directly — that route requires an internal service key the browser
+   * directly, that route requires an internal service key the browser
    * can't hold). Relays a signed permit so the backend relayer can submit
    * `token.permit()` and pay its own gas -- see useArenaStaking.ts.
    */
@@ -135,8 +135,8 @@ export const arenaChainApi = {
   },
 
   /**
-   * GET /v1/arena/config — contract addresses for the $ARENA economy.
-   * May 404 if the backend hasn't shipped this route yet — callers should
+   * GET /v1/arena/config, contract addresses for the $ARENA economy.
+   * May 404 if the backend hasn't shipped this route yet, callers should
    * treat a null return as "config unavailable" and not crash.
    */
   getConfig: async (): Promise<ArenaConfigResponse | null> => {
@@ -149,7 +149,7 @@ export const arenaChainApi = {
     }
   },
 
-  /** GET /v1/arena/transactions/:address?page=&limit= — real wallet activity feed. */
+  /** GET /v1/arena/transactions/:address?page=&limit=, real wallet activity feed. */
   getWalletTransactions: async (
     address: string,
     page = 1,
@@ -165,13 +165,13 @@ export const arenaChainApi = {
     };
   },
 
-  /** GET /v1/arena/treasury — treasury balance, distributed, remaining, commissions, rewards paid. */
+  /** GET /v1/arena/treasury, treasury balance, distributed, remaining, commissions, rewards paid. */
   getTreasury: async (): Promise<ArenaTreasuryResponse> => {
     const { data } = await http().get<ArenaTreasuryResponse>("/v1/arena/treasury");
     return data;
   },
 
-  /** GET /v1/arena/explorer/events?eventName=&page=&limit= — repo-wide on-chain event feed. */
+  /** GET /v1/arena/explorer/events?eventName=&page=&limit=, repo-wide on-chain event feed. */
   getExplorerEvents: async (
     params: { eventName?: string; page?: number; limit?: number } = {}
   ): Promise<ArenaExplorerEventsResponse> => {
@@ -188,7 +188,7 @@ export const arenaChainApi = {
     };
   },
 
-  /** GET /v1/arena/explorer/treasury-history?limit= — historical treasury snapshots. */
+  /** GET /v1/arena/explorer/treasury-history?limit=, historical treasury snapshots. */
   getTreasuryHistory: async (limit = 50): Promise<ArenaTreasuryHistoryResponse> => {
     const { data } = await http().get<ArenaTreasuryHistoryResponse>(
       "/v1/arena/explorer/treasury-history",

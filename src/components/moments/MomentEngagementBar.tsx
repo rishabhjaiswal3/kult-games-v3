@@ -140,7 +140,7 @@ export function MomentEngagementBar({
       a.remove();
       URL.revokeObjectURL(objectUrl);
     } catch {
-      // CORS fallback — opens in new tab so browser handles download
+      // CORS fallback, opens in new tab so browser handles download
       const a = document.createElement("a");
       a.href = url;
       a.download = filename;

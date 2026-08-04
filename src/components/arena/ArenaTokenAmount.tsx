@@ -5,7 +5,7 @@ type ArenaTokenAmountProps = {
   amount: number | string;
   className?: string;
   size?: "sm" | "md" | "lg";
-  /** Rarely needed — Arena balance uses amount + label only. */
+  /** Rarely needed, Arena balance uses amount + label only. */
   showLogo?: boolean;
 };
 
@@ -15,7 +15,7 @@ const sizeMap = {
   lg: { text: "text-3xl font-black", logo: "h-6 w-6", gap: "gap-2" },
 } as const;
 
-/** Arena in-game currency — Kult-branded, not 0G native token. */
+/** Arena in-game currency, Kult-branded, not 0G native token. */
 export function ArenaTokenAmount({ amount, className, size = "md", showLogo = false }: ArenaTokenAmountProps) {
   const s = sizeMap[size];
   return (

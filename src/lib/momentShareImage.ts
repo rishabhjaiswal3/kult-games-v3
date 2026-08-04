@@ -31,11 +31,11 @@ export function momentHasShareImage(moment: Moment): boolean {
 
 export function buildMomentShareImageProxyUrl(momentId: string, hostBase: string): string {
   const base = hostBase.replace(/\/+$/, "");
-  // Same path as backend OG tags — routed via /api/share on static deployments.
+  // Same path as backend OG tags, routed via /api/share on static deployments.
   return `${base}/api/share/moments/${momentId}/og-image.jpg`;
 }
 
-/** JPEG proxy URL for Pinterest/WhatsApp — works for WebP, PNG, GIF, AVIF, HEIC, etc. */
+/** JPEG proxy URL for Pinterest/WhatsApp, works for WebP, PNG, GIF, AVIF, HEIC, etc. */
 export function resolveMomentShareImageUrl(moment: Moment, hostBase: string): string | undefined {
   if (!momentHasShareImage(moment)) return undefined;
   return buildMomentShareImageProxyUrl(moment.momentId, hostBase);

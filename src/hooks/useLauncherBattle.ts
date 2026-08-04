@@ -90,7 +90,7 @@ export function useLauncherBattle({
     if (phase !== "waiting") return;
     if (!battleStatus) return;
 
-    // Any non-PENDING status means the launcher is active — reset the idle timer
+    // Any non-PENDING status means the launcher is active, reset the idle timer
     if (battleStatus !== "PENDING") clearIdleTimeout();
 
     if (battleStatus === "COMPLETED") {

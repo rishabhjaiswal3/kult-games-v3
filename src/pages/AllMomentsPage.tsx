@@ -550,7 +550,7 @@ export function AllMomentsPage() {
     observerRef.current?.disconnect();
     observerRef.current = null;
     if (!node) return;
-    // Page uses AppShell main scroll — observe against the viewport.
+    // Page uses AppShell main scroll, observe against the viewport.
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) handleLoadMoreRef.current();
@@ -628,7 +628,7 @@ export function AllMomentsPage() {
                   Moments
                 </h1>
                 <p className="mt-1.5 max-w-xl text-sm text-white/55">
-                  Every game win, agent battle, and league call — captured as a moment. Share the best to X, drive plays, earn KP.
+                  Every game win, agent battle, and league call, captured as a moment. Share the best to X, drive plays, earn KP.
                 </p>
               </div>
               <button
@@ -682,7 +682,7 @@ export function AllMomentsPage() {
               </div>
             </div>
 
-            {/* Subcategory filters — hidden for now
+            {/* Subcategory filters, hidden for now
             <div className="relative z-10 grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-3 2xl:grid-cols-6">
               {[
                 { label: "TRENDING", Icon: Flame, desc: "Most popular" },

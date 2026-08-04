@@ -25,7 +25,7 @@ const TourContext = createContext<TourContextValue | null>(null);
 // Sidebar nav items render twice in the DOM: a desktop <aside> (always mounted,
 // CSS-hidden below `lg`) and a mobile drawer (only mounted while open). Both
 // share the same `data-tour` attribute, so a plain querySelector always finds
-// the desktop copy first — even when it's invisible. `MOBILE_SIDEBAR_SELECTOR_PREFIX`
+// the desktop copy first, even when it's invisible. `MOBILE_SIDEBAR_SELECTOR_PREFIX`
 // lets us detect steps that live inside that drawer so we can open it first.
 const MOBILE_SIDEBAR_SELECTOR_PREFIX = "[data-tour='sidebar-";
 const MOBILE_BREAKPOINT_PX = 1024; // matches Tailwind's `lg` used by AppSidebar

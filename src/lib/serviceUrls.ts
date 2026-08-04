@@ -4,7 +4,7 @@
 
 const trimTrailingSlash = (url: string) => url.replace(/\/+$/, "");
 
-/** Creator Studio — served at `/create/` on the main app host (nginx routes this, not the SPA). */
+/** Creator Studio, served at `/create/` on the main app host (nginx routes this, not the SPA). */
 export function studioUrl(): string {
   const host = trimTrailingSlash(
     import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app",
@@ -13,7 +13,7 @@ export function studioUrl(): string {
   return `${host}/create/auto-auth`;
 }
 
-/** Primary Kult API (games, player, leaderboard, …) — same origin as today + `/api`. */
+/** Primary Kult API (games, player, leaderboard, …), same origin as today + `/api`. */
 export const MAIN_BACKEND =
   `${trimTrailingSlash(import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app")}/api`;
 

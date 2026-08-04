@@ -239,7 +239,7 @@ function F1MarketRow({
         <div className="border-t border-violet-400/15 px-3 py-3">
           {!isRealMarket ? (
             <p className="mb-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-wider text-amber-300">
-              Preview data — Polymarket is unreachable right now, not a live tradeable market
+              Preview data, Polymarket is unreachable right now, not a live tradeable market
             </p>
           ) : null}
 
@@ -267,7 +267,7 @@ function F1MarketRow({
               type="button"
               disabled={loading || !isRealMarket}
               onClick={handleGetSignal}
-              title={!isRealMarket ? "Preview data — no real market to read" : undefined}
+              title={!isRealMarket ? "Preview data, no real market to read" : undefined}
               className="w-full rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#aebfff] transition hover:bg-[#2E5CFF]/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Reading market…" : "Ask agent for perspective"}
@@ -588,7 +588,7 @@ export function F1PolymarketBoard() {
       ) : grouped.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-10 text-center">
           <Loader2 className="h-5 w-5 text-white/30" />
-          <p className="font-mono text-xs text-white/40">No live Formula 1 markets on Polymarket right now — check back later.</p>
+          <p className="font-mono text-xs text-white/40">No live Formula 1 markets on Polymarket right now, check back later.</p>
         </div>
       ) : (
         <div className="space-y-4">

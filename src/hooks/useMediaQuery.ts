@@ -17,7 +17,7 @@ export function useMediaQuery(query: string, defaultValue = false) {
   return matches;
 }
 
-/** Tailwind `sm` breakpoint — render desktop layout at 640px and above. */
+/** Tailwind `sm` breakpoint, render desktop layout at 640px and above. */
 export function useIsDesktopLayout() {
   return useMediaQuery("(min-width: 640px)");
 }

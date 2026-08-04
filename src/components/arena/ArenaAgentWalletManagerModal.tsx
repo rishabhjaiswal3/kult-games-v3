@@ -116,7 +116,7 @@ export function ArenaAgentWalletManagerModal({
     try {
       await navigator.clipboard.writeText(value);
     } catch {
-      /* clipboard unavailable — no-op */
+      /* clipboard unavailable, no-op */
     }
   };
 
@@ -126,7 +126,7 @@ export function ArenaAgentWalletManagerModal({
         <ArenaDialogHeader>
           <ArenaDialogTitle className="font-display text-left text-xl sm:text-2xl">My Wallet</ArenaDialogTitle>
           <ArenaDialogDescription className="text-left text-xs sm:text-sm">
-            Your $ARENA balance and on-chain activity on 0G Chain. ARENA lives directly in your own wallet — there is
+            Your $ARENA balance and on-chain activity on 0G Chain. ARENA lives directly in your own wallet, there is
             no deposit or withdrawal flow here.
           </ArenaDialogDescription>
         </ArenaDialogHeader>

@@ -47,14 +47,14 @@ export type SharePayload = {
   momentUrl: string;
   /** Human-friendly moment page (opens SPA when production-server is deployed). */
   url: string;
-  /** Crawlable preview page — always has OG tags + JPEG image on /api/share. */
+  /** Crawlable preview page, always has OG tags + JPEG image on /api/share. */
   previewUrl: string;
   /** Public crawler-facing preview route on the app host, e.g. /share/moments/:id. */
   publicPreviewUrl: string;
   title: string;
   /** Full moment description (not truncated). */
   description: string;
-  /** @deprecated Use `description` — kept for Reddit title fallback. */
+  /** @deprecated Use `description`, kept for Reddit title fallback. */
   teaser: string;
   hashtags: string[];
   /** Direct image URL for Pinterest `media` param. */
@@ -119,7 +119,7 @@ export function buildMomentShareBody(
 
 const TWITTER_MAX_CHARS = 280;
 
-/** X/Twitter hard limit — trim description first, always keep link + tags when possible. */
+/** X/Twitter hard limit, trim description first, always keep link + tags when possible. */
 export function buildTwitterSharePostText(payload: SharePayload): string {
   const full = buildMomentSharePostText(payload);
   if (full.length <= TWITTER_MAX_CHARS) return full;
@@ -166,13 +166,13 @@ export function buildMomentShareOgImageUrl(momentId: string): string {
   return buildMomentShareImageProxyUrl(momentId, resolveShareServiceBase());
 }
 
-/** Public image URL for Pinterest/WhatsApp — always JPEG proxy (any source format). */
+/** Public image URL for Pinterest/WhatsApp, always JPEG proxy (any source format). */
 export function resolveShareMediaUrl(moment: Moment): string | undefined {
   return resolveMomentShareImageUrl(moment, resolveShareServiceBase());
 }
 
 /**
- * URL placed in social posts — must be crawlable on static-site deployments.
+ * URL placed in social posts, must be crawlable on static-site deployments.
  * Set VITE_SHARE_PLATFORM_URL=moment only after production-server serves OG on /moments/:id.
  */
 export function resolvePlatformShareUrl(payload: SharePayload): string {

@@ -34,7 +34,7 @@ export type CreateMomentDialogProps = {
   /** When set, pre-fills trash-talk title, winning commentary, and artwork. */
   battleId?: string | null;
   myAgentId?: string | null;
-  /** Arena game id — warzone, robowar, or highway-hustle. */
+  /** Arena game id, warzone, robowar, or highway-hustle. */
   arenaGameId?: string | null;
 };
 
@@ -364,7 +364,7 @@ export function CreateMomentDialog({
             {awaitingCommentary ? (
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-100">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Battle in progress — AI commentary will appear when the match ends.
+                Battle in progress, AI commentary will appear when the match ends.
               </div>
             ) : null}
 

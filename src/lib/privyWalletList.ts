@@ -6,7 +6,7 @@ import type { WalletListEntry } from "@privy-io/react-auth";
  * Privy behaviour (see ConnectWalletView in @privy-io/react-auth):
  * - Named `WalletListEntry` IDs connect via extension / deep link.
  * - Additional WalletConnect registry slugs appear as individual buttons when listed
- *   here WITHOUT `wallet_connect` — Privy filters WC listings to slugs in this array.
+ *   here WITHOUT `wallet_connect`, Privy filters WC listings to slugs in this array.
  * - Solana-only wallets (Phantom, Solflare, Backpack, Jupiter, …) are excluded.
  *
  * @see https://docs.privy.io/wallets/connectors/setup/configuring-external-connector-wallets
@@ -14,7 +14,7 @@ import type { WalletListEntry } from "@privy-io/react-auth";
  */
 /**
  * Privy sorts wallets by `findIndex` in this array (see ConnectWalletView in @privy-io/react-auth).
- * WC registry slugs can differ from connector IDs — Privy auto-appends aliases at the *tail*,
+ * WC registry slugs can differ from connector IDs, Privy auto-appends aliases at the *tail*,
  * which pushes them to the bottom unless we also list the alias early (e.g. bitget → bitkeep).
  */
 export const PRIVY_WALLET_SORT_ALIASES: Record<string, readonly string[]> = {
@@ -41,7 +41,7 @@ export const PRIVY_NAMED_ZERO_G_WALLETS = [
   // generic/legacy provider path instead of announcing itself as "bitget_wallet"
   // (EIP-6963 name mismatch, provider-injection race with other extensions, etc.).
   // Privy's connector-name allow-list silently drops an unmatched provider instead
-  // of falling back to the named entry — this is why the button flickers in and
+  // of falling back to the named entry, this is why the button flickers in and
   // out. `detected_ethereum_wallets` is a documented Privy sentinel that surfaces
   // any detected EVM extension not already matched by name, so it always renders
   // (named wallets above still keep their configured position/branding).

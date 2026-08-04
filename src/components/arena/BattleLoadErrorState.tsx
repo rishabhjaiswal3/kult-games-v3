@@ -7,7 +7,7 @@ type BattleLoadErrorStateProps = {
   onRetry: () => void;
 };
 
-/** Shown when GET /v1/battles/:id fails — distinguishes ended/cleaned battles from transient errors. */
+/** Shown when GET /v1/battles/:id fails, distinguishes ended/cleaned battles from transient errors. */
 export function BattleLoadErrorState({ error, onRetry }: BattleLoadErrorStateProps) {
   const ended = isBattleNotFoundError(error);
 
@@ -32,7 +32,7 @@ export function BattleLoadErrorState({ error, onRetry }: BattleLoadErrorStatePro
             </span>
           </h2>
           <p className="relative mx-auto mt-3 max-w-[300px] text-sm leading-relaxed text-white/55">
-            Sorry — this battle has already ended. You just missed the action.
+            Sorry, this battle has already ended. You just missed the action.
           </p>
 
           <Link

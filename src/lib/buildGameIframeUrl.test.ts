@@ -5,7 +5,7 @@ import type { Game } from "@/types/api";
 const highwayGame: Game = {
   _id: "highwayhustle-oneway",
   identification: "highwayhustle-oneway",
-  name: { en: "Highway Hustle — One Way" },
+  name: { en: "Highway Hustle, One Way" },
   category: "Racing",
   metadata: {
     play_url: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",

@@ -78,7 +78,7 @@ export function HighwayHustleModeModal({
                 Select game mode
               </h2>
               <p className="font-tech text-[8px] uppercase tracking-[0.25em] text-white/45">
-                Highway Hustle — choose your mission
+                Highway Hustle, choose your mission
               </p>
             </div>
           </div>
@@ -162,7 +162,7 @@ export function HighwayHustleModeModal({
             )}
           >
             <Play className="h-4 w-4 fill-current" />
-            {pendingMode ? `Start — ${pendingMode.name}` : "Select a mission to start"}
+            {pendingMode ? `Start: ${pendingMode.name}` : "Select a mission to start"}
           </button>
         </div>
       </motion.div>

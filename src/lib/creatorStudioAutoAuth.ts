@@ -24,7 +24,7 @@ function safeSet(key: string, value: string | null | undefined) {
     if (value?.trim()) localStorage.setItem(key, value.trim());
     else localStorage.removeItem(key);
   } catch {
-    // localStorage unavailable — ignore
+    // localStorage unavailable, ignore
   }
 }
 

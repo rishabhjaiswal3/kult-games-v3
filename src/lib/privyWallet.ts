@@ -87,7 +87,7 @@ export function isEmbeddedPrivyConnectedWallet(wallet: ConnectedWallet | undefin
 
 /**
  * Sign a SIWE message via Privy's wallet API.
- * Embedded wallets must use `wallet.sign` — routing through `window.ethereum` / personal_sign
+ * Embedded wallets must use `wallet.sign`, routing through `window.ethereum` / personal_sign
  * often hangs or returns 4100 when browser wallet extensions are installed.
  */
 export async function signMessageWithPrivyWallet(

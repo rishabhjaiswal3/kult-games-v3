@@ -95,7 +95,7 @@ function agentTheme(name: string) {
   return AGENT_THEME[name] ?? AGENT_THEME.HYBRID;
 }
 
-/** Session tile color themes — practice / quali / race / sprint each get their own look. */
+/** Session tile color themes, practice / quali / race / sprint each get their own look. */
 function sessionTileTheme(sessionType: string, status: string, isNext: boolean) {
   if (status === "LIVE" || isNext) {
     return {
@@ -578,7 +578,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
               </span>
             </button>
 
-            {/* Agents — horizontal scroll */}
+            {/* Agents, horizontal scroll */}
             <div>
               <p className="mb-2 font-tech text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
                 AI agents
@@ -628,7 +628,7 @@ function LeagueEventBanner({ weekend, onPickClick }: { weekend: F1GrandPrixWeeke
               {circuitName}
             </p>
             <p className="mt-3 max-w-md text-[13px] leading-snug text-white/55">
-              Elite AI agents. Your picks. Beat the field on Spa —
+              Elite AI agents. Your picks. Beat the field on Spa:
               build a team, lock predictions, win rewards.
             </p>
           </div>
@@ -892,7 +892,7 @@ function QuestionsSection() {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Race prediction questions</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Polymarket-style reads — lock in before lights out</p>
+          <p className="mt-0.5 text-[11px] text-white/45">Polymarket-style reads, lock in before lights out</p>
         </div>
         <span className="inline-flex items-center gap-2 font-tech text-[9px] uppercase tracking-widest text-violet-300/80">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
@@ -1149,7 +1149,7 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
             </>
           ) : (
             <span className="mt-1.5 inline-flex items-center rounded border border-white/10 bg-white/[0.03] px-2 py-0.5 font-tech text-xs font-bold uppercase tracking-wider text-white/40">
-              Pending — settles after the race
+              Pending, settles after the race
             </span>
           )}
           {activePick.reasoning ? <p className="mt-1.5 font-mono text-sm italic leading-relaxed text-white/50">&ldquo;{activePick.reasoning}&rdquo;</p> : null}
@@ -1176,7 +1176,7 @@ function MakeYourPickSection({ raceId, onOpenDriver }: { raceId: string | undefi
             {predictMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             {predictMutation.isPending ? "AI is deciding…" : "Let AI predict"}
           </button>
-          {predictMutation.isError ? <p className="mt-2 text-sm text-rose-400">AI prediction failed — try again.</p> : null}
+          {predictMutation.isError ? <p className="mt-2 text-sm text-rose-400">AI prediction failed, try again.</p> : null}
         </div>
       )}
     </section>
@@ -1279,7 +1279,7 @@ function FantasyTeamSection({ season, onOpenDriver }: { season: number | undefin
           {draftMutation.isPending ? "AI is drafting…" : "AI drafts my team"}
         </button>
       )}
-      {draftMutation.isError ? <p className="mt-2 text-xs text-rose-400">Draft failed — try again.</p> : null}
+      {draftMutation.isError ? <p className="mt-2 text-xs text-rose-400">Draft failed, try again.</p> : null}
 
       {leaderboard && leaderboard.length > 0 ? (
         <div className="mt-4">
@@ -1321,7 +1321,7 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h3 className="font-tech text-sm font-black uppercase tracking-[0.14em] text-white">Top drivers this season</h3>
-          <p className="mt-0.5 text-[11px] text-white/45">Live standings — tap a driver for an AI prediction</p>
+          <p className="mt-0.5 text-[11px] text-white/45">Live standings, tap a driver for an AI prediction</p>
         </div>
       </div>
       {isLoading ? (
@@ -1331,7 +1331,7 @@ function TopDriversSection({ drivers, isLoading, onSelectDriver }: { drivers: F1
           ))}
         </div>
       ) : top.length === 0 ? (
-        <p className="font-mono text-xs text-white/40">Drivers not synced yet — trigger POST /v1/f1/sync.</p>
+        <p className="font-mono text-xs text-white/40">Drivers not synced yet, trigger POST /v1/f1/sync.</p>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {top.map((driver, i) => {
@@ -1485,7 +1485,7 @@ function DriverLeaderboardSection({ drivers, isLoading, onSelectDriver }: { driv
           ))}
         </div>
       ) : ranked.length === 0 ? (
-        <p className="font-mono text-xs text-white/40">Standings not synced yet — trigger POST /v1/f1/sync.</p>
+        <p className="font-mono text-xs text-white/40">Standings not synced yet, trigger POST /v1/f1/sync.</p>
       ) : (
         <div className="h-[360px] overflow-y-auto pr-1 scrollbar-market sm:h-[400px]">
           <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-3 lg:grid-cols-3">

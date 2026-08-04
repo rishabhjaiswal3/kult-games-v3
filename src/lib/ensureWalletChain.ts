@@ -48,7 +48,7 @@ export async function ensureWalletOnAllowedChain(
   });
 }
 
-/** Same as warzonewarrior LoginModal — switch via injected provider (most reliable). */
+/** Same as warzonewarrior LoginModal, switch via injected provider (most reliable). */
 export async function switchAppChainViaInjectedProvider(
   chain = getAllowedChainFromEnv()
 ): Promise<void> {

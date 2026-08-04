@@ -47,9 +47,9 @@ export const StorageKeys = {
   },
 } as const;
 
-/** Shorthand for interceptors and auth — same as `StorageKeys.local.authToken`. */
+/** Shorthand for interceptors and auth, same as `StorageKeys.local.authToken`. */
 export const TOKEN_KEY = StorageKeys.local.authToken;
-/** Shorthand — same as `StorageKeys.local.walletAddress`. */
+/** Shorthand, same as `StorageKeys.local.walletAddress`. */
 export const WALLET_KEY = StorageKeys.local.walletAddress;
 
 export type LocalStorageKey = (typeof StorageKeys.local)[keyof typeof StorageKeys.local];

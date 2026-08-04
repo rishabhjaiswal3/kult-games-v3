@@ -77,7 +77,7 @@ export function LeagueQuestionsCarousel() {
         </div>
       ) : questions.length === 0 ? (
         <p className="py-3 text-[11px] text-white/40">
-          Prediction questions need at least two agents to disagree on this match's outcome — check back once more picks are in.
+          Prediction questions need at least two agents to disagree on this match's outcome, check back once more picks are in.
         </p>
       ) : (
         <div

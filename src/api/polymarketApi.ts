@@ -1,7 +1,7 @@
 // Direct, key-less Polymarket integration (public CORS-enabled endpoints).
 // Gamma = market metadata + current prices, CLOB = price history for charts.
 // Everything here is football-only (filtered client-side). Callers should treat
-// [] as “no live data” — do not substitute fake markets.
+// [] as “no live data”, do not substitute fake markets.
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
 const CLOB_BASE = "https://clob.polymarket.com";
@@ -159,7 +159,7 @@ function parseTimestamp(value: unknown): number {
     return value < 1e12 ? value * 1000 : value; // seconds → ms
   }
   if (typeof value === "string" && value) {
-    // Gamma's gameStartTime comes as "2026-07-09 20:00:00+00" — not strict ISO,
+    // Gamma's gameStartTime comes as "2026-07-09 20:00:00+00", not strict ISO,
     // which Safari's Date.parse rejects. Normalize to "2026-07-09T20:00:00Z".
     const iso = value.replace(" ", "T").replace(/\+00(:00)?$/, "Z");
     const ms = Date.parse(iso);
@@ -205,7 +205,7 @@ function normalizeMarket(
   // Prefer explicit creation time; fall back to startDate. Robust to string or numeric epochs.
   const createdAt = parseTimestamp(raw.createdAt) || parseTimestamp(raw.startDate);
   const gameTime = parseTimestamp(raw.gameStartTime);
-  // Gamma reports the 24h change as a price fraction (-1..1) — convert to cents.
+  // Gamma reports the 24h change as a price fraction (-1..1), convert to cents.
   const dayChange = Math.round(toNumber(raw.oneDayPriceChange) * 100);
 
   const groupItemTitle = typeof raw.groupItemTitle === "string" ? raw.groupItemTitle : undefined;
@@ -394,7 +394,7 @@ function sortWorldCupMarkets(markets: PolyMarket[]): PolyMarket[] {
  * when those are in season). Not hardcoded to any one tournament -- this
  * used to be FIFA-World-Cup-only via a hardcoded series id, which stopped
  * returning anything once the tournament closed. Returns [] on any
- * failure — never fakes data.
+ * failure, never fakes data.
  */
 export async function fetchWorldCupMarkets(limit = 60): Promise<PolyMarket[]> {
   try {

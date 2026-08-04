@@ -45,7 +45,7 @@ export const MOMENT_MEDIA_LIMITS = {
 
 /** Client-side image optimization before presigned upload. */
 export const MOMENT_IMAGE_COMPRESS = {
-  /** Moment cards + social previews — keep under 1000px long edge. */
+  /** Moment cards + social previews, keep under 1000px long edge. */
   maxLongEdgePx: 960,
   /** Smallest long edge tried before giving up on the 500 KB cap. */
   minLongEdgePx: 520,
@@ -74,13 +74,13 @@ export const MOMENT_FILE_INPUT_ACCEPT = MOMENT_ACCEPTED_MIME_TYPES.join(",");
 
 export const MOMENTS_QUERY_KEY_ROOT = "moments" as const;
 
-/** Query param on `/moments` — `?create=true` opens the create-moment dialog. */
+/** Query param on `/moments`, `?create=true` opens the create-moment dialog. */
 export const MOMENTS_CREATE_QUERY_PARAM = "create" as const;
 
-/** Completed AI Arena battle — pre-fills trash-talk moment when paired with `?create=true`. */
+/** Completed AI Arena battle, pre-fills trash-talk moment when paired with `?create=true`. */
 export const MOMENTS_BATTLE_ID_QUERY_PARAM = "battleId" as const;
 
-/** Optional — disambiguates which of the user's agents fought in the battle. */
+/** Optional, disambiguates which of the user's agents fought in the battle. */
 export const MOMENTS_MY_AGENT_ID_QUERY_PARAM = "myAgentId" as const;
 
 /** Arena game id for trash-talk prefill (`warzone` | `robowar` | `highway-hustle`). */
@@ -97,7 +97,7 @@ export function isMomentsCreateQueryOpen(value: string | null): boolean {
 
 /** Moments routes use the main AppShell scroll. Nested scroll was locking the
  *  page (`xl:overflow-hidden`) while browse/hub didn't always get a working
- *  inner scroller — leaving the moments grid clipped and unscrollable. */
+ *  inner scroller, leaving the moments grid clipped and unscrollable. */
 export function usesMomentsInternalScroll(_pathname: string): boolean {
   return false;
 }

@@ -10,7 +10,7 @@ const WORDMARK_PATH =
 const MARK_PATH =
   "M42.76 24.28V0L0 12.04v28.93l42.76 12.04V24.27zm-4.13-1.16V5.42L7.21 14.27zm-3.08 3.39L4.14 17.66v17.69l31.42-8.85zM7.21 38.75l31.42 8.85V29.89L7.21 38.74v.02z";
 
-/** Just the cube mark — use for compact spots (tabs, badges, favicons). */
+/** Just the cube mark, use for compact spots (tabs, badges, favicons). */
 export function PolymarketMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 42.76 53.01" fill="currentColor" className={className} aria-hidden="true">

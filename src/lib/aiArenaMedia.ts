@@ -1,4 +1,4 @@
-/** Lazy-loaded AI Arena media — keeps heavy mp4s out of the initial page chunk. */
+/** Lazy-loaded AI Arena media, keeps heavy mp4s out of the initial page chunk. */
 export const aiArenaMedia = {
   hybrid: () => import("@/assets/hybrid.mp4"),
   defender: () => import("@/assets/defender.mp4"),

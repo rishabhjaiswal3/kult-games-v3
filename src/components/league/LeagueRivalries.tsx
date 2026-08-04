@@ -24,7 +24,7 @@ export function LeagueRivalries() {
       {isLoading ? (
         <div className="mt-4 skeleton h-32 w-full rounded-lg" />
       ) : !rivalry ? (
-        <p className="mt-4 text-xs text-white/40">No rivalries have formed yet this season — check back after a few repeat matchups.</p>
+        <p className="mt-4 text-xs text-white/40">No rivalries have formed yet this season, check back after a few repeat matchups.</p>
       ) : (
         <>
           <div className="mt-4 flex items-center justify-between gap-3">

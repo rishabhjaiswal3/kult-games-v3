@@ -1,7 +1,7 @@
 /**
- * WarzoneWaveGamePage — Full-screen Warzone Wave survival battle experience.
+ * WarzoneWaveGamePage, Full-screen Warzone Wave survival battle experience.
  *
- * Win condition: SURVIVAL — first AI fighter to die loses.
+ * Win condition: SURVIVAL, first AI fighter to die loses.
  * If both survive the 60-second timer, higher HP remaining wins.
  *
  * winnerCoins / loserCoins in the payload carry HP-remaining values
@@ -51,7 +51,7 @@ import type {
 } from "@/types/aiArenaGateway";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Config — same build URL as Warzone Warriors
+// Config, same build URL as Warzone Warriors
 // ─────────────────────────────────────────────────────────────────────────────
 
 const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
@@ -458,7 +458,7 @@ function UnityLoadingScreen({
           <p className="text-center font-mono text-[9px] text-white/25 mt-2">
             {progress === 0
               ? "Connecting to 0G network…"
-              : `Loading game assets — ${progress}%`}
+              : `Loading game assets: ${progress}%`}
           </p>
         </div>
       </div>
@@ -993,7 +993,7 @@ function ArenaBattleDrawer({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Wave Co-op Result Overlay — coin-based, shown when Unity fires waveCoopBattleEnd
+// Wave Co-op Result Overlay, coin-based, shown when Unity fires waveCoopBattleEnd
 // ─────────────────────────────────────────────────────────────────────────────
 
 function WaveCoopResultOverlay({
@@ -1366,7 +1366,7 @@ export default function WarzoneWaveGamePage() {
     });
   }, [applyAudioMute]);
 
-  // Load Unity — writes WAVECOOP mode into arenaBattlePayload so Unity activates wave co-op
+  // Load Unity, writes WAVECOOP mode into arenaBattlePayload so Unity activates wave co-op
   useEffect(() => {
     if (!battleId || !UNITY_BASE_URL) return;
     if (myAgentQ.isLoading || opponentQ.isLoading) return;
@@ -1418,7 +1418,7 @@ export default function WarzoneWaveGamePage() {
 
       const stuckTimer = setTimeout(() => {
         if (!unityInstanceRef.current) {
-          console.warn("[WaveGame] Unity stuck at 0% — R2 rate-limit stall.");
+          console.warn("[WaveGame] Unity stuck at 0%, R2 rate-limit stall.");
           setUnityLoadError('slow');
         }
       }, 90_000);
@@ -1499,7 +1499,7 @@ export default function WarzoneWaveGamePage() {
 
       const bid = detail.battleId;
       if (!bid) {
-        console.warn("[WaveGame] waveCoopBattleEnd — no battleId in payload.");
+        console.warn("[WaveGame] waveCoopBattleEnd, no battleId in payload.");
         return;
       }
 
@@ -1597,7 +1597,7 @@ export default function WarzoneWaveGamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pre-match overlay — arenaMultiplayerStart fires same as Warzone Warriors
+  // Pre-match overlay, arenaMultiplayerStart fires same as Warzone Warriors
   useEffect(() => {
     const MAP_DURATIONS: Record<string, number> = { "1": 10, "2": 15, "3": 17 };
     const handler = (e: Event) => {
@@ -1653,7 +1653,7 @@ export default function WarzoneWaveGamePage() {
     if (!status) return;
 
     if ((status === "PENDING" || status === "INITIALIZING") && prev === null)
-      addSystem("⏳  Wave battle created — arena loading…");
+      addSystem("⏳  Wave battle created, arena loading…");
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS")
       addSystem("⚔️  Wave battle is LIVE! Agents are fighting enemy waves.");
     if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {

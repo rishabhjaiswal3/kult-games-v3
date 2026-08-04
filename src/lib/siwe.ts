@@ -10,7 +10,7 @@ export function buildSiweMessage(address: string, nonce: string): string {
     `${domain} wants you to sign in with your Ethereum account:`,
     address,
     "",
-    "Sign in to Kult Games — your on-chain gaming identity.",
+    "Sign in to Kult Games, your on-chain gaming identity.",
     "",
     `URI: ${uri}`,
     "Version: 1",

@@ -166,7 +166,7 @@ const GamePlay = () => {
   }
 
   const gameTitle = selectedMode
-    ? `Highway Hustle — ${selectedMode.name}`
+    ? `Highway Hustle: ${selectedMode.name}`
     : typeof game.name === "string"
       ? game.name
       : game.name?.en ?? Object.values(game.name ?? {})[0] ?? "Game";

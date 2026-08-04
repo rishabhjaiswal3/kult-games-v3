@@ -108,7 +108,7 @@ function buildOptimisticClaimResponse(
   return { ...nextState, claimedDay: day };
 }
 
-/** Daily login rewards — day 1 legacy status comes from the My Agents API when no DB record exists. */
+/** Daily login rewards, day 1 legacy status comes from the My Agents API when no DB record exists. */
 export function useDailyRewards() {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
@@ -161,7 +161,7 @@ export function useDailyRewards() {
       needsLegacyDay1Claim(hasGenesisAgent, rewardsQ.data, state);
     const dayToClaim = state?.currentDay ?? 1;
 
-    // Temporary: Day 6 Highway Hustle — show claimed immediately; skip backend grant call.
+    // Temporary: Day 6 Highway Hustle, show claimed immediately; skip backend grant call.
     if (!legacyDay1 && dayToClaim === OPTIMISTIC_DAILY_REWARD_DAY && state) {
       const response = buildOptimisticClaimResponse(state, OPTIMISTIC_DAILY_REWARD_DAY);
       queryClient.setQueryData(DAILY_REWARDS_QUERY_KEY, response);

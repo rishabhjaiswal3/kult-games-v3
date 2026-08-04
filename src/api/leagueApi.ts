@@ -4,7 +4,7 @@ import { getApiClient } from "@/lib/apiClientFactory";
 /**
  * Client for `/v1/league/*` on the AI Arena gateway (services/league-service
  * in the 0g-AIArena repo). Types mirror that service's DTOs exactly
- * (services/league-service/src/types/dto.types.ts) — kept in sync manually
+ * (services/league-service/src/types/dto.types.ts), kept in sync manually
  * since the two repos don't share a types package.
  */
 const http = () => getApiClient("aiArenaGateway");
@@ -151,7 +151,7 @@ export interface LineupRow {
   balanceArena: number;
 }
 
-/** POST /v1/league/predictions/:matchId/:agentId/generate response — the actual LeaguePrediction row. */
+/** POST /v1/league/predictions/:matchId/:agentId/generate response, the actual LeaguePrediction row. */
 export interface GeneratedPrediction {
   agentId: string;
   winner: PredictionOutcome;
@@ -223,25 +223,25 @@ export interface AgentPredictionPerformance {
 }
 
 export const leagueApi = {
-  /** GET /v1/league/me/summary — auth required. Powers the KP week-progress sidebar. */
+  /** GET /v1/league/me/summary, auth required. Powers the KP week-progress sidebar. */
   getMeSummary: async (): Promise<MeSummary> => {
     const { data } = await http().get<MeSummary>("/v1/league/me/summary");
     return data;
   },
 
-  /** GET /v1/league/matches/featured — public. Returns null if no featured match is live/scheduled yet. */
+  /** GET /v1/league/matches/featured, public. Returns null if no featured match is live/scheduled yet. */
   getFeaturedMatch: async (): Promise<MatchSummary | null> => getOrNull<MatchSummary>("/v1/league/matches/featured"),
 
-  /** GET /v1/league/matches/:matchId — public, includes derived prediction questions + agent bets. */
+  /** GET /v1/league/matches/:matchId, public, includes derived prediction questions + agent bets. */
   getMatchDetail: async (matchId: string): Promise<MatchDetail> => {
     const { data } = await http().get<MatchDetail>(`/v1/league/matches/${encodeURIComponent(matchId)}`);
     return data;
   },
 
   /**
-   * POST /v1/league/predictions/:matchId/:agentId/generate — auth required, must own agentId.
+   * POST /v1/league/predictions/:matchId/:agentId/generate, auth required, must own agentId.
    * Triggers the agent's AI to generate (or return its existing) prediction for this match,
-   * and returns the actual prediction — server always returns the full row, whether newly
+   * and returns the actual prediction, server always returns the full row, whether newly
    * generated or already existing.
    * Rate-limited server-side to 5/min per user.
    */
@@ -252,13 +252,13 @@ export const leagueApi = {
     return data;
   },
 
-  /** GET /v1/league/agents/:agentId/predictions — public. Real football prediction track record for one agent. */
+  /** GET /v1/league/agents/:agentId/predictions, public. Real football prediction track record for one agent. */
   getAgentPredictionPerformance: async (agentId: string): Promise<AgentPredictionPerformance> => {
     const { data } = await http().get<AgentPredictionPerformance>(`/v1/league/agents/${encodeURIComponent(agentId)}/predictions`);
     return data;
   },
 
-  /** GET /v1/league/matches?status=&stage=&page=&limit= — public. */
+  /** GET /v1/league/matches?status=&stage=&page=&limit=, public. */
   listMatches: async (params: {
     status?: LeagueMatchStatus;
     stage?: LeagueStage;
@@ -269,46 +269,46 @@ export const leagueApi = {
     return { matches: data.matches ?? [], total: data.total ?? 0 };
   },
 
-  /** GET /v1/league/predictions/today?limit= — public. */
+  /** GET /v1/league/predictions/today?limit=, public. */
   getTodayPredictions: async (limit = 10): Promise<TodayPrediction[]> => {
     const { data } = await http().get<TodayPrediction[]>("/v1/league/predictions/today", { params: { limit } });
     return data ?? [];
   },
 
-  /** GET /v1/league/me/predictions?limit= — auth required. Settled predictions only. */
+  /** GET /v1/league/me/predictions?limit=, auth required. Settled predictions only. */
   getMyRecentPicks: async (limit = 10): Promise<RecentPick[]> => {
     const { data } = await http().get<RecentPick[]>("/v1/league/me/predictions", { params: { limit } });
     return data ?? [];
   },
 
-  /** GET /v1/league/rivalries/featured — optional auth (prefers the caller's own rivalry). Returns null if none exists yet. */
+  /** GET /v1/league/rivalries/featured, optional auth (prefers the caller's own rivalry). Returns null if none exists yet. */
   getFeaturedRivalry: async (): Promise<Rivalry | null> => getOrNull<Rivalry>("/v1/league/rivalries/featured"),
 
-  /** GET /v1/league/me/agents — auth required. The caller's League-enrolled agents (a.k.a. "Your Lineup"). */
+  /** GET /v1/league/me/agents, auth required. The caller's League-enrolled agents (a.k.a. "Your Lineup"). */
   getMyLineup: async (): Promise<LineupRow[]> => {
     const { data } = await http().get<LineupRow[]>("/v1/league/me/agents");
     return data ?? [];
   },
 
-  /** GET /v1/league/battles/open?limit= — public. Pending agent-vs-agent prediction battles. */
+  /** GET /v1/league/battles/open?limit=, public. Pending agent-vs-agent prediction battles. */
   getOpenBattles: async (limit = 10): Promise<OpenBattle[]> => {
     const { data } = await http().get<OpenBattle[]>("/v1/league/battles/open", { params: { limit } });
     return data ?? [];
   },
 
-  /** POST /v1/league/battles — auth required, must own challengerAgentId. Rate-limited server-side to 10/min. */
+  /** POST /v1/league/battles, auth required, must own challengerAgentId. Rate-limited server-side to 10/min. */
   createBattle: async (input: { matchId: string; challengerAgentId: string; opponentAgentId: string; stakeArena: number }): Promise<OpenBattle> => {
     const { data } = await http().post<OpenBattle>("/v1/league/battles", input);
     return data;
   },
 
-  /** POST /v1/league/battles/:id/accept — auth required, must own the battle's opponentAgentId. */
+  /** POST /v1/league/battles/:id/accept, auth required, must own the battle's opponentAgentId. */
   acceptBattle: async (battleId: string): Promise<OpenBattle> => {
     const { data } = await http().post<OpenBattle>(`/v1/league/battles/${encodeURIComponent(battleId)}/accept`);
     return data;
   },
 
-  /** GET /v1/league/leaderboard?scope=global — public. Reputation-ranked, no tribe filter. */
+  /** GET /v1/league/leaderboard?scope=global, public. Reputation-ranked, no tribe filter. */
   getGlobalLeaderboard: async (limit = 50): Promise<ReputationLeaderboardRow[]> => {
     const { data } = await http().get<ReputationLeaderboardRow[]>("/v1/league/leaderboard", {
       params: { scope: "global", limit },
@@ -316,7 +316,7 @@ export const leagueApi = {
     return data ?? [];
   },
 
-  /** GET /v1/league/leaderboard?scope=faction&tribe= — public. */
+  /** GET /v1/league/leaderboard?scope=faction&tribe=, public. */
   getFactionLeaderboard: async (tribe: LeagueTribe, limit = 50): Promise<ReputationLeaderboardRow[]> => {
     const { data } = await http().get<ReputationLeaderboardRow[]>("/v1/league/leaderboard", {
       params: { scope: "faction", tribe, limit },
@@ -324,7 +324,7 @@ export const leagueApi = {
     return data ?? [];
   },
 
-  /** GET /v1/league/leaderboard?scope=weekly — public. KP-ranked. */
+  /** GET /v1/league/leaderboard?scope=weekly, public. KP-ranked. */
   getWeeklyKpLeaderboard: async (limit = 50): Promise<KpLeaderboardRow[]> => {
     const { data } = await http().get<KpLeaderboardRow[]>("/v1/league/leaderboard", {
       params: { scope: "weekly", limit },
@@ -332,7 +332,7 @@ export const leagueApi = {
     return data ?? [];
   },
 
-  /** GET /v1/league/moments?limit=&agentId= — public. */
+  /** GET /v1/league/moments?limit=&agentId=, public. */
   getMoments: async (limit = 10, agentId?: string): Promise<LeagueMoment[]> => {
     const { data } = await http().get<LeagueMoment[]>("/v1/league/moments", { params: { limit, agentId } });
     return data ?? [];

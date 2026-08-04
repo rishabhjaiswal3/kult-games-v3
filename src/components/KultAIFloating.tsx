@@ -39,7 +39,7 @@ const KultAIFloating = () => {
 
   return (
     <>
-      {/* Floating launcher — gradient bezel + glass + ambient glow */}
+      {/* Floating launcher, gradient bezel + glass + ambient glow */}
       <AnimatePresence>
         {!open && (
           <motion.button

@@ -41,7 +41,7 @@ export function F1DriverModal({ driverId, onOpenChange }: F1DriverModalProps) {
       const result = await f1Api.getAiPrediction(driverId);
       setPrediction(result);
     } catch {
-      setPredictError("Couldn't generate a prediction right now — try again.");
+      setPredictError("Couldn't generate a prediction right now, try again.");
     } finally {
       setPredicting(false);
     }

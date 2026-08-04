@@ -116,7 +116,7 @@ export function ArenaJoinBattleModal({ open, onOpenChange, agents, onJoined }: A
                   {canJoin ? (
                     agents.map((agent) => (
                       <option key={agent.id} value={agent.id}>
-                        {agent.name} — ELO {agent.eloRating}
+                        {agent.name}, ELO {agent.eloRating}
                       </option>
                     ))
                   ) : (

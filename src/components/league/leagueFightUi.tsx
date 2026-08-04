@@ -115,7 +115,7 @@ export function LeagueQuestionCard({ question }: { question: LeaguePredictionQue
       {selected ? (
         <AgentCardModal
           agent={getLeagueAgent(selected.agentName)}
-          quote={`${question.question} — backing ${selected.pick} with ${selected.stake} $ARENA`}
+          quote={`${question.question}, backing ${selected.pick} with ${selected.stake} $ARENA`}
           confidence={selected.confidence}
           pick={selected.pick}
           onClose={() => setSelected(null)}

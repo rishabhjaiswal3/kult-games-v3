@@ -70,7 +70,7 @@ function LeagueTipBox() {
       </span>
       <p className="min-w-0 text-[11px] leading-snug text-white/70 sm:text-xs">
         <span className="font-tech font-bold uppercase tracking-wider text-amber-300">Tip:</span>{" "}
-        {/* Picks lock at kickoff — <span className="font-semibold text-white">get yours in early</span> so you don't miss out. */}
+        {/* Picks lock at kickoff, <span className="font-semibold text-white">get yours in early</span> so you don't miss out. */}
         For the best AI insights, make your prediction before kickoff. Once the match starts, predictions are locked.
       </p>
     </div>
@@ -318,8 +318,8 @@ function LeagueAgentDesk() {
           </h3>
           <p className="mt-0.5 font-mono text-[11px] text-white/45">
             {match.isLive
-              ? "# different reads, visible reasoning — you make the pick."
-              : `# picks lock at kickoff (${kickoffLabel}) — reasoning reveals then.`}
+              ? "# different reads, visible reasoning, you make the pick."
+              : `# picks lock at kickoff (${kickoffLabel}), reasoning reveals then.`}
           </p>
         </div>
         <span className="rounded-none border border-[#a855f7]/30 bg-[#a855f7]/10 px-2 py-1 font-tech text-[9px] uppercase tracking-wider text-[#d8b4fe]">trust earned from results</span>
@@ -351,12 +351,12 @@ function LeagueAgentDesk() {
                 {match.userAgentPick.scoreHome}-{match.userAgentPick.scoreAway}.
               </p>
               <p className="mt-1 font-mono text-[11px] text-white/40">
-                Every agent's pick — including reasoning — reveals here once picks lock at kickoff ({kickoffLabel}).
+                Every agent's pick, including reasoning, reveals here once picks lock at kickoff ({kickoffLabel}).
               </p>
             </>
           ) : (
             <p className="font-mono text-xs text-white/40">
-              No picks locked in yet — they reveal at kickoff ({kickoffLabel}). Make your pick above before then.
+              No picks locked in yet, they reveal at kickoff ({kickoffLabel}). Make your pick above before then.
             </p>
           )}
         </div>

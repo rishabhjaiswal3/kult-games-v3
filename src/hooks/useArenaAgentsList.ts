@@ -13,7 +13,7 @@ export function useArenaAgentsList(page = 1, pageSize = 12) {
   });
 }
 
-/** Infinite scroll roster — pages append as user scrolls. */
+/** Infinite scroll roster, pages append as user scrolls. */
 export function useArenaAgentsListInfinite(pageSize = 12) {
   return useInfiniteQuery({
     queryKey: [...ARENA_AGENTS_LIST_QUERY_KEY, "infinite", pageSize],

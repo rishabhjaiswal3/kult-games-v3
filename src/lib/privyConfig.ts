@@ -8,11 +8,11 @@ const canUseEmbeddedWallets =
   typeof window === "undefined" || window.isSecureContext;
 
 /**
- * Privy wallet SIWE is verified on auth.privy.io — only known chains (e.g. mainnet) pass.
+ * Privy wallet SIWE is verified on auth.privy.io, only known chains (e.g. mainnet) pass.
  * 0G (16661) in the SIWE message returns 422 `invalid_data`. Use mainnet for Privy login,
  * then switch the wallet to 0G after auth (see LoginModal). Kult backend SIWE uses 16661 separately.
  *
- * Note: createOnLogin only runs for Privy's built-in modal — whitelabel email/Google flows must
+ * Note: createOnLogin only runs for Privy's built-in modal, whitelabel email/Google flows must
  * call createWallet() after login (see AuthContext).
  */
 export function buildPrivyConfig(): PrivyClientConfig {

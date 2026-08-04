@@ -76,7 +76,7 @@ export function usePolymarketWithdraw() {
       setStatus("done");
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't withdraw — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't withdraw, try again.");
       setStatus("idle");
       throw err;
     }

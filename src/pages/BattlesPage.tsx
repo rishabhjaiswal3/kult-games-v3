@@ -1360,7 +1360,7 @@ const BattlesPage = () => {
                     {availableBattleAgents.length > 0 ? (
                       availableBattleAgents.map((agent) => (
                         <option key={agent.id} value={agent.id}>
-                          {agent.name} — ELO {agent.eloRating}
+                          {agent.name}, ELO {agent.eloRating}
                         </option>
                       ))
                     ) : (
@@ -1603,7 +1603,7 @@ const BattlesPage = () => {
                         {availableBattleAgents.length > 0 ? (
                           availableBattleAgents.map((agent) => (
                             <option key={agent.id} value={agent.id}>
-                              {agent.name} — ELO {agent.eloRating}
+                              {agent.name}, ELO {agent.eloRating}
                             </option>
                           ))
                         ) : (

@@ -5,7 +5,7 @@ import { polymarketSignalApi, type PolymarketSignal } from "@/api/polymarketSign
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
- * "Get my agent's read" for a Polymarket market — has your first enrolled
+ * "Get my agent's read" for a Polymarket market, has your first enrolled
  * agent generate its own AI signal (POST .../generate), same product
  * decision as League's "Make Pick": agents make the call, not a manual form.
  * No agent picker, same reasoning as useMakeLeaguePick.ts.
@@ -42,7 +42,7 @@ export function usePolymarketSignal() {
     } catch (err) {
       setErrorsByMarket((prev) => ({
         ...prev,
-        [marketId]: err instanceof Error ? err.message : "Couldn't get a read — try again.",
+        [marketId]: err instanceof Error ? err.message : "Couldn't get a read, try again.",
       }));
     } finally {
       setLoadingMarketId((current) => (current === marketId ? null : current));

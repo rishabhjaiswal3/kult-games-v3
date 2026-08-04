@@ -47,7 +47,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const siweInFlightByAddress = new Map<string, Promise<void>>();
 const SIGNING_WALLET_WAIT_MS = 45_000;
 const SIGNING_WALLET_POLL_MS = 250;
-/** Whitelabel email/Google login does not trigger createOnLogin — allow time for manual createWallet. */
+/** Whitelabel email/Google login does not trigger createOnLogin, allow time for manual createWallet. */
 const EMBEDDED_WALLET_PROVISION_TIMEOUT_MS = 90_000;
 const PERSONAL_SIGN_TIMEOUT_MS = 45_000;
 /** Hard cap for the full SIWE pipeline (nonce, sign, backend login). */
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const p = await playerApi.getProfile();
       setPlayer(p);
     } catch {
-      // token may be expired — interceptor clears it on 401
+      // token may be expired, interceptor clears it on 401
     }
   }, []);
 
@@ -187,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ready, authenticated, resolvedAddress, fetchProfile]);
 
-  // Privy session restored without a valid Kult token — disconnect fully (no auto SIWE).
+  // Privy session restored without a valid Kult token, disconnect fully (no auto SIWE).
   useEffect(() => {
     if (!ready || !authenticated || hasUserLoginIntent()) return;
 
@@ -202,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ready, authenticated, resolvedAddress, resetStalePrivySession]);
 
-  // Whitelabel email/Google (loginWithCode / OAuth) does not run createOnLogin — create embedded wallet ourselves.
+  // Whitelabel email/Google (loginWithCode / OAuth) does not run createOnLogin, create embedded wallet ourselves.
   useEffect(() => {
     if (!ready || !authenticated || resolvedAddress || !hasUserLoginIntent()) return;
     if (walletPreference !== "embedded") return;
@@ -239,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       requestOpenLoginModal({
         mode: "recover",
         message:
-          "We couldn't finish setting up your wallet. Please try again — your account was created and should work on retry.",
+          "We couldn't finish setting up your wallet. Please try again, your account was created and should work on retry.",
       });
     }, EMBEDDED_WALLET_PROVISION_TIMEOUT_MS);
 

@@ -8,7 +8,7 @@ export type LoginModalOpenRequest = {
 export type LoginMethod = "wallet" | "email" | "google";
 
 let pendingLoginModalRequest: LoginModalOpenRequest | null = null;
-/** Survives Google OAuth redirects — cleared on logout or SIWE end. */
+/** Survives Google OAuth redirects, cleared on logout or SIWE end. */
 const LOGIN_INTENT_SESSION_KEY = "kult_login_intent";
 const LOGIN_METHOD_SESSION_KEY = "kult_login_method";
 /** In-memory mirror for the current tab session. */

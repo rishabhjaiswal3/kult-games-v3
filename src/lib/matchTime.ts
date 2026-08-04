@@ -19,10 +19,15 @@ export function formatKickoffDisplay(kickoffAtIso: string): string {
 function formatCountdown(msRemaining: number): string {
   if (msRemaining <= 0) return "Locked";
   const totalSeconds = Math.floor(msRemaining / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return [hours, minutes, seconds].map((n) => String(n).padStart(2, "0")).join(":");
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
 }
 
 /** Live-ticking "HH:MM:SS" countdown to a real ISO kickoff timestamp, or "Locked" once it's passed. */

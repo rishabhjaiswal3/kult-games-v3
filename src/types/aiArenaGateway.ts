@@ -1,7 +1,7 @@
 export interface AiArenaLeaderboardEntry {
   rank: number;
   agentId: string;
-  /** ELO from Redis — gateway returns `score`. */
+  /** ELO from Redis, gateway returns `score`. */
   score: number;
   /** Enriched client-side from GET /v1/agents/:id */
   name?: string;
@@ -203,7 +203,7 @@ export interface AiArenaMatchmakingStatusBody {
   gameId?: string;
   mode?: string;
   joinedAt?: number;
-  /** Legacy / docs shape — not returned by current matchmaking-service. */
+  /** Legacy / docs shape, not returned by current matchmaking-service. */
   position?: number | null;
   estimatedWaitMs?: number | null;
   matchId?: string | null;
@@ -456,7 +456,7 @@ export interface AiArenaBattleCommentaryRequest {
   loserHpPercent:  number;
   durationSeconds: number;
   endReason:       string;
-  /** Game name hint — backend uses this to set commentary context. */
+  /** Game name hint, backend uses this to set commentary context. */
   gameName?:       string;
   /** When set, backend returns commentary from that fighter's perspective. */
   perspective?:    'WINNER' | 'LOSER';
@@ -562,7 +562,7 @@ export interface AiArenaEvolveTraitsResponse {
 // ── Training with battle data ─────────────────────────────────────────────────
 
 /**
- * Training data entry — one state-action pair derived from a battle.
+ * Training data entry, one state-action pair derived from a battle.
  * This is the JSONL format consumed by the 0G LoRA fine-tuning worker.
  */
 export interface AiArenaTrainingDataEntry {

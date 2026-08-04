@@ -23,7 +23,7 @@ export const TITLE_CONFIG: Record<TitleType, {
     badge: "GOLDEN FOUNDER",
     headline: "You're One of the Originals.",
     message:
-      "You believed in Kult before the world knew its name. This title is permanent — a mark of the founding few who built the foundation everyone else stands on.",
+      "You believed in Kult before the world knew its name. This title is permanent, a mark of the founding few who built the foundation everyone else stands on.",
     sub: "Held by fewer than 150 wallets in existence.",
     accentColor: "text-amber-300",
     border: "border-amber-400/40",
@@ -83,7 +83,7 @@ export function PlayerTitleModal({ open, titles, onClose }: PlayerTitleModalProp
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
 
-            {/* Title image — full width, no aspect ratio crop */}
+            {/* Title image, full width, no aspect ratio crop */}
             <div className="relative w-full overflow-hidden">
               <img
                 src={cfg.img}

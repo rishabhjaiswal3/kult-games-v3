@@ -99,7 +99,7 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
           }
         })
       );
-      // Only on first-ever agent creation per wallet — skip if modal was already shown
+      // Only on first-ever agent creation per wallet, skip if modal was already shown
       if (walletAddress && !hasTitleModalBeenShown(walletAddress)) {
         playerTitlesApi.getTitles(walletAddress).then((res) => {
           if (res.hasTitles && res.titles.length > 0) {
@@ -107,7 +107,7 @@ export function CreateAgentProvider({ children }: { children: ReactNode }) {
             setTitleModalTitles(res.titles);
             setTitleModalOpen(true);
           }
-        }).catch(() => {/* ignore — title check is non-critical */});
+        }).catch(() => {/* ignore, title check is non-critical */});
       }
     },
     [invalidateAfterCreate, queryClient, walletAddress]

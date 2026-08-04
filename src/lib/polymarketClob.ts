@@ -5,7 +5,7 @@ import { polygon } from "viem/chains";
 const CLOB_HOST = "https://clob.polymarket.com";
 
 /**
- * Builder Code (Polymarket's simplest attribution tier — a bare bytes32 code,
+ * Builder Code (Polymarket's simplest attribution tier, a bare bytes32 code,
  * no key/secret/passphrase). Set via VITE_POLYMARKET_BUILDER_CODE.
  *
  * We use @polymarket/clob-client-v2 (not the older @polymarket/clob-client)

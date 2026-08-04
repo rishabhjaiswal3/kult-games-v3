@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const RADIUS = 30;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-/** "18-2" -> { wins: 18, losses: 2 } — same record format leagueReadService.predictionRecord() produces. */
+/** "18-2" -> { wins: 18, losses: 2 }, same record format leagueReadService.predictionRecord() produces. */
 function parseRecord(record: string): { wins: number; losses: number } {
   const [wins, losses] = record.split("-").map((n) => parseInt(n, 10));
   return { wins: Number.isFinite(wins) ? wins : 0, losses: Number.isFinite(losses) ? losses : 0 };
@@ -46,7 +46,7 @@ export function LeagueWinRatePanel() {
           </div>
         </div>
       ) : totalPredictions === 0 ? (
-        <p className="text-xs text-white/40">No settled predictions yet — your win rate shows up here once picks start settling.</p>
+        <p className="text-xs text-white/40">No settled predictions yet, your win rate shows up here once picks start settling.</p>
       ) : (
         <div className="flex items-center gap-3.5">
           <div className="relative grid h-20 w-20 shrink-0 place-items-center">

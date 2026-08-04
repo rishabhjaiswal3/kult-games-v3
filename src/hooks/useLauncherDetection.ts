@@ -64,7 +64,7 @@ export function useLauncherDetection() {
         try {
           window.location.href = url;
         } catch {
-          // Some hardened browsers throw on non-http(s) schemes — the timer
+          // Some hardened browsers throw on non-http(s) schemes, the timer
           // will fire and the user will be shown the install prompt.
         }
       }),

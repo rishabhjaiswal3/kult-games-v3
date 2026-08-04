@@ -1,11 +1,11 @@
 /**
- * LauncherErrorView — shown when the launcher battle ends in an error,
+ * LauncherErrorView, shown when the launcher battle ends in an error,
  * timeout, or cancellation state.
  *
  * Generic enough to cover all non-success terminal phases:
- *   - "error"     — API / network failure
- *   - "timeout"   — launcher idle for > LAUNCHER_IDLE_TIMEOUT_MS
- *   - "cancelled" — battle.status === CANCELLED
+ *   - "error"    , API / network failure
+ *   - "timeout"  , launcher idle for > LAUNCHER_IDLE_TIMEOUT_MS
+ *   - "cancelled", battle.status === CANCELLED
  */
 
 import { AlertTriangle, Clock, XCircle, RefreshCw, ArrowLeft } from "lucide-react";
@@ -40,7 +40,7 @@ const PHASE_CONFIG: Partial<Record<LauncherPhase, ErrorConfig>> = {
     icon:        AlertTriangle,
     iconColor:   ACCENT,
     title:       "Something Went Wrong",
-    description: "An unexpected error occurred. This is usually a temporary network issue — retrying often resolves it.",
+    description: "An unexpected error occurred. This is usually a temporary network issue, retrying often resolves it.",
     borderColor: `${ACCENT}40`,
   },
 };

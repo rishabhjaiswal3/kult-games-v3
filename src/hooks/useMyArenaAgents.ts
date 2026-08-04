@@ -27,7 +27,7 @@ function hasCachedAiArenaIdentity(): boolean {
 
 /**
  * Loads agents for the signed-in AI Arena user.
- * Gateway may not expose GET /v1/agents/mine (404) — API layer falls back to /v1/auth/me + /v1/agents.
+ * Gateway may not expose GET /v1/agents/mine (404), API layer falls back to /v1/auth/me + /v1/agents.
  */
 export function useMyArenaAgents(page = 1, pageSize = 50) {
   const { isAuthenticated } = useAuth();

@@ -217,7 +217,7 @@ function attachX402AutoPay(client: AxiosInstance) {
       const { getStoredAiAgentInfo } = await import("@/lib/aiAgentStorage");
       const agentInfo = getStoredAiAgentInfo();
       if (!agentInfo?.agentId) {
-        console.warn("[x402] No agent ID in storage — cannot auto-pay");
+        console.warn("[x402] No agent ID in storage, cannot auto-pay");
         return Promise.reject(error);
       }
 

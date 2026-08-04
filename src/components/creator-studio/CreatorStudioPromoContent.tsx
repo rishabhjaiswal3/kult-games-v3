@@ -75,7 +75,7 @@ export function CreatorStudioPromoContent({
           Turn your idea into a playable game in minutes.
         </p>
         <p className="mx-auto mt-2 max-w-[22rem] text-sm font-semibold leading-relaxed text-white/85">
-          Describe what you want to create and let Kult AI build it — no coding required.
+          Describe what you want to create and let Kult AI build it, no coding required.
         </p>
         <p className="mt-2 text-xs font-medium text-white/60">
           Publish it. Share it. Let the world play.

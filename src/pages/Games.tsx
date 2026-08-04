@@ -242,7 +242,7 @@ const Games = () => {
             Play Today Build Forever
           </h1>
           <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
-            Every game on KULT connects to the AI Arena ecosystem — your agents play alongside you, and every match builds reputation.
+            Every game on KULT connects to the AI Arena ecosystem, your agents play alongside you, and every match builds reputation.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -311,7 +311,7 @@ const Games = () => {
         <div className="space-y-4">
           <DiscoverySection
             title="Continue playing"
-            subtitle={recentGameIds.length ? "Your recent worlds are waiting for you." : "Start a run — your recent games will appear here."}
+            subtitle={recentGameIds.length ? "Your recent worlds are waiting for you." : "Start a run, your recent games will appear here."}
             icon={Clock3}
             accent="#00e5ff"
             games={continuePlayingGames}

@@ -6,7 +6,7 @@
  * `south_korea.png`). We glob them all in eagerly so a live team-name string from
  * the fixtures API can be resolved to its flag URL without 48 hand-written imports.
  *
- * Use `flagUrlFor(teamName)` — it returns `undefined` for anything we don't have
+ * Use `flagUrlFor(teamName)`, it returns `undefined` for anything we don't have
  * a flag for, so callers keep their existing CSS-gradient / initials fallback.
  */
 const files = import.meta.glob("../assets/League flags/*.png", {

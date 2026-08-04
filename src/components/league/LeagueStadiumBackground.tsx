@@ -10,7 +10,7 @@ type LeagueStadiumBackgroundProps = {
 };
 
 /**
- * Stadium broadcast backdrop — holds at 00:01 for 1s, then loops from there.
+ * Stadium broadcast backdrop, holds at 00:01 for 1s, then loops from there.
  */
 export function LeagueStadiumBackground({ clean = false }: LeagueStadiumBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);

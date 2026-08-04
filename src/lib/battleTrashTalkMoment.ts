@@ -21,7 +21,7 @@ export type BattleTrashTalkDraft = {
   imageFile: File;
   previewUrl: string;
   outcome: BattleOutcome;
-  /** Battle still in progress — commentary will be filled when the match ends. */
+  /** Battle still in progress, commentary will be filled when the match ends. */
   pendingCommentary?: boolean;
 };
 
@@ -199,9 +199,9 @@ function fallbackCommentary(
   config: ArenaTrashTalkGameConfig,
 ): string {
   if (outcome === "WIN") {
-    return `${participant.name} dominated ${opponent.name} in a ${durationSeconds}s ${config.clashNoun} — victory secured.`;
+    return `${participant.name} dominated ${opponent.name} in a ${durationSeconds}s ${config.clashNoun}, victory secured.`;
   }
-  return `${participant.name} fell to ${opponent.name} after a ${durationSeconds}s ${config.clashNoun} — the trash talk writes itself.`;
+  return `${participant.name} fell to ${opponent.name} after a ${durationSeconds}s ${config.clashNoun}, the trash talk writes itself.`;
 }
 
 function buildTrashTalkTags(outcome: BattleOutcome, config: ArenaTrashTalkGameConfig): string[] {

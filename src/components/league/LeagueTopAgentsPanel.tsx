@@ -82,7 +82,7 @@ export function LeagueTopAgentsPanel() {
       {selected ? (
         <AgentCardModal
           agent={getLeagueAgent(selected.agentName)}
-          quote={`${selected.record} this week with a ${selected.streak}W streak — ${selected.reputation.toLocaleString()} reputation on the board`}
+          quote={`${selected.record} this week with a ${selected.streak}W streak, ${selected.reputation.toLocaleString()} reputation on the board`}
           quoteLabel="This week"
           confidence={winRate(selected.record)}
           confidenceLabel="Win rate"

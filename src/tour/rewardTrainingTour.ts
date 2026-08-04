@@ -64,7 +64,7 @@ export function startRewardTrainingTour(onOpenFundWallet: () => void) {
         popover: {
           title: "Fund your agent wallet",
           description:
-            "Training uses $ARENA from your on-chain wallet on 0G Chain. ARENA lives directly in your wallet — there is no deposit or withdrawal flow here. Tap Open wallet to view balance and activity.",
+            "Training uses $ARENA from your on-chain wallet on 0G Chain. ARENA lives directly in your wallet, there is no deposit or withdrawal flow here. Tap Open wallet to view balance and activity.",
           side: "bottom",
           align: "start",
         },

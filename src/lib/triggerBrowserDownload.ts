@@ -15,7 +15,7 @@ export function triggerBrowserDownload(fileUrl: string): void {
     const name = new URL(href).pathname.split("/").filter(Boolean).pop();
     if (name) a.setAttribute("download", name);
   } catch {
-    // Relative or opaque URL — omit download filename hint
+    // Relative or opaque URL, omit download filename hint
   }
 
   document.body.appendChild(a);

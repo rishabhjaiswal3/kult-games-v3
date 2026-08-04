@@ -75,7 +75,7 @@ export const ARENA_AGENT_ARCHETYPE_CARDS: ArenaAgentArchetypeCard[] = [
   {
     archetype: "HYBRID",
     codename: "Hybrid",
-    tagline: "Unpredictable — never the same fight twice.",
+    tagline: "Unpredictable, never the same fight twice.",
     role: "Adapt · Pivot · Meta-break",
     image: hybridPortrait,
     accent: "text-neon-magenta",

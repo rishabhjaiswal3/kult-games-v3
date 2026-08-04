@@ -40,7 +40,7 @@ export default function AccessLoginPage() {
     setIsSubmitting(true);
     try {
       await verifyCode(code);
-      // Land on home — the only page that does not require a tier feature.
+      // Land on home, the only page that does not require a tier feature.
       window.history.replaceState(null, "", "/");
     } catch (err) {
       setError(errorMessage(err));
@@ -114,29 +114,29 @@ export default function AccessLoginPage() {
         aria-hidden
       />
 
-      {/* Fog layer — wide horizontal bands flowing like air */}
+      {/* Fog layer, wide horizontal bands flowing like air */}
       <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
-        {/* Layer 1 — thick base fog, flows right, slowest */}
+        {/* Layer 1, thick base fog, flows right, slowest */}
         <div
           className="absolute bottom-[10%] left-0 h-32 w-[200%] rounded-full bg-white/30 blur-[80px]"
           style={{ animation: "flowR 18s linear infinite" }}
         />
-        {/* Layer 2 — flows left, slightly higher */}
+        {/* Layer 2, flows left, slightly higher */}
         <div
           className="absolute bottom-[18%] left-0 h-24 w-[200%] rounded-full bg-white/20 blur-[70px]"
           style={{ animation: "flowL 22s linear infinite 4s" }}
         />
-        {/* Layer 3 — thinner wisp, fast, flows right */}
+        {/* Layer 3, thinner wisp, fast, flows right */}
         <div
           className="absolute bottom-[28%] left-0 h-16 w-[200%] rounded-full bg-white/15 blur-[60px]"
           style={{ animation: "flowR2 14s linear infinite 2s" }}
         />
-        {/* Layer 4 — faint purple tint, flows left, tall band */}
+        {/* Layer 4, faint purple tint, flows left, tall band */}
         <div
           className="absolute bottom-[6%] left-0 h-40 w-[200%] rounded-full bg-purple-100/20 blur-[90px]"
           style={{ animation: "flowL 26s linear infinite 7s" }}
         />
-        {/* Layer 5 — very faint top wisp */}
+        {/* Layer 5, very faint top wisp */}
         <div
           className="absolute bottom-[35%] left-0 h-12 w-[200%] rounded-full bg-white/10 blur-[50px]"
           style={{ animation: "flowR 16s linear infinite 9s" }}
@@ -173,7 +173,7 @@ export default function AccessLoginPage() {
         <form onSubmit={handleSubmit} className="mt-8 w-full max-w-sm">
           <label className="sr-only" htmlFor="access-code">Access code</label>
 
-          {/* Input wrapper — glows white when focused */}
+          {/* Input wrapper, glows white when focused */}
           <div
             className="anim-input flex items-center gap-3 rounded-xl border bg-black/50 px-4 py-1 backdrop-blur-xl transition-all duration-300"
             style={{

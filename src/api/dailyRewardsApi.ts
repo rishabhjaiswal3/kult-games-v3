@@ -4,7 +4,7 @@ import { isRecord, unwrapApiData } from "@/api/utils";
 import type { ApiEnvelope } from "@/types/api";
 
 export interface DailyRewardsState {
-  /** The day (1-based) the user is currently on — next to claim, or the last day when completed. */
+  /** The day (1-based) the user is currently on, next to claim, or the last day when completed. */
   currentDay: number;
   claimedDays: number[];
   claimableToday: boolean;
@@ -78,7 +78,7 @@ export function mergeLegacyGenesisAgentState(
     return state;
   }
 
-  // No DB record yet — agent already exists from before rewards tracking.
+  // No DB record yet, agent already exists from before rewards tracking.
   if (!state.hasRecord) {
     return legacyGenesisPreview();
   }

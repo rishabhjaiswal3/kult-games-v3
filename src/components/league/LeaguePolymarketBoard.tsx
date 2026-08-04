@@ -221,10 +221,10 @@ function seedHistory(markets: BaseMarket[]): Record<string, number[]> {
   );
 }
 
-/** Live Polymarket football data — real prices, real 24h change and real chart
+/** Live Polymarket football data, real prices, real 24h change and real chart
  *  history (key-less & CORS-direct). Prices are never simulated: they re-anchor
  *  from Gamma on every poll. Shows empty/offline when the public API returns
- *  nothing — never swaps in hardcoded demo markets. */
+ *  nothing, never swaps in hardcoded demo markets. */
 function useLiveMarketData() {
   const [markets, setMarkets] = useState<BaseMarket[]>([]);
   const [source, setSource] = useState<MarketSource>("loading");
@@ -356,7 +356,7 @@ export function LeaguePolymarketBoard() {
         {liveMarkets.map((market) => <RealMarketCard key={market.id} market={market} highlighted={market.id === highlightedMarketId} />)}
         {liveMarkets.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/[0.025] p-6 text-center font-tech text-[11px] uppercase tracking-wider text-white/40 sm:col-span-2 lg:col-span-3">
-            Polymarket unreachable — no live markets to show
+            Polymarket unreachable, no live markets to show
           </div>
         ) : null}
       </div>
@@ -510,7 +510,7 @@ function WorldCupOddsHero() {
       const rx = W * 0.52;  // nearly full-width spread
       const ry = H * 0.60;  // tall so the arc has a nice curve
       const cx = W * 0.50;  // centered horizontally
-      const cy = H * 0.82;  // pushed down — only the top arc is visible
+      const cy = H * 0.82;  // pushed down, only the top arc is visible
 
       const next = orbitItems.map((_, i) => {
         const theta = angleRef.current + (i / count) * Math.PI * 2;
@@ -563,7 +563,7 @@ function WorldCupOddsHero() {
     <section className="relative h-full min-h-[260px] overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_18%_18%,rgba(125,151,255,0.14),transparent_36%),linear-gradient(180deg,#171f25,#11181d)] p-5 sm:min-h-[280px] sm:p-7 lg:min-h-[300px]">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" />
 
-      {/* 3D orbital carousel — flags orbit along an elliptical arc */}
+      {/* 3D orbital carousel, flags orbit along an elliptical arc */}
       <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         {orbitItems.map((outcome, i) => {
           const pos = positions[i];
@@ -703,7 +703,7 @@ function TradeReview({ agent, market, side, price, token }: { agent: string; mar
 const SIGNAL_CONFIDENCE_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
 
 /**
- * Real Polymarket market card — replaces the old MatchCard, which rendered
+ * Real Polymarket market card, replaces the old MatchCard, which rendered
  * from a fully fabricated MATCHES array (fake teams, fake prices, no real
  * Polymarket id) with no bearing on anything tradeable. This one takes a
  * real LiveMarket (real question, real price, real tokenId) from
@@ -797,7 +797,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
 
         {!isRealMarket ? (
           <p className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2.5 py-1.5 font-tech text-[9px] uppercase tracking-wider text-amber-300">
-            Preview data — Polymarket is unreachable right now, not a live tradeable market
+            Preview data, Polymarket is unreachable right now, not a live tradeable market
           </p>
         ) : null}
 
@@ -853,7 +853,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
         ) : null}
       </div>
 
-      {/* Real agent signal (docs/polymarket §5 Phase 2) — replaces the old mock "agent predictions" row */}
+      {/* Real agent signal (docs/polymarket §5 Phase 2), replaces the old mock "agent predictions" row */}
       <div className="relative mt-3 border-t border-white/10 pt-2.5">
         <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/35"># agent signal</p>
         {signal ? (
@@ -870,7 +870,7 @@ function RealMarketCard({ market, highlighted = false }: { market: LiveMarket; h
             type="button"
             disabled={loading || !isRealMarket}
             onClick={handleGetSignal}
-            title={!isRealMarket ? "Preview data — no real market to read" : undefined}
+            title={!isRealMarket ? "Preview data, no real market to read" : undefined}
             className="w-full rounded-md border border-[#2E5CFF]/40 bg-[#2E5CFF]/10 py-1.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#aebfff] transition hover:bg-[#2E5CFF]/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Reading market…" : "Get my agent's read"}
@@ -995,7 +995,7 @@ function TopAgentsBoard({ sidebar = false }: { sidebar?: boolean }) {
           {[0, 1, 2].map((i) => <div key={i} className="skeleton h-24 w-full rounded-xl" />)}
         </div>
       ) : !rows || rows.length === 0 ? (
-        <p className="py-4 text-center text-[11px] text-white/40">No ranked agents yet — check back once League picks start settling.</p>
+        <p className="py-4 text-center text-[11px] text-white/40">No ranked agents yet, check back once League picks start settling.</p>
       ) : (
       <div className={`grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 ${sidebar ? "" : "sm:grid-cols-3"}`}>
         {rows.map((row) => {
@@ -1111,7 +1111,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
     }
   }
 
-  // No real match-day data (e.g. offline fallback set) — keep the old panel.
+  // No real match-day data (e.g. offline fallback set), keep the old panel.
   if (matchMarkets.length === 0) return <TrendingMovers markets={markets} onSelect={onSelect} />;
 
   return (
@@ -1141,7 +1141,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
                     <span className="text-emerald-300">{liveScore.awayScore}</span> {liveScore.away}
                   </span>
                 ) : (
-                  <span>Match in progress — markets live</span>
+                  <span>Match in progress, markets live</span>
                 )}
               </span>
             ) : (
@@ -1497,7 +1497,7 @@ function FeaturedEventCard({ category }: { category: (typeof MARKET_CATEGORIES)[
     };
   }, [event]);
 
-  // Live event only — never substitute hardcoded demo outcomes.
+  // Live event only, never substitute hardcoded demo outcomes.
   if (!event) {
     return (
       <LeaguePanel fill={false} className="relative overflow-hidden border-[#2E5CFF]/30 bg-[#070911] p-4 sm:p-5" aria-busy={events.length === 0}>
@@ -1806,7 +1806,7 @@ function BoardViewTabs({ view, onChange, marketCount, newsCount }: { view: Board
 
   return (
     <div className="relative flex items-stretch rounded-xl border border-white/10 bg-[#070911]/80 p-1 backdrop-blur">
-      {/* Sliding highlight pill — adopts the active tab's accent color */}
+      {/* Sliding highlight pill, adopts the active tab's accent color */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-y-1 left-1 rounded-lg transition-all duration-300 ease-out"

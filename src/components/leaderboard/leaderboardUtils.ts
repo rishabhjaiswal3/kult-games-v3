@@ -23,7 +23,7 @@ export type DisplayPlayer = {
   wallet: string;
   isYou?: boolean;
   showHexagon?: boolean;
-  /** Raw ELO value — used to derive rank tier badge. */
+  /** Raw ELO value, used to derive rank tier badge. */
   eloRating?: number;
 };
 
@@ -92,7 +92,7 @@ function clanFromArenaClean(clan?: string | null): { name: string; type: string 
 function getLeaderboardAvatarByArchetype(archetype: string, agentId: string): string {
   const normalized = archetype.trim().toUpperCase();
   const card = ARENA_AGENT_ARCHETYPE_CARDS.find((c) => c.archetype === normalized);
-  // card.image is the animated asset (mp4/gif) — same as My Agents page
+  // card.image is the animated asset (mp4/gif), same as My Agents page
   if (card?.image) return card.image;
   // Fallback: stable jpg from pool (works in <img> tag)
   return getArenaAgentPortrait({ id: agentId, archetype });

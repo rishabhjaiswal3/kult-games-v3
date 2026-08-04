@@ -9,7 +9,7 @@ import { leagueApi, type MatchSummary } from "@/api/leagueApi";
 import { useMakeLeaguePick, toPickResult } from "@/hooks/useMakeLeaguePick";
 import { useAuth } from "@/contexts/AuthContext";
 
-/** Rough display-only confidence badge from a conviction tier — not authoritative scoring, just a UI label. */
+/** Rough display-only confidence badge from a conviction tier, not authoritative scoring, just a UI label. */
 const CONVICTION_PCT: Record<string, number> = { LOW: 60, MEDIUM: 75, HIGH: 90 };
 
 function LiveBadge() {
@@ -110,7 +110,7 @@ export function LeagueFeaturedBanner() {
 
   return (
     <section className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-[#a855f7]/40 shadow-[0_0_56px_rgba(168,85,247,0.15)]">
-      {/* Video only — no UI overlay (your design) */}
+      {/* Video only, no UI overlay (your design) */}
       <div className="relative aspect-video w-full min-w-0 max-w-full overflow-hidden sm:aspect-auto sm:h-[340px] md:h-[400px]">
         <LeagueStadiumBackground clean />
       </div>
@@ -123,7 +123,7 @@ export function LeagueFeaturedBanner() {
               Today&apos;s Featured Prediction
             </p>
             <p className="mt-2 text-sm text-white/50">
-              No featured match right now — check back closer to kickoff.
+              No featured match right now, check back closer to kickoff.
             </p>
           </div>
         ) : (
@@ -227,7 +227,7 @@ export function LeagueFeaturedBanner() {
                       {!hasConsensus ? (
                         <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-[#05050a]/75 backdrop-blur-[2px]">
                           <p className="px-3 text-center font-tech text-[9px] font-bold uppercase tracking-wider text-white/70 sm:text-[10px]">
-                            Consensus unavailable — waiting for agent picks
+                            Consensus unavailable, waiting for agent picks
                           </p>
                         </div>
                       ) : null}

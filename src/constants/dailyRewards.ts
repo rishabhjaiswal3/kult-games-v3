@@ -24,7 +24,7 @@ export type DailyRewardDef = {
   title: string;
   /** Small chip under the title, e.g. "Loyalty Reward". */
   tag: string;
-  /** Unlock-flavored copy — "you've unlocked X", never "go do X". */
+  /** Unlock-flavored copy, "you've unlocked X", never "go do X". */
   blurb: string;
   rarity: RewardRarity;
   accentHex: string;
@@ -51,7 +51,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     emoji: "🧠",
     title: "Free Training Jobs",
     tag: "Trainer Pack",
-    blurb: "You've unlocked free training runs — level up your agent's game sense at zero cost.",
+    blurb: "You've unlocked free training runs, level up your agent's game sense at zero cost.",
     rarity: "RARE",
     accentHex: "#22d3ee",
     img: trainingIcon,
@@ -62,7 +62,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     emoji: "⭐",
     title: "1,200 Kult Points",
     tag: "Loyalty Reward",
-    blurb: "You've unlocked 1,200 Kult Points — climb the leaderboard just for showing up.",
+    blurb: "You've unlocked 1,200 Kult Points, climb the leaderboard just for showing up.",
     rarity: "RARE",
     accentHex: "#c084fc",
   },
@@ -73,7 +73,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     imgFit: "contain",
     title: "Exclusive FAMAS Weapon Skin",
     tag: "Armory Exclusive",
-    blurb: "You've unlocked the exclusive FAMAS skin — gear that never hits the marketplace.",
+    blurb: "You've unlocked the exclusive FAMAS skin, gear that never hits the marketplace.",
     rarity: "EPIC",
     accentHex: "#f472b6",
   },
@@ -82,7 +82,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     emoji: "🧠",
     title: "Free Training Jobs",
     tag: "Trainer Pack",
-    blurb: "You've unlocked another round of free training runs — keep your agent sharpening.",
+    blurb: "You've unlocked another round of free training runs, keep your agent sharpening.",
     rarity: "RARE",
     accentHex: "#22d3ee",
     img: trainingIcon,
@@ -95,7 +95,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     imgFit: "contain",
     title: "Highway Hustle Muscle Car",
     tag: "Garage Drop",
-    blurb: "You've unlocked a muscle car for Highway Hustle — raw horsepower, added to your garage.",
+    blurb: "You've unlocked a muscle car for Highway Hustle, raw horsepower, added to your garage.",
     rarity: "EPIC",
     accentHex: "#fb7185",
   },
@@ -106,7 +106,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     img: tokenIcon,
     imgFit: "contain",
     tag: "League Bonus",
-    blurb: "You've unlocked 500 Arena Tokens — a full week of showing up, banked to your balance.",
+    blurb: "You've unlocked 500 Arena Tokens, a full week of showing up, banked to your balance.",
     rarity: "EPIC",
     accentHex: "#facc15",
   },
@@ -117,7 +117,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     imgFit: "contain",
     title: "3,000 Kult Points",
     tag: "Loyalty Reward",
-    blurb: "You've unlocked 3,000 Kult Points — loyalty pays, and the leaderboard knows it.",
+    blurb: "You've unlocked 3,000 Kult Points, loyalty pays, and the leaderboard knows it.",
     rarity: "RARE",
     accentHex: "#c084fc",
   },
@@ -126,7 +126,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     emoji: "🤖",
     title: "Free Autonomous Usage",
     tag: "Autopilot Pass",
-    blurb: "You've unlocked free autonomous usage — your agent competes for you while you're away.",
+    blurb: "You've unlocked free autonomous usage, your agent competes for you while you're away.",
     rarity: "EPIC",
     accentHex: "#34d399",
     img: autonomousAgent,
@@ -140,7 +140,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
     imgPosition: "top",
     title: "Free Agent Mint",
     tag: "Finale Drop",
-    blurb: "You've unlocked a second Free Agent Mint — complete the run, double your roster.",
+    blurb: "You've unlocked a second Free Agent Mint, complete the run, double your roster.",
     rarity: "LEGENDARY",
     accentHex: "#fbbf24",
   },
@@ -148,7 +148,7 @@ export const DAILY_REWARDS: DailyRewardDef[] = [
 
 export const TOTAL_REWARD_DAYS = DAILY_REWARDS.length;
 
-/** Day 6 Highway Hustle — optimistic frontend claim while HH grant API is unavailable. */
+/** Day 6 Highway Hustle, optimistic frontend claim while HH grant API is unavailable. */
 export const OPTIMISTIC_DAILY_REWARD_DAY = 6;
 
 export const MS_PER_REWARD_DAY = 86_400_000;

@@ -274,7 +274,7 @@ export function usePolymarketTrading() {
       setStatus("done");
       return result as { orderId?: string };
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't place that order — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't place that order, try again.");
       setStatus("idle");
       throw err;
     }

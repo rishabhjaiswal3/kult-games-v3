@@ -1,5 +1,5 @@
 /**
- * LauncherWaitingScreen — animated progress view shown while the desktop
+ * LauncherWaitingScreen, animated progress view shown while the desktop
  * launcher is running the match.
  *
  * Drives a stepped progress indicator from the live battle status polled
@@ -203,7 +203,7 @@ export function LauncherWaitingScreen({
               </TroubleshootItem>
               <TroubleshootItem title="Results not appearing?">
                 If the launcher closed unexpectedly, results may still upload. Wait up to
-                2 minutes — this page will update automatically.
+                2 minutes, this page will update automatically.
               </TroubleshootItem>
               <TroubleshootItem title="Match taking too long?">
                 If nothing happens after 10 minutes, close the launcher, come back here,

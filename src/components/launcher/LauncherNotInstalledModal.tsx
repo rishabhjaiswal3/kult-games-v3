@@ -1,5 +1,5 @@
 /**
- * LauncherNotInstalledModal — shown when the protocol open attempt times out
+ * LauncherNotInstalledModal, shown when the protocol open attempt times out
  * with no window blur, meaning the launcher is not installed.
  *
  * Shows step-by-step install instructions, a prominent download CTA,
@@ -21,7 +21,7 @@ const INSTALL_STEPS = [
 export function LauncherNotInstalledModal({
   onRetry,
 }: {
-  /** Called when the user clicks "I've installed it — try again". */
+  /** Called when the user clicks "I've installed it, try again". */
   onRetry: () => void;
 }) {
   const hasDownloadUrl = Boolean(LAUNCHER_DOWNLOAD_URL);
@@ -63,7 +63,7 @@ export function LauncherNotInstalledModal({
           <p className="font-mono text-[11px] leading-relaxed text-white/55">
             RoboWars is powered by Unreal Engine and requires the{" "}
             <span className="text-white font-bold">AI Arena Launcher</span> to run. It's a
-            free desktop app — install it once and launch any desktop game directly from
+            free desktop app, install it once and launch any desktop game directly from
             this page.
           </p>
         </div>
@@ -113,7 +113,7 @@ export function LauncherNotInstalledModal({
             <div
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/8 py-3.5 font-tech text-[10px] uppercase tracking-widest text-white/30"
             >
-              Download URL not configured — contact support
+              Download URL not configured, contact support
             </div>
           )}
 
@@ -123,7 +123,7 @@ export function LauncherNotInstalledModal({
             className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/12 bg-white/[0.05] py-3.5 font-tech text-[11px] uppercase tracking-widest text-white/60 hover:bg-white/[0.09] hover:text-white hover:border-white/20 transition"
           >
             <Rocket className="h-4 w-4 shrink-0" />
-            I've installed it — try again
+            I've installed it, try again
           </button>
 
           <p className="text-center font-mono text-[8px] text-white/20">

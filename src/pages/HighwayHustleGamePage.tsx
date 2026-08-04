@@ -1,5 +1,5 @@
 /**
- * HighwayHustleGamePage — Full-screen Highway Hustle AI duel battle experience.
+ * HighwayHustleGamePage, Full-screen Highway Hustle AI duel battle experience.
  *
  * Mirrors the ArenaGamePage pattern for Warzone but wired to Highway Hustle:
  *   • localStorage key: "hrDuelPayload"  (HR_SessionBootstrap reads this)
@@ -58,7 +58,7 @@ import type {
 // Config
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Base R2 path — no trailing slash. Same var as Warzone; file names differ. */
+/** Base R2 path, no trailing slash. Same var as Warzone; file names differ. */
 const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ function AgentLoadingCard({
         </div>
       </div>
 
-      {/* Stats panel — glassmorphism */}
+      {/* Stats panel, glassmorphism */}
       <div
         className="arena-loading-card-stats w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
         style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
@@ -217,7 +217,7 @@ function AgentLoadingCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pre-match overlay — auto-shown when Unity finishes loading, 4-second countdown
+// Pre-match overlay, auto-shown when Unity finishes loading, 4-second countdown
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PRE_MATCH_DURATION = 10;
@@ -269,7 +269,7 @@ function PreMatchOverlay({
       <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
 
       {/* ══════════════════════════════════════════════════════════════
-          Content — 3-row layout: header / fighters / footer
+          Content, 3-row layout: header / fighters / footer
       ══════════════════════════════════════════════════════════════ */}
       <div className="relative z-10 flex h-full flex-col">
 
@@ -383,7 +383,7 @@ function PreMatchOverlay({
   );
 }
 
-/** Full-screen Unity loading overlay — video background, agent cards, progress bar */
+/** Full-screen Unity loading overlay, video background, agent cards, progress bar */
 function UnityLoadingScreen({
   progress,
   myAgent,
@@ -464,7 +464,7 @@ function UnityLoadingScreen({
           <p className="text-center font-mono text-[9px] text-white/25 mt-2">
             {progress === 0
               ? "Connecting to 0G network…"
-              : `Loading race assets — ${progress}%`}
+              : `Loading race assets: ${progress}%`}
           </p>
         </div>
       </div>
@@ -854,7 +854,7 @@ function GameChatPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Battle Result Overlay — shown when Unity fires hrDuelEnd
+// Battle Result Overlay, shown when Unity fires hrDuelEnd
 // Distance-based layout (no HP bars)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1074,12 +1074,12 @@ export default function HighwayHustleGamePage() {
   const [unityLoaded, setUnityLoaded] = useState(false);
   const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
 
-  // Battle result — populated when Unity fires hrDuelEnd CustomEvent
+  // Battle result, populated when Unity fires hrDuelEnd CustomEvent
   const [battleResult, setBattleResult] = useState<HRDuelResult | null>(null);
   const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
-  // Pre-match overlay — auto-shown when Unity finishes loading
+  // Pre-match overlay, auto-shown when Unity finishes loading
   const [showPreMatch, setShowPreMatch] = useState(false);
   const [preMatchCountdown, setPreMatchCountdown] = useState(PRE_MATCH_DURATION);
 
@@ -1201,12 +1201,12 @@ export default function HighwayHustleGamePage() {
         return;
       }
 
-      // diagnoseBuildFiles already confirmed CORS is OK — a stall here is R2
+      // diagnoseBuildFiles already confirmed CORS is OK, a stall here is R2
       // rate-limiting on the pub- dev URL, not a real CORS block. Give 90s and
       // show a soft retry rather than the misleading CORS error UI.
       const stuckTimer = setTimeout(() => {
         if (!unityInstanceRef.current) {
-          console.warn("[HH] Unity stuck at 0% — R2 rate-limit stall, not CORS.");
+          console.warn("[HH] Unity stuck at 0%, R2 rate-limit stall, not CORS.");
           setUnityLoadError('slow');
         }
       }, 90_000);
@@ -1288,7 +1288,7 @@ export default function HighwayHustleGamePage() {
 
       const bid = detail.battleId;
       if (!bid) {
-        console.warn("[HH] hrDuelEnd — no battleId in payload, skipping API calls.");
+        console.warn("[HH] hrDuelEnd, no battleId in payload, skipping API calls.");
         return;
       }
 
@@ -1442,7 +1442,7 @@ export default function HighwayHustleGamePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Pre-match overlay — triggers automatically when Unity finishes loading ──
+  // ── Pre-match overlay, triggers automatically when Unity finishes loading ──
   useEffect(() => {
     if (!unityLoaded) return;
     setPreMatchCountdown(PRE_MATCH_DURATION);
@@ -1503,7 +1503,7 @@ export default function HighwayHustleGamePage() {
     if (!status) return;
 
     if ((status === "PENDING" || status === "INITIALIZING") && prev === null) {
-      addSystem("⏳  Battle created — race loading…");
+      addSystem("⏳  Battle created, race loading…");
     }
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS") {
       addSystem("🚗  Race is LIVE! Agents are driving.");
@@ -1520,7 +1520,7 @@ export default function HighwayHustleGamePage() {
     }
     if (status === "DISPUTED") {
       setGamePhase("ended");
-      addSystem("⚠️  Battle result is disputed — under review.");
+      addSystem("⚠️  Battle result is disputed, under review.");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battle?.status]);
@@ -1670,7 +1670,7 @@ export default function HighwayHustleGamePage() {
 
                     {unityLoadError === 'slow' ? (
                       <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
-                        The game is taking too long to start — the server may be under load.
+                        The game is taking too long to start, the server may be under load.
                         Click Retry to try again (usually loads on the 2nd or 3rd attempt).
                       </p>
                     ) : unityLoadError === 'cors' ? (

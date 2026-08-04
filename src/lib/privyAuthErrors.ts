@@ -16,7 +16,7 @@ export function privyAuthErrorMessage(error: unknown): string {
       : String(record?.privyErrorCode ?? record?.code ?? record?.error ?? "");
 
   if (/already exists/i.test(message) || /try another address/i.test(message)) {
-    return "This wallet is already on your Kult account. Close the popup and wait a moment — we'll finish signing you in.";
+    return "This wallet is already on your Kult account. Close the popup and wait a moment, we'll finish signing you in.";
   }
 
   switch (code) {

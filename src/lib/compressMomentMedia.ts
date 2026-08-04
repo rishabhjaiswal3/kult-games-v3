@@ -7,10 +7,10 @@ export type CompressMomentMediaResult = {
 };
 
 const SKIP_IMAGE_TYPES = new Set(["image/gif", "image/svg+xml"]);
-/** JPEG only — X/Facebook/WhatsApp link previews reject WebP inconsistently. */
+/** JPEG only, X/Facebook/WhatsApp link previews reject WebP inconsistently. */
 const OUTPUT_MIME = "image/jpeg" as const;
 
-/** Social OG cards — slightly larger, always JPEG. */
+/** Social OG cards, slightly larger, always JPEG. */
 const OG_IMAGE_COMPRESS = {
   maxLongEdgePx: 1200,
   minLongEdgePx: 640,

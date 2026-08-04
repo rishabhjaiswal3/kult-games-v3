@@ -9,7 +9,7 @@ type InventoryAssetImageProps = {
   compact?: boolean;
 };
 
-/** Asset on a transparent stage — screen blend helps white-backed PNGs/JPEGs float on dark UI. */
+/** Asset on a transparent stage, screen blend helps white-backed PNGs/JPEGs float on dark UI. */
 export function InventoryAssetImage({
   src,
   alt,

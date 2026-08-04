@@ -40,7 +40,7 @@ function createAgentErrorMessage(err: unknown): string {
     const data = err.response?.data as { error?: string; message?: string } | undefined;
     const raw = String(data?.error ?? data?.message ?? err.message ?? "");
     if (/already minted|only one agent/i.test(raw)) {
-      return "This wallet already has an agent. Only one agent can be minted per wallet — open My Agents to play with yours.";
+      return "This wallet already has an agent. Only one agent can be minted per wallet, open My Agents to play with yours.";
     }
     if (raw.trim()) return raw;
   }
@@ -103,7 +103,7 @@ export function CreateAiArenaAgentModal({
 
   useEffect(() => {
     if (!submitError) return;
-    // Keep the error in view — modal body scrolls and the banner was easy to miss.
+    // Keep the error in view, modal body scrolls and the banner was easy to miss.
     errorRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [submitError]);
 
@@ -183,7 +183,7 @@ export function CreateAiArenaAgentModal({
                   ) : (
                     <img
                       src={selectedCard.image}
-                      alt={`${selectedCard.codename} — ${selectedCard.archetype}`}
+                      alt={`${selectedCard.codename} · ${selectedCard.archetype}`}
                       className="h-full w-full object-cover object-top"
                     />
                   )}

@@ -52,7 +52,7 @@ export function canAccessPath(session: BrowserAccessSession | null, pathname: st
   return !feature || hasFeature(session, feature);
 }
 
-/** Safe fallback when a route requires a feature the user does not have — home is always open. */
+/** Safe fallback when a route requires a feature the user does not have, home is always open. */
 export function firstAllowedPath(_session: BrowserAccessSession | null) {
   return "/";
 }

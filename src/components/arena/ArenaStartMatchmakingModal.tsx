@@ -37,7 +37,7 @@ function apiErrorMessage(err: unknown, fallback: string) {
     if (data?.message) return data.message;
     if (data?.error) return String(data.error);
     if (err.response?.status === 402) {
-      return "Payment required — fund your agent wallet and provide a wager payment tx hash.";
+      return "Payment required, fund your agent wallet and provide a wager payment tx hash.";
     }
   }
   return err instanceof Error ? err.message : fallback;
@@ -147,7 +147,7 @@ export function ArenaStartMatchmakingModal({
                 >
                   {agents.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.name} — ELO {a.eloRating}
+                      {a.name}, ELO {a.eloRating}
                     </option>
                   ))}
                 </select>

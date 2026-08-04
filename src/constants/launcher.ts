@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AI Arena Desktop Launcher — shared constants
+// AI Arena Desktop Launcher, shared constants
 //
 // Games that require the desktop launcher (e.g. RoboWars / Unreal Engine titles)
 // use this module for protocol scheme, URLs, timeouts, and status step labels.
@@ -26,7 +26,7 @@ export const LAUNCHER_IDLE_TIMEOUT_MS = 10 * 60 * 1_000; // 10 minutes
 export type LauncherPhase =
   | "idle"           // Pre-launch landing page
   | "launching"      // Protocol URI was opened; detection timer running
-  | "not_installed"  // Timer expired with no window blur — launcher not found
+  | "not_installed"  // Timer expired with no window blur, launcher not found
   | "waiting"        // Launcher opened; polling backend for match progress
   | "complete"       // battle.status === COMPLETED; transitioning to result overlay
   | "error"          // Unrecoverable API / network failure

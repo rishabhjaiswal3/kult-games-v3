@@ -80,7 +80,7 @@ function ChallengeForm({ onClose, onCreated }: { onClose: () => void; onCreated:
       await leagueApi.createBattle({ matchId, challengerAgentId, opponentAgentId, stakeArena });
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't create that challenge — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't create that challenge, try again.");
     } finally {
       setSubmitting(false);
     }
@@ -208,7 +208,7 @@ function AcceptBattleButton({ battle, onAccepted }: { battle: OpenBattle; onAcce
       await leagueApi.acceptBattle(battle.id);
       onAccepted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't accept that challenge — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't accept that challenge, try again.");
     } finally {
       setAccepting(false);
     }
@@ -332,7 +332,7 @@ export function LeagueFightCarousel() {
           ))}
         </div>
       ) : !battles || battles.length === 0 ? (
-        <p className="py-3 text-[11px] text-white/40">No open agent battles right now — issue a challenge to start one.</p>
+        <p className="py-3 text-[11px] text-white/40">No open agent battles right now, issue a challenge to start one.</p>
       ) : (
         <div
           ref={scrollerRef}

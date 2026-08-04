@@ -2,11 +2,11 @@ import type { CountryCode } from "@/components/league/FlagHex";
 
 /**
  * `FlagCircle`/`FlagHex` only render a hardcoded 11-country CSS-gradient set
- * (see components/league/FlagHex.tsx) — it has no concept of a live team name
+ * (see components/league/FlagHex.tsx), it has no concept of a live team name
  * string from a real fixtures API. This resolves the full/short names a real
  * provider returns (ApiFootballProvider's `teams.home.name`) to that fixed
  * enum where possible; every other team (of which there'll be many more once
- * real World Cup 2026 data — 32+ teams — is flowing) falls back to a plain
+ * real World Cup 2026 data, 32+ teams, is flowing) falls back to a plain
  * text badge instead of crashing on an unsupported `CountryCode`.
  */
 const NAME_TO_CODE: Record<string, CountryCode> = {

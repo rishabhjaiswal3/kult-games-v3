@@ -62,7 +62,7 @@ export function FlagCircle({ code, className }: { code: CountryCode; className?:
 
 /**
  * Safe wrapper around `FlagCircle` for a live team-name string (not a fixed
- * `CountryCode`) — falls back to a plain initials badge for any team not in
+ * `CountryCode`), falls back to a plain initials badge for any team not in
  * the hardcoded flag set instead of crashing. Use this at every real-data
  * call site instead of `FlagCircle` directly.
  */
@@ -137,7 +137,7 @@ export function FlagHex({ code, size = "md", className }: FlagHexProps) {
   );
 }
 
-/** Safe wrapper around `FlagHex` for a live team-name string — see `TeamFlagCircle` above for why this exists. */
+/** Safe wrapper around `FlagHex` for a live team-name string, see `TeamFlagCircle` above for why this exists. */
 export function TeamFlagHex({ teamName, size = "md", className }: { teamName: string; size?: FlagHexProps["size"]; className?: string }) {
   const flag = useTeamFlag(teamName);
   if (flag.src)

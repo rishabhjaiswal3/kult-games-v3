@@ -4,7 +4,7 @@ import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { leaderboardElo, useEnrichedArenaLeaderboard } from "@/hooks/useEnrichedArenaLeaderboard";
 import type { AiArenaAgent, AiArenaLeaderboardEntry, AiArenaMatchmakingStatusBody } from "@/types/aiArenaGateway";
 
-/** Open-lobby status is fetched per agent — keep this interval conservative. */
+/** Open-lobby status is fetched per agent, keep this interval conservative. */
 const DEFAULT_OPEN_LOBBY_REFRESH_MS = 30_000;
 const DEFAULT_LEADERBOARD_REFRESH_MS = 30_000;
 

@@ -64,7 +64,7 @@ export async function exchangePrivyTokenForAiArenaToken(privyAccessToken: string
   return data;
 }
 
-/** Never throws — AI Arena auth is optional and must not break Kult login. */
+/** Never throws, AI Arena auth is optional and must not break Kult login. */
 export async function tryExchangePrivyTokenForAiArenaToken(privyAccessToken: string) {
   try {
     return await exchangePrivyTokenForAiArenaToken(privyAccessToken);

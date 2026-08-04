@@ -1,5 +1,5 @@
 /**
- * RobowarGamePage — Full-screen Robowar AI duel battle experience.
+ * RobowarGamePage, Full-screen Robowar AI duel battle experience.
  *
  * RoboWars is an Unreal Engine title that runs via the AI Arena desktop
  * Launcher rather than a Unity WebGL embed. The launcher handles the match;
@@ -64,7 +64,7 @@ import type {
 } from "@/types/aiArenaGateway";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Theme — red
+// Theme, red
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ACCENT       = "#dc2626";
@@ -356,7 +356,7 @@ function PreMatchOverlay({
           style={{ background: "rgba(8,2,2,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="font-mono text-xs text-center text-white leading-relaxed max-w-lg">
-            🤖 <span className="text-white font-bold">The Crush Pit</span> — last bot standing wins ·
+            🤖 <span className="text-white font-bold">The Crush Pit</span>, last bot standing wins ·
             Your agent fights based on <span className="font-bold" style={{ color: ACCENT }}>trained behaviour</span> ·
             Winner earns <span className="text-white font-bold">ARENA rewards</span>
           </p>
@@ -465,7 +465,7 @@ function UnityLoadingScreen({
           <p className="text-center font-mono text-[9px] text-white/25 mt-2">
             {progress === 0
               ? "Connecting to 0G network…"
-              : `Loading the crush pit — ${progress}%`}
+              : `Loading the crush pit: ${progress}%`}
           </p>
         </div>
       </div>
@@ -1110,7 +1110,7 @@ export default function RobowarGamePage() {
     agentBId:     resolvedOpponentId ?? "",
     battleStatus: battle?.status,
     onComplete:   () => {
-      // Phase transitions to "complete" — result handling picks up from the
+      // Phase transitions to "complete", result handling picks up from the
       // status transition effect below.
     },
   });
@@ -1232,7 +1232,7 @@ export default function RobowarGamePage() {
     if (!status) return;
 
     if ((status === "PENDING" || status === "INITIALIZING") && prev === null)
-      addSystem("⏳  Battle created — waiting for the launcher…");
+      addSystem("⏳  Battle created, waiting for the launcher…");
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS")
       addSystem("🤖  Bots are LIVE! Battle has begun.");
     if (status === "COMPLETED" && battle?.result && !resultPostedRef.current) {
@@ -1266,7 +1266,7 @@ export default function RobowarGamePage() {
     }
     if (status === "DISPUTED") {
       setGamePhase("ended");
-      addSystem("⚠️  Battle result is disputed — under review.");
+      addSystem("⚠️  Battle result is disputed, under review.");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battle?.status]);
@@ -1372,7 +1372,7 @@ export default function RobowarGamePage() {
               active={launcherPhase !== "idle" && launcherPhase !== "not_installed"}
               className="absolute inset-0"
             >
-              {/* Phase: idle — pre-match landing with Download + Launch */}
+              {/* Phase: idle, pre-match landing with Download + Launch */}
               {(launcherPhase === "idle" || launcherPhase === "launching") && (
                 <LauncherPreMatchView
                   myAgent={myAgent}
@@ -1383,7 +1383,7 @@ export default function RobowarGamePage() {
                 />
               )}
 
-              {/* Phase: not_installed — install prompt */}
+              {/* Phase: not_installed, install prompt */}
               {launcherPhase === "not_installed" && (
                 <>
                   {/* Keep pre-match visible as background */}
@@ -1398,7 +1398,7 @@ export default function RobowarGamePage() {
                 </>
               )}
 
-              {/* Phase: waiting — animated progress stepper */}
+              {/* Phase: waiting, animated progress stepper */}
               {launcherPhase === "waiting" && (
                 <LauncherWaitingScreen
                   battleStatus={battle?.status}
@@ -1406,7 +1406,7 @@ export default function RobowarGamePage() {
                 />
               )}
 
-              {/* Phase: complete — result overlay */}
+              {/* Phase: complete, result overlay */}
               {(launcherPhase === "complete" || battleResult) && (
                 <>
                   {/* Keep waiting screen as backdrop */}

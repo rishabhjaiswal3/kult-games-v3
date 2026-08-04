@@ -63,7 +63,7 @@ const PLATFORMS: SharePlatform[] = [
     color: "#fff",
     bg: "#1877f2",
     copyBeforeOpen: true,
-    helperText: "Full post text is copied — paste it in the Facebook composer. The link preview image comes from the share URL.",
+    helperText: "Full post text is copied, paste it in the Facebook composer. The link preview image comes from the share URL.",
     buildUrl: (p) => {
       const platformPayload = withPlatformShareUrl(p);
       return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({
@@ -396,7 +396,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
 
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border border-white/10 bg-[#0e0e16] p-0 sm:max-w-[560px] [&>button.absolute]:hidden">
 
-        {/* ── Hero image — full width, pinned ── */}
+        {/* ── Hero image, full width, pinned ── */}
         {mediaUrl && (
           <div className="relative shrink-0 aspect-video w-full overflow-hidden bg-black">
             {isVideo ? (
@@ -433,12 +433,12 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
         {/* ── Scrollable body ── */}
         <div className="min-h-0 flex-1 overflow-y-auto space-y-4 px-5 py-4 [scrollbar-width:thin]">
 
-          {/* Share link — prominent, top of dialog */}
+          {/* Share link, prominent, top of dialog */}
           <div className="rounded-xl border border-[#9a35ff]/30 bg-[#9a35ff]/8 p-3 space-y-2">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#9a35ff]" />
               <p className="font-tech text-[10px] font-bold uppercase tracking-wider text-[#c084fc]">
-                Shareable link — use this, not the address bar
+                Shareable link, use this, not the address bar
               </p>
             </div>
             <CopyLinkBar url={payload.previewUrl} />
@@ -447,7 +447,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
             </p> */}
           </div>
 
-          {/* Platform grid — 6 platforms, 3 per row */}
+          {/* Platform grid, 6 platforms, 3 per row */}
           <div>
             <p className="mb-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">Share on</p>
             <div className="grid grid-cols-3 gap-2">
@@ -491,7 +491,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
             <p className="mb-2 font-sans text-[11px] leading-relaxed text-amber-200/75">{platform.helperText}</p>
           ) : null}
           {copiedShareHint ? (
-            <p className="mb-2 font-sans text-[11px] text-emerald-400">Post text copied — paste it in the composer.</p>
+            <p className="mb-2 font-sans text-[11px] text-emerald-400">Post text copied, paste it in the composer.</p>
           ) : null}
           <PostPreviewText
             platform={platform}
@@ -500,7 +500,7 @@ const MomentShareDialog = ({ moment, onShareOpen, triggerVariant = "button" }: M
           />
         </div>
 
-        {/* ── CTA — fixed at bottom ── */}
+        {/* ── CTA, fixed at bottom ── */}
         <div className="shrink-0 border-t border-white/6 px-5 py-4">
           <button
             type="button"

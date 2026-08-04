@@ -13,7 +13,7 @@ import type {
   UpdateNameRequest,
 } from "@/types/api";
 
-/** Parses GET /player/profile — supports Rust `{ cached, profile }` and legacy flat `Player`. */
+/** Parses GET /player/profile, supports Rust `{ cached, profile }` and legacy flat `Player`. */
 function parseProfilePayload(raw: unknown): FullPlayerProfile {
   if (!isRecord(raw)) {
     return {

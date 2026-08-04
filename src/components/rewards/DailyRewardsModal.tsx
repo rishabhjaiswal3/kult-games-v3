@@ -91,7 +91,7 @@ function rewardMediaProps(reward: DailyRewardDef) {
 
 type DayStatus = "claimed" | "today" | "locked";
 
-/** One vertical reward card in the track grid — neon rarity frame, ring
+/** One vertical reward card in the track grid, neon rarity frame, ring
  *  medallion, per-card CLAIM state. */
 function RewardCard({
   reward,
@@ -145,7 +145,7 @@ function RewardCard({
         {reward.tag}
       </span>
 
-      {/* Artwork — flex-centered so wide/portrait assets stay aligned on every breakpoint */}
+      {/* Artwork, flex-centered so wide/portrait assets stay aligned on every breakpoint */}
       <span
         className={`relative my-1 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black/35 p-1.5 sm:h-[72px] sm:w-[72px] sm:p-2 ${
           reward.img && isToday ? "animate-[reward-float_3.6s_ease-in-out_infinite]" : ""
@@ -284,8 +284,8 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
   const claimable = claimableNow && !isClaiming && !isLoading;
   const lastClaimedDay = claimedCount > 0 ? Math.max(...(state?.claimedDays ?? [])) : 0;
 
-  // Featured card shows TODAY's reward: the claimable one, or — while waiting
-  // for the next unlock — the reward just claimed (in its claimed state).
+  // Featured card shows TODAY's reward: the claimable one, or, while waiting
+  // for the next unlock, the reward just claimed (in its claimed state).
   const featuredDay = completed || (!claimableNow && lastClaimedDay > 0) ? lastClaimedDay : currentDay;
   const featured = getRewardDef(featuredDay);
   const rarity = RARITY_STYLES[featured.rarity];
@@ -319,7 +319,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
       return;
     }
 
-    // Day 6 Highway Hustle — optimistic UI only; no API wait, no redirect.
+    // Day 6 Highway Hustle, optimistic UI only; no API wait, no redirect.
     if (dayToClaim === OPTIMISTIC_DAILY_REWARD_DAY) {
       void claim().then((result) => {
         setJustClaimedDay(result.claimedDay);
@@ -338,7 +338,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
           navigate(redirect);
         }
       } catch {
-        /* claim failed — e.g. rewards API 404 until backend is deployed */
+        /* claim failed, e.g. rewards API 404 until backend is deployed */
       }
     })();
   };
@@ -368,7 +368,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
           }}
         />
 
-        {/* Firecracker celebration — fires once per claim, then self-hides */}
+        {/* Firecracker celebration, fires once per claim, then self-hides */}
         {justClaimedDay ? (
           <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden" aria-hidden>
             {confetti.map((piece, i) => (
@@ -425,7 +425,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
         </button>
 
         <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 sm:p-6 [scrollbar-color:rgba(192,132,252,0.4)_transparent] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]">
-          {/* Header — centered like the design */}
+          {/* Header, centered like the design */}
           <div className="flex flex-col items-center text-center">
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-[#38bdf8]/45 bg-[#38bdf8]/12 text-lg" aria-hidden>
               🎁
@@ -475,7 +475,7 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
                       ) : status === "today" ? (
                         <span
                           className="grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 border-[#c084fc]/70 bg-[#12081f] shadow-[0_0_16px_rgba(168,85,247,0.8)] sm:h-7 sm:w-7"
-                          aria-label={`Day ${reward.day} — today`}
+                          aria-label={`Day ${reward.day}, today`}
                         >
                           <span className="h-2.5 w-2.5 rounded-full bg-[#a855f7] shadow-[0_0_8px_rgba(192,132,252,0.9)] sm:h-3.5 sm:w-3.5" />
                         </span>
@@ -671,10 +671,10 @@ export function DailyRewardsModal({ open, onClose }: { open: boolean; onClose: (
             <span className="inline-flex items-center gap-2 rounded-full border border-[#a855f7]/35 bg-[#a855f7]/[0.07] px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-[0.16em] text-[#d8b4fe]">
               <CalendarDays className="h-3.5 w-3.5" />
               {completed
-                ? "Season complete — all rewards banked"
+                ? "Season complete, all rewards banked"
                 : !claimableNow && state?.nextUnlockAt
                   ? `Next reward unlocks in ${formatCountdown(state.nextUnlockAt, now)}`
-                  : "Don't miss a day — a new reward unlocks every 24h"}
+                  : "Don't miss a day, a new reward unlocks every 24h"}
             </span>
           </div>
         </div>

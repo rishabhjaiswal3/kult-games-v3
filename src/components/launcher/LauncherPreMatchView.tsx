@@ -1,5 +1,5 @@
 /**
- * LauncherPreMatchView — shown in the main canvas area when phase === "idle".
+ * LauncherPreMatchView, shown in the main canvas area when phase === "idle".
  *
  * Displays the bot vs bot pre-match cards, an Unreal Engine badge, a short
  * description, and the Download / Launch action buttons.
@@ -25,7 +25,7 @@ function clanColor(clan?: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BotCard — agent portrait + stats
+// BotCard, agent portrait + stats
 // ──────────────────────────────────────────────────���──────────────────────────
 
 function BotCard({
@@ -166,7 +166,7 @@ export function LauncherPreMatchView({
           <BotCard agent={opponent} botSrc="/Robowar/bot2.webp" flip />
         </div>
 
-        {/* Footer — description + action buttons */}
+        {/* Footer, description + action buttons */}
         <div
           className="shrink-0 flex flex-col items-center gap-3 px-5 py-4"
           style={{ background: "rgba(4,2,2,0.92)", borderTop: "1px solid rgba(255,255,255,0.07)" }}
@@ -176,7 +176,7 @@ export function LauncherPreMatchView({
             RoboWars is powered by{" "}
             <span className="text-white font-bold">Unreal Engine</span> and runs via the
             {" "}<span className="font-bold" style={{ color: ACCENT }}>AI Arena Launcher</span>.
-            Click <span className="text-white font-bold">Launch RoboWars</span> to start — the launcher
+            Click <span className="text-white font-bold">Launch RoboWars</span> to start, the launcher
             handles the match while this page tracks results live.
           </p>
 

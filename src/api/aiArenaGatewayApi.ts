@@ -269,7 +269,7 @@ async function collectAgentsForUserId(userId: string): Promise<AiArenaAgent[]> {
 }
 
 export const aiArenaGatewayApi = {
-  /** GET /v1/agents — public paginated agent roster */
+  /** GET /v1/agents, public paginated agent roster */
   listAgents: async (page = 1, pageSize = 20): Promise<AiArenaListAgentsResponse> => {
     const { data } = await http().get<AiArenaListAgentsResponse>("/v1/agents", {
       params: { page, pageSize, limit: pageSize },
@@ -357,7 +357,7 @@ export const aiArenaGatewayApi = {
     }
   },
 
-  /** GET /v1/users/me (AI Arena JWT) — same normalized profile as getAuthMe on OSS. */
+  /** GET /v1/users/me (AI Arena JWT), same normalized profile as getAuthMe on OSS. */
   getUsersMe: async (): Promise<AiArenaProfileResponse> => {
     const { data } = await http().get<unknown>("/v1/users/me");
     return parseAiArenaProfilePayload(data);
@@ -427,7 +427,7 @@ export const aiArenaGatewayApi = {
     };
   },
 
-  /** DELETE /v1/agents/:agentId — retire (soft-delete) an agent. Requires JWT. */
+  /** DELETE /v1/agents/:agentId, retire (soft-delete) an agent. Requires JWT. */
   retireAgent: async (agentId: string): Promise<{ success: boolean }> => {
     const { data } = await http().delete<{ success: boolean }>(
       `/v1/agents/${encodeURIComponent(agentId)}`
@@ -523,7 +523,7 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** POST /v1/matchmaking — join queue (x402 headers when mode is WAGER). */
+  /** POST /v1/matchmaking, join queue (x402 headers when mode is WAGER). */
   joinMatchmakingQueue: async (body: AiArenaJoinMatchmakingRequest): Promise<AiArenaJoinMatchmakingResponse> => {
     const headers: Record<string, string> = {};
     if (body.paymentTxHash) {
@@ -535,7 +535,7 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** DELETE /v1/matchmaking/:agentId — leave queue. */
+  /** DELETE /v1/matchmaking/:agentId, leave queue. */
   leaveMatchmakingQueue: async (agentId: string): Promise<AiArenaLeaveMatchmakingResponse> => {
     const { data } = await http().delete<AiArenaLeaveMatchmakingResponse>(
       `/v1/matchmaking/${encodeURIComponent(agentId)}`
@@ -543,7 +543,7 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** POST /v1/matchmaking/match/direct — skip queue and create a battle. */
+  /** POST /v1/matchmaking/match/direct, skip queue and create a battle. */
   directMatchmakingChallenge: async (
     body: AiArenaDirectChallengeRequest
   ): Promise<AiArenaDirectChallengeResponse> => {
@@ -590,7 +590,7 @@ export const aiArenaGatewayApi = {
 
   /**
    * POST /v1/agents/:agentId/train
-   * Creates a training job — uses the same route as startAgentTraining.
+   * Creates a training job, uses the same route as startAgentTraining.
    * agentId must be present in body.
    */
   createTrainingJob: async (
@@ -618,12 +618,12 @@ export const aiArenaGatewayApi = {
         jobs: params.status ? jobs.filter((job) => job.status === params.status) : jobs,
       };
     }
-    // Global training feed — GET /v1/agents/all-training
+    // Global training feed, GET /v1/agents/all-training
     const { data } = await http().get<AiArenaTrainingJobsResponse>("/v1/agents/all-training");
     return { jobs: (data.jobs ?? []).map(normalizeTrainingJob) };
   },
 
-  /** GET /v1/agents/training-job/:jobId — fetch a single training job by its ID */
+  /** GET /v1/agents/training-job/:jobId, fetch a single training job by its ID */
   getTrainingJob: async (jobId: string): Promise<AiArenaTrainingJobResponse> => {
     const { data } = await http().get<AiArenaTrainingJobResponse>(
       `/v1/agents/training-job/${encodeURIComponent(jobId)}`
@@ -665,7 +665,7 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** GET /v1/agents/:agentId/achievements — computed achievements for an agent */
+  /** GET /v1/agents/:agentId/achievements, computed achievements for an agent */
   getAgentAchievements: async (agentId: string): Promise<AiArenaAchievementsResponse> => {
     const { data } = await http().get<AiArenaAchievementsResponse>(
       `/v1/agents/${encodeURIComponent(agentId)}/achievements`
@@ -673,7 +673,7 @@ export const aiArenaGatewayApi = {
     return data;
   },
 
-  /** DELETE /v1/agents/training-job/:jobId — cancel a training job */
+  /** DELETE /v1/agents/training-job/:jobId, cancel a training job */
   cancelTrainingJob: async (jobId: string): Promise<AiArenaCancelTrainingJobResponse> => {
     const { data } = await http().delete<AiArenaCancelTrainingJobResponse>(
       `/v1/agents/training-job/${encodeURIComponent(jobId)}`
@@ -805,7 +805,7 @@ export const aiArenaGatewayApi = {
    * The training service uploads the JSONL dataset to 0G Storage, then
    * enqueues a LoRA fine-tune job on 0G Compute via NATS.
    *
-   * This runs completely asynchronously — the user doesn't wait for it.
+   * This runs completely asynchronously, the user doesn't wait for it.
    * The returned job.id can be polled via GET /v1/agents/:id/training.
    */
   triggerTrainingFromBattle: async (

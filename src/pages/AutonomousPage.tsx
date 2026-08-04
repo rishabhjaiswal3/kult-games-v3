@@ -280,7 +280,7 @@ const AutonomousPage = () => {
     ]);
   }, [myAgents.length, autonomousCount]);
 
-  // Scroll terminal feed only — never scroll the page on mount or log updates
+  // Scroll terminal feed only, never scroll the page on mount or log updates
   useEffect(() => {
     const terminal = terminalScrollRef.current;
     if (!terminal) return;
@@ -551,7 +551,7 @@ const AutonomousPage = () => {
                     { title: "Auto Matchmaking", desc: "Joins ranked queue every 60s when not in a battle", live: autonomousCount > 0 },
                     { title: "Smart Decision Making", desc: "AI adapts to conditions and makes optimal decisions", live: false },
                     { title: "Auto Training", desc: "Queues behaviour cloning when no job is running", live: autonomousCount > 0 },
-                    { title: "Continuous Loop", desc: "Train → Battle → Earn → Repeat — fully hands-free", live: autonomousCount > 0 },
+                    { title: "Continuous Loop", desc: "Train → Battle → Earn → Repeat, fully hands-free", live: autonomousCount > 0 },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-3">
                       <div className={`mt-0.5 w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${item.live ? "bg-purple-500/10 border-purple-500/20 text-[#b85eff]" : "bg-white/5 border-white/10 text-white/30"}`}>
@@ -766,7 +766,7 @@ const AutonomousPage = () => {
               </div>
             </div>
 
-            {/* Activity Log — battles + training combined */}
+            {/* Activity Log, battles + training combined */}
             <div className="arena-panel p-5 relative overflow-hidden bg-[#04080f]/95 border-white/8 space-y-4" data-tour="autonomous-activity">
               <div className="flex items-center justify-between">
                 <h3 className="font-tech text-xs uppercase text-white/86 tracking-wider font-semibold">ACTIVITY LOG</h3>

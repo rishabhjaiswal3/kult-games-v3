@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { F1DriverModal } from "@/components/f1/F1DriverModal";
 
 /**
- * F1 League — its own tab, separate from the football League board (per
+ * F1 League, its own tab, separate from the football League board (per
  * request: "not like polymarket, just like we're doing in League for
  * football, same for F1"). Data source + endpoint reference:
  * docs/league/F1_LEAGUE_CONTEXT.md (0g-AIArena repo).
@@ -62,7 +62,7 @@ function UpcomingRaceSection() {
     return (
       <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
         <p className="font-mono text-xs text-white/40">
-          Race calendar not synced yet — an admin needs to trigger POST /v1/f1/sync once the API-SPORTS plan supports
+          Race calendar not synced yet, an admin needs to trigger POST /v1/f1/sync once the API-SPORTS plan supports
           the current season.
         </p>
       </section>
@@ -168,7 +168,7 @@ function MakePickPanel({ raceId }: { raceId: string }) {
   return (
     <div>
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-        Make your pick — who wins the {agent.name ? `race` : ""}?
+        Make your pick, who wins the {agent.name ? `race` : ""}?
       </p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {(drivers ?? []).slice(0, 12).map((d) => (
@@ -184,7 +184,7 @@ function MakePickPanel({ raceId }: { raceId: string }) {
           </button>
         ))}
       </div>
-      {pickMutation.isError ? <p className="mt-2 text-xs text-rose-400">Couldn't lock in that pick — try again.</p> : null}
+      {pickMutation.isError ? <p className="mt-2 text-xs text-rose-400">Couldn't lock in that pick, try again.</p> : null}
     </div>
   );
 }
@@ -212,7 +212,7 @@ function DriverGridSection({ onSelectDriver }: { onSelectDriver: (id: string) =>
         </div>
       ) : !drivers || drivers.length === 0 ? (
         <p className="mt-3 font-mono text-xs text-white/40">
-          Drivers not synced yet — an admin needs to trigger POST /v1/f1/sync.
+          Drivers not synced yet, an admin needs to trigger POST /v1/f1/sync.
         </p>
       ) : (
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

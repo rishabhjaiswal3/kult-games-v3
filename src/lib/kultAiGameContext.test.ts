@@ -23,7 +23,7 @@ const highway: Game = {
   category: "Racing",
   rating: 4.8,
   slogan: "Race through neon traffic.",
-  // Backend may store a CDN build URL — chatbot must never surface it.
+  // Backend may store a CDN build URL, chatbot must never surface it.
   url: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",
 };
 

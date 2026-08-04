@@ -1,5 +1,5 @@
 /**
- * ArenaGamePage — Full-screen AI Arena battle experience.
+ * ArenaGamePage, Full-screen AI Arena battle experience.
  *
  * Unity WebGL is loaded *directly* in this React component (ZeroDash pattern):
  *   • Dynamic <script> injection of WarzoneV4.loader.js from R2
@@ -58,7 +58,7 @@ import type {
 // Config
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Base R2 path — no trailing slash, no /index.html.
+/** Base R2 path, no trailing slash, no /index.html.
  *  e.g. https://pub-2c48e58780b648b7a2a77316f7b0aa2c.r2.dev/v4/WarzoneV4 */
 const UNITY_BASE_URL: string = import.meta.env.VITE_UNITY_BUILD_URL ?? "";
 
@@ -210,7 +210,7 @@ function AgentLoadingCard({
         </div>
       </div>
 
-      {/* Stats panel — glassmorphism */}
+      {/* Stats panel, glassmorphism */}
       <div
         className="arena-loading-card-stats w-full rounded-xl border border-white/10 px-2.5 py-2 text-center sm:px-4 sm:py-2.5"
         style={{ background: "rgba(10,10,20,0.65)", backdropFilter: "blur(12px)" }}
@@ -264,7 +264,7 @@ function PreMatchOverlay({
       className="absolute inset-0 z-40 flex flex-col overflow-hidden"
       style={{ background: "#05080f" }}
     >
-      {/* ── Full-bleed map image — bright, clearly visible ── */}
+      {/* ── Full-bleed map image, bright, clearly visible ── */}
       <img
         src={meta.bg}
         alt={meta.name}
@@ -273,11 +273,11 @@ function PreMatchOverlay({
         draggable={false}
       />
 
-      {/* ── Single solid dark overlay — just enough contrast for text ── */}
+      {/* ── Single solid dark overlay, just enough contrast for text ── */}
       <div className="absolute inset-0" style={{ background: "rgba(5,8,15,0.72)" }} />
 
       {/* ══════════════════════════════════════════════════════════════════
-          Content — 3-row layout: header / fighters / footer
+          Content, 3-row layout: header / fighters / footer
       ══════════════════════════════════════════════════════════════════ */}
       <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden">
 
@@ -305,7 +305,7 @@ function PreMatchOverlay({
           </div>
         </div>
 
-        {/* ── ROW 2: fighters — takes all remaining space ─────────────── */}
+        {/* ── ROW 2: fighters, takes all remaining space ─────────────── */}
         <div className="flex min-h-0 flex-1 items-stretch overflow-hidden">
 
           {/* Left fighter panel */}
@@ -384,7 +384,7 @@ function PreMatchOverlay({
 
         </div>
 
-        {/* ── ROW 3: footer — rules + sync bar ────────────────────────── */}
+        {/* ── ROW 3: footer, rules + sync bar ────────────────────────── */}
         <div
           className="arena-prematch-footer flex shrink-0 flex-col items-center gap-2 px-6 py-4"
           style={{ background: "rgba(5,8,15,0.9)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
@@ -426,7 +426,7 @@ function PreMatchOverlay({
   );
 }
 
-/** Full-screen Unity loading overlay — video background, agent cards, progress bar */
+/** Full-screen Unity loading overlay, video background, agent cards, progress bar */
 function UnityLoadingScreen({
   progress,
   myAgent,
@@ -479,7 +479,7 @@ function UnityLoadingScreen({
           {/* My agent */}
           <AgentLoadingCard agent={myAgent} side="left" />
 
-          {/* VS center — single column, perfectly centred */}
+          {/* VS center, single column, perfectly centred */}
           <div className="flex flex-col items-center gap-2 shrink-0">
             <div
               className="arena-loading-vs-ring flex h-12 w-12 items-center justify-center rounded-full border border-primary/60 sm:h-16 sm:w-16"
@@ -519,7 +519,7 @@ function UnityLoadingScreen({
           <p className="text-center font-mono text-[9px] text-white/25 mt-2">
             {progress === 0
               ? "Connecting to 0G network…"
-              : `Loading game assets — ${progress}%`}
+              : `Loading game assets: ${progress}%`}
           </p>
         </div>
       </div>
@@ -1161,7 +1161,7 @@ function ArenaBattleDrawer({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Battle Result Overlay — shown when Unity fires arenaBattleEnd
+// Battle Result Overlay, shown when Unity fires arenaBattleEnd
 // ─────────────────────────────────────────────────────────────────────────────
 
 function BattleResultOverlay({
@@ -1491,14 +1491,14 @@ export default function ArenaGamePage() {
   const [unityLoadError, setUnityLoadError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Battle result — populated when Unity fires arenaBattleEnd CustomEvent
+  // Battle result, populated when Unity fires arenaBattleEnd CustomEvent
   const [battleResult, setBattleResult] = useState<UnityBattleResult | null>(null);
-  // 0G Compute commentary — generated after battle ends
+  // 0G Compute commentary, generated after battle ends
   const [battleCommentary, setBattleCommentary] = useState<string | null>(null);
   // 0G Storage root hashes from memory-service
   const [memoryRootHashes, setMemoryRootHashes] = useState<string[]>([]);
 
-  // Pre-match overlay — shown when Unity fires arenaMultiplayerStart
+  // Pre-match overlay, shown when Unity fires arenaMultiplayerStart
   const [preMatchData, setPreMatchData] = useState<{
     mapId: string;
     myAgentName: string;
@@ -1568,12 +1568,12 @@ export default function ArenaGamePage() {
   const diagnoseBuildFiles = async (buildUrl: string): Promise<'ok' | 'cors' | 'not-found'> => {
     const testUrl = `${buildUrl}/WarzoneV4.data`;
     try {
-      // First try with strict CORS — what Unity will actually do
+      // First try with strict CORS, what Unity will actually do
       const res = await fetch(testUrl, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
       if (res.ok || res.status === 206) return 'ok';
       return 'not-found';
     } catch (_corsErr) {
-      // CORS blocked — confirm the file actually exists with no-cors (opaque response)
+      // CORS blocked, confirm the file actually exists with no-cors (opaque response)
       try {
         await fetch(testUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
         // Got here = file exists but R2 didn't send Access-Control-Allow-Origin
@@ -1585,7 +1585,7 @@ export default function ArenaGamePage() {
   };
 
   /**
-   * Banner function passed to Unity — surfaces Unity-internal warnings/errors
+   * Banner function passed to Unity, surfaces Unity-internal warnings/errors
    * as console logs and toast notifications.
    */
   const unityShowBanner = (msg: string, type: 'error' | 'warning' | string) => {
@@ -1706,7 +1706,7 @@ export default function ArenaGamePage() {
     script.src = `${buildUrl}/WarzoneV4.loader.js`;
 
     script.onload = async () => {
-      // Guard — loader might fire after unmount
+      // Guard, loader might fire after unmount
       if (!canvasRef.current) return;
 
       if (typeof (window as any).createUnityInstance !== 'function') {
@@ -1715,7 +1715,7 @@ export default function ArenaGamePage() {
         return;
       }
 
-      // ── CORS preflight — diagnose R2 bucket BEFORE handing off to Unity ──
+      // ── CORS preflight, diagnose R2 bucket BEFORE handing off to Unity ──
       const diagnosis = await diagnoseBuildFiles(buildUrl);
       if (diagnosis === 'cors') {
         const msg =
@@ -1734,12 +1734,12 @@ export default function ArenaGamePage() {
         return;
       }
 
-      // diagnoseBuildFiles already confirmed CORS is OK — a stall here is R2
+      // diagnoseBuildFiles already confirmed CORS is OK, a stall here is R2
       // rate-limiting on the pub- dev URL, not a real CORS block. Give 90s and
       // show a soft retry rather than the misleading CORS error UI.
       const stuckTimer = setTimeout(() => {
         if (!unityInstanceRef.current) {
-          console.warn("[Arena] Unity stuck at 0% — R2 rate-limit stall, not CORS.");
+          console.warn("[Arena] Unity stuck at 0%, R2 rate-limit stall, not CORS.");
           setUnityLoadError('slow');
         }
       }, 90_000);
@@ -1798,7 +1798,7 @@ export default function ArenaGamePage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battleId, myAgentQ.isLoading, opponentQ.isLoading]);
-  // ↑ intentionally omit myAgent/opponent — the guard ref means this only runs once,
+  // ↑ intentionally omit myAgent/opponent, the guard ref means this only runs once,
   //   but we read the latest values at execution time via the closure.
 
   // Cleanup on unmount
@@ -1830,7 +1830,7 @@ export default function ArenaGamePage() {
       const detail = (e as CustomEvent<UnityBattleResult>).detail;
       if (!detail || typeof detail !== "object") return;
 
-      // 1. Show popup immediately — don't gate on API calls.
+      // 1. Show popup immediately, don't gate on API calls.
       setBattleResult(detail);
       setGamePhase("ended");
       saveTrackedAiArenaBattleId(null);
@@ -1838,7 +1838,7 @@ export default function ArenaGamePage() {
 
       const bid = detail.battleId;
       if (!bid) {
-        console.warn("[Arena] arenaBattleEnd — no battleId in payload, skipping API calls.");
+        console.warn("[Arena] arenaBattleEnd, no battleId in payload, skipping API calls.");
         return;
       }
 
@@ -1917,7 +1917,7 @@ export default function ArenaGamePage() {
         }
       })();
 
-      // 3. 0G Compute commentary — ask the AI commentator for a paragraph
+      // 3. 0G Compute commentary, ask the AI commentator for a paragraph
       let commentary = "";
       try {
         const commentaryRes = await aiArenaGatewayApi.generateBattleCommentary({
@@ -2017,7 +2017,7 @@ export default function ArenaGamePage() {
     return () => window.removeEventListener("arenaMultiplayerStart", handler);
   }, []);
 
-  // Countdown tick — each second, decrement; at 0, hide the overlay
+  // Countdown tick, each second, decrement; at 0, hide the overlay
   useEffect(() => {
     if (preMatchCountdown <= 0 || !preMatchData) return;
     const t = setTimeout(() => {
@@ -2072,7 +2072,7 @@ export default function ArenaGamePage() {
     if (!status) return;
 
     if ((status === "PENDING" || status === "INITIALIZING") && prev === null) {
-      addSystem("⏳  Battle created — arena loading…");
+      addSystem("⏳  Battle created, arena loading…");
     }
 
     if (status === "IN_PROGRESS" && prev !== "IN_PROGRESS") {
@@ -2093,7 +2093,7 @@ export default function ArenaGamePage() {
 
     if (status === "DISPUTED") {
       setGamePhase("ended");
-      addSystem("⚠️  Battle result is disputed — under review.");
+      addSystem("⚠️  Battle result is disputed, under review.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battle?.status]);
@@ -2214,12 +2214,12 @@ export default function ArenaGamePage() {
           </button>
         ) : null}
 
-        {/* Error state — centred */}
+        {/* Error state, centred */}
         {isError && (
           <BattleLoadErrorState error={battleQ.error} onRetry={() => void battleQ.refetch()} />
         )}
 
-        {/* No build URL configured — centred */}
+        {/* No build URL configured, centred */}
         {!isError && !UNITY_BASE_URL && (
           <div className="flex h-full items-center justify-center px-4">
             <div className="text-center">
@@ -2244,7 +2244,7 @@ export default function ArenaGamePage() {
           </div>
         )}
 
-        {/* ── Unity canvas — fills entire game area ── */}
+        {/* ── Unity canvas, fills entire game area ── */}
         {!isError && UNITY_BASE_URL && (
           <div className="absolute inset-0">
             <ArenaLandscapeGate active={unityLoaded} className="absolute inset-0">
@@ -2268,7 +2268,7 @@ export default function ArenaGamePage() {
                 />
               )}
 
-              {/* Pre-match overlay — covers canvas while AI agents walk to centre.
+              {/* Pre-match overlay, covers canvas while AI agents walk to centre.
                   Game is NOT paused; this is purely a cosmetic React layer. */}
               {preMatchData && unityLoaded && (
                 <PreMatchOverlay
@@ -2279,7 +2279,7 @@ export default function ArenaGamePage() {
                 />
               )}
 
-              {/* Load-error overlay — slow/CORS/missing files */}
+              {/* Load-error overlay, slow/CORS/missing files */}
               {unityLoadError && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#030710]/95 p-6">
                   <div className={`w-full max-w-md rounded-2xl border bg-[#0d0812] p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)] ${unityLoadError === 'slow' ? 'border-yellow-500/30' : 'border-red-500/30'}`}>
@@ -2292,7 +2292,7 @@ export default function ArenaGamePage() {
 
                     {unityLoadError === 'slow' ? (
                       <p className="font-tech text-[11px] text-white/60 leading-relaxed mb-4">
-                        The game is taking too long to start — the server may be under load.
+                        The game is taking too long to start, the server may be under load.
                         Click Retry to try again (usually loads on the 2nd or 3rd attempt).
                       </p>
                     ) : unityLoadError === 'cors' ? (
@@ -2346,7 +2346,7 @@ export default function ArenaGamePage() {
                 </div>
               )}
 
-              {/* ── Battle Result Overlay — replaces "GAME OVER" ── */}
+              {/* ── Battle Result Overlay, replaces "GAME OVER" ── */}
               {battleResult && (
                 <BattleResultOverlay
                   result={battleResult}

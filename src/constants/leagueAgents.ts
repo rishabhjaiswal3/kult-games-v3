@@ -105,7 +105,7 @@ function hashAgentName(value: string): number {
 }
 
 /**
- * Cache so a given name ALWAYS returns the same object reference across renders — otherwise a
+ * Cache so a given name ALWAYS returns the same object reference across renders, otherwise a
  * fresh object each call breaks referential equality in memo/effect deps.
  */
 const leagueAgentCache = new Map<string, LeagueArenaAgent>();
@@ -113,7 +113,7 @@ const leagueAgentCache = new Map<string, LeagueArenaAgent>();
 /**
  * Resolves the media/theme for a League agent by name.
  * Real agents (e.g. "POTTASIUM", "AGENT 0X41AC1F") have no exact roster entry, so we
- * deterministically assign one of the roster portraits by hashing the name — keeping the
+ * deterministically assign one of the roster portraits by hashing the name, keeping the
  * agent's real name while still showing a consistent image/accent.
  */
 export function getLeagueAgent(name: string): LeagueArenaAgent {

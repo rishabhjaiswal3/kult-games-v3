@@ -55,7 +55,7 @@ async function fetchTrashTalk(
       },
       picks,
       totalQuestions: questions.length,
-      context: `${match.stage}${match.matchday ? ` — Matchday ${match.matchday}` : ""}`,
+      context: `${match.stage}${match.matchday ? `, Matchday ${match.matchday}` : ""}`,
       sessionId: `league-${Date.now()}`,
       batchIndex: 0,
     }),
@@ -206,7 +206,7 @@ export function LeagueTrashTalkPanel() {
         <div className="space-y-4">
           {/* Winner block */}
           <TrashTalkBlock
-            label={result.outcome === "WIN" ? `Your agent — ${userAgentName}` : `Rival agent — ${rivalAgentName}`}
+            label={result.outcome === "WIN" ? `Your agent: ${userAgentName}` : `Rival agent: ${rivalAgentName}`}
             sublabel={result.outcome === "WIN" ? "Winner · Confident read" : "Winner · Rubbing it in"}
             lines={result.player1}
             accent="emerald"
@@ -214,7 +214,7 @@ export function LeagueTrashTalkPanel() {
           />
           {/* Loser block */}
           <TrashTalkBlock
-            label={result.outcome === "LOSS" ? `Your agent — ${userAgentName}` : `Rival agent — ${rivalAgentName}`}
+            label={result.outcome === "LOSS" ? `Your agent: ${userAgentName}` : `Rival agent: ${rivalAgentName}`}
             sublabel={result.outcome === "LOSS" ? "Down but not out" : "Taking the loss"}
             lines={result.player2}
             accent="purple"

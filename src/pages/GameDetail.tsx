@@ -383,7 +383,7 @@ const GameDetail = () => {
 
           {isHighwayHustle ? (
             <div data-tour="game-detail-garage">
-              <HighwayHustleGarage title="Garage — select your ride" />
+              <HighwayHustleGarage title="Garage, select your ride" />
             </div>
           ) : null}
 

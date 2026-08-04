@@ -370,7 +370,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       setOtpNotice(
         resend
           ? "We sent a new code. Use the newest email, because older codes may stop working."
-          : "Verification code sent. Check your inbox — if it's not there, look in spam or promotions.",
+          : "Verification code sent. Check your inbox, if it's not there, look in spam or promotions.",
       );
     } catch (err) {
       const msg = privyAuthErrorMessage(err);
@@ -479,7 +479,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                       {isEmbeddedLoginFlow
                         ? authLoading
                           ? "Creating your wallet and completing sign-in with Kult…"
-                          : "Setting up your wallet — this usually takes a few seconds."
+                          : "Setting up your wallet, this usually takes a few seconds."
                         : authLoading
                           ? "Completing wallet verification with Kult…"
                           : "If a wallet prompt appears, approve it to verify with SIWE."}

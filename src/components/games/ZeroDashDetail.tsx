@@ -55,13 +55,13 @@ export function ZeroDashDetail({ game }: { game: Game }) {
             ].map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3 rounded-[9px] border border-purple-600 bg-[#0b071b] px-3 py-3"><item.icon className="h-5 w-5 shrink-0 text-purple-500" /><div className="min-w-0"><div className="text-[10px] uppercase text-white/35">{item.label}</div><div className="truncate text-sm uppercase text-white sm:text-base">{item.value}</div></div></div>)}
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-4 sm:gap-3">
             {[
               { label: "Rating", value: String(game.rating ?? 5), icon: Star, color: "text-[#ffc400] border-[#a57d00]" },
               { label: "Chain", value: "0g Chain", icon: Shield, color: "text-purple-500 border-purple-700" },
               { label: "Leaderboard", value: "Ranks", icon: Crown, color: "text-[#ffc400] border-[#a57d00]", action: () => navigate("/leaderboard") },
               { label: "Marketplace", value: "Inventory", icon: BriefcaseBusiness, color: "text-purple-500 border-purple-700", action: () => navigate(`/inventory?game=${encodeURIComponent(gameId)}`) },
-            ].map((item) => <button key={item.label} type="button" onClick={item.action} disabled={!item.action} className="flex items-center gap-4 rounded-[5px] border border-[#16132d] bg-[#080719] p-3 text-left transition enabled:hover:border-cyan-400/40 disabled:cursor-default"><span className={`grid h-16 w-16 shrink-0 place-items-center rounded-[10px] border ${item.color}`}><item.icon className="h-8 w-8" /></span><span><span className="block text-xs text-white">{item.label}</span><span className="mt-1 block text-2xl text-white sm:text-[28px]">{item.value}</span></span></button>)}
+            ].map((item) => <button key={item.label} type="button" onClick={item.action} disabled={!item.action} className="flex min-w-0 items-center gap-2.5 rounded-[5px] border border-[#16132d] bg-[#080719] p-2.5 text-left transition enabled:hover:border-cyan-400/40 disabled:cursor-default"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[8px] border ${item.color}`}><item.icon className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-[10px] text-white/60">{item.label}</span><span className="mt-0.5 block text-sm font-bold leading-tight text-white">{item.value}</span></span></button>)}
           </div>
 
           <div className="relative mt-14 overflow-hidden rounded-[12px] bg-black">

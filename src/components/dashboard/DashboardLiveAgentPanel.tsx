@@ -27,7 +27,7 @@ function winRate(agent: AiArenaAgent): string {
 }
 
 function formatAgentOption(agent: AiArenaAgent) {
-  return `${agent.name} — ${agent.archetype} — ELO ${agent.eloRating.toLocaleString()}`;
+  return `${agent.name} · ${agent.archetype} · ELO ${agent.eloRating.toLocaleString()}`;
 }
 
 export function DashboardLiveAgentPanel({

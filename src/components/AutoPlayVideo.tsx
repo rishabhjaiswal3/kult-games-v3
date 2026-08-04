@@ -17,7 +17,7 @@ const AutoPlayVideo = ({ src, type = "video/mp4", className, style, ...props }: 
     const video = ref.current;
     if (!video) return;
     video.load();
-    video.play().catch(() => {/* autoplay blocked — silently ignore */});
+    video.play().catch(() => {/* autoplay blocked, silently ignore */});
   }, [src]);
 
   return (

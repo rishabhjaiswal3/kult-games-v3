@@ -1,4 +1,4 @@
-/** App EVM chain — 0G mainnet by default (same env pattern as warzonewarrior). */
+/** App EVM chain, 0G mainnet by default (same env pattern as warzonewarrior). */
 
 export type AllowedChainConfig = {
   caip2: string;

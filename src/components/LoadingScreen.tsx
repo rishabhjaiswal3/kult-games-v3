@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import kultLogo from "@/assets/kult-logo.png";
 
-/** Minimum splash time — keep short so the app feels immediate. */
+/** Minimum splash time, keep short so the app feels immediate. */
 const MIN_DURATION = 700;
 /** Hard cap so a slow network never blocks the app for long. */
 const MAX_DURATION = 1400;

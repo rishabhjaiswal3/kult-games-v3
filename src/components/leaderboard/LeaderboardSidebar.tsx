@@ -9,7 +9,7 @@ type LeaderboardSidebarProps = {
   userElo?: number;
   pointLabel?: string;
   title?: string;
-  /** Optional richer stats — render when provided, hide gracefully otherwise. */
+  /** Optional richer stats, render when provided, hide gracefully otherwise. */
   totalPlayers?: number;
   weeklyDelta?: number;
   pointsToday?: number;

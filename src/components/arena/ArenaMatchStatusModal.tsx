@@ -104,7 +104,7 @@ export function ArenaMatchStatusModal({
 }: ArenaMatchStatusModalProps) {
   const agentId = agent?.id ?? null;
 
-  // Capture gameId the moment it appears in status or battle — survives queue-clear polling resets.
+  // Capture gameId the moment it appears in status or battle, survives queue-clear polling resets.
   const resolvedGameIdRef = useRef<string>("default");
   // Guard: fire onMatchFound only once per battleId to prevent double-navigation.
   const matchFiredRef = useRef<string | null>(null);
@@ -153,7 +153,7 @@ export function ArenaMatchStatusModal({
     retry: 1,
   });
 
-  // Latch gameId as soon as it arrives — don't lose it when polling resets status.
+  // Latch gameId as soon as it arrives, don't lose it when polling resets status.
   useEffect(() => {
     if (status?.gameId) resolvedGameIdRef.current = status.gameId;
   }, [status?.gameId]);
@@ -161,7 +161,7 @@ export function ArenaMatchStatusModal({
     if (battleQ.data?.battle?.gameId) resolvedGameIdRef.current = battleQ.data.battle.gameId;
   }, [battleQ.data?.battle?.gameId]);
 
-  // Fire once per battleId — prevent double-navigation when status/battle re-poll after queue clears.
+  // Fire once per battleId, prevent double-navigation when status/battle re-poll after queue clears.
   // Also skip if the battle is already ended (stale cache from a previous session).
   useEffect(() => {
     if (!open || !agent || !battleId || !opponentQ.data) return;
@@ -226,12 +226,12 @@ export function ArenaMatchStatusModal({
               {battleQ.data?.battle?.status === "IN_PROGRESS" ? (
                 <div className="flex items-center justify-center gap-2 rounded-xl border border-neon-green/25 bg-neon-green/10 px-4 py-3 text-sm font-semibold text-neon-green">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-neon-green" />
-                  Battle is live — track it in the Battle Lookup below
+                  Battle is live, track it in the Battle Lookup below
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 rounded-xl border border-neon-cyan/20 bg-neon-cyan/8 px-4 py-3 text-sm text-neon-cyan/80">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Starting battle — both agents entering the arena…
+                  Starting battle, both agents entering the arena…
                 </div>
               )}
             </>

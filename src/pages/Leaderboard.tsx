@@ -277,7 +277,7 @@ const Leaderboard = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              {/* Period filter — on GLOBAL tab for both modes */}
+              {/* Period filter, on GLOBAL tab for both modes */}
               {(activeMode === "KULT_POINTS" ? activeKultTab : activeArenaTab) === "GLOBAL" ? (
                 <div className="flex items-center gap-2">
                   <span className="font-tech text-[10px] uppercase tracking-widest text-white/35">Period</span>
@@ -298,7 +298,7 @@ const Leaderboard = () => {
                 </div>
               ) : null}
 
-              {/* League filter — only on GLOBAL tab */}
+              {/* League filter, only on GLOBAL tab */}
               {activeMode === "AI_ARENA" && activeArenaTab === "GLOBAL" ? (
                 <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                   <span className="font-tech text-[10px] uppercase tracking-widest text-white/35">League</span>
@@ -588,8 +588,8 @@ const Leaderboard = () => {
                   <Info className="h-4 w-4 shrink-0 text-blue-400" />
                   <span>
                     {selectedLeagueInfo
-                      ? `Showing ${selectedLeagueInfo.name} league — ELO ${selectedLeagueInfo.minElo.toLocaleString()}${selectedLeagueInfo.maxElo ? ` – ${selectedLeagueInfo.maxElo.toLocaleString()}` : "+"}`
-                      : "Leaderboard shows ELO ratings — updated after every battle."}
+                      ? `Showing ${selectedLeagueInfo.name} league, ELO ${selectedLeagueInfo.minElo.toLocaleString()}${selectedLeagueInfo.maxElo ? ` – ${selectedLeagueInfo.maxElo.toLocaleString()}` : "+"}`
+                      : "Leaderboard shows ELO ratings, updated after every battle."}
                   </span>
                 </div>
               </>

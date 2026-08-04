@@ -116,7 +116,7 @@ export function DashboardProfileHeader({ profile, isLoading, walletAddress }: Da
                 {displayName}
               </h1>
             )}
-            <p className="mt-1 max-w-full text-sm text-white/55">Your command center — agents, battles, and arena progress.</p>
+            <p className="mt-1 max-w-full text-sm text-white/55">Your command center, agents, battles, and arena progress.</p>
             {walletAddress ? (
               <button
                 type="button"

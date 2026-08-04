@@ -14,7 +14,7 @@ export type HighwayHustleModeConfig = {
   slogan: string;
   description: string;
   difficulty: string;
-  /** Direct Unity index.html — iframe target before Kult auth query params */
+  /** Direct Unity index.html, iframe target before Kult auth query params */
   playUrl: string;
 };
 
@@ -158,7 +158,7 @@ export function buildAllHighwayHustleGames(parent?: Game): Game[] {
   return HIGHWAY_HUSTLE_MODES.map((mode) => buildHighwayHustleGame(mode, parent));
 }
 
-/** One Highway Hustle card in the list — hide per-mode duplicate rows. */
+/** One Highway Hustle card in the list, hide per-mode duplicate rows. */
 export function normalizeHighwayHustleCatalog(games: Game[]): Game[] {
   const out: Game[] = [];
   let hasAggregate = false;

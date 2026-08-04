@@ -2,7 +2,7 @@ import { getApiClient } from "@/lib/apiClientFactory";
 
 /**
  * Client for `/v1/f1/*` on the AI Arena gateway (services/league-service in
- * the 0g-AIArena repo — see docs/league/F1_LEAGUE_CONTEXT.md there for the
+ * the 0g-AIArena repo, see docs/league/F1_LEAGUE_CONTEXT.md there for the
  * underlying data source and endpoint reference this was built against).
  */
 const http = () => getApiClient("aiArenaGateway");
