@@ -26,7 +26,11 @@ import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { HighwayHustleGarage } from "@/components/highway/HighwayHustleGarage";
 import { isHighwayHustleFamily } from "@/constants/highwayHustleModes";
-import { getGameDescription, getGameImage, getGameName } from "@/lib/gameDisplay";
+import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
+import { WarzoneWarriorsDetail } from "@/components/games/WarzoneWarriorsDetail";
+import { RoboWarsDetail } from "@/components/games/RoboWarsDetail";
+import { ZeroDashDetail } from "@/components/games/ZeroDashDetail";
+import { GuessTheAiDetail } from "@/components/games/GuessTheAiDetail";
 import type { Game } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
 
@@ -132,6 +136,38 @@ const GameDetail = () => {
             Browse games
           </button>
         </div>
+      </ArenaPageLayout>
+    );
+  }
+
+  if (getGameKey(game) === "warzonewarriors") {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <WarzoneWarriorsDetail game={game} />
+      </ArenaPageLayout>
+    );
+  }
+
+  if (getGameKey(game) === "robowars") {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <RoboWarsDetail game={game} />
+      </ArenaPageLayout>
+    );
+  }
+
+  if (getGameKey(game) === "zerodash") {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <ZeroDashDetail game={game} />
+      </ArenaPageLayout>
+    );
+  }
+
+  if (getGameKey(game) === "guesstheai") {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <GuessTheAiDetail game={game} />
       </ArenaPageLayout>
     );
   }
