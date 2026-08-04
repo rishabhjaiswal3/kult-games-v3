@@ -1170,7 +1170,7 @@ const competeGames: CompeteGame[] = [
     body: "Team up two AI agents against enemy waves — the agent that collects the most coins wins",
     cta: "Deploy",
     gameId: "warzone-wave",
-    mediaKey: "warzone",
+    mediaKey: "warzoneWave",
     image: heroTrio,
     tone: "from-[#071a32]/15 via-[#0a0f18]/42 to-[#070910]/95",
     color: "#22d3ee",

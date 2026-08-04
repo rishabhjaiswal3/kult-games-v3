@@ -7,6 +7,7 @@ export const aiArenaMedia = {
   berserker: () => import("@/assets/berserker.mp4"),
   assassin: () => import("@/assets/assassin.mp4"),
   warzone: () => import("@/assets/IMG_9260.mp4"),
+  warzoneWave: () => import("@/assets/warzoneWave.mp4"),
   highwayHustle: () => import("@/assets/step3.mp4"),
   robowar: () => import("@/assets/step5.mp4"),
   leagueBackground: () => import("@/assets/league_background.mp4"),
