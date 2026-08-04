@@ -33,7 +33,7 @@ export function CreatorStudioPromoContent({
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
       <div className="relative z-10 w-full overflow-hidden pt-3">
-        <div className="relative mx-auto h-[min(52vw,220px)] w-full max-w-[440px] sm:h-[240px]">
+        <div className="relative mx-auto h-[min(66vw,290px)] w-full max-w-[440px] sm:h-[310px]">
           <img
             src={creatorStudioPromoImage440}
             srcSet={creatorStudioPromoSrcSet}
@@ -45,7 +45,7 @@ export function CreatorStudioPromoContent({
             decoding="async"
             fetchPriority="high"
             draggable={false}
-            className="absolute left-1/2 top-0 h-full w-[108%] max-w-none -translate-x-[calc(50%+2px)] select-none object-contain object-top drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
+            className="absolute left-1/2 top-0 h-full w-[120%] max-w-none -translate-x-[calc(50%+2px)] select-none object-contain object-top drop-shadow-[0_18px_40px_rgba(124,58,237,0.35)]"
           />
         </div>
 

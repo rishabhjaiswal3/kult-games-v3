@@ -24,12 +24,14 @@ import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import Footer from "@/components/Footer";
 import { ArenaLiveMatchProvider, useArenaLiveMatch } from "@/contexts/ArenaLiveMatchContext";
+import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { LazyInViewVideo } from "@/components/LazyInViewVideo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import { useArenaBattleBoard } from "@/hooks/useArenaBattleBoard";
 import { useAiArenaGlobalLeaderboard } from "@/hooks/useAiArenaGlobalLeaderboard";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
@@ -126,6 +128,24 @@ const agents = [
     color: "var(--magenta)",
   },
 ];
+
+/** Placeholder cards (shown before the real leaderboard loads) still open the detail modal — build a synthetic agent from their display fields. */
+function buildMockAgentDetail(a: (typeof agents)[number]): AiArenaAgent {
+  return {
+    id: `mock-${a.name.toLowerCase()}`,
+    name: a.name,
+    clan: a.chain,
+    archetype: a.name,
+    evolutionStage: "GENESIS",
+    eloRating: Number(a.power.replace(/,/g, "")) || 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    status: "ACTIVE",
+  };
+}
+
+const agentsWithDetail = agents.map((a) => ({ ...a, detail: buildMockAgentDetail(a) }));
 
 const topAgentRankColors = [
   "var(--neon)",
@@ -1006,35 +1026,55 @@ function FeaturesBlock() {
 }
 
 function HowItWorks() {
+  const navigate = useNavigate();
+  const { openCreateAgent } = useCreateAgent();
+  const [showEarnToast, setShowEarnToast] = useState(false);
+
+  useEffect(() => {
+    if (!showEarnToast) return;
+    const timer = window.setTimeout(() => setShowEarnToast(false), 3200);
+    return () => window.clearTimeout(timer);
+  }, [showEarnToast]);
+
   const steps = [
     {
       n: "01",
       title: "CREATE",
       desc: "Create your AI Agent and choose its path.",
       mediaKey: "hybrid" as AiArenaMediaKey,
+      onClick: () => openCreateAgent(),
     },
     {
       n: "02",
       title: "TRAIN",
       desc: "Train and evolve your agent to make it stronger.",
       img: iconTrain,
+      onClick: () => navigate("/training"),
     },
     {
       n: "03",
       title: "BATTLE",
       desc: "Enter the Arena and battle players worldwide.",
       img: iconBattle,
+      onClick: () => navigate("/battles"),
     },
     {
       n: "04",
       title: "EARN",
       desc: "Win battles, earn rewards and climb the leaderboard.",
       img: iconEarn,
+      onClick: () => setShowEarnToast(true),
     },
-    { n: "05", title: "OWN", desc: "Your AI. Your NFT. Your legacy.", img: iconOwn },
+    {
+      n: "05",
+      title: "OWN",
+      desc: "Your AI. Your NFT. Your legacy.",
+      img: iconOwn,
+      onClick: () => navigate("/my-agents"),
+    },
   ];
   return (
-    <section className="arena-panel px-4 py-4 sm:px-6 sm:py-5">
+    <section className="arena-panel relative px-4 py-4 sm:px-6 sm:py-5">
       <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5 sm:mb-12">
         <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary" />
         <h3 className="font-tech text-2xl font-black uppercase leading-tight text-center sm:text-3xl">HOW IT WORKS</h3>
@@ -1042,8 +1082,13 @@ function HowItWorks() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 items-stretch">
         {steps.map((s) => (
-          <div key={s.n}>
-            <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl">
+          <button
+            key={s.n}
+            type="button"
+            onClick={s.onClick}
+            className="group text-left"
+          >
+            <div className="card-glass flex h-full flex-col overflow-hidden rounded-xl transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/20 group-hover:shadow-[0_0_28px_rgba(154,53,255,0.16)]">
               <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden bg-background/50">
                 <span className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-[#9a35ff] bg-[#9a35ff] font-tech text-[11px] font-black leading-none tabular-nums text-white sm:left-2.5 sm:top-2.5 sm:h-8 sm:w-8 sm:text-xs md:h-8 md:w-8 md:text-xs lg:left-1.5 lg:top-1.5 lg:h-8 lg:w-8 lg:text-sm xl:left-2 xl:top-2 xl:h-9 xl:w-9 xl:text-base">
                   {s.n}
@@ -1072,9 +1117,25 @@ function HowItWorks() {
                 <p className="mt-2 text-xs leading-snug text-muted-foreground sm:text-sm">{s.desc}</p>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
+      {showEarnToast ? (
+        <div
+          role="status"
+          className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-4 animate-in slide-in-from-bottom-3 fade-in duration-300"
+        >
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-[#00f080]/35 bg-[#03130d]/95 px-4 py-2 shadow-[0_0_28px_rgba(0,240,128,0.18)] backdrop-blur-sm">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00f080] opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00f080]" />
+            </span>
+            <span className="font-tech text-[11px] uppercase tracking-wider text-white/90">
+              Start matching to earn KULT points
+            </span>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -1410,6 +1471,7 @@ function RankProgressionTimeline() {
 function TopAgents() {
   const ref = useRef<HTMLDivElement>(null);
   const leaderboardQ = useAiArenaGlobalLeaderboard();
+  const [detailAgent, setDetailAgent] = useState<AiArenaAgent | null>(null);
   const liveAgents = useMemo(
     () =>
       (leaderboardQ.data?.entries ?? []).slice(0, 6).map((entry, index) => ({
@@ -1421,10 +1483,22 @@ function TopAgents() {
         power: (entry.eloRating ?? entry.score ?? 0).toLocaleString(),
         img: getArenaAgentPortrait({ id: entry.agentId, archetype: entry.archetype }),
         color: topAgentRankColors[index] ?? "var(--cyan)",
+        detail: {
+          id: entry.agentId,
+          name: entry.name?.trim() || `Agent ${entry.agentId.slice(0, 8)}`,
+          clan: entry.clan?.trim() || "AI Arena",
+          archetype: entry.archetype?.trim() || "HYBRID",
+          evolutionStage: "GENESIS",
+          eloRating: Math.round(entry.eloRating ?? entry.score ?? 0),
+          wins: entry.wins ?? 0,
+          losses: entry.losses ?? 0,
+          draws: entry.draws ?? 0,
+          status: "ACTIVE",
+        } as AiArenaAgent,
       })),
     [leaderboardQ.data?.entries]
   );
-  const displayedAgents = liveAgents.length > 0 ? liveAgents : agents;
+  const displayedAgents = liveAgents.length > 0 ? liveAgents : agentsWithDetail;
 
   const scroll = (dir: number) => {
     const scroller = ref.current;
@@ -1489,7 +1563,17 @@ function TopAgents() {
         {displayedAgents.map((a) => (
           <div
             key={`${a.rank}-${a.name}`}
-            className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)]"
+            role="button"
+            tabIndex={0}
+            onClick={() => setDetailAgent(a.detail)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setDetailAgent(a.detail);
+              }
+            }}
+            aria-label={`View details for ${a.name}`}
+            className="card-glass group min-w-[70vw] snap-start overflow-hidden rounded-xl cursor-pointer min-[420px]:min-w-[calc((100%-1rem)/2)] xl:min-w-[calc((100%-2rem)/3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9a35ff]"
           >
             <div className="relative aspect-[4/5] overflow-hidden bg-background/50 sm:aspect-[3/4]">
               {"mediaKey" in a && a.mediaKey ? (
@@ -1574,6 +1658,12 @@ function TopAgents() {
           </div>
         ))}
       </div>
+      <AiArenaAgentDetailModal
+        open={!!detailAgent}
+        onOpenChange={(open) => { if (!open) setDetailAgent(null); }}
+        agent={detailAgent}
+        publicView
+      />
     </div>
   );
 }
@@ -1679,6 +1769,17 @@ function MyBattleSection() {
   const totalBattlePages = Math.max(1, Math.ceil(memories.length / CARDS_PER_PAGE));
   const canPrevBattle = battlePage > 0;
   const canNextBattle = battlePage < totalBattlePages - 1;
+
+  const MEMORY_PREVIEW_CHAR_LIMIT = 100;
+  const [expandedMemoryIds, setExpandedMemoryIds] = useState<Set<string>>(new Set());
+  const toggleMemoryExpanded = (id: string) => {
+    setExpandedMemoryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const jumpToMatchmaking = () => {
     const target = document.querySelector<HTMLElement>('[data-tour="ai-arena-matchmaking"]');
@@ -1808,7 +1909,22 @@ function MyBattleSection() {
                           ))}
                         </div>
                         <div className="mt-3 rounded-xl border border-white/8 bg-white/[0.025] px-3.5 py-2.5">
-                          <p className="font-mono text-[11px] italic leading-relaxed text-white/70 lg:text-[10px]">{memory.content}</p>
+                          <p
+                            className={`font-mono text-[11px] italic leading-relaxed text-white/70 lg:text-[10px] ${
+                              expandedMemoryIds.has(memory.id) ? "" : "line-clamp-2"
+                            }`}
+                          >
+                            {memory.content}
+                          </p>
+                          {memory.content.length > MEMORY_PREVIEW_CHAR_LIMIT ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleMemoryExpanded(memory.id)}
+                              className="mt-1.5 font-tech text-[9px] font-semibold uppercase tracking-wider text-accent hover:underline"
+                            >
+                              {expandedMemoryIds.has(memory.id) ? "See less" : "See more"}
+                            </button>
+                          ) : null}
                           <p className="mt-2 font-mono text-[10px] text-white/40">
                             {new Date(memory.createdAt).toLocaleString()}
                           </p>

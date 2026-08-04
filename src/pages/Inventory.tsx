@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { keccak256, stringToHex } from "viem";
 import { Package } from "lucide-react";
@@ -78,8 +79,9 @@ function getFriendlyPurchaseError(error: unknown): string {
 }
 
 const Inventory = () => {
+  const [searchParams] = useSearchParams();
   const [itemCategory, setItemCategory] = useState("All");
-  const [itemGame, setItemGame] = useState("");
+  const [itemGame, setItemGame] = useState(() => searchParams.get("game") ?? "");
   const [itemSearch, setItemSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState<MarketplaceListing | null>(null);
   const [selectedPaymentToken, setSelectedPaymentToken] = useState<MarketplacePaymentToken>("USDC");
