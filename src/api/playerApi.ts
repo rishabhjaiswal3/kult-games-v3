@@ -1,6 +1,7 @@
 import apiClient from "@/lib/apiClient";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { isRecord, unwrapApiData } from "@/api/utils";
+import { authWarn } from "@/lib/authLog";
 import type {
   ApiEnvelope,
   FullPlayerProfile,
@@ -148,6 +149,15 @@ export const playerApi = {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(WALLET_KEY, walletAddress);
+    } else {
+      // 200 OK with an unrecognised body: the caller sees success while the session is
+      // never persisted. Log the keys (not the values) so the shape can be compared
+      // against what the backend actually returns.
+      authWarn("POST /player/login returned 200 without a token", {
+        topLevelKeys: isRecord(data) ? Object.keys(data) : typeof data,
+        payloadKeys: Object.keys(raw),
+        hasPlayer: !!rawPlayer,
+      });
     }
 
     return {

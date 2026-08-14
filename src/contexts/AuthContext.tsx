@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { playerApi } from "@/api/playerApi";
@@ -21,12 +21,14 @@ import {
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
 import {
+  getPrivyWalletAddresses,
   getWalletAddressFromPrivyUser,
   isEmbeddedPrivyConnectedWallet,
   pickSigningWallet,
   resolvePrivyWalletAddress,
   signMessageWithPrivyWallet,
 } from "@/lib/privyWallet";
+import { authLog, authWarn, shortAddress, tokenFingerprint } from "@/lib/authLog";
 import type { Player } from "@/types/api";
 
 // ── Context type ──────────────────────────────────────────────────────────────
@@ -72,6 +74,21 @@ function isKultSessionValidForAddress(address: string) {
   return Boolean(token && wallet?.toLowerCase() === address.toLowerCase());
 }
 
+/**
+ * The Kult JWT is bound to the address that signed SIWE, which is not always the address
+ * `resolvePrivyWalletAddress` currently prefers: the preference is derived from login
+ * intent, and intent is cleared the moment SIWE finishes. A user who signed in with an
+ * external wallet then resolves to their embedded wallet instead, so an exact comparison
+ * turns a healthy session into a "stale" one and silently logs them back out.
+ */
+function isKultSessionValidForAnyAddress(addresses: string[]) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const wallet = localStorage.getItem(WALLET_KEY)?.toLowerCase();
+  if (!token || !wallet) return false;
+  if (addresses.length === 0) return true;
+  return addresses.includes(wallet);
+}
+
 async function waitForSigningWallet(
   getWallet: () => ReturnType<typeof pickSigningWallet>,
   timeoutMs = SIGNING_WALLET_WAIT_MS,
@@ -110,6 +127,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         : "any";
   const resolvedAddress = resolvePrivyWalletAddress(user, wallets, walletPreference);
   const walletAddress = resolvedAddress ?? localStorage.getItem(WALLET_KEY);
+  // `user` and `wallets` get new identities on most renders; keying off the joined
+  // addresses keeps the session effects below from re-running on every one of them.
+  const knownAddressesKey = getPrivyWalletAddresses(user, wallets).join(",");
+  const knownAddresses = useMemo(
+    () => (knownAddressesKey ? knownAddressesKey.split(",") : []),
+    [knownAddressesKey],
+  );
 
   const walletsRef = useRef(wallets);
   const staleLogoutInFlightRef = useRef(false);
@@ -141,9 +165,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setPlayer(null);
   }, [clearAccess, queryClient]);
 
-  const resetStalePrivySession = useCallback(async () => {
+  const resetStalePrivySession = useCallback(async (reason: string) => {
     if (staleLogoutInFlightRef.current) return;
     staleLogoutInFlightRef.current = true;
+    authWarn("stale-session reset — clearing Kult token and disconnecting Privy", {
+      reason,
+      storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+      hadToken: !!localStorage.getItem(TOKEN_KEY),
+    });
     try {
       clearLocalAuthState();
       await privyLogout();
@@ -163,18 +192,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Snapshot of every input the session decisions below depend on.
+  useEffect(() => {
+    authLog("state", {
+      ready,
+      privyAuthenticated: authenticated,
+      hasKultSession,
+      isAuthenticated: authenticated && hasKultSession,
+      loginIntent: hasUserLoginIntent(),
+      loginMethod,
+      walletPreference,
+      resolvedAddress: shortAddress(resolvedAddress),
+      knownAddresses: knownAddresses.map((a) => shortAddress(a)),
+      storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+      storedToken: tokenFingerprint(localStorage.getItem(TOKEN_KEY)),
+    });
+  }, [
+    ready,
+    authenticated,
+    hasKultSession,
+    loginMethod,
+    walletPreference,
+    resolvedAddress,
+    knownAddresses,
+  ]);
+
   // Orphaned Kult token without a live Privy session.
   useEffect(() => {
     if (!ready || authenticated) return;
     if (!localStorage.getItem(TOKEN_KEY)) return;
+    authWarn("orphaned Kult token without a Privy session — clearing", {
+      storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+    });
     clearLocalAuthState();
   }, [ready, authenticated, clearLocalAuthState]);
 
-  // Restore an existing Kult session when Privy and stored wallet match.
+  // Restore an existing Kult session when the stored wallet belongs to this Privy user.
   useEffect(() => {
-    if (!ready || !authenticated || !resolvedAddress) return;
-    if (!isKultSessionValidForAddress(resolvedAddress)) return;
+    if (!ready || !authenticated) return;
+    if (!isKultSessionValidForAnyAddress(knownAddresses)) return;
 
+    authLog("restoring stored Kult session", {
+      storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+    });
     setHasKultSession(true);
     void fetchProfile();
     if (!getAiArenaAccessToken()) {
@@ -185,22 +245,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })();
     }
-  }, [ready, authenticated, resolvedAddress, fetchProfile]);
+  }, [ready, authenticated, knownAddresses, fetchProfile]);
 
   // Privy session restored without a valid Kult token, disconnect fully (no auto SIWE).
   useEffect(() => {
     if (!ready || !authenticated || hasUserLoginIntent()) return;
+    // A SIWE run still in flight has not written its token yet — resetting here would
+    // cancel the very login that is about to succeed.
+    if (siweInFlightByAddress.size > 0) return;
 
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
-      void resetStalePrivySession();
+      void resetStalePrivySession("privy authenticated but no Kult token stored");
       return;
     }
 
-    if (resolvedAddress && !isKultSessionValidForAddress(resolvedAddress)) {
-      void resetStalePrivySession();
+    // Privy can report zero wallets for a moment right after login; treating that as a
+    // mismatch would log the user straight back out.
+    if (knownAddresses.length > 0 && !isKultSessionValidForAnyAddress(knownAddresses)) {
+      void resetStalePrivySession("stored wallet is not linked to this Privy user");
     }
-  }, [ready, authenticated, resolvedAddress, resetStalePrivySession]);
+  }, [ready, authenticated, knownAddresses, resetStalePrivySession]);
 
   // Whitelabel email/Google (loginWithCode / OAuth) does not run createOnLogin, create embedded wallet ourselves.
   useEffect(() => {
@@ -259,6 +324,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!address) return;
 
     if (isKultSessionValidForAddress(address)) {
+      authLog("SIWE skipped — stored session already matches this address", {
+        address: shortAddress(address),
+      });
       setHasKultSession(true);
       void fetchProfile();
       if (!getAiArenaAccessToken()) {
@@ -283,19 +351,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     requestOpenLoginModal({ mode: "finishing" });
-    if (walletPreference === "embedded") {
-    } else {
-    }
+    authLog("SIWE start", { address: shortAddress(address), walletPreference });
 
     const run = withTimeout(
       (async () => {
         const nonce = await fetchSiweNonce(address);
         const message = buildSiweMessage(address, nonce);
+        authLog("SIWE nonce received");
 
         const privyWallet = await waitForSigningWallet(() =>
           pickSigningWallet(walletsRef.current, address, walletPreference)
         );
         if (!privyWallet) throw new Error("No Privy wallet available to sign");
+        authLog("SIWE signing wallet picked", {
+          wallet: shortAddress(privyWallet.address),
+          clientType: privyWallet.walletClientType,
+          matchesLoginAddress: privyWallet.address.toLowerCase() === address.toLowerCase(),
+        });
 
         const allowedChain = getAllowedChainFromEnv();
         const embedded = isEmbeddedPrivyConnectedWallet(privyWallet);
@@ -319,7 +391,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "Wallet signature",
         );
 
+        authLog("SIWE signature obtained — calling POST /player/login");
         const res = await playerApi.login(address, message, signature);
+
+        // A 200 with no parsable token is the failure mode that looks like success:
+        // nothing lands in localStorage, so the session cannot survive a reload.
+        if (!res.token || !localStorage.getItem(TOKEN_KEY)) {
+          throw new Error(
+            "Login response did not contain a usable token — check the /player/login payload shape",
+          );
+        }
+
+        authLog("login succeeded — Kult session stored", {
+          token: tokenFingerprint(localStorage.getItem(TOKEN_KEY)),
+          storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+          player: res.player?._id || null,
+        });
         setHasKultSession(true);
         setPlayer(res.player);
 
@@ -338,11 +425,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch(async (err) => {
         if (localStorage.getItem(TOKEN_KEY)) {
           setHasKultSession(true);
-          console.warn("[SIWE] Post-login step failed (session kept):", err);
+          authWarn("post-login step failed but Kult session was kept", { error: String(err) });
           return;
         }
 
-        console.error("[SIWE] Login failed:", err);
+        authWarn("SIWE failed — no Kult session written", { error: String(err) });
         clearLocalAuthState();
 
         try {
@@ -365,6 +452,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (siweInFlightByAddress.get(addrKey) === run) {
           siweInFlightByAddress.delete(addrKey);
         }
+        authLog("SIWE finished — login intent cleared", {
+          storedToken: tokenFingerprint(localStorage.getItem(TOKEN_KEY)),
+          storedWallet: shortAddress(localStorage.getItem(WALLET_KEY)),
+        });
       });
   }, [ready, authenticated, resolvedAddress, fetchProfile, privyLogout, clearLocalAuthState, walletPreference]);
 

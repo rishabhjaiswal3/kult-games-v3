@@ -170,9 +170,33 @@ function trySendStatic(req, res) {
   return true;
 }
 
+/** Creator Studio's own index.html, present only when its build is bundled under dist/create. */
+const STUDIO_INDEX = join(DIST, "create", "index.html");
+const HAS_BUNDLED_STUDIO = existsSync(STUDIO_INDEX);
+
+/**
+ * A request that should receive this app's index.html: a browser navigating to one of its
+ * client-side routes. Anything with a file extension is an asset, and `Accept: text/html`
+ * distinguishes a document load from a fetch/script/style request.
+ *
+ * `/create/*` belongs to Creator Studio, which is built with base `/create/`. Serving this
+ * app's index.html there renders a blank studio, so those requests are handled separately.
+ */
+function isSpaNavigation(req, pathname) {
+  if (isStudioPath(pathname)) return false;
+  if (extname(pathname)) return false;
+  return String(req.headers.accept || "").includes("text/html");
+}
+
+function isStudioPath(pathname) {
+  return pathname === "/create" || pathname.startsWith("/create/");
+}
+
 function sendSpaIndex(req, res) {
-  const indexPath = join(DIST, "index.html");
-  const html = readFileSync(indexPath);
+  sendHtml(req, res, readFileSync(join(DIST, "index.html")));
+}
+
+function sendHtml(req, res, html) {
   const headers = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" };
 
   const encoding = pickEncoding(req);
@@ -246,6 +270,37 @@ createServer((req, res) => {
 
   // ── Static assets ─────────────────────────────────────────────────────────────
   if (trySendStatic(req, res)) return;
+
+  // ── Creator Studio (/create/*) ───────────────────────────────────────────────
+  // Only reachable when the studio build is bundled into this image; otherwise the
+  // platform is expected to route /create/ to the studio's own deployment.
+  if (isStudioPath(pathname)) {
+    if (HAS_BUNDLED_STUDIO && !extname(pathname)) {
+      sendHtml(req, res, readFileSync(STUDIO_INDEX));
+      return;
+    }
+    console.warn("[production-server] 404 for Creator Studio path — is /create/ routed to the studio deployment?", {
+      pathname,
+      bundledStudio: HAS_BUNDLED_STUDIO,
+    });
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    res.end("Not found");
+    return;
+  }
+
+  // ── Never fall back to index.html for non-navigation requests ────────────────
+  // Returning HTML for a missing .js/.css yields "Unexpected token '<'" and a blank
+  // page instead of a 404, which hides the real problem (usually a build whose base
+  // path doesn't match the path it's served from).
+  if (!isSpaNavigation(req, pathname)) {
+    console.warn("[production-server] 404 (not a navigation request)", {
+      pathname,
+      accept: req.headers.accept,
+    });
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    res.end("Not found");
+    return;
+  }
 
   // ── SPA fallback ──────────────────────────────────────────────────────────────
   sendSpaIndex(req, res);

@@ -62,6 +62,33 @@ export function resolvePrivyWalletAddress(
   return wallets[0]?.address;
 }
 
+/**
+ * Every EVM address this Privy session can act as (embedded, external, smart), lowercased.
+ *
+ * A Kult session is bound to whichever address signed SIWE. `resolvePrivyWalletAddress`
+ * returns only one *preferred* address and that preference changes as login intent is
+ * cleared, so comparing the stored wallet against it alone reports a false mismatch.
+ */
+export function getPrivyWalletAddresses(
+  user: User | null | undefined,
+  wallets: ConnectedWallet[],
+): string[] {
+  const addresses = new Set<string>();
+
+  for (const wallet of wallets) {
+    if (wallet.address) addresses.add(wallet.address.toLowerCase());
+  }
+
+  for (const account of user?.linkedAccounts ?? []) {
+    if ((account.type === "wallet" || account.type === "smart_wallet") && "address" in account) {
+      const address = account.address;
+      if (typeof address === "string" && address) addresses.add(address.toLowerCase());
+    }
+  }
+
+  return [...addresses];
+}
+
 export function pickSigningWallet(
   wallets: ConnectedWallet[],
   address: string,

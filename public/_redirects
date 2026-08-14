@@ -1,3 +1,6 @@
 # Netlify, Cloudflare Pages, DO static — copied to dist/ by Vite
 # Legacy kult-moment links: serve crawlable OG HTML from the backend (not SPA /moments).
 /share/moments/*  /api/share/moments/:splat  200
+# SPA fallback must stay last. Cloudflare Workers ignores this file (see wrangler.toml
+# not_found_handling), but static hosts need it for deep links like /games/foo.
+/*    /index.html   200
