@@ -27,7 +27,7 @@ export const HIGHWAY_HUSTLE_MODES: HighwayHustleModeConfig[] = [
     description:
       "Classic endless highway racing. Dodge traffic, chain distance, and climb the One Way leaderboard.",
     difficulty: "Easy",
-    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",
+    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/8/index.html",
   },
   {
     identification: "highwayhustle-twoway",
@@ -47,7 +47,7 @@ export const HIGHWAY_HUSTLE_MODES: HighwayHustleModeConfig[] = [
     description:
       "Speed Run mode: short burst races built for acceleration tests and hard-difficulty reflex play.",
     difficulty: "Hard",
-    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/SpeedRun/2/index.html",
+    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/SpeedRun/4/index.html",
   },
   {
     identification: "highwayhustle-timebomb",
@@ -57,7 +57,7 @@ export const HIGHWAY_HUSTLE_MODES: HighwayHustleModeConfig[] = [
     description:
       "Time Bomb mode: beat the clock before detonation. Expert pacing and high-risk scoring.",
     difficulty: "Expert",
-    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/TimeBomb/2/index.html",
+    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/TimeBomb/4/index.html",
   },
 ];
 

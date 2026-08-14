@@ -17,6 +17,10 @@ import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { GamePlaySkeleton } from "@/components/skeleton";
 import type { AppShellOutletContext } from "@/layout/AppShell";
 
+const GAME_IFRAME_URL_OVERRIDES: Record<string, string> = {
+  zerogpool: "https://pub-c57fda34f99145fc8d97b0a6b6faa237.r2.dev/v9/Game/index.html",
+};
+
 const GamePlay = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -42,10 +46,15 @@ const GamePlay = () => {
 
   const rawPlayUrl = useMemo(() => {
     if (selectedMode) return selectedMode.playUrl;
+    const gameKey = (game?.identification ?? game?.slug ?? id ?? "")
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
+    const overrideUrl = GAME_IFRAME_URL_OVERRIDES[gameKey];
+    if (overrideUrl) return overrideUrl;
     return (
       (game?.metadata?.play_url as string) ?? (game && !isGameDownloadable(game) ? game.url : "") ?? ""
     );
-  }, [selectedMode, game]);
+  }, [selectedMode, game, id]);
 
   const token = localStorage.getItem(StorageKeys.local.authToken);
   const playUrl = buildGameIframeUrl(rawPlayUrl, {
