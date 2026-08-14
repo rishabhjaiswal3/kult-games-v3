@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MAIN_BACKEND } from "@/lib/serviceUrls";
+import { CREATOR_STUDIO_BACKEND } from "@/lib/serviceUrls";
 import { WALLET_KEY } from "@/constants/storageKeys";
 
 // Keys used by `creator-studio-frontend-tg` for identity + API auth caching.
@@ -74,7 +74,7 @@ export async function tryFetchAndStoreCreatorStudioAuthToken(options: {
   if (!access) return null;
 
   const body = { privyAccessToken: access };
-  const { data } = await axios.post<CreatorStudioAuthTokenResponse>(`${MAIN_BACKEND}/auth/token`, body, {
+  const { data } = await axios.post<CreatorStudioAuthTokenResponse>(`${CREATOR_STUDIO_BACKEND}/auth/token`, body, {
     timeout: 10_000,
     withCredentials: true,
   });
