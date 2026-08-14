@@ -1,4 +1,3 @@
 # Netlify, Cloudflare Pages, DO static — copied to dist/ by Vite
 # Legacy kult-moment links: serve crawlable OG HTML from the backend (not SPA /moments).
 /share/moments/*  /api/share/moments/:splat  200
-/*    /index.html   200
