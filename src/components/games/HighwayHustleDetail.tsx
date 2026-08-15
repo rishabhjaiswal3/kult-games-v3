@@ -1,0 +1,195 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  BriefcaseBusiness,
+  Car,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Gauge,
+  Globe2,
+  LockKeyhole,
+  Play,
+  Share2,
+  Shield,
+  Star,
+  Target,
+  Timer,
+} from "lucide-react";
+import type { Game } from "@/types/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { HighwayHustleGarage } from "@/components/highway/HighwayHustleGarage";
+import heroBanner from "@/assets/games/highway-hustle/hero-banner.webp";
+import galleryCover from "@/assets/games/highway-hustle/gallery-cover.webp";
+import modeSelection from "@/assets/games/highway-hustle/mode-selection.webp";
+import vehicleMarket from "@/assets/games/highway-hustle/vehicle-market.webp";
+
+const gallery = [galleryCover, modeSelection, vehicleMarket];
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="border-l-4 border-cyan-400 pl-3 font-tech text-[22px] font-bold uppercase leading-tight tracking-[-0.01em] text-white sm:text-[26px]">
+      {children}
+    </h2>
+  );
+}
+
+function GameShot({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="mt-8 block w-full rounded-[11px] border border-cyan-400/10 object-cover shadow-[0_24px_70px_rgba(0,140,255,0.12)]"
+      loading="lazy"
+    />
+  );
+}
+
+export function HighwayHustleDetail({ game }: { game: Game }) {
+  const [active, setActive] = useState(0);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const gameId = game.identification ?? game.slug ?? "highwayhustle";
+
+  const play = () => navigate(isAuthenticated ? `/game/${game._id}/play` : "/?login=1");
+
+  const share = async () => {
+    const data = {
+      title: "Highway Hustle",
+      text: "Race the neon highway in Highway Hustle on Kult Games",
+      url: window.location.href,
+    };
+    if (navigator.share) await navigator.share(data).catch(() => undefined);
+    else await navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-[1320px] pb-20 text-[#97979f] [&_p]:text-justify">
+      <button
+        type="button"
+        onClick={() => navigate("/games")}
+        className="mb-4 inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#07101d] px-4 py-2.5 font-tech text-xs font-semibold uppercase tracking-wider text-white/70 transition-colors hover:border-cyan-400/60 hover:bg-cyan-950/20 hover:text-white"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to Games
+      </button>
+
+      <section className="relative overflow-hidden rounded-[12px] bg-[#050b14]">
+        <img src={heroBanner} alt="Two Highway Hustle supercars on a neon expressway" className="aspect-[3/1] w-full object-cover" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020610]/90 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-purple-950/20 via-transparent to-cyan-950/20" />
+        <h1 className="absolute bottom-3 left-5 font-tech text-3xl font-black uppercase leading-none tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] sm:bottom-5 sm:left-7 sm:text-5xl lg:text-[56px]">
+          Highway Hustle
+        </h1>
+      </section>
+
+      <div className="mt-14 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_350px] xl:grid-cols-[minmax(0,1fr)_390px]">
+        <div className="min-w-0">
+          <SectionTitle>Introduction</SectionTitle>
+          <p className="mt-4 max-w-[680px] text-[17px] leading-[1.65] text-[#a5a5ad]">
+            Highway Hustle is a fast-paced driving game where players take on different missions, race through challenging routes, and push their vehicles to the limit. Choose your ride, complete objectives, and prove your skills across a variety of high-speed challenges.
+          </p>
+
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            {[
+              { label: "Mode", value: "Browser", icon: Globe2 },
+              { label: "Arena", value: "0G", icon: Target },
+              { label: "Access", value: isAuthenticated ? "Ready" : "Login", icon: LockKeyhole },
+            ].map((item) => (
+              <div key={item.label} className="flex min-w-0 items-center gap-3 rounded-[9px] border border-purple-600 bg-[#0b071b] px-3 py-3">
+                <item.icon className="h-5 w-5 shrink-0 text-cyan-300" />
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase text-white/35">{item.label}</div>
+                  <div className="truncate text-sm uppercase text-white sm:text-base">{item.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-4 sm:gap-3">
+            {[
+              { label: "Rating", value: String(game.rating ?? 5), icon: Star, color: "text-[#ffc400] border-[#a57d00]" },
+              { label: "Chain", value: "0G Chain", icon: Shield, color: "text-cyan-300 border-cyan-700" },
+              { label: "Leaderboard", value: "Ranks", icon: Crown, color: "text-[#ffc400] border-[#a57d00]", action: () => navigate("/leaderboard") },
+              { label: "Marketplace", value: "Inventory", icon: BriefcaseBusiness, color: "text-purple-400 border-purple-700", action: () => navigate(`/inventory?game=${encodeURIComponent(gameId)}`) },
+            ].map((item) => (
+              <button key={item.label} type="button" onClick={item.action} disabled={!item.action} className="flex min-w-0 items-center gap-2.5 rounded-[5px] border border-[#16132d] bg-[#080719] p-2.5 text-left transition enabled:hover:border-cyan-400/35 disabled:cursor-default">
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[8px] border ${item.color}`}><item.icon className="h-4 w-4" /></span>
+                <span className="min-w-0"><span className="block text-[10px] text-white/60">{item.label}</span><span className="mt-0.5 block text-sm font-bold leading-tight text-white">{item.value}</span></span>
+              </button>
+            ))}
+          </div>
+
+          <div className="relative mt-14 overflow-hidden rounded-[12px] bg-black">
+            <img src={gallery[active]} alt={`Highway Hustle screenshot ${active + 1}`} className="aspect-[1.78/1] w-full object-cover" />
+            <button type="button" onClick={() => setActive((active - 1 + gallery.length) % gallery.length)} aria-label="Previous screenshot" className="absolute left-0 top-1/2 grid h-16 w-11 -translate-y-1/2 place-items-center rounded-r-md border-y border-r border-white/10 bg-black/45 text-white backdrop-blur-sm hover:bg-black/70"><ChevronLeft className="h-8 w-8" /></button>
+            <button type="button" onClick={() => setActive((active + 1) % gallery.length)} aria-label="Next screenshot" className="absolute right-0 top-1/2 grid h-16 w-11 -translate-y-1/2 place-items-center rounded-l-md border-y border-l border-white/10 bg-black/45 text-white backdrop-blur-sm hover:bg-black/70"><ChevronRight className="h-8 w-8" /></button>
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {gallery.map((_, index) => <button key={index} type="button" onClick={() => setActive(index)} aria-label={`Show screenshot ${index + 1}`} className={`h-2 w-2 rounded-full ${active === index ? "bg-white" : "bg-white/35"}`} />)}
+            </div>
+          </div>
+
+          <div className="mt-6 flex gap-4 overflow-x-auto pb-1">
+            {gallery.map((src, index) => (
+              <button key={src} type="button" onClick={() => setActive(index)} className={`w-[152px] shrink-0 overflow-hidden rounded-sm border-2 ${active === index ? "border-cyan-300" : "border-transparent opacity-70 hover:opacity-100"}`}>
+                <img src={src} alt="" className="aspect-video w-full object-cover" />
+              </button>
+            ))}
+          </div>
+
+          <main className="mt-14 max-w-[920px] space-y-16 text-[17px] leading-[1.65] text-[#a5a5ad]">
+            <section>
+              <SectionTitle>Overview</SectionTitle>
+              <p className="mt-4">Hit the highway and choose from multiple mission types, including One Way, Two Way, Speed Run, and Time Bomb. Build your collection with different vehicles such as Muscle, Jeep, F1, Pickup, Coupe, Lamborghini, CTR, and SUV, each offering a unique driving experience.</p>
+              <GameShot src={modeSelection} alt="Highway Hustle mission selection with four game modes" />
+            </section>
+
+            <section>
+              <SectionTitle>Game Modes</SectionTitle>
+              <p className="mt-4">Choose a mission based on your preferred challenge and difficulty. Start with the flowing traffic of One Way, face oncoming vehicles in Two Way, push for the fastest run in Speed Run, or race against the countdown in Time Bomb. Every mode tests your driving skills in a different way.</p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  { name: "One Way", level: "Easy", icon: Car, copy: "Classic endless traffic and a clean introduction to the road." },
+                  { name: "Two Way", level: "Medium", icon: Gauge, copy: "Read both lanes and react quickly to oncoming traffic." },
+                  { name: "Speed Run", level: "Hard", icon: Timer, copy: "Chase maximum pace through short, demanding runs." },
+                  { name: "Time Bomb", level: "Expert", icon: Timer, copy: "Keep the clock alive while traffic closes around you." },
+                ].map((mode) => (
+                  <div key={mode.name} className="rounded-lg border border-white/10 bg-[#050b14] p-4">
+                    <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-md border border-cyan-400/20 bg-cyan-400/10 text-cyan-300"><mode.icon className="h-5 w-5" /></span><div><h3 className="font-tech text-sm font-bold uppercase text-white">{mode.name}</h3><span className="text-[10px] uppercase tracking-wider text-purple-300">{mode.level}</span></div></div>
+                    <p className="mt-3 !text-left text-sm leading-relaxed text-white/55">{mode.copy}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <SectionTitle>Vehicle Collection</SectionTitle>
+              <p className="mt-4">Expand your garage with a variety of vehicles, from powerful muscle cars and pickups to high-performance F1 machines and supercars. Each vehicle adds a different style to your Highway Hustle experience.</p>
+              <div className="mt-7"><HighwayHustleGarage compact title="Your Highway Hustle garage" /></div>
+            </section>
+
+            <section>
+              <SectionTitle>Vehicle Market</SectionTitle>
+              <p className="mt-4">Browse and collect vehicles through the in-game car marketplace. Choose from multiple car packs and unlock new rides to build a garage that matches your driving style.</p>
+              <GameShot src={vehicleMarket} alt="Highway Hustle vehicle marketplace" />
+            </section>
+          </main>
+        </div>
+
+        <aside className="order-first overflow-hidden rounded-[16px] border border-[#173e56] bg-gradient-to-b from-[#071426] to-[#050a13] shadow-[0_20px_70px_rgba(0,0,0,0.35)] lg:sticky lg:top-24 lg:order-none [&_p]:!text-left">
+          <div className="border-b border-white/5 bg-[radial-gradient(circle_at_50%_0%,rgba(0,196,255,0.18),transparent_68%)] p-4">
+            <img src={galleryCover} alt="Highway Hustle" className="aspect-video w-full rounded-lg object-cover" />
+          </div>
+          <div className="p-6">
+            <h3 className="font-tech text-lg font-bold uppercase text-white">Highway Hustle</h3>
+            <p className="mt-3 text-[15px] leading-[1.7] text-[#a5a5ad]">A neon highway racer built around quick missions, distinct vehicles, escalating traffic, and four ways to test your reactions.</p>
+            <div className="mt-5 flex items-center justify-between"><span className="rounded border border-emerald-700/70 bg-emerald-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-emerald-300">Racing</span><span className="text-[11px] uppercase tracking-wider text-white/35">Browser game</span></div>
+            <button type="button" onClick={play} className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#5b20ce] via-[#7627df] to-[#9a35ff] py-3.5 font-semibold text-white transition hover:brightness-110"><Play className="h-4 w-4 fill-current" /> Play now</button>
+            <button type="button" onClick={() => navigate(`/inventory?game=${encodeURIComponent(gameId)}`)} className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-md border border-purple-500/30 bg-[#0a0f1b] py-3 text-sm text-white transition hover:border-purple-400/60"><BriefcaseBusiness className="h-4 w-4 text-purple-300" /> Inventory</button>
+            <button type="button" onClick={share} className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-md border border-cyan-400/20 bg-[#071426] py-3 text-sm text-white transition hover:border-cyan-300/60"><Share2 className="h-4 w-4" /> Share</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

@@ -24,7 +24,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccess } from "@/contexts/AccessContext";
 import { isGameDownloadable, gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
-import { HighwayHustleGarage } from "@/components/highway/HighwayHustleGarage";
 import { isHighwayHustleFamily } from "@/constants/highwayHustleModes";
 import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
 import { WarzoneWarriorsDetail } from "@/components/games/WarzoneWarriorsDetail";
@@ -32,6 +31,7 @@ import { RoboWarsDetail } from "@/components/games/RoboWarsDetail";
 import { ZeroDashDetail } from "@/components/games/ZeroDashDetail";
 import { GuessTheAiDetail } from "@/components/games/GuessTheAiDetail";
 import { ZeroGPoolDetail } from "@/components/games/ZeroGPoolDetail";
+import { HighwayHustleDetail } from "@/components/games/HighwayHustleDetail";
 import type { Game } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
 
@@ -181,6 +181,14 @@ const GameDetail = () => {
     );
   }
 
+  if (isHighwayHustleFamily(game)) {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <HighwayHustleDetail game={game} />
+      </ArenaPageLayout>
+    );
+  }
+
   const title = getGameName(game.name);
   const meta = game.metadata ?? {};
   const about =
@@ -195,8 +203,6 @@ const GameDetail = () => {
   const facts = buildFacts(game);
   const downloadable = isGameDownloadable(game);
   const downloadHref = gameDownloadUrl(game);
-  const isHighwayHustle = isHighwayHustleFamily(game);
-
   const handlePlayAccess = () => {
     if (isAuthenticated) {
       navigate(`/game/${id}/play`);
@@ -387,12 +393,6 @@ const GameDetail = () => {
                   <p key={i}>{para.trim()}</p>
                 ))}
               </div>
-            </div>
-          ) : null}
-
-          {isHighwayHustle ? (
-            <div data-tour="game-detail-garage">
-              <HighwayHustleGarage title="Garage, select your ride" />
             </div>
           ) : null}
 
