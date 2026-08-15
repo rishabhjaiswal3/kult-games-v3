@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
+  /** Public CDN base used to resolve relative marketplace asset paths. */
+  readonly VITE_ASSET_URL?: string;
   /** Public Creator Studio mount point, for example `https://app.kult.games/create`. */
   readonly VITE_CREATOR_STUDIO_URL?: string;
   /** Creator Studio backend API; separate from its public frontend URL. */

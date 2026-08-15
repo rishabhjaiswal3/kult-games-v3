@@ -1,4 +1,5 @@
 import apiClient from "@/lib/apiClient";
+import { resolveAssetUrl } from "@/lib/resolveAssetUrl";
 import { isRecord, pickNumber, pickString, unwrapApiData } from "@/api/utils";
 import type {
   ApiEnvelope,
@@ -31,7 +32,7 @@ function normalizeListing(rawValue: unknown): MarketplaceListing {
     name: pickString(raw.name) ?? "",
     shortDescription: pickString(raw.shortDescription, raw.short_description) ?? null,
     longDescription: pickString(raw.longDescription, raw.long_description) ?? null,
-    assetUrl: pickString(raw.assetUrl, raw.asset_url) ?? null,
+    assetUrl: resolveAssetUrl(pickString(raw.assetUrl, raw.asset_url)),
     price: pickNumber(raw.price) ?? 0,
     category: pickString(raw.category) ?? "",
     currency: pickString(raw.currency) ?? "",

@@ -17,6 +17,11 @@ export function studioUrl(): string {
 export const MAIN_BACKEND =
   `${trimTrailingSlash(import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app")}/api`;
 
+/** Public CDN containing marketplace inventory media. */
+export const ASSET_BASE_URL = trimTrailingSlash(
+  import.meta.env.VITE_ASSET_URL ?? "https://kult-store-assets.sfo3.cdn.digitaloceanspaces.com",
+);
+
 /** Creator Studio's own backend (issues the studio's JWT) — a separate service from MAIN_BACKEND. */
 export const CREATOR_STUDIO_BACKEND = trimTrailingSlash(
   import.meta.env.VITE_CREATOR_STUDIO_API_URL ?? "https://tg.kult.games/api",
