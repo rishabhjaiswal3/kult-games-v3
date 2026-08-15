@@ -4,13 +4,13 @@
 
 const trimTrailingSlash = (url: string) => url.replace(/\/+$/, "");
 
-/** Creator Studio, served at `/create/` on the main app host (nginx routes this, not the SPA). */
+/** Creator Studio public mount point. Keep this independent from the main API origin. */
 export function studioUrl(): string {
-  const host = trimTrailingSlash(
-    import.meta.env.VITE_API_URL ?? "https://kult-browser-rust-l2lwg.ondigitalocean.app",
-  ).replace(/\/api$/i, "");
+  const studioBase = trimTrailingSlash(
+    import.meta.env.VITE_CREATOR_STUDIO_URL ?? "https://app.kult.games/create",
+  );
   // Always enter through auto-auth to reuse the existing Privy session and warm the studio's API JWT cache.
-  return `${host}/create/auto-auth`;
+  return `${studioBase}/auto-auth`;
 }
 
 /** Primary Kult API (games, player, leaderboard, …), same origin as today + `/api`. */

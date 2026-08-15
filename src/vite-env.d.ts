@@ -2,6 +2,10 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
+  /** Public Creator Studio mount point, for example `https://app.kult.games/create`. */
+  readonly VITE_CREATOR_STUDIO_URL?: string;
+  /** Creator Studio backend API; separate from its public frontend URL. */
+  readonly VITE_CREATOR_STUDIO_API_URL?: string;
   readonly VITE_KULT_AI_API_URL?: string;
   readonly VITE_MARKETPLACE_CONTRACT_ADDRESS?: string;
   readonly VITE_MARKETPLACE_CHAIN_ID?: string;
