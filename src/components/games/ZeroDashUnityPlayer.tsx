@@ -40,6 +40,7 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
 
     let disposed = false;
     let unityInstance: UnityInstance | null = null;
+    let startupTimer: number | undefined;
     const baseUrl = normalizeBuildUrl(buildUrl);
     const script = document.createElement("script");
     script.src = `${baseUrl}/ZeroDash.loader.js`;
@@ -52,6 +53,10 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
           throw new Error("Zero Dash loader did not initialize Unity");
         }
 
+        startupTimer = window.setTimeout(() => {
+          if (!disposed) setError("Zero Dash initialization timed out. Check the Unity error in the browser console.");
+        }, 180_000);
+
         const instance = await window.createUnityInstance(
           canvas,
           {
@@ -59,12 +64,17 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
             dataUrl: `${baseUrl}/ZeroDash.data`,
             frameworkUrl: `${baseUrl}/ZeroDash.framework.js`,
             codeUrl: `${baseUrl}/ZeroDash.wasm`,
-            streamingAssetsUrl: `${baseUrl}/StreamingAssets`,
+            streamingAssetsUrl: "/StreamingAssets",
             companyName: "Kult Games",
             productName: "Zero Dash",
             productVersion: "1.0",
-            matchWebGLToCanvasSize: true,
-            devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+            showBanner: (message: string, type: string) => {
+              if (type === "error" && !disposed) setError(message);
+              else if (type === "warning") console.warn("[ZeroDash Unity]", message);
+            },
+            // Match the known-working standalone Zero Dash configuration.
+            matchWebGLToCanvasSize: false,
+            devicePixelRatio: 1,
           },
           (value) => {
             if (!disposed) setProgress(Math.round(value * 100));
@@ -77,6 +87,7 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
         }
 
         unityInstance = instance;
+        if (startupTimer) window.clearTimeout(startupTimer);
         setProgress(100);
 
         if (jwt) {
@@ -90,6 +101,7 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
           }, 1500);
         }
       } catch (loadError) {
+        if (startupTimer) window.clearTimeout(startupTimer);
         if (!disposed) {
           setError(loadError instanceof Error ? loadError.message : "Unable to start Zero Dash");
         }
@@ -104,14 +116,22 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
 
     return () => {
       disposed = true;
+      if (startupTimer) window.clearTimeout(startupTimer);
       script.remove();
       if (unityInstance) void unityInstance.Quit().catch(() => undefined);
     };
   }, [buildUrl, jwt]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-black">
-      <canvas ref={canvasRef} className="block h-full w-full bg-black" />
+    <div className="relative grid h-full w-full place-items-center overflow-hidden bg-black">
+      <canvas
+        ref={canvasRef}
+        id="unity-canvas"
+        width={900}
+        height={600}
+        tabIndex={-1}
+        className="block h-auto max-h-full w-auto max-w-full touch-none bg-black [aspect-ratio:3/2]"
+      />
       {progress < 100 && !error ? (
         <div className="absolute inset-0 grid place-items-center bg-[#03060c]">
           <div className="w-[min(78vw,420px)] text-center">
