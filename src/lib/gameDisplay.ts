@@ -1,14 +1,14 @@
 import type { Game } from "@/types/api";
 
 /** Bundled cover art for the KULT-built titles, keyed by lowercased file basename. */
-const localGameImageFiles = import.meta.glob("../assets/games/allGameImages/*.png", {
+const localGameImageFiles = import.meta.glob("../assets/games/allGameImages/*.webp", {
   eager: true,
   import: "default",
 }) as Record<string, string>;
 
 const LOCAL_GAME_IMAGE_BY_KEY: Record<string, string> = {};
 for (const [path, url] of Object.entries(localGameImageFiles)) {
-  const base = path.split("/").pop()?.replace(/\.png$/i, "").toLowerCase();
+  const base = path.split("/").pop()?.replace(/\.webp$/i, "").toLowerCase();
   if (base) LOCAL_GAME_IMAGE_BY_KEY[base] = url;
 }
 

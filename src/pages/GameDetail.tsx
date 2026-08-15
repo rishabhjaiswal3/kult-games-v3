@@ -31,6 +31,7 @@ import { WarzoneWarriorsDetail } from "@/components/games/WarzoneWarriorsDetail"
 import { RoboWarsDetail } from "@/components/games/RoboWarsDetail";
 import { ZeroDashDetail } from "@/components/games/ZeroDashDetail";
 import { GuessTheAiDetail } from "@/components/games/GuessTheAiDetail";
+import { ZeroGPoolDetail } from "@/components/games/ZeroGPoolDetail";
 import type { Game } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
 
@@ -168,6 +169,14 @@ const GameDetail = () => {
     return (
       <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
         <GuessTheAiDetail game={game} />
+      </ArenaPageLayout>
+    );
+  }
+
+  if (getGameKey(game) === "zerogpool") {
+    return (
+      <ArenaPageLayout contentClassName="max-w-full px-4 py-5 sm:px-6 lg:px-8">
+        <ZeroGPoolDetail game={game} />
       </ArenaPageLayout>
     );
   }

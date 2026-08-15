@@ -69,26 +69,19 @@ function DiscoveryGameCard({
     <button
       type="button"
       onClick={onOpen}
-      className={`group relative shrink-0 snap-start overflow-hidden rounded-xl border border-white/10 bg-[#070b15] text-left transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/65 hover:shadow-[0_16px_34px_rgba(0,0,0,0.32),0_0_28px_rgba(154,53,255,0.18)] sm:w-[250px] lg:w-[calc((100%-1.5rem)/3)] ${fillMobileWidth ? "w-full" : "w-[230px]"}`}
+      className={`group relative shrink-0 snap-start overflow-hidden rounded-xl border border-[#12335d] bg-[#050a13] text-left transition duration-300 hover:-translate-y-1 hover:border-[#8b32ff]/70 hover:shadow-[0_16px_34px_rgba(0,0,0,0.32),0_0_28px_rgba(104,36,255,0.15)] sm:w-[250px] lg:w-[calc((100%-1.5rem)/3)] ${fillMobileWidth ? "w-full" : "w-[230px]"}`}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[#050914]">
-        {image ? <img src={image} alt="" className="h-full w-full object-cover object-center brightness-125 saturate-130 contrast-105 transition duration-500 group-hover:scale-105 group-hover:brightness-135 group-hover:saturate-150" loading="lazy" /> : null}
+        {image ? <img src={image} alt={`${name} cover`} className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105" loading="lazy" /> : null}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.18),transparent_52%)] opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
-        <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-lg border border-white/15 bg-black/55 font-tech text-[10px] font-black text-white backdrop-blur-sm">
-          0{index + 1}
-        </span>
-        <span className="absolute bottom-2 right-3 rounded border border-[#00f080]/25 bg-[#001d16]/75 px-2 py-1 font-tech text-[8px] font-bold uppercase tracking-wider text-[#72f7bb]">
-          {downloadable ? "Download" : "Play now"}
-        </span>
       </div>
-      <div className="relative p-3">
-        <p className="font-tech text-[8px] font-bold uppercase tracking-[0.16em] text-[#c78aff]">{label}</p>
-        <div className="mt-1 flex items-center justify-between gap-2">
+      <div className="relative p-3.5">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="truncate font-tech text-sm font-black uppercase text-white">{name}</h3>
-          <ArrowUpRight className="h-4 w-4 shrink-0 text-white/35 transition group-hover:text-[#d6acff]" />
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-gradient-to-r from-[#6416d7] to-[#9d42f6] px-3 py-1.5 font-tech text-[8px] font-bold text-white"><Play className="h-3 w-3" /> {downloadable ? "Download" : label.includes("left") ? "Continue" : "Play"}</span>
         </div>
-        <p className="mt-1 font-tech text-[9px] uppercase tracking-wider text-white/42">
-          {game.rating != null ? `★ ${game.rating} · ` : ""}{formatPlays(game.play_count)}
+        <p className="mt-1.5 font-tech text-[9px] tracking-wider text-white/55">
+          <span className="text-[#ffe600]">★★★★★</span> {game.rating ?? 4.5} · {formatPlays(game.play_count)}
         </p>
       </div>
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc] to-transparent opacity-0 transition group-hover:opacity-100" />
@@ -119,16 +112,16 @@ function DiscoverySection({
   if (!games.length) return null;
 
   return (
-    <section className="relative overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(112deg,rgba(8,13,25,0.96),rgba(5,8,16,0.98))] p-4 sm:p-5">
+    <section className="relative overflow-hidden py-2">
       <div className="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full blur-3xl" style={{ backgroundColor: accent, opacity: 0.1 }} />
-      <div className="relative mb-4 flex items-end justify-between gap-3">
+      <div className="relative mb-3 flex items-end justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.045]" style={{ color: accent }}>
+          <div className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/[0.035]" style={{ color: accent }}>
             <Icon className="h-5 w-5" />
           </div>
           <div>
             <h2 className="font-tech text-sm font-black uppercase tracking-wide text-white">{title}</h2>
-            <p className="mt-0.5 text-[10px] text-white/46">{subtitle}</p>
+            <p className="text-[9px] text-white/46">{subtitle}</p>
           </div>
         </div>
         {hasOverflow ? (
@@ -239,10 +232,10 @@ const Games = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-tech text-2xl font-black uppercase leading-tight text-white sm:text-3xl">
-            Play Today Build Forever
+            Play Today Build <span className="text-[#8f35ff]">Forever</span>
           </h1>
-          <p className="mt-3 max-w-5xl text-base leading-relaxed text-white/60 sm:text-lg">
-            Every game on KULT connects to the AI Arena ecosystem, your agents play alongside you, and every match builds reputation.
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+            Every game on KULT connects to the AI Arena ecosystem. Your agents play alongside you, and every match builds reputation.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -255,24 +248,24 @@ const Games = () => {
         </div>
       </div>
 
-      <div className="arena-panel home-stats-panel home-stats-panel--static grid grid-cols-2 divide-x divide-white/8 overflow-hidden md:grid-cols-4" data-tour="games-stats">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4" data-tour="games-stats">
         {[
-          { label: "TOTAL GAMES", value: String(allGames.length), icon: Gamepad2, color: "#0089ff" },
-          { label: "VISIBLE", value: String(filtered.length), icon: Layers, color: "#b338ff" },
-          { label: "INSTANT PLAY", value: String(instantPlayCount), icon: Zap, color: "#00f080" },
-          { label: "DOWNLOADABLE", value: String(downloadableCount), icon: Download, color: "#ffc000" },
+          { label: "TOTAL GAMES", value: String(allGames.length).padStart(2, "0"), icon: Gamepad2, color: "#0089ff", panel: "border-blue-500 bg-gradient-to-r from-[#002b86] to-[#06174d]" },
+          { label: "VISIBLE", value: String(filtered.length).padStart(2, "0"), icon: Layers, color: "#b338ff", panel: "border-purple-500 bg-gradient-to-r from-[#7900dc] to-[#2b0050]" },
+          { label: "INSTANT PLAY", value: String(instantPlayCount).padStart(2, "0"), icon: Zap, color: "#00f080", panel: "border-emerald-500 bg-gradient-to-r from-[#008c5a] to-[#003927]" },
+          { label: "DOWNLOADABLE", value: String(downloadableCount).padStart(2, "0"), icon: Download, color: "#ff7b00", panel: "border-orange-500 bg-gradient-to-r from-[#ef6500] to-[#572100]" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="home-stat-tile relative z-10 flex min-w-0 items-center gap-2.5 px-3 py-3.5 sm:gap-3 sm:px-4 sm:py-4 lg:gap-4 lg:px-6"
+            className={`relative flex min-w-0 items-center gap-3 rounded-xl border px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:px-4 ${stat.panel}`}
             style={{ "--stat-color": stat.color } as CSSProperties}
           >
-            <div className="home-stat-icon grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:h-10 sm:w-10 lg:h-11 lg:w-11">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/20" style={{ color: stat.color }}>
               <stat.icon className="h-4.5 w-4.5 lg:h-5 lg:w-5" />
             </div>
             <div className="min-w-0">
-              <div className="whitespace-nowrap font-tech text-[8px] font-semibold leading-tight tracking-[0.08em] text-white/72 sm:text-[9px] lg:text-[10px]">{stat.label}</div>
-              <div className="mt-0.5 text-xl font-semibold text-white sm:text-2xl">{stat.value}</div>
+              <div className="whitespace-nowrap font-tech text-[8px] font-semibold text-white/75 sm:text-[9px]">{stat.label}</div>
+              <div className="mt-0.5 text-xl font-bold text-white sm:text-2xl">{stat.value}</div>
             </div>
           </div>
         ))}
