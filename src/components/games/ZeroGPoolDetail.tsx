@@ -17,12 +17,13 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import type { Game } from "@/types/api";
 import heroBanner from "@/assets/games/zeroGpool/hero-banner.webp";
+import poolTableOverview from "@/assets/games/zeroGpool/pool-table-overview.webp";
 import gameModes from "@/assets/games/zeroGpool/game-modes.webp";
 import controlSelection from "@/assets/games/zeroGpool/control-selection.webp";
 import controlsAndAiming from "@/assets/games/zeroGpool/controls-and-aiming.webp";
 import cueSelection from "@/assets/games/zeroGpool/cue-selection.webp";
 
-const gallery = [heroBanner, gameModes, controlsAndAiming, cueSelection, controlSelection];
+const gallery = [poolTableOverview, gameModes, controlsAndAiming, cueSelection, controlSelection];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="border-l-4 border-cyan-400 pl-3 font-tech text-[22px] font-bold uppercase leading-tight text-white sm:text-[26px]">{children}</h2>;
