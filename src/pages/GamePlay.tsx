@@ -16,6 +16,7 @@ import { buildGameIframeUrl } from "@/lib/buildGameIframeUrl";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import { GamePlaySkeleton } from "@/components/skeleton";
 import { GAME_FRONTEND_URL_OVERRIDES } from "@/constants/gameFrontendUrls";
+import { ZeroDashUnityPlayer } from "@/components/games/ZeroDashUnityPlayer";
 import type { AppShellOutletContext } from "@/layout/AppShell";
 
 const GAME_IFRAME_URL_OVERRIDES: Record<string, string> = {
@@ -41,6 +42,12 @@ const GamePlay = () => {
 
   const isHighwayHustle = isHighwayHustleFamily(id ?? "") || (game ? isHighwayHustleFamily(game) : false);
 
+  const gameKey = useMemo(
+    () => (game?.identification ?? game?.slug ?? id ?? "").toLowerCase().replace(/[\s_-]+/g, ""),
+    [game, id],
+  );
+  const isZeroDash = gameKey === "zerodash";
+
   const selectedMode = useMemo((): HighwayHustleModeConfig | null => {
     if (!modeParam) return null;
     return getHighwayModeByModeId(modeParam) ?? null;
@@ -48,15 +55,12 @@ const GamePlay = () => {
 
   const rawPlayUrl = useMemo(() => {
     if (selectedMode) return selectedMode.playUrl;
-    const gameKey = (game?.identification ?? game?.slug ?? id ?? "")
-      .toLowerCase()
-      .replace(/[\s_-]+/g, "");
     const overrideUrl = GAME_IFRAME_URL_OVERRIDES[gameKey];
     if (overrideUrl) return overrideUrl;
     return (
       (game?.metadata?.play_url as string) ?? (game && !isGameDownloadable(game) ? game.url : "") ?? ""
     );
-  }, [selectedMode, game, id]);
+  }, [selectedMode, game, gameKey]);
 
   const token = localStorage.getItem(StorageKeys.local.authToken);
   const playUrl = buildGameIframeUrl(rawPlayUrl, {
@@ -212,12 +216,16 @@ const GamePlay = () => {
         </button>
       </div>
       <div className="h-full w-full" data-tour="game-play-iframe">
-        <iframe
-          src={playUrl}
-          title={gameTitle}
-          className="h-full w-full border-none"
-          allow="fullscreen; autoplay; clipboard-write; gamepad"
-        />
+        {isZeroDash ? (
+          <ZeroDashUnityPlayer buildUrl={rawPlayUrl} jwt={token} />
+        ) : (
+          <iframe
+            src={playUrl}
+            title={gameTitle}
+            className="h-full w-full border-none"
+            allow="fullscreen; autoplay; clipboard-write; gamepad"
+          />
+        )}
       </div>
     </div>
   );
