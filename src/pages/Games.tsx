@@ -12,6 +12,7 @@ import {
   Info,
   Layers,
   Package,
+  Play,
   Search,
   Smartphone,
   Zap,
