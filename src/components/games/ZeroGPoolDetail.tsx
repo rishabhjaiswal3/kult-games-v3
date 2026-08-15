@@ -63,7 +63,7 @@ export function ZeroGPoolDetail({ game }: { game: Game }) {
           <SectionTitle>Introduction</SectionTitle>
           <p className="mt-4 max-w-[680px] text-[17px] leading-[1.65] text-[#a5a5ad]">Zero G Pool is a modern 8-ball pool game where players test their aim, timing, and shot control. Practice solo, compete through matchmaking, challenge AI opponents, and master a growing collection of cues in a neon arena built for precise play.</p>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-3">
             {[
               { label: "Mode", value: "Browser", icon: Globe2 },
               { label: "Arena", value: "0G", icon: Target },
@@ -71,7 +71,7 @@ export function ZeroGPoolDetail({ game }: { game: Game }) {
             ].map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3 rounded-lg border border-cyan-500/35 bg-[#071524] px-3 py-3"><item.icon className="h-5 w-5 shrink-0 text-cyan-300" /><div className="min-w-0"><div className="text-[10px] uppercase text-white/35">{item.label}</div><div className="truncate text-sm uppercase text-white sm:text-base">{item.value}</div></div></div>)}
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-3">
             {[
               { label: "Rating", value: String(game.rating ?? 5), icon: Star, color: "text-yellow-300 border-yellow-500/45" },
               { label: "Chain", value: "0G Chain", icon: Shield, color: "text-cyan-300 border-cyan-500/45" },
@@ -82,8 +82,8 @@ export function ZeroGPoolDetail({ game }: { game: Game }) {
 
           <div className="relative mt-12 overflow-hidden rounded-xl bg-black">
             <img src={gallery[active]} alt={`Zero G Pool screenshot ${active + 1}`} className="aspect-video w-full object-cover" />
-            <button type="button" onClick={() => setActive((active - 1 + gallery.length) % gallery.length)} aria-label="Previous screenshot" className="absolute left-0 top-1/2 grid h-14 w-10 -translate-y-1/2 place-items-center rounded-r-md bg-black/50 text-white"><ChevronLeft className="h-7 w-7" /></button>
-            <button type="button" onClick={() => setActive((active + 1) % gallery.length)} aria-label="Next screenshot" className="absolute right-0 top-1/2 grid h-14 w-10 -translate-y-1/2 place-items-center rounded-l-md bg-black/50 text-white"><ChevronRight className="h-7 w-7" /></button>
+            <button type="button" onClick={() => setActive((current) => (current - 1 + gallery.length) % gallery.length)} aria-label="Previous screenshot" className="absolute top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 touch-manipulation place-items-center rounded-full border border-white/25 bg-black/65 text-white shadow-lg backdrop-blur-sm transition hover:border-cyan-300 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-95 left-3 sm:left-4"><ChevronLeft className="h-7 w-7" /></button>
+            <button type="button" onClick={() => setActive((current) => (current + 1) % gallery.length)} aria-label="Next screenshot" className="absolute top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 touch-manipulation place-items-center rounded-full border border-white/25 bg-black/65 text-white shadow-lg backdrop-blur-sm transition hover:border-cyan-300 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-95 right-3 sm:right-4"><ChevronRight className="h-7 w-7" /></button>
           </div>
           <div className="mt-4 flex gap-3 overflow-x-auto pb-1">{gallery.map((src, index) => <button key={src} type="button" onClick={() => setActive(index)} className={`w-[142px] shrink-0 overflow-hidden rounded border-2 ${active === index ? "border-cyan-300" : "border-transparent opacity-65"}`}><img src={src} alt="" className="aspect-video w-full object-cover" loading="lazy" /></button>)}</div>
 

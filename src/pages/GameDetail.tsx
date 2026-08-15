@@ -334,10 +334,10 @@ const GameDetail = () => {
         </div>
       </article>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-tour="game-detail-facts">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,190px),1fr))] gap-3" data-tour="game-detail-facts">
         {facts.map((fact) => (
           <div key={fact.label} className="arena-panel flex items-center gap-3 border-white/8 bg-[#04080f]/95 p-4">
-            <div className="grid h-11 w-11 place-items-center rounded-md border border-white/8 bg-white/[0.04]">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-white/8 bg-white/[0.04]">
               <fact.icon className="h-5 w-5" style={{ color: fact.color }} />
             </div>
             <div className="min-w-0">

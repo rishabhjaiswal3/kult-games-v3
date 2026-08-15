@@ -48,13 +48,13 @@ export function GuessTheAiDetail({ game }: { game: Game }) {
         <div className="min-w-0">
           <SectionTitle>Introduction</SectionTitle>
           <p className="mt-4 max-w-[650px] text-[17px] leading-[1.65] text-[#a5a5ad]">Guess The AI is an interactive visual intelligence game where players test their ability to distinguish AI-generated images from real photographs. Featuring multiple game modes, competitive progression, achievements, and cross-game rewards, the game challenges players to sharpen their observation skills while competing against others around the world.</p>
-          <div className="mt-6 grid grid-cols-3 gap-3">{[
+          <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-3">{[
             { label: "Mode", value: "Browser", icon: Globe2 },
             { label: "Arena", value: "0G", icon: Target },
             { label: "Access", value: isAuthenticated ? "Ready" : "Login", icon: LockKeyhole },
           ].map((item) => <div key={item.label} className="flex min-w-0 items-center gap-3 rounded-[9px] border border-purple-600 bg-[#0b071b] px-3 py-3"><item.icon className="h-5 w-5 shrink-0 text-purple-500" /><div className="min-w-0"><div className="text-[10px] uppercase text-white/35">{item.label}</div><div className="truncate text-sm uppercase text-white sm:text-base">{item.value}</div></div></div>)}</div>
 
-          <div className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-4 sm:gap-3">{[
+          <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-3">{[
             { label: "Rating", value: String(game.rating ?? 5), icon: Star, color: "text-[#ffc400] border-[#a57d00]" },
             { label: "Chain", value: "0g Chain", icon: Shield, color: "text-purple-500 border-purple-700" },
             { label: "Leaderboard", value: "Ranks", icon: Crown, color: "text-[#ffc400] border-[#a57d00]", action: () => navigate("/leaderboard") },
@@ -63,8 +63,8 @@ export function GuessTheAiDetail({ game }: { game: Game }) {
 
           <div className="relative mt-14 overflow-hidden rounded-[12px] bg-black">
             <img src={gallery[active]} alt={`Guess the AI screenshot ${active + 1}`} className="aspect-[1.78/1] w-full object-cover" />
-            <button type="button" onClick={() => setActive((active - 1 + gallery.length) % gallery.length)} aria-label="Previous screenshot" style={{ top: "calc(50% - 2rem)" }} className="absolute left-0 grid h-16 w-11 place-items-center rounded-r-md border-y border-r border-white/10 bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/70 active:translate-y-0"><ChevronLeft className="h-8 w-8" /></button>
-            <button type="button" onClick={() => setActive((active + 1) % gallery.length)} aria-label="Next screenshot" style={{ top: "calc(50% - 2rem)" }} className="absolute right-0 grid h-16 w-11 place-items-center rounded-l-md border-y border-l border-white/10 bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/70 active:translate-y-0"><ChevronRight className="h-8 w-8" /></button>
+            <button type="button" onClick={() => setActive((current) => (current - 1 + gallery.length) % gallery.length)} aria-label="Previous screenshot" className="absolute left-3 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 touch-manipulation place-items-center rounded-full border border-white/25 bg-black/65 text-white shadow-lg backdrop-blur-sm transition hover:border-cyan-300 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-95 sm:left-4"><ChevronLeft className="h-7 w-7" /></button>
+            <button type="button" onClick={() => setActive((current) => (current + 1) % gallery.length)} aria-label="Next screenshot" className="absolute right-3 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 touch-manipulation place-items-center rounded-full border border-white/25 bg-black/65 text-white shadow-lg backdrop-blur-sm transition hover:border-cyan-300 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:scale-95 sm:right-4"><ChevronRight className="h-7 w-7" /></button>
             <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">{gallery.map((_, index) => <button key={index} type="button" onClick={() => setActive(index)} aria-label={`Show screenshot ${index + 1}`} className={`h-2 w-2 rounded-full active:translate-y-0 ${active === index ? "bg-white" : "bg-white/35"}`} />)}</div>
           </div>
           <div className="mt-6 flex gap-4 overflow-x-auto pb-1">{gallery.map((src, index) => <button key={src} type="button" onClick={() => setActive(index)} className={`w-[146px] shrink-0 overflow-hidden rounded-sm border-2 active:translate-y-0 ${active === index ? "border-white" : "border-transparent opacity-70 hover:opacity-100"}`}><img src={src} alt="" className="aspect-video w-full object-cover" /></button>)}</div>
