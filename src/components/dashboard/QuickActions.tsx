@@ -1,8 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import agentNexus from "@/assets/hybrid.mp4";
-import iconTrain from "@/assets/icon-train.png";
+import iconTrain from "@/assets/icon-train.webp";
 import iconBattle from "@/assets/icon-battle.webp";
-import iconEarn from "@/assets/icon-earn.png";
+import iconEarn from "@/assets/icon-earn.webp";
 import iconOwn from "@/assets/Own.webp";
 
 export function QuickActions() {

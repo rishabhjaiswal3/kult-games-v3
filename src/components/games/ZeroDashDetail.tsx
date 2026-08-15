@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Globe2, LockKeyhole, Play, Share2, Shield, Star, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Game } from "@/types/api";
-import heroBanner from "@/assets/games/zeroDashGame/hero-banner.png";
+import heroBanner from "@/assets/games/zeroDashGame/hero-banner.webp";
 import logo from "@/assets/games/zeroDashGame/logo.png";
-import startMenu from "@/assets/games/zeroDashGame/start-menu.png";
-import networkStatus from "@/assets/games/zeroDashGame/network-status.png";
-import gameplay from "@/assets/games/zeroDashGame/gameplay.png";
-import liveRankings from "@/assets/games/zeroDashGame/live-rankings.png";
+import startMenu from "@/assets/games/zeroDashGame/start-menu.webp";
+import networkStatus from "@/assets/games/zeroDashGame/network-status.webp";
+import gameplay from "@/assets/games/zeroDashGame/gameplay.webp";
+import liveRankings from "@/assets/games/zeroDashGame/live-rankings.webp";
 
 const gallery = [startMenu, networkStatus, gameplay, liveRankings];
 

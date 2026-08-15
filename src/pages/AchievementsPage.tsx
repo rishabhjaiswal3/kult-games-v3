@@ -19,7 +19,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 // Asset Imports
-import rewardCrate from "@/assets/reward-crate.png";
+import rewardCrate from "@/assets/reward-crate.webp";
 
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";

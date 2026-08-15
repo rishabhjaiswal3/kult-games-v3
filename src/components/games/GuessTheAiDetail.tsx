@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Globe2, LockKeyhole, Play, Share2, Shield, Star, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Game } from "@/types/api";
-import heroBanner from "@/assets/games/guess-the-ai/hero-banner.png";
+import heroBanner from "@/assets/games/guess-the-ai/hero-banner.webp";
 import logo from "@/assets/games/guess-the-ai/logo.png";
-import gameModes from "@/assets/games/guess-the-ai/game-modes.png";
-import homeScreen from "@/assets/games/guess-the-ai/home-screen.png";
-import contests from "@/assets/games/guess-the-ai/contest-rewards.png";
-import leaderboard from "@/assets/games/guess-the-ai/leaderboard.png";
-import profile from "@/assets/games/guess-the-ai/profile-progression.png";
+import gameModes from "@/assets/games/guess-the-ai/game-modes.webp";
+import homeScreen from "@/assets/games/guess-the-ai/home-screen.webp";
+import contests from "@/assets/games/guess-the-ai/contest-rewards.webp";
+import leaderboard from "@/assets/games/guess-the-ai/leaderboard.webp";
+import profile from "@/assets/games/guess-the-ai/profile-progression.webp";
 
 const gallery = [homeScreen, gameModes, contests, leaderboard, profile];
 

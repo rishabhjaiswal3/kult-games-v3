@@ -1,6 +1,6 @@
 import kultLogo from "@/assets/Kult Logo.png";
 import zeroGLogo from "@/assets/0G Logo.png";
-import football from "@/assets/football.png";
+import football from "@/assets/football.webp";
 import { BrainCircuit, Gamepad2, Trophy, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAccess } from "@/contexts/AccessContext";

@@ -5,14 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import type { Game } from "@/types/api";
-import heroBanner from "@/assets/games/robowar/hero-banner.png";
+import heroBanner from "@/assets/games/robowar/hero-banner.webp";
 import logo from "@/assets/games/robowar/logo.png";
-import mainMenu from "@/assets/games/robowar/main-menu.png";
-import customization from "@/assets/games/robowar/robot-customization.png";
-import levelUp from "@/assets/games/robowar/level-up.png";
-import arenaCombat from "@/assets/games/robowar/arena-combat.png";
-import energyCombat from "@/assets/games/robowar/energy-combat.png";
-import matchResults from "@/assets/games/robowar/match-results.png";
+import mainMenu from "@/assets/games/robowar/main-menu.webp";
+import customization from "@/assets/games/robowar/robot-customization.webp";
+import levelUp from "@/assets/games/robowar/level-up.webp";
+import arenaCombat from "@/assets/games/robowar/arena-combat.webp";
+import energyCombat from "@/assets/games/robowar/energy-combat.webp";
+import matchResults from "@/assets/games/robowar/match-results.webp";
 
 const gallery = [mainMenu, customization, levelUp, arenaCombat, energyCombat, matchResults];
 

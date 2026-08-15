@@ -23,7 +23,7 @@ import {
 import formula1Video from "@/assets/formula1.mp4";
 import kultLogo from "@/assets/Kult Logo.png";
 import f1CarHero from "@/assets/f1/f1-car-hero.jpg";
-import f1CarTransparent from "@/assets/f1/f1-car-transparent.png";
+import f1CarTransparent from "@/assets/f1/f1-car-transparent.webp";
 import f1LeagueBannerBg from "@/assets/f1/f1-league-banner-bg.jpg";
 import assassinCard from "@/assets/f1/agent-cards/assassin.jpg";
 import berserkerCard from "@/assets/f1/agent-cards/berserker.jpg";

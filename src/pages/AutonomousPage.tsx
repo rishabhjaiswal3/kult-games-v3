@@ -30,8 +30,8 @@ import type { AiArenaAgent, AiArenaBattle } from "@/types/aiArenaGateway";
 // Asset Imports
 import zeroGLogo from "@/assets/0G Logo.png";
 import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
-import rewardCrate from "@/assets/reward-crate.png";
-import autonomousGraph from "@/assets/autonomous graph.png";
+import rewardCrate from "@/assets/reward-crate.webp";
+import autonomousGraph from "@/assets/autonomous graph.webp";
 
 // ── Clan Icon helpers ─────────────────────────────────────────────────────────
 function SolanaIcon({ className = "h-3 w-3" }: { className?: string }) {

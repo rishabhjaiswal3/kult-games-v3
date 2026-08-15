@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Globe2, LockKeyhole, Play, Share2, Shield, Star, Target } from "lucide-react";
 import type { Game } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
-import mainMenu from "@/assets/games/warzone/main-menu.png";
-import weaponSystem from "@/assets/games/warzone/weapon-system.png";
-import gemStore from "@/assets/games/warzone/gem-store.png";
-import boosterSelection from "@/assets/games/warzone/booster-selection.png";
-import gameplay from "@/assets/games/warzone/gameplay.png";
-import quests from "@/assets/games/warzone/quests.png";
-import characters from "@/assets/games/warzone/characters.png";
+import mainMenu from "@/assets/games/warzone/main-menu.webp";
+import weaponSystem from "@/assets/games/warzone/weapon-system.webp";
+import gemStore from "@/assets/games/warzone/gem-store.webp";
+import boosterSelection from "@/assets/games/warzone/booster-selection.webp";
+import gameplay from "@/assets/games/warzone/gameplay.webp";
+import quests from "@/assets/games/warzone/quests.webp";
+import characters from "@/assets/games/warzone/characters.webp";
 import logo from "@/assets/games/warzone/logo.png";
-import heroBanner from "@/assets/games/warzone/hero-banner.png";
+import heroBanner from "@/assets/games/warzone/hero-banner.webp";
 
 const gallery = [mainMenu, boosterSelection, quests, gemStore, characters];
 

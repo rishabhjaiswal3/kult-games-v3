@@ -51,7 +51,7 @@ import heroVideo from "@/assets/hero-video.mp4";
 import mobileHeroVideo from "@/assets/mobile.mp4";
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
-import baseLogo from "@/assets/Base Logo.png";
+import baseLogo from "@/assets/Base Logo.webp";
 import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxLogo from "@/assets/okx-icon.png";
 

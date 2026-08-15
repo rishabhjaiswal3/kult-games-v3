@@ -1,7 +1,7 @@
 import zeroGLogo from "@/assets/0G Logo.png";
 import kultLogo from "@/assets/Kult Logo.png";
 import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
-import baseLogo from "@/assets/Base Logo.png";
+import baseLogo from "@/assets/Base Logo.webp";
 import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxWordmark from "@/assets/OKX_id7gsDJl-c_1.svg";
 

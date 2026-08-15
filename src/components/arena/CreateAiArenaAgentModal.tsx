@@ -24,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import zeroGLogo from "@/assets/0G Logo.png";
-import baseLogo from "@/assets/Base Logo.png";
+import baseLogo from "@/assets/Base Logo.webp";
 import solanaLogo from "@/assets/solana-sol-logo.png";
 import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
 

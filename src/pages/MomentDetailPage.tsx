@@ -26,9 +26,9 @@ import { MomentDetailSkeleton } from "@/components/skeleton/MomentDetailSkeleton
 import { isMomentOwner } from "@/lib/momentOwnership";
 import type { Moment } from "@/types/api";
 
-import momentWarzone from "@/assets/moment-warzone.png";
-import momentRobowars from "@/assets/moment-robowars.png";
-import momentFeatured from "@/assets/moment-featured.png";
+import momentWarzone from "@/assets/moment-warzone.webp";
+import momentRobowars from "@/assets/moment-robowars.webp";
+import momentFeatured from "@/assets/moment-featured.webp";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(?:\?.*)?$/i;

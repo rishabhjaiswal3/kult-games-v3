@@ -1,7 +1,7 @@
 import type { Moment } from "@/types/api";
-import momentWarzone from "@/assets/moment-warzone.png";
-import momentRobowars from "@/assets/moment-robowars.png";
-import momentFeatured from "@/assets/moment-featured.png";
+import momentWarzone from "@/assets/moment-warzone.webp";
+import momentRobowars from "@/assets/moment-robowars.webp";
+import momentFeatured from "@/assets/moment-featured.webp";
 
 export type MomentSubCategory = "TRENDING" | "EPIC PLAYS" | "TOP PLAYS" | "CLUTCH" | "KILLS" | "VICTORIES";
 

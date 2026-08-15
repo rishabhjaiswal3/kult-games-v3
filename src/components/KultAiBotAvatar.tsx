@@ -1,4 +1,4 @@
-import aiBot from "@/assets/aiBot2.png";
+import aiBot from "@/assets/aiBot2.webp";
 import { cn } from "@/lib/utils";
 
 type KultAiBotAvatarProps = {

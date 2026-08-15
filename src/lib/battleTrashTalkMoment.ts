@@ -1,4 +1,4 @@
-import warzoneTrashTalkImageUrl from "@/assets/trash-talk.png";
+import warzoneTrashTalkImageUrl from "@/assets/trash-talk.webp";
 import robowarTrashTalkImageUrl from "@/assets/trash-talk-robowar.webp";
 import highwayTrashTalkImageUrl from "@/assets/trash-talk-highway-hustle.webp";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";

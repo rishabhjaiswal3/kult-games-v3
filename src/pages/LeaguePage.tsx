@@ -25,7 +25,7 @@ import { TeamFlagCircle } from "@/components/league/FlagHex";
 import { PolymarketMark } from "@/components/league/PolymarketLogo";
 import leagueModeKultBg from "@/assets/leagueImg.png";
 import leagueModePolymarketBg from "@/assets/polymarketImg.png";
-import footballSportImg from "@/assets/football.png";
+import footballSportImg from "@/assets/football.webp";
 import f1SportImg from "@/assets/f1/f1-car-hero.jpg";
 
 const LeaguePage = () => {

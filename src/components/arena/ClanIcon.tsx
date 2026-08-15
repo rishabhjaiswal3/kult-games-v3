@@ -1,7 +1,7 @@
 import zeroGLogo from "@/assets/0G Logo.png";
 import okxLogo from "@/assets/OKX_crypto-logo-okb-png_2.png";
 import solanaLogo from "@/assets/solana-sol-logo.png";
-import baseLogo from "@/assets/Base Logo.png";
+import baseLogo from "@/assets/Base Logo.webp";
 
 function SolanaIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return <img src={solanaLogo} alt="Solana" className={`${className} rounded-full object-contain`} />;

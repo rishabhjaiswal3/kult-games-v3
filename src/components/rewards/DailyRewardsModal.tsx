@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, Gift, Lock, X } from "lucide-react";
 import { ArenaAgentMedia } from "@/components/league/ArenaAgentMedia";
-import finalRewardChest from "@/assets/icon-earn.png";
+import finalRewardChest from "@/assets/icon-earn.webp";
 import { useCreateAgent } from "@/contexts/CreateAgentContext";
 import {
   DAILY_REWARDS,
