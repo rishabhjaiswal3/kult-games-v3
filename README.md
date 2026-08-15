@@ -5,6 +5,7 @@ Frontend for the Kult browser gaming experience.
 ## Getting started
 
 Requirements:
+
 - Node.js 18+
 - npm
 
@@ -14,7 +15,7 @@ Install and run:
 npm install
 npm run dev
 ```
-dd
+
 Build for production:
 
 ```sh
