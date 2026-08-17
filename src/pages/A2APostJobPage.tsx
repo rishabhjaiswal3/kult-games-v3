@@ -15,6 +15,7 @@ import { AlertTriangle, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
+import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -91,6 +92,14 @@ export default function A2APostJobPage() {
           price, and be paid in USDC on Base only if it actually delivers.
         </p>
       </header>
+
+      {selectedAgent && (
+        <AgentBaseIdentityCard
+          agentId={selectedAgent.id}
+          agentName={selectedAgent.name}
+          onRegistered={() => draftMut.reset()}
+        />
+      )}
 
       {/* ── Prompt ───────────────────────────────────────────────────────── */}
       <section className="rounded-lg border border-white/10 bg-black/30 p-4">

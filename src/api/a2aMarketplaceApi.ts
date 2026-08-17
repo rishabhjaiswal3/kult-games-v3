@@ -96,6 +96,36 @@ export type Negotiation = {
   createdAt: string;
 };
 
+/** Mirrors IdentityView in base-chain-service. */
+export type AgentBaseIdentity = {
+  agentId: string;
+  /** PENDING | REGISTERING | REGISTERED | WALLET_LINKED | FAILED */
+  status: string;
+  eoaAddress: string;
+  ownerWallet: string;
+  erc8004AgentId: string | null;
+  agentURI: string | null;
+  cardRootHash: string | null;
+  registerTxHash: string | null;
+  setWalletTxHash: string | null;
+  lastError: string | null;
+};
+
+/** Mirrors IdentityView in base-chain-service. */
+export type AgentBaseIdentity = {
+  agentId: string;
+  /** PENDING | REGISTERING | REGISTERED | WALLET_LINKED | FAILED */
+  status: string;
+  eoaAddress: string;
+  ownerWallet: string;
+  erc8004AgentId: string | null;
+  agentURI: string | null;
+  cardRootHash: string | null;
+  registerTxHash: string | null;
+  setWalletTxHash: string | null;
+  lastError: string | null;
+};
+
 export type OnChainReputation = {
   agentId: string;
   totalFeedback: number;
@@ -218,20 +248,29 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
-  async getAgentIdentity(agentId: string): Promise<{
-    agentId: string;
-    eoaAddress: string;
-    erc8004AgentId: string | null;
-    status: string;
-    agentURI: string | null;
-    registerTxHash: string | null;
-  } | null> {
+  async getAgentIdentity(agentId: string): Promise<AgentBaseIdentity | null> {
     try {
       const { data } = await client().get(`/v1/a2a/identity/agents/${agentId}`);
       return data;
     } catch {
+      // A 404 means "no identity yet", a normal state for a fresh agent rather
+      // than an error every caller has to handle.
       return null;
     }
+  },
+
+  /**
+   * Mint the agent an ERC-8004 identity on Base.
+   *
+   * Idempotent server-side: an agent that already has one gets its existing
+   * identity back rather than a second mint, so a double-click is harmless.
+   */
+  async registerAgentIdentity(agentId: string): Promise<{
+    identity: AgentBaseIdentity;
+    explorer: { registerTx: string | null; token: string | null };
+  }> {
+    const { data } = await client().post(`/v1/a2a/identity/agents/${agentId}/register`);
+    return data;
   },
 };
 
