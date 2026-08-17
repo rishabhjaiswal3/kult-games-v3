@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Globe2, LockKeyhole, Play, Share2, Shield, Star, Target } from "lucide-react";
 import type { Game } from "@/types/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { GameAirdropBanner } from "@/components/games/GameAirdropBanner";
+import { getGameAirdrop } from "@/constants/gameAirdrops";
+import { getGameKey } from "@/lib/gameDisplay";
 import mainMenu from "@/assets/games/warzone/main-menu.webp";
 import weaponSystem from "@/assets/games/warzone/weapon-system.webp";
 import gemStore from "@/assets/games/warzone/gem-store.webp";
@@ -28,6 +31,7 @@ export function WarzoneWarriorsDetail({ game }: { game: Game }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const gameId = game.identification ?? game.slug ?? "";
+  const airdrop = getGameAirdrop(getGameKey(game));
 
   const play = () => navigate(isAuthenticated ? `/game/${game._id}/play` : "/?login=1");
 
@@ -53,6 +57,9 @@ export function WarzoneWarriorsDetail({ game }: { game: Game }) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020610]/80 via-transparent to-transparent" />
         <h1 className="absolute bottom-3 left-5 font-tech text-3xl font-black uppercase leading-none tracking-tight text-white sm:bottom-5 sm:left-7 sm:text-5xl lg:text-[56px]">Warzone Warriors</h1>
       </section>
+
+      {/* The page justifies every paragraph; the banner needs its own left alignment. */}
+      {airdrop ? <GameAirdropBanner drop={airdrop} onClaim={play} className="mt-6 [&_p]:!text-left" /> : null}
 
       <div className="mt-14 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_350px] xl:grid-cols-[minmax(0,1fr)_390px]">
         <div className="min-w-0">

@@ -19,8 +19,10 @@ import {
 } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { CreatorStudioIconButton } from "@/components/creator-studio/CreatorStudioIconButton";
+import { GameAirdropBanner } from "@/components/games/GameAirdropBanner";
 import { GameListingCard, GameListingCardSkeleton } from "@/components/games/GameListingCard";
 import { gamesApi } from "@/api/gamesApi";
+import { getGameAirdrop } from "@/constants/gameAirdrops";
 import { useAccess } from "@/contexts/AccessContext";
 import { isGameDownloadable } from "@/lib/gameDownload";
 import { getGameDescription, getGameImage, getGameKey, getGameName } from "@/lib/gameDisplay";
@@ -215,6 +217,15 @@ const Games = () => {
   );
   const downloadableCount = allGames.length - instantPlayCount;
 
+  // Spotlight the first visible title with a live drop so it isn't buried in the grid.
+  const spotlight = useMemo(() => {
+    for (const game of filtered) {
+      const airdrop = getGameAirdrop(getGameKey(game));
+      if (airdrop) return { game, airdrop };
+    }
+    return null;
+  }, [filtered]);
+
   const openGame = (game: Game) => {
     const id = gameId(game);
     if (!id) return;
@@ -301,6 +312,14 @@ const Games = () => {
         </div>
       </div>
 
+      {!gamesLoading && spotlight ? (
+        <GameAirdropBanner
+          drop={spotlight.airdrop}
+          variant="compact"
+          onClaim={() => openGame(spotlight.game)}
+        />
+      ) : null}
+
        {!gamesLoading ? (
         <div className="space-y-4">
           <DiscoverySection
@@ -340,6 +359,7 @@ const Games = () => {
                 image={getGameImage(game)}
                 description={getGameDescription(game.description)}
                 downloadable={isGameDownloadable(game)}
+                airdrop={getGameAirdrop(getGameKey(game))}
                 onOpen={() => openGame(game)}
               />
             ))}

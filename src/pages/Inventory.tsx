@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { keccak256, stringToHex } from "viem";
-import { Package } from "lucide-react";
+import { Package, ShieldCheck } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import {
   InventoryListingCard,
@@ -10,6 +10,11 @@ import {
 } from "@/components/inventory/InventoryListingCard";
 import { InventoryStatsRail } from "@/components/inventory/InventoryStatsRail";
 import { InventoryToolbar } from "@/components/inventory/InventoryToolbar";
+import {
+  DEFAULT_INVENTORY_SORT,
+  sortListings,
+  type InventorySort,
+} from "@/components/inventory/inventorySort";
 import { MarketplacePurchaseDialog } from "@/components/marketplace/MarketplacePurchaseDialog";
 import { MARKETPLACE_ALL_GAMES } from "@/components/marketplace/MarketplaceFiltersPanel";
 import { marketplaceApi } from "@/api/marketplaceApi";
@@ -25,7 +30,7 @@ import { usePrivyWalletTools } from "@/hooks/usePrivyWalletTools";
 const LISTINGS_PER_PAGE = 100;
 
 const ITEMS_GRID_CLASS =
-  "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4";
+  "grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4 xl:grid-cols-4";
 
 function getGameName(name: Game["name"]): string {
   if (typeof name === "string") return name;
@@ -83,6 +88,7 @@ const Inventory = () => {
   const [itemCategory, setItemCategory] = useState("All");
   const [itemGame, setItemGame] = useState(() => searchParams.get("game") ?? "");
   const [itemSearch, setItemSearch] = useState("");
+  const [sort, setSort] = useState<InventorySort>(DEFAULT_INVENTORY_SORT);
   const [selectedItem, setSelectedItem] = useState<MarketplaceListing | null>(null);
   const [selectedPaymentToken, setSelectedPaymentToken] = useState<MarketplacePaymentToken>("USDC");
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -195,7 +201,7 @@ const Inventory = () => {
     });
   }, [listings, itemSearch]);
 
-  const displayListings = useMemo(() => [...filteredListings].reverse(), [filteredListings]);
+  const displayListings = useMemo(() => sortListings(filteredListings, sort), [filteredListings, sort]);
 
   const listingsCount = itemSearch.trim() ? filteredListings.length : (listingsData?.total ?? listings.length);
   const categoriesCount = Math.max(0, itemCategories.length - 1);
@@ -215,6 +221,7 @@ const Inventory = () => {
     setItemGame(MARKETPLACE_ALL_GAMES);
     setItemCategory("All");
     setItemSearch("");
+    setSort(DEFAULT_INVENTORY_SORT);
   };
 
   const handleGameChange = (gameId: string) => {
@@ -224,9 +231,12 @@ const Inventory = () => {
 
   const itemsGrid = listingsError ? (
     <InventoryEmpty
-      message={`Could not load assets${
-        listingsErrorObj instanceof Error ? `: ${listingsErrorObj.message}` : "."
-      }`}
+      title="Assets unavailable"
+      message={
+        listingsErrorObj instanceof Error
+          ? listingsErrorObj.message
+          : "The marketplace did not respond. Try again in a moment."
+      }
       error
     />
   ) : inventoryBootstrapping ? (
@@ -236,9 +246,19 @@ const Inventory = () => {
       ))}
     </div>
   ) : listings.length === 0 ? (
-    <InventoryEmpty message="No assets available for this selection." />
+    <InventoryEmpty
+      title="Nothing listed yet"
+      message={`No assets are on sale ${itemGame ? `for ${activeGameLabel}` : "right now"}${
+        itemCategory === "All" ? "" : ` in ${itemCategory}`
+      }.`}
+      onReset={itemGame || itemCategory !== "All" ? handleReset : undefined}
+    />
   ) : filteredListings.length === 0 ? (
-    <InventoryEmpty message="No items match your search. Try different keywords." />
+    <InventoryEmpty
+      title="No matches"
+      message={`Nothing matched “${itemSearch.trim()}”. Try a shorter or different keyword.`}
+      onReset={handleReset}
+    />
   ) : (
     <div className={ITEMS_GRID_CLASS}>
       {displayListings.map((item) => (
@@ -254,23 +274,27 @@ const Inventory = () => {
 
   return (
     <ArenaPageLayout contentClassName="max-w-none">
-      <div className="inventory-hero-panel p-5 sm:p-6" data-tour="inventory-summary">
+      <div className="inventory-hero-panel px-5 py-5 sm:px-6" data-tour="inventory-summary">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9a35ff]/70 to-transparent" aria-hidden />
-        <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.92fr)] lg:items-stretch lg:gap-5">
-          <div className="inventory-stat-tile min-w-0 rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(154,53,255,0.16),transparent_52%),rgba(4,8,15,0.76)] p-4 sm:p-5">
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#9a35ff]/35 bg-[#9a35ff]/10 px-3 py-1 font-tech text-[9px] font-bold uppercase tracking-[0.22em] text-[#d6acff]">
               <Package className="h-3 w-3" />
               Marketplace
             </div>
-            <h1 className="mt-3 font-tech text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+            <h1 className="mt-2.5 font-tech text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl">
               Inventory
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/55">
               Browse on-chain assets, preview listings, and purchase gear for your agents and games.
+            </p>
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-white/40">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#00e08a]" />
+              Every purchase settles on-chain from your connected wallet
             </p>
           </div>
           <InventoryStatsRail
-            className="lg:ml-auto lg:max-w-none"
+            className="shrink-0 lg:w-[520px]"
             listingsCount={listingsCount}
             categoriesCount={categoriesCount}
             gamesCount={uniqueGames || games.length}
@@ -291,6 +315,8 @@ const Inventory = () => {
             onSearchChange={setItemSearch}
             itemGame={itemGame}
             onGameChange={handleGameChange}
+            sort={sort}
+            onSortChange={setSort}
             games={games}
             gamesLoading={gamesLoading}
             getGameName={getGameName}
@@ -298,21 +324,16 @@ const Inventory = () => {
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-2.5">
-          <div>
-            <h2 className="font-tech text-xs font-semibold uppercase tracking-[0.18em] text-white/88">Available items</h2>
-            <p className="mt-1 text-[10px] text-white/42">
-              {inventoryBootstrapping
-                ? "Loading listings…"
-                : `${listingsCount} listing${listingsCount === 1 ? "" : "s"}`}
-              {!inventoryBootstrapping && itemSearch.trim() ? ` · “${itemSearch.trim()}”` : ""}
-            </p>
-          </div>
-          {!inventoryBootstrapping && filteredListings.length > 0 ? (
-            <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 font-tech text-[9px] font-bold uppercase tracking-wide text-white/50">
-              {displayListings.length} shown
-            </span>
-          ) : null}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h2 className="text-base font-bold text-white">
+            {itemCategory === "All" ? "Available items" : itemCategory}
+          </h2>
+          <p className="text-xs text-white/45">
+            {inventoryBootstrapping
+              ? "Loading listings…"
+              : `${displayListings.length} of ${listingsCount} listing${listingsCount === 1 ? "" : "s"}`}
+            {!inventoryBootstrapping && itemSearch.trim() ? ` for “${itemSearch.trim()}”` : ""}
+          </p>
         </div>
 
         <div className="pb-6" data-tour="inventory-grid">{itemsGrid}</div>
@@ -339,19 +360,45 @@ const Inventory = () => {
   );
 };
 
-function InventoryEmpty({ message, error }: { message: string; error?: boolean }) {
+function InventoryEmpty({
+  title,
+  message,
+  error,
+  onReset,
+}: {
+  title: string;
+  message: string;
+  error?: boolean;
+  onReset?: () => void;
+}) {
   return (
     <div
-      className={`flex min-h-[260px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-10 text-center ${
+      className={`col-span-full flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed p-10 text-center ${
         error
           ? "border-red-500/30 bg-[radial-gradient(circle_at_50%_0%,rgba(239,68,68,0.12),transparent_55%),#14080c]"
           : "border-white/12 bg-[radial-gradient(circle_at_50%_0%,rgba(154,53,255,0.08),transparent_55%)] bg-[#04080f]/80"
       }`}
     >
-      <div className={`grid h-12 w-12 place-items-center rounded-xl border ${error ? "border-red-400/30 bg-red-950/30" : "border-white/10 bg-white/[0.03]"}`}>
-        <Package className={`h-6 w-6 ${error ? "text-red-400/70" : "text-white/25"}`} />
+      <div
+        className={`grid h-14 w-14 place-items-center rounded-2xl border ${
+          error ? "border-red-400/30 bg-red-950/30" : "border-white/10 bg-white/[0.03]"
+        }`}
+      >
+        <Package className={`h-7 w-7 ${error ? "text-red-400/70" : "text-white/25"}`} />
       </div>
-      <p className="max-w-sm text-sm leading-relaxed text-white/52">{message}</p>
+      <div>
+        <h3 className={`text-base font-bold ${error ? "text-red-200" : "text-white/85"}`}>{title}</h3>
+        <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-white/50">{message}</p>
+      </div>
+      {onReset ? (
+        <button
+          type="button"
+          onClick={onReset}
+          className="mt-1 inline-flex h-9 items-center rounded-lg border border-[#9a35ff]/40 bg-[#9a35ff]/12 px-4 text-xs font-bold text-[#d6acff] transition hover:border-[#9a35ff]/70 hover:bg-[#9a35ff]/20"
+        >
+          Clear filters
+        </button>
+      ) : null}
     </div>
   );
 }

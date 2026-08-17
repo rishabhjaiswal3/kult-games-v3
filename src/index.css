@@ -1230,6 +1230,10 @@ button[aria-label="close modal"]:hover {
       transform 0.2s ease;
   }
 
+  .inventory-stat-strip {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  }
+
   .inventory-stat-tile:hover {
     transform: translateY(-1px);
   }
@@ -1287,6 +1291,408 @@ button[aria-label="close modal"]:hover {
   }
   .animate-lightning-flicker {
     animation: lightning-flicker 4s ease-in-out infinite;
+  }
+}
+
+/* ── Airdrop reward banner ────────────────────────────────────────────────
+   The in-game reward popup rebuilt as a wide banner: gunmetal frame with
+   hazard stripes, rivets and side LEDs, a framed item slot, and a stamped
+   action bar. Every dimension scales off --drop-scale so one markup tree
+   serves both the games catalogue and the game detail page. */
+/* Palette follows the game pages: deep navy-black panels with saturated violet
+   reserved for accents and controls (the same #6c1dd8 → #8d32f1 as the primary
+   buttons), the rarity colour owning the item, and amber only for drop status
+   and the claim bar so gold always means "you can act". */
+.drop-banner {
+  --drop-scale: 1;
+  --drop-rarity: #b06bff;
+  --drop-status: #f5b400;
+  --drop-violet: #8d32f1;
+  --drop-violet-deep: #6c1dd8;
+  font-family: Sora, sans-serif;
+  /* Breakpoints below track the banner's own width, since it sits in columns of
+     different widths on the catalogue and the detail page. */
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  padding: calc(12px * var(--drop-scale));
+  border-radius: calc(18px * var(--drop-scale));
+  background: linear-gradient(158deg, #7f8598 0%, #3d4356 20%, #191c28 68%, #2a2e3d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.6),
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 calc(56px * var(--drop-scale)) color-mix(in srgb, var(--drop-violet) 18%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--drop-violet) 22%, transparent);
+}
+
+/* Machined bevel line just inside the rail. */
+.drop-banner::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: calc(6px * var(--drop-scale));
+  border-radius: calc(12px * var(--drop-scale));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+/* Four rivets, one element. */
+.drop-banner__rivets {
+  pointer-events: none;
+  position: absolute;
+  inset: calc(3px * var(--drop-scale));
+  background-image:
+    radial-gradient(circle at center, #949aa8 0 22%, #363a46 22% 44%, transparent 46%),
+    radial-gradient(circle at center, #949aa8 0 22%, #363a46 22% 44%, transparent 46%),
+    radial-gradient(circle at center, #949aa8 0 22%, #363a46 22% 44%, transparent 46%),
+    radial-gradient(circle at center, #949aa8 0 22%, #363a46 22% 44%, transparent 46%);
+  background-repeat: no-repeat;
+  background-size: calc(10px * var(--drop-scale)) calc(10px * var(--drop-scale));
+  background-position: left top, right top, left bottom, right bottom;
+}
+
+.drop-banner__hazard {
+  pointer-events: none;
+  position: absolute;
+  top: calc(2px * var(--drop-scale));
+  height: calc(7px * var(--drop-scale));
+  width: calc(96px * var(--drop-scale));
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--drop-status) 0 5px, #14161d 5px 10px);
+  box-shadow: 0 0 calc(8px * var(--drop-scale)) color-mix(in srgb, var(--drop-status) 28%, transparent);
+}
+.drop-banner__hazard--left {
+  left: calc(26px * var(--drop-scale));
+}
+.drop-banner__hazard--right {
+  right: calc(26px * var(--drop-scale));
+}
+
+/* Status LEDs recessed into the left and right rails. */
+.drop-banner__led {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: calc(4px * var(--drop-scale));
+}
+.drop-banner__led--left {
+  left: calc(3px * var(--drop-scale));
+}
+.drop-banner__led--right {
+  right: calc(3px * var(--drop-scale));
+}
+.drop-banner__led span {
+  height: calc(3px * var(--drop-scale));
+  width: calc(5px * var(--drop-scale));
+  border-radius: 1px;
+  background: var(--drop-status);
+  box-shadow: 0 0 calc(6px * var(--drop-scale)) color-mix(in srgb, var(--drop-status) 75%, transparent);
+}
+
+/* Upcoming drops read as "armed but not open": rarity-coloured, not amber. */
+.drop-banner:not(.drop-banner--live) .drop-banner__led span {
+  background: var(--drop-violet);
+  box-shadow: 0 0 calc(6px * var(--drop-scale)) color-mix(in srgb, var(--drop-violet) 70%, transparent);
+}
+
+.drop-banner__panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(11px * var(--drop-scale));
+  border: 1px solid color-mix(in srgb, var(--drop-violet) 26%, #000);
+  padding: calc(20px * var(--drop-scale)) calc(22px * var(--drop-scale));
+  background:
+    radial-gradient(ellipse 36% 88% at 12% 50%, color-mix(in srgb, var(--drop-rarity) 26%, transparent), transparent 70%),
+    radial-gradient(ellipse 46% 130% at 44% 112%, color-mix(in srgb, var(--drop-violet) 26%, transparent), transparent 66%),
+    radial-gradient(ellipse 34% 110% at 100% 0%, color-mix(in srgb, var(--drop-status) 8%, transparent), transparent 68%),
+    linear-gradient(150deg, #1b1338 0%, #100c22 48%, #090b18 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+/* Faint vertical texture, as in the popup background. */
+.drop-banner__panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0%, transparent 34%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 5px);
+}
+
+.drop-banner__body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: calc(24px * var(--drop-scale));
+  align-items: center;
+  grid-template-columns: calc(228px * var(--drop-scale)) minmax(0, 1fr) auto;
+}
+
+/* ── Item slot ── */
+/* The art is cropped out of the reward popup and keeps its own dark backdrop,
+   so it fills a deliberate framed slot rather than floating on the panel. */
+.drop-banner__slot {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(12px * var(--drop-scale));
+  border: 1px solid color-mix(in srgb, var(--drop-rarity) 55%, transparent);
+  aspect-ratio: 6 / 5;
+  background: #120b1f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 calc(12px * var(--drop-scale)) calc(26px * var(--drop-scale)) rgba(0, 0, 0, 0.55),
+    0 0 calc(36px * var(--drop-scale)) color-mix(in srgb, var(--drop-rarity) 45%, transparent);
+}
+/* The popup art is slightly desaturated for print; lift it back up in place. */
+.drop-banner__slot img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.18) contrast(1.06) brightness(1.04);
+}
+/* Rarity wash + top sheen so the slot reads as a lit display case. */
+.drop-banner__slot::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 30%),
+    radial-gradient(ellipse 78% 60% at 50% 46%, color-mix(in srgb, var(--drop-rarity) 24%, transparent), transparent 70%),
+    linear-gradient(0deg, rgba(6, 4, 12, 0.42), transparent 44%);
+  box-shadow: inset 0 0 calc(26px * var(--drop-scale)) color-mix(in srgb, var(--drop-rarity) 30%, transparent);
+}
+.drop-banner__slot-rarity {
+  position: absolute;
+  z-index: 1;
+  left: calc(9px * var(--drop-scale));
+  top: calc(9px * var(--drop-scale));
+  border: 1px solid var(--drop-rarity);
+  border-radius: 999px;
+  padding: calc(3px * var(--drop-scale)) calc(10px * var(--drop-scale));
+  background: rgba(8, 5, 14, 0.78);
+  font-size: calc(9px * var(--drop-scale));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--drop-rarity);
+  backdrop-filter: blur(4px);
+}
+
+/* ── Copy ── */
+.drop-banner__content {
+  min-width: 0;
+}
+
+.drop-banner__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(11px * var(--drop-scale));
+}
+.drop-banner__game-logo {
+  height: calc(34px * var(--drop-scale));
+  width: auto;
+  object-fit: contain;
+}
+.drop-banner__meta-divider {
+  height: calc(22px * var(--drop-scale));
+  width: 1px;
+  background: rgba(255, 255, 255, 0.24);
+}
+.drop-banner__chain-logo {
+  height: calc(17px * var(--drop-scale));
+  width: auto;
+  object-fit: contain;
+  opacity: 0.9;
+}
+.drop-banner__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--drop-scale));
+  border: 1px solid color-mix(in srgb, var(--drop-status) 42%, transparent);
+  border-radius: 999px;
+  padding: calc(4px * var(--drop-scale)) calc(11px * var(--drop-scale));
+  background: color-mix(in srgb, var(--drop-status) 12%, transparent);
+  font-size: calc(10px * var(--drop-scale));
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--drop-status) 68%, #fff);
+  white-space: nowrap;
+}
+.drop-banner__tag--muted {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.62);
+}
+.drop-banner__tag-dot {
+  height: calc(6px * var(--drop-scale));
+  width: calc(6px * var(--drop-scale));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--drop-status) 70%, #fff);
+  box-shadow: 0 0 calc(8px * var(--drop-scale)) color-mix(in srgb, var(--drop-status) 85%, transparent);
+}
+
+.drop-banner__eyebrow {
+  margin-top: calc(14px * var(--drop-scale));
+  font-size: calc(11px * var(--drop-scale));
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--drop-rarity) 45%, #fff);
+}
+
+.drop-banner__title {
+  margin-top: calc(3px * var(--drop-scale));
+  font-size: calc(40px * var(--drop-scale));
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 calc(3px * var(--drop-scale)) 0 rgba(0, 0, 0, 0.5),
+    0 0 calc(40px * var(--drop-scale)) color-mix(in srgb, var(--drop-rarity) 40%, transparent);
+}
+
+.drop-banner__text {
+  margin-top: calc(10px * var(--drop-scale));
+  max-width: 52ch;
+  font-size: calc(14px * var(--drop-scale));
+  line-height: 1.6;
+  color: rgba(233, 224, 255, 0.72);
+}
+
+/* ── Action bar ── */
+.drop-banner__action {
+  display: flex;
+  flex-direction: column;
+  gap: calc(10px * var(--drop-scale));
+  padding-left: calc(24px * var(--drop-scale));
+  border-left: 1px solid color-mix(in srgb, var(--drop-violet) 24%, transparent);
+}
+
+.drop-banner__note {
+  font-size: calc(10px * var(--drop-scale));
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(226, 214, 255, 0.5);
+}
+
+.drop-banner__bar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10px * var(--drop-scale));
+  min-width: calc(240px * var(--drop-scale));
+  height: calc(50px * var(--drop-scale));
+  padding: 0 calc(34px * var(--drop-scale));
+  border-radius: calc(9px * var(--drop-scale));
+  border: 2px solid #7a5000;
+  background: linear-gradient(180deg, #ffeab0 0%, #ffc733 40%, #eb9c05 72%, #c07a00 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 calc(-3px * var(--drop-scale)) 0 rgba(0, 0, 0, 0.2),
+    0 calc(8px * var(--drop-scale)) calc(24px * var(--drop-scale)) rgba(245, 180, 0, 0.28);
+  font-size: calc(16px * var(--drop-scale));
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a2f00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.drop-banner__bar--action {
+  cursor: pointer;
+}
+.drop-banner__bar--action:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.drop-banner__bar--action:active {
+  transform: translateY(0);
+}
+
+/* Pending drops borrow the page's primary violet, matte rather than glossy so it
+   still reads as a status plate. Gold stays exclusive to the claim bar. */
+.drop-banner__bar--pending {
+  border-color: color-mix(in srgb, var(--drop-violet-deep) 70%, #000);
+  background: linear-gradient(180deg, var(--drop-violet) 0%, var(--drop-violet-deep) 62%, #4f11a6 100%);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 calc(-3px * var(--drop-scale)) 0 rgba(0, 0, 0, 0.28),
+    0 calc(8px * var(--drop-scale)) calc(22px * var(--drop-scale)) color-mix(in srgb, var(--drop-violet) 26%, transparent);
+}
+
+/* Hazard end caps, matching the popup's button plate. */
+.drop-banner__bar-cap {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: calc(20px * var(--drop-scale));
+  width: calc(8px * var(--drop-scale));
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.5) 0 4px, transparent 4px 8px);
+}
+.drop-banner__bar-cap--left {
+  left: calc(11px * var(--drop-scale));
+}
+.drop-banner__bar-cap--right {
+  right: calc(11px * var(--drop-scale));
+}
+
+/* Medium: the action drops below the copy, still beside the item slot. */
+@container (max-width: 900px) {
+  .drop-banner__body {
+    grid-template-columns: calc(190px * var(--drop-scale)) minmax(0, 1fr);
+    gap: calc(18px * var(--drop-scale));
+  }
+  .drop-banner__action {
+    grid-column: 1 / -1;
+    padding-left: 0;
+    border-left: 0;
+  }
+  .drop-banner__note {
+    text-align: left;
+  }
+}
+
+/* Narrow: slot on top, copy underneath, bar full width. */
+@container (max-width: 620px) {
+  .drop-banner__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .drop-banner__slot {
+    max-width: calc(230px * var(--drop-scale));
+  }
+  .drop-banner__title {
+    font-size: calc(32px * var(--drop-scale));
+  }
+  .drop-banner__bar {
+    width: 100%;
+    min-width: 0;
+    padding: 0 calc(18px * var(--drop-scale));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop-banner__bar--action:hover {
+    transform: none;
   }
 }
 

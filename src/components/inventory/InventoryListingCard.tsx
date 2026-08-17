@@ -1,6 +1,7 @@
-import { type MouseEvent } from "react";
-import { ArrowUpRight, ShoppingCart } from "lucide-react";
+import { type CSSProperties, type MouseEvent } from "react";
+import { ShoppingCart } from "lucide-react";
 import { InventoryAssetImage } from "@/components/inventory/InventoryAssetImage";
+import { alpha, getInventoryAccent } from "@/components/inventory/inventoryAccent";
 import { cn } from "@/lib/utils";
 import type { MarketplaceListing } from "@/types/api";
 
@@ -12,22 +13,8 @@ type InventoryListingCardProps = {
   onBuy: (item: MarketplaceListing) => void;
 };
 
-function getCategoryBadgeStyle(category: string) {
-  const key = category.toLowerCase();
-  if (key.includes("legendary") || key.includes("bundle")) {
-    return "border-amber-400/45 bg-amber-950/85 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.2)]";
-  }
-  if (key.includes("weapon") || key.includes("skin")) {
-    return "border-purple-400/45 bg-purple-950/85 text-[#e8d4ff] shadow-[0_0_12px_rgba(168,85,247,0.18)]";
-  }
-  if (key.includes("boost") || key.includes("module")) {
-    return "border-sky-400/45 bg-sky-950/85 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.18)]";
-  }
-  return "border-purple-400/40 bg-purple-950/80 text-[#d6acff]";
-}
-
 export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy }: InventoryListingCardProps) {
-  const badgeClass = getCategoryBadgeStyle(item.category);
+  const accent = getInventoryAccent(item.category);
   const gameBadgeLabel = gameName?.trim() || item.gameIdentification;
 
   const handleCardClick = () => {
@@ -43,76 +30,102 @@ export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy
   return (
     <article
       className={cn(
-        "inventory-listing-card group relative flex h-full flex-col overflow-hidden rounded-xl border transition-all duration-300",
+        "inventory-listing-card group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-all duration-300",
         selected
-          ? "border-[#9a35ff]/75 shadow-[0_0_28px_rgba(154,53,255,0.28)] ring-1 ring-[#9a35ff]/45"
-          : "border-white/8 hover:-translate-y-1 hover:border-[#9a35ff]/45 hover:shadow-[0_16px_36px_rgba(0,0,0,0.45),0_0_22px_rgba(154,53,255,0.14)]",
+          ? "-translate-y-0.5 border-transparent"
+          : "border-white/8 hover:-translate-y-1 hover:border-transparent",
       )}
+      style={
+        {
+          "--accent": accent.color,
+          borderColor: selected ? alpha(accent, 0.7) : undefined,
+          boxShadow: selected
+            ? `0 0 0 1px ${alpha(accent, 0.35)}, 0 18px 40px rgba(0,0,0,0.5), 0 0 30px ${alpha(accent, 0.22)}`
+            : undefined,
+        } as CSSProperties
+      }
     >
+      {/* Rarity accent runs along the top edge so a scanned grid reads by colour first. */}
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 z-[3] h-[2px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${accent.color}, transparent)` }}
+        aria-hidden
+      />
       <div
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background: "radial-gradient(ellipse at 50% 0%, rgba(154, 53, 255, 0.1), transparent 58%)",
-        }}
+        className="pointer-events-none absolute inset-0 z-[1] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{ background: `radial-gradient(ellipse at 50% 0%, ${alpha(accent, 0.14)}, transparent 62%)` }}
         aria-hidden
       />
 
       <button type="button" onClick={handleCardClick} className="relative block w-full shrink-0 text-left">
-        <div className="relative h-[136px] overflow-hidden bg-[#050912] sm:h-[148px]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(154,53,255,0.1),transparent_65%)]" aria-hidden />
+        <div className="relative aspect-[5/4] overflow-hidden bg-[#050912]">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: `radial-gradient(ellipse at 50% 45%, ${alpha(accent, 0.16)}, transparent 68%)` }}
+            aria-hidden
+          />
           <InventoryAssetImage
             src={item.assetUrl}
             alt={item.name}
-            compact
             className="h-full w-full"
-            imgClassName="max-h-[92%] max-w-[92%]"
+            imgClassName="max-h-[86%] max-w-[86%]"
           />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#04080f] to-transparent" />
-        </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#070c16] to-transparent" />
 
-        <span
-          className={cn(
-            "absolute left-2 top-2 z-[2] rounded border px-2 py-0.5 font-tech text-[7px] font-black uppercase tracking-[0.14em] backdrop-blur-sm",
-            badgeClass,
-          )}
-        >
-          {item.category}
-        </span>
-        <span className="absolute right-2 top-2 z-[2] max-w-[46%] truncate rounded border border-cyan-300/30 bg-cyan-950/80 px-1.5 py-0.5 font-tech text-[7px] font-black uppercase tracking-wide text-cyan-100 backdrop-blur-sm">
-          {gameBadgeLabel}
-        </span>
+          <span
+            className="absolute left-2.5 top-3 z-[2] rounded-md border px-2 py-1 font-tech text-[9px] font-black uppercase leading-none tracking-[0.12em] backdrop-blur-sm"
+            style={{
+              borderColor: alpha(accent, 0.45),
+              backgroundColor: alpha(accent, 0.14),
+              color: accent.color,
+            }}
+          >
+            {item.category || accent.tier}
+          </span>
+        </div>
       </button>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 border-t border-white/6 px-3 pb-3 pt-2.5">
+      <div className="relative z-[2] flex min-h-0 flex-1 flex-col gap-1.5 px-3.5 pb-3.5 pt-3">
+        <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/45">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: accent.color }} aria-hidden />
+          <span className="truncate">{gameBadgeLabel}</span>
+        </span>
+
         <button
           type="button"
           onClick={handleCardClick}
-          className="line-clamp-1 text-left text-xs font-semibold leading-tight text-white/92 transition group-hover:text-[#d6acff]"
+          className="line-clamp-1 text-left text-sm font-bold leading-tight text-white transition group-hover:text-[color:var(--accent)]"
+          title={item.name}
         >
           {item.name}
         </button>
 
-        <p className="line-clamp-1 min-h-[1rem] text-[10px] leading-snug text-white/42">
+        <p className="line-clamp-2 min-h-[2.1rem] text-[11px] leading-snug text-white/45">
           {item.shortDescription || "On-chain marketplace asset"}
         </p>
 
-        <div className="mt-auto flex items-end justify-between gap-2 border-t border-white/6 pt-2">
+        {/* Stacks on the 2-up mobile grid, sits inline once the card is wide enough. */}
+        <div className="mt-auto flex flex-col items-stretch gap-2 border-t border-white/8 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <span className="font-tech text-[8px] uppercase tracking-[0.16em] text-white/38">Price</span>
-            <p className="mt-0.5 font-tech text-[15px] font-bold leading-none text-[#ffc42e]">
+            <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-white/40">Price</span>
+            <p className="mt-0.5 font-tech text-lg font-bold leading-none text-[#ffc42e]">
               {item.price}
-              <span className="ml-1 text-[10px] font-semibold text-white/45">{item.currency}</span>
+              <span className="ml-1 text-[11px] font-semibold text-white/50">{item.currency}</span>
             </p>
           </div>
           <button
             type="button"
             onClick={handleBuy}
-            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-[#9a35ff]/45 bg-[linear-gradient(135deg,rgba(154,53,255,0.88),rgba(116,48,255,0.78))] px-2.5 font-tech text-[9px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_16px_rgba(154,53,255,0.28)] transition hover:-translate-y-0.5 hover:border-[#c084fc]/70 hover:shadow-[0_0_24px_rgba(154,53,255,0.42)] sm:px-3"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3.5 font-tech text-[10px] font-black uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5"
+            style={{
+              borderColor: alpha(accent, 0.5),
+              background: `linear-gradient(135deg, ${alpha(accent, 0.85)}, ${alpha(accent, 0.55)})`,
+              boxShadow: `0 0 18px ${alpha(accent, 0.3)}`,
+            }}
             aria-label={`Buy ${item.name}`}
           >
             <ShoppingCart className="h-3.5 w-3.5" />
             Buy
-            <ArrowUpRight className="hidden h-3 w-3 opacity-70 sm:inline" />
           </button>
         </div>
       </div>
@@ -122,13 +135,14 @@ export function InventoryListingCard({ item, gameName, selected, onSelect, onBuy
 
 export function InventoryListingCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/8 bg-[#04080f]/95">
-      <div className="h-[136px] animate-pulse bg-white/[0.04] sm:h-[148px]" />
-      <div className="space-y-2 border-t border-white/6 p-3">
-        <div className="h-3 w-4/5 animate-pulse rounded bg-white/5" />
+    <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#04080f]/95">
+      <div className="aspect-[5/4] animate-pulse bg-white/[0.035]" />
+      <div className="space-y-2 p-3.5">
+        <div className="h-3.5 w-4/5 animate-pulse rounded bg-white/5" />
         <div className="h-2.5 w-full animate-pulse rounded bg-white/5" />
-        <div className="mt-2 border-t border-white/6 pt-2">
-          <div className="h-8 w-full animate-pulse rounded-md bg-white/5" />
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/8 pt-3">
+          <div className="h-6 w-16 animate-pulse rounded bg-white/5" />
+          <div className="h-9 w-20 animate-pulse rounded-lg bg-white/5" />
         </div>
       </div>
     </div>

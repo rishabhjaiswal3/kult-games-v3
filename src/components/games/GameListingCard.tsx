@@ -1,4 +1,5 @@
-import { ArrowUpRight, Download, Gamepad2, Star } from "lucide-react";
+import { ArrowUpRight, Download, Gamepad2, Gift, Star } from "lucide-react";
+import type { GameAirdrop } from "@/constants/gameAirdrops";
 import type { Game } from "@/types/api";
 
 type GameListingCardProps = {
@@ -7,6 +8,8 @@ type GameListingCardProps = {
   image: string;
   description: string;
   downloadable: boolean;
+  /** Live reward drop for this title, if any. */
+  airdrop?: GameAirdrop | null;
   onOpen: () => void;
 };
 
@@ -40,6 +43,7 @@ export function GameListingCard({
   image,
   description,
   downloadable,
+  airdrop,
   onOpen,
 }: GameListingCardProps) {
   const badgeClass = getCategoryBadgeStyle(game.category);
@@ -47,7 +51,18 @@ export function GameListingCard({
   const trailerUrl = getTrailerUrl(game);
 
   return (
-    <article className="group relative flex min-h-full flex-col overflow-hidden rounded-lg border border-white/8 bg-[#04080f]/95 transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/60 hover:shadow-[0_0_42px_rgba(154,53,255,0.22),0_18px_48px_rgba(0,0,0,0.35)]">
+    <article
+      className={`group relative flex min-h-full flex-col overflow-hidden rounded-lg border bg-[#04080f]/95 transition duration-300 hover:-translate-y-1 hover:border-[#9a35ff]/60 hover:shadow-[0_0_42px_rgba(154,53,255,0.22),0_18px_48px_rgba(0,0,0,0.35)] ${
+        airdrop ? "border-[#f5b400]/35" : "border-white/8"
+      }`}
+    >
+      {airdrop ? (
+        <span
+          className="pointer-events-none absolute inset-x-0 top-0 z-[3] h-[2px]"
+          style={{ background: "linear-gradient(90deg, transparent, #f5b400, transparent)" }}
+          aria-hidden
+        />
+      ) : null}
       <button
         type="button"
         onClick={onOpen}
@@ -99,6 +114,12 @@ export function GameListingCard({
         <div className="absolute bottom-3 right-3 rounded border border-white/10 bg-[#03070d]/80 px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wide text-white/85">
           {downloadable ? "Download" : "Instant Play"}
         </div>
+        {airdrop ? (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded border border-[#ffe89a]/60 bg-[linear-gradient(180deg,#ffe07a,#f5b400_55%,#c97e07)] px-2 py-1 font-tech text-[9px] font-black uppercase tracking-wide text-[#2a1c00] shadow-[0_0_16px_rgba(245,180,0,0.35)]">
+            <Gift className="h-3 w-3" />
+            {airdrop.status === "live" ? "Airdrop live" : "Airdrop soon"}
+          </div>
+        ) : null}
       </button>
 
       <div className="flex flex-1 flex-col p-4">
@@ -109,6 +130,14 @@ export function GameListingCard({
         >
           {name}
         </button>
+        {airdrop ? (
+          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-[#ffd75e]">
+            <Gift className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {airdrop.itemKind}: {airdrop.itemName}
+            </span>
+          </p>
+        ) : null}
         {description ? (
           <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-white/45">{description}</p>
         ) : null}
