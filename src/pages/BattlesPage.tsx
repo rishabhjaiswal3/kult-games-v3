@@ -22,6 +22,7 @@ import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaBattleBoardCard } from "@/components/arena/ArenaBattleBoardCard";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
+import { BattleMemoryText } from "@/components/arena/BattleMemoryText";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton/ArenaBattleBoardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
@@ -691,7 +692,7 @@ function MyBattlesCarouselSection({
                             </div>
                           ))}
                         </div>
-                        <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65">{memory.content}</p>
+                        <BattleMemoryText content={memory.content} className="mt-4" />
                         <p className="mt-2 font-mono text-[10px] text-white/40">
                           {new Date(memory.createdAt).toLocaleString()}
                         </p>

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { aiArenaGatewayApi } from "@/api/aiArenaGatewayApi";
 import { ArenaAgentWalletManagerModal } from "@/components/arena/ArenaAgentWalletManagerModal";
+import { BattleMemoryText } from "@/components/arena/BattleMemoryText";
 import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailModal";
 import { ArenaAgentThumbnail } from "@/components/arena/ArenaAgentThumbnail";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
@@ -155,7 +156,7 @@ function MyAgentBattleMemoryCard({
           </div>
         ))}
       </div>
-      <p className="mt-4 font-mono text-[11px] italic leading-relaxed text-white/65">{memory.content}</p>
+      <BattleMemoryText content={memory.content} className="mt-4" />
       <p className="mt-2 font-mono text-[10px] text-white/40">{new Date(memory.createdAt).toLocaleString()}</p>
       {battleId ? (
         <Link

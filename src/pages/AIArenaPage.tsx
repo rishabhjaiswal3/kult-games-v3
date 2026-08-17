@@ -33,6 +33,7 @@ import { AiArenaAgentDetailModal } from "@/components/arena/AiArenaAgentDetailMo
 import { ArenaJoinBattleModal } from "@/components/arena/ArenaJoinBattleModal";
 import { ArenaMatchStatusModal } from "@/components/arena/ArenaMatchStatusModal";
 import { ArenaStartMatchmakingModal } from "@/components/arena/ArenaStartMatchmakingModal";
+import { BattleMemoryText } from "@/components/arena/BattleMemoryText";
 import { ArenaBattleBoardGridSkeleton } from "@/components/skeleton";
 import { LazyInViewVideo } from "@/components/LazyInViewVideo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1860,17 +1861,6 @@ function MyBattleSection() {
   const canPrevBattle = battlePage > 0;
   const canNextBattle = battlePage < totalBattlePages - 1;
 
-  const MEMORY_PREVIEW_CHAR_LIMIT = 100;
-  const [expandedMemoryIds, setExpandedMemoryIds] = useState<Set<string>>(new Set());
-  const toggleMemoryExpanded = (id: string) => {
-    setExpandedMemoryIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const jumpToMatchmaking = () => {
     const target = document.querySelector<HTMLElement>('[data-tour="ai-arena-matchmaking"]');
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1999,22 +1989,7 @@ function MyBattleSection() {
                           ))}
                         </div>
                         <div className="mt-3 rounded-xl border border-white/8 bg-white/[0.025] px-3.5 py-2.5">
-                          <p
-                            className={`font-mono text-[11px] italic leading-relaxed text-white/70 lg:text-[10px] ${
-                              expandedMemoryIds.has(memory.id) ? "" : "line-clamp-2"
-                            }`}
-                          >
-                            {memory.content}
-                          </p>
-                          {memory.content.length > MEMORY_PREVIEW_CHAR_LIMIT ? (
-                            <button
-                              type="button"
-                              onClick={() => toggleMemoryExpanded(memory.id)}
-                              className="mt-1.5 font-tech text-[9px] font-semibold uppercase tracking-wider text-accent hover:underline"
-                            >
-                              {expandedMemoryIds.has(memory.id) ? "See less" : "See more"}
-                            </button>
-                          ) : null}
+                          <BattleMemoryText content={memory.content} textClassName="text-white/70 lg:text-[10px]" />
                           <p className="mt-2 font-mono text-[10px] text-white/40">
                             {new Date(memory.createdAt).toLocaleString()}
                           </p>
