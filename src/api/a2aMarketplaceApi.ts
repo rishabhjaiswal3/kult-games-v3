@@ -111,20 +111,6 @@ export type AgentBaseIdentity = {
   lastError: string | null;
 };
 
-/** Mirrors IdentityView in base-chain-service. */
-export type AgentBaseIdentity = {
-  agentId: string;
-  /** PENDING | REGISTERING | REGISTERED | WALLET_LINKED | FAILED */
-  status: string;
-  eoaAddress: string;
-  ownerWallet: string;
-  erc8004AgentId: string | null;
-  agentURI: string | null;
-  cardRootHash: string | null;
-  registerTxHash: string | null;
-  setWalletTxHash: string | null;
-  lastError: string | null;
-};
 
 export type OnChainReputation = {
   agentId: string;
@@ -269,7 +255,7 @@ export const a2aMarketplaceApi = {
     identity: AgentBaseIdentity;
     explorer: { registerTx: string | null; token: string | null };
   }> {
-    const { data } = await client().post(`/v1/a2a/identity/agents/${agentId}/register`);
+    const { data } = await client().post(`/v1/marketplace/agents/${agentId}/register-identity`);
     return data;
   },
 };
