@@ -150,7 +150,7 @@ export const a2aMarketplaceApi = {
 
   /** Publish a confirmed draft to Base mainnet. */
   async confirmJob(jobId: string): Promise<{ job: A2AJob; explorer: string }> {
-    const { data } = await client().post(`/v1/marketplace/jobs/${jobId}/confirm`);
+    const { data } = await client().post(`/v1/marketplace/jobs/${jobId}/confirm`, {});
     return data;
   },
 
@@ -222,7 +222,7 @@ export const a2aMarketplaceApi = {
     agreementHash: string;
     signatures: { creator: string; provider: string };
   }> {
-    const { data } = await client().post(`/v1/marketplace/negotiations/${negotiationId}/agreement`);
+    const { data } = await client().post(`/v1/marketplace/negotiations/${negotiationId}/agreement`, {});
     return data;
   },
 
@@ -255,7 +255,7 @@ export const a2aMarketplaceApi = {
     identity: AgentBaseIdentity;
     explorer: { registerTx: string | null; token: string | null };
   }> {
-    const { data } = await client().post(`/v1/marketplace/agents/${agentId}/register-identity`);
+    const { data } = await client().post(`/v1/marketplace/agents/${agentId}/register-identity`, {});
     return data;
   },
 };
