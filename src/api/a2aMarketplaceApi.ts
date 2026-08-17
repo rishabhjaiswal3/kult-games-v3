@@ -123,6 +123,21 @@ export type OnChainReputation = {
 
 // ── Jobs ────────────────────────────────────────────────────────────────────
 
+/**
+ * Read the identity record out of a service response.
+ *
+ * The identity endpoints return { identity: {...} }. Reading the envelope as
+ * the record itself leaves every field undefined, which renders a fully
+ * registered agent as "not registered" with no error to notice — so accept
+ * either shape rather than depending on one.
+ */
+function unwrapIdentity(data: unknown): AgentBaseIdentity | null {
+  if (!data || typeof data !== "object") return null;
+  const envelope = data as { identity?: AgentBaseIdentity } & Partial<AgentBaseIdentity>;
+  if (envelope.identity && typeof envelope.identity === "object") return envelope.identity;
+  return typeof envelope.status === "string" ? (envelope as AgentBaseIdentity) : null;
+}
+
 export const a2aMarketplaceApi = {
   /** Preview an interpretation without storing anything. */
   async parsePrompt(prompt: string): Promise<ParsedInterpretation> {
@@ -236,8 +251,11 @@ export const a2aMarketplaceApi = {
 
   async getAgentIdentity(agentId: string): Promise<AgentBaseIdentity | null> {
     try {
-      const { data } = await client().get(`/v1/a2a/identity/agents/${agentId}`);
-      return data;
+      const { data } = await client().get(`/v1/marketplace/agents/${agentId}/identity`);
+      // The service wraps the record as { identity: {...} }. Unwrap, but accept
+      // a bare record too — reading the wrong shape here shows a fully
+      // registered agent as "not registered", with no error anywhere.
+      return unwrapIdentity(data);
     } catch {
       // A 404 means "no identity yet", a normal state for a fresh agent rather
       // than an error every caller has to handle.
