@@ -17,6 +17,9 @@ const GameDetail = lazyWithRetry(() => import("./pages/GameDetail"));
 const GamePlay = lazyWithRetry(() => import("./pages/GamePlay"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const AIArenaPage = lazyWithRetry(() => import("./pages/AIArenaPage"));
+const A2AMarketplacePage = lazyWithRetry(() => import("./pages/A2AMarketplacePage"));
+const A2APostJobPage = lazyWithRetry(() => import("./pages/A2APostJobPage"));
+const A2AJobDetailPage = lazyWithRetry(() => import("./pages/A2AJobDetailPage"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const AutonomousPage = lazyWithRetry(() => import("./pages/AutonomousPage"));
 const AchievementsPage = lazyWithRetry(() => import("./pages/AchievementsPage"));
@@ -143,6 +146,9 @@ function BrowserApp() {
                     <Route path="/battles" element={<AccessRoute><BattlesPage /></AccessRoute>} />
                     <Route path="/inventory" element={<AccessRoute><Inventory /></AccessRoute>} />
                     <Route path="/marketplace" element={<Navigate to="/inventory" replace />} />
+                    <Route path="/marketplace/a2a" element={<AccessRoute><A2AMarketplacePage /></AccessRoute>} />
+                    <Route path="/marketplace/a2a/post" element={<AccessRoute><A2APostJobPage /></AccessRoute>} />
+                    <Route path="/marketplace/a2a/jobs/:jobId" element={<AccessRoute><A2AJobDetailPage /></AccessRoute>} />
                     <Route path="/leaderboard" element={<AccessRoute><Leaderboard /></AccessRoute>} />
                     <Route path="/league" element={<AccessRoute><LeaguePage /></AccessRoute>} />
                     <Route path="/f1" element={<AccessRoute><F1Page /></AccessRoute>} />

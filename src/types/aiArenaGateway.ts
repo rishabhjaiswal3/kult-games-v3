@@ -392,7 +392,44 @@ export interface AiArenaTrainingJob {
   startedAt?: string | null;
   completedAt?: string | null;
   createdAt?: string;
+
+  /**
+   * Live execution state reported by the training worker.
+   *
+   * These come from the actual run — episodes completed, the score measured so
+   * far — not from the status string. Absent while a job is still QUEUED, and
+   * absent on jobs created before real training existed, so every consumer must
+   * handle undefined.
+   */
+  stage?: TrainingStage | string | null;
+  stageStep?: number | null;
+  stageTotal?: number | null;
+  /** 0..1 overall completion. */
+  progress?: number | null;
+  /** Whatever the current stage is measuring, e.g. winRate, meanReturn. */
+  currentMetric?: Record<string, number | string | boolean> | null;
+  heartbeatAt?: string | null;
 }
+
+/** Stages of the trait-training pipeline, in execution order. */
+export type TrainingStage =
+  | "claimed"
+  | "baseline"
+  | "demonstrations"
+  | "behaviour_cloning"
+  | "ppo"
+  | "final_evaluation"
+  | "complete";
+
+export const TRAINING_STAGE_LABELS: Record<string, string> = {
+  claimed: "Claimed by worker",
+  baseline: "Measuring baseline",
+  demonstrations: "Trainer donating demonstrations",
+  behaviour_cloning: "Learning from trainer",
+  ppo: "Self-play refinement",
+  final_evaluation: "Final evaluation",
+  complete: "Complete",
+};
 
 export interface AiArenaCreateTrainingJobRequest {
   agentId: string;

@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAiArenaGatewaySession } from "@/hooks/useAiArenaGatewaySession";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import type { AiArenaAgent, AiArenaTrainingEligibilityResponse, AiArenaTrainingJob } from "@/types/aiArenaGateway";
+import { TRAINING_STAGE_LABELS } from "@/types/aiArenaGateway";
 import { startRewardTrainingTour } from "@/tour/rewardTrainingTour";
 
 type TrainingJobWithAgent = AiArenaTrainingJob & {
@@ -51,21 +52,50 @@ function jobTypeLabel(type?: string | null) {
   }
 }
 
-function progressFromStatus(status?: string | null) {
-  switch (status) {
-    case "QUEUED":
-      return 18;
-    case "RUNNING":
-      return 64;
-    case "COMPLETED":
-      return 100;
-    case "FAILED":
-      return 100;
-    case "CANCELLED":
-      return 100;
-    default:
-      return 8;
+/**
+ * Real progress, reported by the training worker.
+ *
+ * This used to be `progressFromStatus`, which mapped the status string to a
+ * made-up percentage (QUEUED → 18%, RUNNING → 64%). The worker now reports
+ * `progress` (0..1) from the actual run, so a bar at 64% means the job is
+ * genuinely 64% through its episodes.
+ *
+ * Terminal states pin to 100 because a job that failed or was cancelled at 30%
+ * is finished, not stuck. QUEUED is 0: nothing has happened yet, and showing
+ * otherwise is what made the old bar dishonest.
+ */
+function jobProgressPercent(job: TrainingJobWithAgent): number {
+  if (job.status === "COMPLETED" || job.status === "FAILED" || job.status === "CANCELLED") {
+    return 100;
   }
+  if (typeof job.progress === "number" && Number.isFinite(job.progress)) {
+    return Math.max(0, Math.min(100, Math.round(job.progress * 100)));
+  }
+  return 0;
+}
+
+/** Human-readable line for what the worker is doing right now. */
+function jobStageLabel(job: TrainingJobWithAgent): string | null {
+  if (!job.stage) return null;
+
+  const label = TRAINING_STAGE_LABELS[job.stage] ?? job.stage;
+  const hasCounter =
+    typeof job.stageStep === "number" && typeof job.stageTotal === "number" && job.stageTotal > 0;
+
+  return hasCounter ? `${label} · ${job.stageStep}/${job.stageTotal}` : label;
+}
+
+/**
+ * The most informative live number the current stage is producing. PPO reports
+ * win rate, so that is what a viewer most wants to watch climb.
+ */
+function jobLiveMetric(job: TrainingJobWithAgent): string | null {
+  const metric = job.currentMetric;
+  if (!metric) return null;
+
+  if (typeof metric.winRate === "number") return `win rate ${(metric.winRate * 100).toFixed(0)}%`;
+  if (typeof metric.valAccuracy === "number") return `imitation ${(metric.valAccuracy * 100).toFixed(0)}%`;
+  return null;
 }
 
 function statusTone(status?: string | null) {
@@ -508,10 +538,17 @@ const TrainingPage = () => {
                         <span className={`font-tech uppercase ${statusTone(job.status)}`}>{job.status}</span>
                       </div>
                       <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
-                        <div className="h-full rounded-full bg-[#9a35ff]" style={{ width: `${progressFromStatus(job.status)}%` }} />
+                        <div
+                          className="h-full rounded-full bg-[#9a35ff] transition-[width] duration-500"
+                          style={{ width: `${jobProgressPercent(job)}%` }}
+                        />
                       </div>
                       <span className="block text-[8px] font-medium leading-none text-white/35">
-                        {job.datasetRootHash ? `dataset ${job.datasetRootHash.slice(0, 14)}…` : `created ${formatDateTime(job.createdAt)}`}
+                        {jobStageLabel(job)
+                          ? `${jobStageLabel(job)}${jobLiveMetric(job) ? ` · ${jobLiveMetric(job)}` : ""}`
+                          : job.datasetRootHash
+                            ? `dataset ${job.datasetRootHash.slice(0, 14)}…`
+                            : `created ${formatDateTime(job.createdAt)}`}
                       </span>
                     </div>
 

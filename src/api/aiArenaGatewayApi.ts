@@ -189,6 +189,14 @@ function normalizeTrainingJob(job: AiArenaTrainingJob): AiArenaTrainingJob {
   const config =
     job.config && typeof job.config === "object" ? (job.config as Record<string, unknown>) : undefined;
 
+  // Live worker progress. Coerced defensively like everything else here: these
+  // fields are absent on jobs created before real training existed, and
+  // Postgres numerics can arrive as strings through some serializers.
+  const asNumber = (value: unknown): number | null => {
+    const n = typeof value === "string" ? Number(value) : value;
+    return typeof n === "number" && Number.isFinite(n) ? n : null;
+  };
+
   return {
     ...job,
     datasetRootHash:
@@ -197,6 +205,14 @@ function normalizeTrainingJob(job: AiArenaTrainingJob): AiArenaTrainingJob {
         : typeof config?.datasetRootHash === "string"
           ? config.datasetRootHash
           : null,
+    stage: typeof job.stage === "string" ? job.stage : null,
+    stageStep: asNumber(job.stageStep),
+    stageTotal: asNumber(job.stageTotal),
+    progress: asNumber(job.progress),
+    currentMetric:
+      job.currentMetric && typeof job.currentMetric === "object"
+        ? (job.currentMetric as Record<string, number | string | boolean>)
+        : null,
   };
 }
 
