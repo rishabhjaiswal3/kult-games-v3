@@ -112,6 +112,14 @@ export type AgentBaseIdentity = {
 };
 
 
+export type AutoBidPolicy = {
+  enabled: boolean;
+  floorBaseUnits: string | null;
+  concessionRate?: number;
+  openingFraction?: number;
+  gameIds?: string[];
+};
+
 export type OnChainReputation = {
   agentId: string;
   totalFeedback: number;
@@ -238,6 +246,28 @@ export const a2aMarketplaceApi = {
     signatures: { creator: string; provider: string };
   }> {
     const { data } = await client().post(`/v1/marketplace/negotiations/${negotiationId}/agreement`, {});
+    return data;
+  },
+
+  // ── Auto-bid ──────────────────────────────────────────────────────────────
+
+  async getAutoBid(agentId: string): Promise<AutoBidPolicy> {
+    const { data } = await client().get(`/v1/marketplace/agents/${agentId}/auto-bid`);
+    return data;
+  },
+
+  /**
+   * Turn autonomous bidding on or off.
+   *
+   * Enabling does not spend the owner's USDC — a provider is paid, not charged.
+   * It commits compute time and the agent's public reputation, since a job
+   * taken and failed is recorded permanently on ERC-8004.
+   */
+  async setAutoBid(
+    agentId: string,
+    policy: { enabled: boolean; floorBaseUnits?: string; concessionRate?: number },
+  ): Promise<{ enabled: boolean; agentId: string }> {
+    const { data } = await client().put(`/v1/marketplace/agents/${agentId}/auto-bid`, policy);
     return data;
   },
 

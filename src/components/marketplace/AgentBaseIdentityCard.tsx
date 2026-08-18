@@ -13,6 +13,7 @@
  * transaction that produced it.
  */
 
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, BadgeCheck, ExternalLink, Loader2, ShieldPlus } from "lucide-react";
 
@@ -29,13 +30,19 @@ type Props = {
   agentName?: string;
   /** Called once the agent has a usable identity, so a parent can re-check. */
   onRegistered?: () => void;
+  /**
+   * Fires on every status read, not only after a registration performed in
+   * this session — an agent that was already registered must still light up
+   * dependent UI on first load.
+   */
+  onStatusChange?: (status: string | undefined) => void;
   className?: string;
 };
 
 /** Statuses from which the agent can actually transact. */
 const USABLE = ["REGISTERED", "WALLET_LINKED"];
 
-export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, className }: Props) {
+export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStatusChange, className }: Props) {
   const queryClient = useQueryClient();
 
   const identityQuery = useQuery({

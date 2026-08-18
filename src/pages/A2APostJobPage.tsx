@@ -16,6 +16,7 @@ import { AlertTriangle, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { DashboardSignInGate } from "@/components/dashboard/DashboardSignInGate";
 import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
+import { AutoBidToggle } from "@/components/marketplace/AutoBidToggle";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -40,6 +41,7 @@ export default function A2APostJobPage() {
   const [agentId, setAgentId] = useState<string>("");
   const [interpretation, setInterpretation] = useState<ParsedInterpretation | null>(null);
   const [draftJobId, setDraftJobId] = useState<string | null>(null);
+  const [identityReady, setIdentityReady] = useState(false);
 
   const selectedAgent = agents.find((a) => a.id === agentId) ?? agents[0];
 
@@ -94,11 +96,17 @@ export default function A2APostJobPage() {
       </header>
 
       {selectedAgent && (
-        <AgentBaseIdentityCard
-          agentId={selectedAgent.id}
-          agentName={selectedAgent.name}
-          onRegistered={() => draftMut.reset()}
-        />
+        <>
+          <AgentBaseIdentityCard
+            agentId={selectedAgent.id}
+            agentName={selectedAgent.name}
+            onRegistered={() => { draftMut.reset(); setIdentityReady(true); }}
+            onStatusChange={(status) =>
+              setIdentityReady(status === "REGISTERED" || status === "WALLET_LINKED")
+            }
+          />
+          <AutoBidToggle agentId={selectedAgent.id} registered={identityReady} />
+        </>
       )}
 
       {/* ── Prompt ───────────────────────────────────────────────────────── */}
