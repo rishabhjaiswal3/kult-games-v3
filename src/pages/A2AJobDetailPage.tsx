@@ -17,11 +17,15 @@ import { AlertTriangle, CheckCircle2, ExternalLink, FileJson, Loader2, ShieldChe
 
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
+import { NegotiationControls } from "@/components/marketplace/NegotiationControls";
+import { ProposeOnJobPanel } from "@/components/marketplace/ProposeOnJobPanel";
+import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import {
   BASESCAN_ADDRESS,
   BASESCAN_TX,
   a2aMarketplaceApi,
   shortHash,
+  type A2AJob,
   type Negotiation,
   type NegotiationMessage,
 } from "@/api/a2aMarketplaceApi";
@@ -35,6 +39,10 @@ export default function A2AJobDetailPage() {
     enabled: !!jobId,
     refetchInterval: 10_000,
   });
+
+  const { data: agentsResult } = useMyArenaAgents();
+
+  
 
   const negotiationsQuery = useQuery({
     queryKey: ["a2a", "negotiations", jobId],
@@ -65,6 +73,20 @@ export default function A2AJobDetailPage() {
 
   const { job, verification, onChain } = jobQuery.data;
   const negotiations = negotiationsQuery.data ?? [];
+  const myAgentIds = new Set((agentsResult?.agents ?? []).map((a) => a.id));
+  
+  /**
+   * Which side of a negotiation the viewer may act as.
+   *
+   * Derived from agent ownership rather than from who is logged in: one person
+   * can own both agents in a demo, and the controls must follow the agent, not
+   * the account.
+   */
+  const sideFor = (n: Negotiation): "CREATOR" | "PROVIDER" | null => {
+    if (myAgentIds.has(job.creatorAgentId)) return "CREATOR";
+    if (myAgentIds.has(n.providerAgentId)) return "PROVIDER";
+    return null;
+  };
   const agreed = negotiations.find((n) => n.state === "AGREED");
 
   return (
@@ -103,6 +125,8 @@ export default function A2AJobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
+          <ProposeOnJobPanel job={job} negotiations={negotiations} />
+          
           {negotiations.length === 0 ? (
             <section className="rounded-lg border border-dashed border-white/15 py-10 text-center">
               <p className="text-xs text-white/40">
@@ -110,7 +134,9 @@ export default function A2AJobDetailPage() {
               </p>
             </section>
           ) : (
-            negotiations.map((n) => <NegotiationRoom key={n.id} negotiation={n} />)
+            negotiations.map((n) => (
+              <NegotiationRoom key={n.id} job={job} negotiation={n} side={sideFor(n)} />
+            ))
           )}
         </div>
 
@@ -175,7 +201,15 @@ export default function A2AJobDetailPage() {
  * was not set by a form field, it was signed by two agents, and the chain of
  * digests means no message can be edited after the fact without detection.
  */
-function NegotiationRoom({ negotiation }: { negotiation: Negotiation }) {
+function NegotiationRoom({
+  job,
+  negotiation,
+  side,
+}: {
+  job: A2AJob;
+  negotiation: Negotiation;
+  side: "CREATOR" | "PROVIDER" | null;
+}) {
   return (
     <section className="rounded-lg border border-white/10 bg-black/30 p-4">
       <div className="flex items-baseline justify-between">
@@ -225,6 +259,8 @@ function NegotiationRoom({ negotiation }: { negotiation: Negotiation }) {
           Agreement {shortHash(negotiation.agreementHash, 5)} · signed by both agents
         </p>
       )}
+
+      <NegotiationControls job={job} negotiation={negotiation} side={side} />
     </section>
   );
 }

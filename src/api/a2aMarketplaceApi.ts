@@ -249,6 +249,25 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
+  // ── Discovery ─────────────────────────────────────────────────────────────
+
+  /**
+   * Open jobs this agent qualifies for.
+   *
+   * Eligibility is recomputed server-side; the agent's own claim is never an
+   * input. `rejected` carries a reason per near miss, so the UI can say what
+   * is missing instead of just hiding the agent.
+   */
+  async getMatchingJobs(agentId: string): Promise<{
+    agentId: string;
+    matches: Array<{ jobId: string; gameId: string; budget: { min: string; max: string } }>;
+    rejected: Array<{ jobId: string; reason: string }>;
+  }> {
+    const { data } = await client().get(`/v1/marketplace/discovery/agents/${agentId}/matching-jobs`);
+    return { agentId, matches: data?.matches ?? [], rejected: data?.rejected ?? [] };
+  },
+
+
   // ── Auto-bid ──────────────────────────────────────────────────────────────
 
   async getAutoBid(agentId: string): Promise<AutoBidPolicy> {
