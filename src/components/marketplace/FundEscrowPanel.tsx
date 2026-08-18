@@ -18,6 +18,16 @@ import { AlertTriangle, ExternalLink, Loader2, Lock } from "lucide-react";
 
 import { BASESCAN_TX, a2aMarketplaceApi, type A2AJob } from "@/api/a2aMarketplaceApi";
 
+/**
+ * Off-chain statuses from which funding is still possible.
+ *
+ * A job moves to NEGOTIATING as soon as a thread opens, while the ON-CHAIN
+ * status stays POSTED until fundWithAuthorization runs. Checking only for
+ * POSTED made funding unreachable for any job that had been negotiated, which
+ * is every job that reaches this point.
+ */
+const FUNDABLE_STATUSES = ["POSTED", "NEGOTIATING"];
+
 type Props = {
   job: A2AJob;
   /** True when the viewer owns the creating agent. */
@@ -31,7 +41,7 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
   const requestQuery = useQuery({
     queryKey: ["a2a", "funding-request", job.id],
     queryFn: () => a2aMarketplaceApi.getFundingRequest(job.id),
-    enabled: isCreator && job.status === "POSTED",
+    enabled: isCreator && FUNDABLE_STATUSES.includes(job.status),
     // A stale nonce or expiry would be rejected, so do not cache this.
     staleTime: 0,
     retry: false,
@@ -109,8 +119,8 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
 
   if (!isCreator) return null;
 
-  // Already funded: show the receipt instead of the action.
-  if (job.status !== "POSTED") {
+  // Already funded, or past funding: show the receipt instead of the action.
+  if (!FUNDABLE_STATUSES.includes(job.status)) {
     const funded = ["ESCROWED", "EXECUTING", "DELIVERED", "SETTLED"].includes(job.status);
     if (!funded) return null;
     return (
