@@ -6,20 +6,31 @@
  * and is deliberately not listed.
  */
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ExternalLink, Loader2, Plus } from "lucide-react";
 
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
-import { a2aMarketplaceApi, shortHash, type A2AJob } from "@/api/a2aMarketplaceApi";
+import {
+  a2aMarketplaceApi,
+  shortHash,
+  type A2AJob,
+  type JobScope,
+} from "@/api/a2aMarketplaceApi";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
 
 export default function A2AMarketplacePage() {
-  const { data: jobs = [], isLoading, error } = useQuery({
-    queryKey: ["a2a", "jobs", "open"],
-    queryFn: () => a2aMarketplaceApi.listOpenJobs(),
+  const [scope, setScope] = useState<JobScope>("open");
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["a2a", "jobs", scope],
+    queryFn: () => a2aMarketplaceApi.listJobs(scope),
     refetchInterval: 15_000,
   });
+
+  const jobs = data?.jobs ?? [];
+  const counts = data?.counts ?? { open: 0, active: 0, completed: 0 };
 
   return (
     <ArenaPageLayout>
@@ -42,6 +53,72 @@ export default function A2AMarketplacePage() {
         </Link>
       </header>
 
+      <nav className="flex gap-1 border-b border-white/10">
+
+
+        {([
+
+
+          ["open", "Open", counts.open],
+
+
+          ["active", "In progress", counts.active],
+
+
+          ["completed", "Completed", counts.completed],
+
+
+        ] as Array<[JobScope, string, number]>).map(([value, label, count]) => (
+
+
+          <button
+
+
+            key={value}
+
+
+            type="button"
+
+
+            onClick={() => setScope(value)}
+
+
+            className={`-mb-px border-b-2 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider transition ${
+
+
+              scope === value
+
+
+                ? "border-cyan-400 text-cyan-300"
+
+
+                : "border-transparent text-white/40 hover:text-white/70"
+
+
+            }`}
+
+
+          >
+
+
+            {label}
+
+
+            {count > 0 ? <span className="ml-1.5 text-white/30">{count}</span> : null}
+
+
+          </button>
+
+
+        ))}
+
+
+      </nav>
+
+
+      
+
+
       {isLoading && (
         <div className="flex items-center gap-2 py-12 text-xs text-white/40">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -57,7 +134,7 @@ export default function A2AMarketplacePage() {
 
       {!isLoading && jobs.length === 0 && (
         <div className="rounded-lg border border-dashed border-white/15 py-16 text-center">
-          <p className="text-sm text-white/50">No open jobs right now.</p>
+          <p className="text-sm text-white/50">{scope === "completed" ? "No completed jobs yet." : scope === "active" ? "Nothing in progress." : "No open jobs right now."}</p>
           <Link
             to="/marketplace/a2a/post"
             className="mt-2 inline-block text-xs text-cyan-400 underline-offset-2 hover:underline"

@@ -112,6 +112,14 @@ export type AgentBaseIdentity = {
 };
 
 
+export type JobScope = "open" | "active" | "completed" | "all";
+
+export type JobListing = {
+  jobs: A2AJob[];
+  scope: JobScope;
+  counts: { open: number; active: number; completed: number };
+};
+
 export type AutoBidPolicy = {
   enabled: boolean;
   floorBaseUnits: string | null;
@@ -177,11 +185,21 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
-  async listOpenJobs(gameId?: string): Promise<A2AJob[]> {
+  /**
+   * Jobs by lifecycle scope, with counts for the tabs.
+   *
+   * A job used to vanish from the board the moment it was funded, so work in
+   * progress and settled history were both invisible.
+   */
+  async listJobs(scope: JobScope = "open", gameId?: string): Promise<JobListing> {
     const { data } = await client().get("/v1/marketplace/jobs", {
-      params: gameId ? { gameId } : undefined,
+      params: { scope, ...(gameId ? { gameId } : {}) },
     });
-    return data?.jobs ?? [];
+    return {
+      jobs: data?.jobs ?? [],
+      scope: data?.scope ?? scope,
+      counts: data?.counts ?? { open: 0, active: 0, completed: 0 },
+    };
   },
 
   /** Job record, hash verification, and the chain's independent view. */
