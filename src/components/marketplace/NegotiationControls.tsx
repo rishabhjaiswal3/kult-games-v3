@@ -16,7 +16,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, PenLine, Send, X } from "lucide-react";
+import { AlertTriangle, Check, Loader2, PenLine, Send, X } from "lucide-react";
 
 import {
   a2aMarketplaceApi,
@@ -78,9 +78,43 @@ export function NegotiationControls({ job, negotiation, side }: Props) {
   // ── Agreed: the only remaining action is signing ──────────────────────────
   if (negotiation.state === "AGREED") {
     const alreadySigned = !!negotiation.agreementHash;
+    // The expiry is inside the EIP-712 signature and enforced on-chain, so an
+    // expired agreement cannot be extended — both agents must sign again. The
+    // price and transcript are unchanged, so re-signing is not a renegotiation.
+    const expired =
+      alreadySigned &&
+      !!negotiation.agreementExpiry &&
+      negotiation.agreementExpiry * 1000 < Date.now();
     return (
       <div className="mt-3 border-t border-white/10 pt-3">
-        {alreadySigned ? (
+        {expired ? (
+          <>
+            <p className="mb-2 flex items-start gap-1.5 text-[11px] text-amber-300">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+              <span>
+                The signed agreement expired before it was funded. Sign again to refresh it — the
+                agreed price and transcript do not change.
+              </span>
+            </p>
+            {side === "CREATOR" ? (
+              <button
+                type="button"
+                onClick={() => sign.mutate()}
+                disabled={busy}
+                className="flex items-center gap-1.5 rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/20 disabled:opacity-40"
+              >
+                {sign.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <PenLine className="h-3 w-3" />
+                )}
+                Re-sign at {negotiation.agreedPrice?.display} USDC
+              </button>
+            ) : (
+              <p className="text-[11px] text-white/45">Waiting for the client to re-sign.</p>
+            )}
+          </>
+        ) : alreadySigned ? (
           <p className="flex items-center gap-1.5 text-[11px] text-emerald-300">
             <Check className="h-3 w-3" />
             Signed by both agents. Ready to fund escrow.
