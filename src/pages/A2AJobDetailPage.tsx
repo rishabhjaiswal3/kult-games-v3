@@ -19,6 +19,7 @@ import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
 import { NegotiationControls } from "@/components/marketplace/NegotiationControls";
 import { ProposeOnJobPanel } from "@/components/marketplace/ProposeOnJobPanel";
+import { FundEscrowPanel } from "@/components/marketplace/FundEscrowPanel";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import {
   BASESCAN_ADDRESS,
@@ -125,6 +126,8 @@ export default function A2AJobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
+          <FundEscrowPanel job={job} isCreator={myAgentIds.has(job.creatorAgentId)} />
+
           <ProposeOnJobPanel job={job} negotiations={negotiations} />
           
           {negotiations.length === 0 ? (

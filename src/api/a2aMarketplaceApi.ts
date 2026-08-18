@@ -249,6 +249,48 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
+  // ── Escrow funding ────────────────────────────────────────────────────────
+
+  /**
+   * What the creator's wallet must sign to fund escrow.
+   *
+   * Carries a fresh nonce and expiry each time, so it is never cached.
+   */
+  async getFundingRequest(jobId: string): Promise<{
+    jobId: string;
+    amount: { baseUnits: string; display: string; currency: string };
+    typedData: {
+      domain: { name: string; version: string; chainId: number; verifyingContract: string };
+      types: Record<string, Array<{ name: string; type: string }>>;
+      primaryType: string;
+      message: {
+        from: string; to: string; value: string;
+        validAfter: string; validBefore: string; nonce: string;
+      };
+    };
+  }> {
+    const { data } = await client().get(`/v1/marketplace/jobs/${jobId}/funding-request`);
+    return data;
+  },
+
+  /**
+   * Submit the signed authorization. The relayer pays gas and submits on-chain.
+   *
+   * Only the signature travels: the agreement and both agent signatures are
+   * read server-side, so a tampered client cannot fund different terms.
+   */
+  async fundJob(
+    jobId: string,
+    authorization: {
+      signature: string; value: string;
+      validAfter: string; validBefore: string; nonce: string;
+    },
+  ): Promise<{ txHash: string; blockNumber: number; explorer: string; alreadyFunded: boolean }> {
+    const { data } = await client().post(`/v1/marketplace/jobs/${jobId}/fund`, authorization);
+    return data;
+  },
+
+
   // ── Discovery ─────────────────────────────────────────────────────────────
 
   /**
