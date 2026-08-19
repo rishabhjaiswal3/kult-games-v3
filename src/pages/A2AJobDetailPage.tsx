@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, ExternalLink, FileJson, Loader2, ShieldCheck } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { ArenaPageLayout } from "@/components/arena/ArenaPageLayout";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
 import { NegotiationControls } from "@/components/marketplace/NegotiationControls";
@@ -121,11 +122,25 @@ export default function A2AJobDetailPage() {
           NEGOTIATE: agreed?.transcriptHash
             ? { detail: `transcript ${shortHash(agreed.transcriptHash, 4)}` }
             : undefined,
+          ESCROW: job.tx?.fund
+            ? { txHash: job.tx.fund, detail: job.agreedPrice ? `${job.agreedPrice.display} USDC locked` : undefined }
+            : undefined,
+          TRAIN: job.tx?.executing ? { txHash: job.tx.executing } : undefined,
+          DELIVER: job.tx?.deliver
+            ? { txHash: job.tx.deliver, detail: job.deliverableHash ? `hash ${shortHash(job.deliverableHash, 4)}` : undefined }
+            : undefined,
+          SETTLE: job.tx?.verdict
+            ? {
+                txHash: job.tx.verdict,
+                detail: job.verdict?.accepted ? "escrow released to trainer" : "refunded to creator",
+              }
+            : undefined,
         }}
       />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
+          <SettlementReceipt job={job} />
           <FundEscrowPanel job={job} isCreator={myAgentIds.has(job.creatorAgentId)} />
 
           <ProposeOnJobPanel job={job} negotiations={negotiations} />
@@ -179,11 +194,20 @@ export default function A2AJobDetailPage() {
           </Panel>
 
           <Panel title="On Base">
-            {job.postTxHash ? (
-              <TxRow label="Registered" hash={job.postTxHash} />
-            ) : (
+            {/*
+              The full trail, in the order it happened. Each stage of this
+              marketplace is a separate transaction on Base mainnet, and listing
+              them together is the difference between claiming that and showing
+              it.
+            */}
+            {job.tx?.post ? <TxRow label="Registered" hash={job.tx.post} /> : (
               <p className="text-[10px] text-white/35">Not yet on-chain</p>
             )}
+            {job.tx?.fund ? <TxRow label="Escrow funded" hash={job.tx.fund} /> : null}
+            {job.tx?.executing ? <TxRow label="Work started" hash={job.tx.executing} /> : null}
+            {job.tx?.deliver ? <TxRow label="Delivered" hash={job.tx.deliver} /> : null}
+            {job.tx?.verdict ? <TxRow label="Verdict + payout" hash={job.tx.verdict} /> : null}
+            {job.tx?.reputation ? <TxRow label="Feedback (ERC-8004)" hash={job.tx.reputation} /> : null}
             {onChain ? (
               <p className="mt-2 text-[10px] text-white/35">
                 Chain status:{" "}
@@ -194,6 +218,85 @@ export default function A2AJobDetailPage() {
         </aside>
       </div>
     </ArenaPageLayout>
+  );
+}
+
+/**
+ * What actually happened to the money.
+ *
+ * Shown only once a verdict exists, because until then there is nothing
+ * truthful to say. The measured value is the one produced by the independent
+ * verification run — a fresh seed root the trainer never saw — which is why it
+ * is labelled as measured rather than reported, and why it can disagree with
+ * whatever the trainer claimed.
+ *
+ * A rejected verdict is rendered as prominently as an accepted one. Work that
+ * misses the target returning the creator's money is the property that makes
+ * the escrow worth using, and hiding it would sell the weaker system.
+ */
+function SettlementReceipt({ job }: { job: A2AJob }) {
+  if (!job.verdict) return null;
+
+  const { accepted } = job.verdict;
+  const target = job.target;
+  const measured = job.verifiedValue;
+
+  return (
+    <section
+      className={`rounded-lg border p-4 ${
+        accepted ? "border-emerald-500/40 bg-emerald-500/5" : "border-amber-500/40 bg-amber-500/5"
+      }`}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <h3
+          className={`flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] ${
+            accepted ? "text-emerald-300" : "text-amber-300"
+          }`}
+        >
+          {accepted ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+          {accepted ? "Settled — trainer paid" : "Refunded — target missed"}
+        </h3>
+        {job.agreedPrice && (
+          <span className="font-mono text-sm text-white">
+            {job.agreedPrice.display} {job.agreedPrice.currency}
+          </span>
+        )}
+      </div>
+
+      <p className="mt-2 text-[11px] text-white/60">
+        {accepted
+          ? "The escrow released the agreed price to the trainer's wallet. No human approved this payment."
+          : "The work was delivered but did not reach the target, so the contract returned the full amount to the creator. No commission was taken."}
+      </p>
+
+      <div className="mt-3 grid gap-1.5 sm:grid-cols-2 sm:gap-x-6">
+        <Row label="Target" value={`${target.metric} ≥ ${target.value}`} />
+        <Row
+          label="Measured"
+          value={measured === null ? "—" : String(measured)}
+          tone={accepted ? "good" : "warn"}
+        />
+      </div>
+
+      <p className="mt-2 text-[10px] text-white/35">
+        Measured by an independent re-run of the delivered model under a seed root
+        generated at verification time — the trainer never saw these seeds.
+      </p>
+
+      {job.tx?.verdict && (
+        <a
+          href={BASESCAN_TX(job.tx.verdict)}
+          target="_blank"
+          rel="noreferrer"
+          className={`mt-3 flex items-center gap-1 text-[10px] ${
+            accepted ? "text-emerald-400 hover:text-emerald-300" : "text-amber-400 hover:text-amber-300"
+          }`}
+        >
+          Verdict and transfer on Base
+          <ExternalLink className="h-2.5 w-2.5" />
+        </a>
+      )}
+    </section>
   );
 }
 
@@ -318,11 +421,27 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  tone = "plain",
+}: {
+  label: string;
+  value: string;
+  /** The measured value on a settled job is the verdict, not another field. */
+  tone?: "plain" | "good" | "warn";
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span>
-      <span className="font-mono text-[11px] text-white">{value}</span>
+      <span
+        className={cn(
+          "font-mono text-[11px]",
+          tone === "good" ? "text-emerald-300" : tone === "warn" ? "text-amber-300" : "text-white",
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }

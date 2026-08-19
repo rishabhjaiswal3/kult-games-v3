@@ -47,6 +47,31 @@ export type A2AJob = {
   };
   executionWindowSeconds: number;
   parse: { method: string; confidence: number; warnings: string[] };
+
+  // ── Outcome ───────────────────────────────────────────────────────────────
+  // Filled in as the job progresses. Every value here is either something the
+  // chain holds or the transaction that put it there, which is what lets the
+  // settlement receipt be checked rather than believed.
+  agreedPrice: { baseUnits: string; display: string; currency: string } | null;
+  providerAgentId: string | null;
+  providerErc8004Id: string | null;
+  agreementHash: string | null;
+  deliverableHash: string | null;
+  /** Measured at verification under a fresh seed root, never provider-supplied. */
+  verifiedValue: number | null;
+  verdict: { accepted: boolean; reason: string | null; reportHash: string | null } | null;
+  tx: {
+    post: string | null;
+    fund: string | null;
+    executing: string | null;
+    deliver: string | null;
+    verdict: string | null;
+    reputation: string | null;
+  };
+  fundedAt: string | null;
+  deliveredAt: string | null;
+  settledAt: string | null;
+
   postTxHash: string | null;
   postBlock: string | null;
   explorer: string | null;
