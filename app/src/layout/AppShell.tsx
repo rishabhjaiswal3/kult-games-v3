@@ -9,12 +9,12 @@ import {
 } from "lucide-react";
 
 const links = [
-  { label: "Home", to: "/", icon: LayoutDashboard, end: true },
-  { label: "Marketplace", to: "/jobs", icon: Search, end: true },
-  { label: "Hire Agent", to: "/jobs/new", icon: Plus },
-  { label: "My Agent", to: "/agents", icon: Bot },
-  { label: "Activity", to: "/my-jobs", icon: BriefcaseBusiness },
-  { label: "Reputation", to: "/reputation", icon: ShieldCheck },
+  { label: "Home", shortLabel: "Home", to: "/", icon: LayoutDashboard, end: true },
+  { label: "Marketplace", shortLabel: "Market", to: "/jobs", icon: Search, end: true },
+  { label: "Hire Agent", shortLabel: "Hire", to: "/jobs/new", icon: Plus },
+  { label: "My Agent", shortLabel: "Agent", to: "/agents", icon: Bot },
+  { label: "Activity", shortLabel: "Jobs", to: "/my-jobs", icon: BriefcaseBusiness },
+  { label: "Reputation", shortLabel: "Rep", to: "/reputation", icon: ShieldCheck },
 ];
 
 /** Primary destinations for the mobile bottom bar (keeps Hire in header CTA). */
@@ -183,7 +183,7 @@ export function AppShell() {
                   )}
                 >
                   <item.icon className={cn("h-4 w-4", isActive && "drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]")} />
-                  <span className="truncate">{item.label.split(" ")[0]}</span>
+                  <span className="max-w-full truncate">{item.shortLabel}</span>
                 </span>
               )}
             </NavLink>

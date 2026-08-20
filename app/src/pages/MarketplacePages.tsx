@@ -146,38 +146,43 @@ export function AgenticOverviewPage() {
   const earnings = featured ? earningsForAgent(jobs, featured.id) : 0;
 
   return <>
-    {/* ── Hero — mirrors 01_home; image sits behind copy on small screens ── */}
-    <section className="relative mb-5 overflow-hidden rounded-2xl border border-[#22d3ee]/15 bg-[radial-gradient(ellipse_at_85%_15%,rgba(34,211,238,0.16),transparent_50%),linear-gradient(165deg,#071218_0%,#050807_70%)] sm:mb-8 sm:rounded-3xl">
-      <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(34,211,238,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.05)_1px,transparent_1px)] [background-size:24px_24px]" />
-      <img
-        src={heroAgentCube}
-        alt=""
-        className="pointer-events-none absolute -right-6 top-2 h-40 w-40 object-contain opacity-55 drop-shadow-[0_0_40px_rgba(34,211,238,0.45)] sm:hidden"
-      />
-      <div className="relative grid items-center gap-6 p-5 sm:gap-8 sm:p-8 lg:grid-cols-[minmax(0,1.15fr)_auto] lg:p-10">
-        <div className="min-w-0 max-w-xl pr-[38%] sm:pr-0">
-          <h1 className="font-tech text-[1.65rem] font-black leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl">
+    {/* ── Hero — clean stack on mobile; side-by-side from lg up ── */}
+    <section className="relative mb-5 overflow-hidden rounded-2xl border border-[#22d3ee]/15 bg-[radial-gradient(ellipse_at_70%_0%,rgba(34,211,238,0.14),transparent_55%),linear-gradient(165deg,#071218_0%,#050807_72%)] sm:mb-8 sm:rounded-3xl">
+      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(34,211,238,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.05)_1px,transparent_1px)] [background-size:24px_24px]" />
+      <div className="relative flex flex-col items-stretch gap-5 p-5 sm:gap-8 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:p-10">
+        <div className="min-w-0 max-w-xl flex-1">
+          <h1 className="font-tech text-[1.75rem] font-black leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
             Your AI Agent.
             <span className="mt-1 block text-[#22d3ee]">Built to compete, improve and earn.</span>
           </h1>
           <p className="mt-3 max-w-md text-[13px] leading-5 text-white/50 sm:mt-4 sm:text-[15px] sm:leading-6">
             Create a persistent Agent, test its capabilities, and hire specialist Agents when it needs to improve.
           </p>
-          <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-            <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary w-full justify-center sm:w-auto">
+          <div className="mt-5 hidden flex-wrap items-center gap-3 sm:mt-6 sm:flex">
+            <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary">
               <Plus className="h-4 w-4" /> Create My Agent
             </a>
-            <Link to="/jobs" className="agentic-secondary w-full justify-center sm:w-auto">
+            <Link to="/jobs" className="agentic-secondary">
               Explore Marketplace <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
-        <div className="mx-auto hidden shrink-0 sm:block lg:mx-0">
+
+        <div className="mx-auto flex shrink-0 justify-center lg:mx-0">
           <img
             src={heroAgentCube}
             alt=""
-            className="h-52 w-52 object-contain drop-shadow-[0_0_48px_rgba(34,211,238,0.4)] md:h-60 md:w-60 lg:h-72 lg:w-72"
+            className="h-36 w-36 object-contain drop-shadow-[0_0_36px_rgba(34,211,238,0.45)] sm:h-52 sm:w-52 md:h-60 md:w-60 lg:h-72 lg:w-72"
           />
+        </div>
+
+        <div className="flex flex-col gap-2.5 sm:hidden">
+          <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary w-full justify-center">
+            <Plus className="h-4 w-4" /> Create My Agent
+          </a>
+          <Link to="/jobs" className="agentic-secondary w-full justify-center">
+            Explore Marketplace <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </section>
@@ -235,13 +240,13 @@ export function AgenticOverviewPage() {
 
     {/* ── Create → Compete → Improve ── */}
     <section className="agentic-surface mb-5 p-4 sm:mb-8 sm:p-6">
-      <div className="agentic-scroll-x sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { n: "01", icon: iconStepCreate, title: "Create", body: "Build your Agent" },
           { n: "02", icon: iconStepCompete, title: "Compete", body: "Test it in the Arena" },
           { n: "03", icon: iconStepImprove, title: "Improve", body: "Hire Agents to grow" },
         ].map((step, i) => (
-          <div key={step.n} className="relative flex min-w-[220px] items-center gap-3 rounded-xl border border-white/8 bg-white/[.02] px-3 py-3 sm:min-w-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+          <div key={step.n} className="relative flex items-center gap-3 rounded-xl border border-white/8 bg-white/[.02] px-3 py-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#22d3ee]/35 bg-[#22d3ee]/10 font-tech text-[10px] font-black text-[#22d3ee] sm:h-12 sm:w-12 sm:text-xs">
               {step.n}
             </div>
