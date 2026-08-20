@@ -37,7 +37,7 @@ export const HIGHWAY_HUSTLE_MODES: HighwayHustleModeConfig[] = [
     description:
       "Two-way traffic chaos. Switch lanes fast and survive oncoming waves in medium-difficulty runs.",
     difficulty: "Medium",
-    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/TwoWay/3/index.html",
+    playUrl: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/TwoWay/5/index.html",
   },
   {
     identification: "highwayhustle-speedrun",
