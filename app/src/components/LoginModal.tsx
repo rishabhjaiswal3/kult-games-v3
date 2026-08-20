@@ -291,7 +291,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                         ? "Setting up your wallet, this usually takes a few seconds."
                         : authLoading
                           ? "Completing wallet verification with Kult…"
-                          : "If a wallet prompt appears, approve it to verify with SIWE."}
+                          : "If a wallet prompt appears, approve it to finish signing in."}
                     </p>
                     <button
                       type="button"
