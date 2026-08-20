@@ -59,7 +59,7 @@ export function ProposeOnJobPanel({ job, negotiations }: Props) {
 
   return (
     <section className="rounded-lg border border-white/10 bg-black/30 p-4">
-      <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#0052ff]">
+      <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
         Take this job
       </h3>
       <p className="mt-1 text-[11px] text-white/45">
@@ -70,7 +70,7 @@ export function ProposeOnJobPanel({ job, negotiations }: Props) {
         <select
           value={selected}
           onChange={(e) => setAgentId(e.target.value)}
-          className="mt-3 w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:border-[#0052ff]/50 focus:outline-none"
+          className="mt-3 w-full rounded border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:border-[#22d3ee]/50 focus:outline-none"
         >
           {candidates.map((a) => (
             <option key={a.id} value={a.id}>
@@ -88,7 +88,7 @@ export function ProposeOnJobPanel({ job, negotiations }: Props) {
           Checking eligibility…
         </p>
       ) : eligible === true ? (
-        <p className="mt-2 flex items-center gap-1.5 text-[10px] text-[#0052ff]">
+        <p className="mt-2 flex items-center gap-1.5 text-[10px] text-[#22d3ee]">
           <CheckCircle2 className="h-3 w-3" />
           This agent meets the requirements.
         </p>
@@ -103,7 +103,7 @@ export function ProposeOnJobPanel({ job, negotiations }: Props) {
         type="button"
         onClick={() => propose.mutate()}
         disabled={!selected || propose.isPending || eligible === false}
-        className="mt-3 flex items-center gap-1.5 rounded border border-[#0052ff]/40 bg-[#0052ff]/10 px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#0052ff] transition hover:bg-[#0052ff]/20 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-3 flex items-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-4 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {propose.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
         Propose as trainer

@@ -124,8 +124,8 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
     const funded = ["ESCROWED", "EXECUTING", "DELIVERED", "SETTLED"].includes(job.status);
     if (!funded) return null;
     return (
-      <section className="rounded-lg border border-[#0052ff]/30 bg-[#0052ff]/5 p-4">
-        <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#0052ff]">
+      <section className="rounded-lg border border-[#22d3ee]/30 bg-[#22d3ee]/5 p-4">
+        <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
           <Lock className="h-3 w-3" />
           Escrow funded
         </h3>
@@ -141,7 +141,7 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
 
   return (
     <section className="rounded-lg border border-white/10 bg-black/30 p-4">
-      <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#0052ff]">
+      <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
         <Lock className="h-3 w-3" />
         Fund escrow
       </h3>
@@ -168,7 +168,7 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
             type="button"
             onClick={() => fund.mutate()}
             disabled={fund.isPending}
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded border border-[#0052ff]/40 bg-[#0052ff]/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#0052ff] transition hover:bg-[#0052ff]/20 disabled:opacity-40"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:opacity-40"
           >
             {fund.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Lock className="h-3 w-3" />}
             Lock {request.amount.display} USDC
@@ -194,7 +194,7 @@ export function FundEscrowPanel({ job, isCreator }: Props) {
           href={BASESCAN_TX(fund.data.txHash)}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 flex items-center gap-1 font-mono text-[10px] text-[#0052ff] hover:text-[#0052ff]"
+          className="mt-2 flex items-center gap-1 font-mono text-[10px] text-[#22d3ee] hover:text-[#22d3ee]"
         >
           View on BaseScan
           <ExternalLink className="h-2.5 w-2.5" />

@@ -15,14 +15,14 @@
     --popover: 220 45% 10%;
     --popover-foreground: 210 20% 93%;
 
-    --primary: 221 100% 50%;
+    --primary: 189 94% 46%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 221 28% 22%;
+    --secondary: 189 28% 22%;
     --secondary-foreground: 210 20% 93%;
-    --muted: 221 24% 16%;
+    --muted: 189 24% 16%;
     --muted-foreground: 210 15% 55%;
     --accent: 198 92% 68%;
-    --accent-foreground: 221 35% 8%;
+    --accent-foreground: 189 35% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -40,17 +40,17 @@
     --neural: 220 40% 14%;
     --glass: 220 45% 10%;
     --surface-elevated: 220 40% 12%;
-    --surface-1: 221 28% 14%;
-    --surface-2: 221 32% 18%;
+    --surface-1: 189 28% 14%;
+    --surface-2: 189 32% 18%;
     --gold: 40 85% 58%;
     --smoke: 220 15% 30%;
     --neon-cyan: 198 92% 68%;
     --neon-green: 152 78% 56%;
     --neon-magenta: 310 100% 60%;
     --neon-pink: 340 85% 62%;
-    /* Base chain brand blue — exact match to the Base logo, #0052FF */
-    --base-blue: 221 100% 50%;
-    --neon-purple: 221 100% 50%;
+    /* KULT//A2A brand cyan — matches the designer reference, #22D3EE */
+    --base-blue: 189 94% 46%;
+    --neon-purple: 189 94% 46%;
     --cyan-glow: 198 92% 68%;
     --cyan-lightning: 190 100% 70%;
 
@@ -62,12 +62,12 @@
     --amber: oklch(0.78 0.18 75);
 
     /* Reimagined-inspired gradients (reference: ai-arena-reimagined) */
-    --gradient-hero: linear-gradient(135deg, hsl(210 20% 96%), hsl(198 92% 68%) 40%, hsl(221 100% 50%));
-    /* Flat Base blue — no gradient, matches the logo exactly (#0052FF) */
-    --gradient-primary: hsl(221 100% 50%);
-    --gradient-card: linear-gradient(180deg, hsl(221 32% 18% / 0.72), hsl(221 28% 12% / 0.88));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(221 100% 50% / 0.32), transparent 70%);
-    --shadow-neon: 0 0 24px hsl(221 100% 50% / 0.45);
+    --gradient-hero: linear-gradient(135deg, hsl(210 20% 96%), hsl(198 92% 68%) 40%, hsl(189 100% 50%));
+    /* Flat brand cyan — no gradient, matches the designer reference (#22D3EE) */
+    --gradient-primary: hsl(189 100% 50%);
+    --gradient-card: linear-gradient(180deg, hsl(189 32% 18% / 0.72), hsl(189 28% 12% / 0.88));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(189 100% 50% / 0.32), transparent 70%);
+    --shadow-neon: 0 0 24px hsl(189 100% 50% / 0.45);
     --shadow-cyan: 0 0 18px hsl(198 92% 68% / 0.4);
   }
 }
@@ -84,34 +84,34 @@
   body {
     @apply bg-background text-foreground font-body antialiased text-base font-medium;
     background-image:
-      radial-gradient(ellipse at 20% 0%, hsl(221 100% 50% / 0.14), transparent 50%),
+      radial-gradient(ellipse at 20% 0%, hsl(189 100% 50% / 0.14), transparent 50%),
       radial-gradient(ellipse at 80% 10%, hsl(198 92% 68% / 0.1), transparent 55%),
-      radial-gradient(ellipse at 50% 80%, hsl(221 100% 50% / 0.06), transparent 50%),
-      linear-gradient(180deg, hsl(221 35% 8%), hsl(221 32% 6%));
+      radial-gradient(ellipse at 50% 80%, hsl(189 100% 50% / 0.06), transparent 50%),
+      linear-gradient(180deg, hsl(189 35% 8%), hsl(189 32% 6%));
     background-attachment: fixed;
 
     /* ── Privy UI theming ─────────────────────────────────────────────────
        Override Privy's design tokens so wallet pickers, sign-message prompts,
-       and send-transaction dialogs match the Kult dark blue / cyan theme. */
+       and send-transaction dialogs match the KULT//A2A dark cyan theme. */
 
-    /* Backgrounds — blue-tinted to match LoginModal card */
-    --privy-color-background:   hsl(221 48% 12%);
-    --privy-color-background-2: hsl(221 42% 16%);
-    --privy-color-background-3: hsl(221 35% 18%);
+    /* Backgrounds — cyan-tinted to match LoginModal card */
+    --privy-color-background:   hsl(189 48% 12%);
+    --privy-color-background-2: hsl(189 42% 16%);
+    --privy-color-background-3: hsl(189 35% 18%);
 
     /* Foreground (text) */
     --privy-color-foreground:   hsl(210 20% 93%);    /* primary text */
     --privy-color-foreground-2: hsl(210 15% 58%);    /* secondary / placeholder */
     --privy-color-foreground-3: hsl(210 12% 35%);    /* tertiary / disabled label */
     --privy-color-foreground-4: hsl(210 10% 22%);    /* dividers / subtle lines */
-    --privy-color-foreground-accent: hsl(221 88% 78%); /* highlighted accent text */
+    --privy-color-foreground-accent: hsl(189 88% 78%); /* highlighted accent text */
 
-    /* Accent — Base brand blue hsl(221 100% 50%) = #0052FF */
-    --privy-color-accent:         hsl(221 100% 50%);
-    --privy-color-accent-light:   hsl(221 92% 62%);
-    --privy-color-accent-lightest:hsl(221 80% 85%);
-    --privy-color-accent-dark:    hsl(221 100% 42%);
-    --privy-color-accent-darkest: hsl(221 100% 26%);
+    /* Accent — KULT//A2A brand cyan hsl(189 100% 50%) = #22D3EE */
+    --privy-color-accent:         hsl(189 100% 50%);
+    --privy-color-accent-light:   hsl(189 92% 62%);
+    --privy-color-accent-lightest:hsl(189 80% 85%);
+    --privy-color-accent-dark:    hsl(189 100% 42%);
+    --privy-color-accent-darkest: hsl(189 100% 26%);
 
     /* Status */
     --privy-color-success:      hsl(152 78% 52%);    /* neon-green */
@@ -128,9 +128,9 @@
     --kult-auth-width: min(92vw, 400px);
     --kult-auth-max-width: 400px;
     --kult-auth-radius: 24px;
-    --kult-auth-card-bg: hsl(221 48% 11% / 0.98);
-    --kult-auth-card-border: hsl(221 75% 52% / 0.2);
-    --kult-auth-dot-grid: radial-gradient(circle, hsl(221 90% 55% / 0.07) 1px, transparent 1px);
+    --kult-auth-card-bg: hsl(189 48% 11% / 0.98);
+    --kult-auth-card-border: hsl(189 75% 52% / 0.2);
+    --kult-auth-dot-grid: radial-gradient(circle, hsl(189 90% 55% / 0.07) 1px, transparent 1px);
     --kult-auth-max-height: min(520px, 90vh);
   }
 
@@ -140,17 +140,17 @@
 }
 
 @layer components {
-  /* Flat Base blue (#0052FF) — exact match to the Base logo, no gradient. */
+  /* Flat KULT//A2A cyan (#22D3EE) — matches the designer reference, no gradient. */
   .agentic-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#0052ff]/60 bg-[#0052ff] px-4 py-2.5 font-tech text-[10px] font-black uppercase tracking-[0.12em] text-white shadow-[0_0_18px_rgba(0,82,255,0.35)] transition hover:border-[#457df7] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#22d3ee]/60 bg-[#22d3ee] px-4 py-2.5 font-tech text-[10px] font-black uppercase tracking-[0.12em] text-[#03131a] shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:border-[#67e8f9] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .agentic-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-[0.1em] text-white/65 transition hover:border-[#0052ff]/40 hover:bg-[#0052ff]/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-[0.1em] text-white/65 transition hover:border-[#22d3ee]/40 hover:bg-[#22d3ee]/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .agentic-input {
-    @apply w-full rounded-lg border border-white/10 bg-black/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#0052ff]/50 focus:ring-1 focus:ring-[#0052ff]/20;
+    @apply w-full rounded-lg border border-white/10 bg-black/25 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#22d3ee]/50 focus:ring-1 focus:ring-[#22d3ee]/20;
   }
 
   .agentic-shell {
@@ -166,7 +166,7 @@
   .kult-auth-backdrop {
     background: radial-gradient(
       ellipse at 50% 38%,
-      hsl(221 82% 15% / 0.38),
+      hsl(189 82% 15% / 0.38),
       hsl(220 50% 4% / 0.9)
     );
     backdrop-filter: blur(10px);
@@ -184,7 +184,7 @@
     inset: -20px;
     z-index: -1;
     border-radius: calc(var(--kult-auth-radius) + 12px);
-    background: radial-gradient(circle at 50% 0%, hsl(221 100% 50% / 0.22), transparent 62%);
+    background: radial-gradient(circle at 50% 0%, hsl(189 100% 50% / 0.22), transparent 62%);
     filter: blur(28px);
     pointer-events: none;
   }
@@ -203,9 +203,9 @@
     color: var(--privy-color-foreground);
     box-shadow:
       0 28px 72px hsl(220 50% 2% / 0.55),
-      0 0 0 1px hsl(221 90% 55% / 0.08),
-      0 0 56px hsl(221 100% 50% / 0.1),
-      inset 0 1px 0 hsl(221 100% 82% / 0.07);
+      0 0 0 1px hsl(189 90% 55% / 0.08),
+      0 0 56px hsl(189 100% 50% / 0.1),
+      inset 0 1px 0 hsl(189 100% 82% / 0.07);
   }
 
   .kult-auth-card-accent {
@@ -214,7 +214,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      hsl(221 90% 58% / 0.55),
+      hsl(189 90% 58% / 0.55),
       hsl(195 100% 65% / 0.35),
       transparent
     );
@@ -291,10 +291,10 @@
   }
 
   .kult-auth-icon-btn:hover {
-    border-color: hsl(221 90% 55% / 0.35);
-    background: hsl(221 100% 50% / 0.1);
+    border-color: hsl(189 90% 55% / 0.35);
+    background: hsl(189 100% 50% / 0.1);
     color: var(--privy-color-foreground);
-    box-shadow: 0 0 14px hsl(221 100% 50% / 0.12);
+    box-shadow: 0 0 14px hsl(189 100% 50% / 0.12);
   }
 
   .kult-auth-stack {
@@ -358,9 +358,9 @@
     align-items: center;
     justify-content: center;
     padding: 0.625rem 0.875rem;
-    border: 1px solid hsl(221 90% 55% / 0.35);
+    border: 1px solid hsl(189 90% 55% / 0.35);
     border-radius: var(--privy-border-radius-md);
-    background: hsl(221 100% 50% / 0.15);
+    background: hsl(189 100% 50% / 0.15);
     color: var(--privy-color-accent-light);
     font-size: 0.875rem;
     font-weight: 600;
@@ -374,10 +374,10 @@
   }
 
   .kult-auth-submit-btn:hover:not(:disabled) {
-    border-color: hsl(221 90% 55% / 0.5);
-    background: hsl(221 100% 50% / 0.22);
+    border-color: hsl(189 90% 55% / 0.5);
+    background: hsl(189 100% 50% / 0.22);
     color: var(--privy-color-accent);
-    box-shadow: 0 0 18px hsl(221 100% 50% / 0.12);
+    box-shadow: 0 0 18px hsl(189 100% 50% / 0.12);
   }
 
   .kult-auth-submit-btn:disabled {
@@ -401,7 +401,7 @@
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--privy-color-foreground);
-    background: hsl(221 35% 8% / 0.65);
+    background: hsl(189 35% 8% / 0.65);
     border: 1px solid hsl(0 0% 100% / 0.1);
     border-radius: var(--privy-border-radius-md);
     outline: none;
@@ -412,9 +412,9 @@
   }
 
   .kult-auth-field input:focus {
-    border-color: hsl(221 90% 55% / 0.45);
-    box-shadow: 0 0 0 3px hsl(221 100% 50% / 0.12);
-    background: hsl(221 35% 8% / 0.85);
+    border-color: hsl(189 90% 55% / 0.45);
+    box-shadow: 0 0 0 3px hsl(189 100% 50% / 0.12);
+    background: hsl(189 35% 8% / 0.85);
   }
 
   .kult-auth-field input::placeholder {
@@ -469,9 +469,9 @@
   }
 
   .kult-auth-method-btn:hover:not(:disabled) {
-    border-color: hsl(221 90% 55% / 0.32);
-    background: hsl(221 100% 50% / 0.08);
-    box-shadow: 0 0 18px hsl(221 100% 50% / 0.1);
+    border-color: hsl(189 90% 55% / 0.32);
+    background: hsl(189 100% 50% / 0.08);
+    box-shadow: 0 0 18px hsl(189 100% 50% / 0.1);
   }
 
   .kult-auth-method-btn:disabled {
@@ -487,14 +487,14 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: hsl(221 42% 16% / 0.9);
+    background: hsl(189 42% 16% / 0.9);
   }
 
   .kult-auth-notice {
     margin-bottom: 0.75rem;
     border-radius: var(--privy-border-radius-md);
-    border: 1px solid hsl(221 90% 55% / 0.25);
-    background: hsl(221 100% 50% / 0.08);
+    border: 1px solid hsl(189 90% 55% / 0.25);
+    background: hsl(189 100% 50% / 0.08);
     padding: 0.75rem 1rem;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -533,7 +533,7 @@
 #privy-dialog-backdrop {
   background: radial-gradient(
     ellipse at 50% 38%,
-    hsl(221 82% 15% / 0.38),
+    hsl(189 82% 15% / 0.38),
     hsl(220 50% 4% / 0.9)
   ) !important;
   backdrop-filter: blur(10px) !important;
@@ -556,9 +556,9 @@
   background-size: 18px 18px !important;
   box-shadow:
     0 28px 72px hsl(220 50% 2% / 0.55),
-    0 0 0 1px hsl(221 90% 55% / 0.08),
-    0 0 56px hsl(221 100% 50% / 0.1),
-    inset 0 1px 0 hsl(221 100% 82% / 0.07) !important;
+    0 0 0 1px hsl(189 90% 55% / 0.08),
+    0 0 56px hsl(189 100% 50% / 0.1),
+    inset 0 1px 0 hsl(189 100% 82% / 0.07) !important;
   position: relative !important;
 }
 
@@ -572,7 +572,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    hsl(221 90% 58% / 0.55),
+    hsl(189 90% 58% / 0.55),
     hsl(195 100% 65% / 0.35),
     transparent
   ) !important;
@@ -642,15 +642,15 @@
 #privy-modal-content button.login-method-button:hover,
 #privy-modal-content div[style*="maxHeight:"] button:hover,
 #privy-modal-content div[style*="flex-direction: column"] > button:hover {
-  border-color: hsl(221 90% 55% / 0.32) !important;
-  background: hsl(221 100% 50% / 0.08) !important;
-  box-shadow: 0 0 18px hsl(221 100% 50% / 0.1) !important;
+  border-color: hsl(189 90% 55% / 0.32) !important;
+  background: hsl(189 100% 50% / 0.08) !important;
+  box-shadow: 0 0 18px hsl(189 100% 50% / 0.1) !important;
 }
 
 #privy-modal-content input.login-method-button[type="text"],
 #privy-modal-content label:has(input) input {
   min-height: 52px !important;
-  background: hsl(221 35% 8% / 0.65) !important;
+  background: hsl(189 35% 8% / 0.65) !important;
   border: 1px solid hsl(0 0% 100% / 0.1) !important;
   border-radius: var(--privy-border-radius-md) !important;
   color: var(--privy-color-foreground) !important;
@@ -659,8 +659,8 @@
 
 #privy-modal-content input.login-method-button[type="text"]:focus,
 #privy-modal-content label:has(input) input:focus {
-  border-color: hsl(221 90% 55% / 0.45) !important;
-  box-shadow: 0 0 0 3px hsl(221 100% 50% / 0.12) !important;
+  border-color: hsl(189 90% 55% / 0.45) !important;
+  box-shadow: 0 0 0 3px hsl(189 100% 50% / 0.12) !important;
   outline: none !important;
 }
 
@@ -687,10 +687,10 @@ button[aria-label="close modal"],
 }
 
 button[aria-label="close modal"]:hover {
-  border-color: hsl(221 90% 55% / 0.35) !important;
-  background: hsl(221 100% 50% / 0.1) !important;
+  border-color: hsl(189 90% 55% / 0.35) !important;
+  background: hsl(189 100% 50% / 0.1) !important;
   color: var(--privy-color-foreground) !important;
-  box-shadow: 0 0 14px hsl(221 100% 50% / 0.12) !important;
+  box-shadow: 0 0 14px hsl(189 100% 50% / 0.12) !important;
 }
 
 #privy-content-footer-container button,
@@ -702,13 +702,13 @@ button[aria-label="close modal"]:hover {
   border: none !important;
   color: #fff !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 20px hsl(221 100% 50% / 0.35) !important;
+  box-shadow: 0 4px 20px hsl(189 100% 50% / 0.35) !important;
   transition: filter 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 #privy-content-footer-container button:hover:not(:disabled) {
   filter: brightness(1.06) !important;
-  box-shadow: 0 6px 24px hsl(221 100% 50% / 0.45) !important;
+  box-shadow: 0 6px 24px hsl(189 100% 50% / 0.45) !important;
 }
 
 #protected-by-privy {

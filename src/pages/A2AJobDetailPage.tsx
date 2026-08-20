@@ -93,19 +93,19 @@ export default function A2AJobDetailPage() {
 
   return (
     <ArenaPageLayout contentClassName="max-w-5xl">
-      <header>
-        <Link to="/marketplace/a2a" className="text-[10px] text-white/40 hover:text-white/70">
+      <header className="rounded-2xl border border-white/10 bg-gradient-to-b from-surface-elevated/70 to-background/40 p-5 sm:p-6">
+        <Link to="/marketplace/a2a" className="text-[11px] text-muted-foreground hover:text-white">
           ← Marketplace
         </Link>
-        <h1 className="mt-1 font-tech text-lg font-bold uppercase tracking-[0.2em] text-white">
-          {job.gameId} training job
+        <h1 className="mt-1.5 font-display text-2xl font-bold text-white sm:text-3xl">
+          {job.gameId} <span className="text-neon-cyan">training job</span>
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-white/70">{job.prompt}</p>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{job.prompt}</p>
       </header>
 
       {/* Integrity banner — surfaced, never hidden. */}
       {!verification.valid && (
-        <div className="flex items-start gap-2 rounded border border-rose-500/40 bg-rose-500/10 px-3 py-2">
+        <div className="flex items-start gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rose-400" />
           <div className="text-[11px] text-rose-300">
             <p className="font-bold">Requirements document does not match its on-chain hash.</p>
@@ -317,9 +317,9 @@ function NegotiationRoom({
   side: "CREATOR" | "PROVIDER" | null;
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-black/30 p-4">
+    <section className="rounded-2xl border border-white/10 bg-surface-elevated/40 p-5">
       <div className="flex items-baseline justify-between">
-        <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-neon-cyan">
           Negotiation
         </h3>
         <span
@@ -412,8 +412,8 @@ function MessageRow({ message }: { message: NegotiationMessage }) {
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-black/30 p-4">
-      <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+    <section className="rounded-2xl border border-white/10 bg-surface-elevated/40 p-5">
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-neon-cyan">
         {title}
       </h3>
       <div className="mt-2 space-y-1.5">{children}</div>
@@ -433,7 +433,7 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
       <span
         className={cn(
           "font-mono text-[11px]",
@@ -449,7 +449,7 @@ function Row({
 function HashRow({ label, hash }: { label: string; hash: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="font-mono text-[10px] text-white/70" title={hash}>
         {shortHash(hash, 5)}
       </span>
@@ -465,7 +465,7 @@ function TxRow({ label, hash }: { label: string; hash: string }) {
       rel="noreferrer"
       className="flex items-baseline justify-between gap-3 transition hover:text-cyan-300"
     >
-      <span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="flex items-center gap-1 font-mono text-[10px] text-cyan-400">
         {shortHash(hash, 4)}
         <ExternalLink className="h-2.5 w-2.5" />
