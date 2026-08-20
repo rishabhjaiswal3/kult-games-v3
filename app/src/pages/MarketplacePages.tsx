@@ -163,12 +163,12 @@ export function AgenticOverviewPage() {
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-[#22d3ee]/30 bg-black/40 shadow-[0_0_24px_rgba(34,211,238,0.15)]">
               <Bot className="h-7 w-7 text-[#22d3ee]" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-tech text-lg font-bold text-white">{featured.name}</span>
-                <Hexagon className="h-3 w-3 fill-[#22d3ee] text-[#22d3ee]" />
+                <span className="truncate font-tech text-lg font-bold text-white">{featured.name}</span>
+                <Hexagon className="h-3 w-3 shrink-0 fill-[#22d3ee] text-[#22d3ee]" />
               </div>
-              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/35">{featured.clan} · {featured.archetype}</p>
+              <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-white/35">{featured.clan} · {featured.archetype}</p>
             </div>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-4 border-t border-white/8 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 xl:grid-cols-5">
@@ -184,7 +184,7 @@ export function AgenticOverviewPage() {
               <p className="mt-1 font-tech text-lg font-bold text-[#22d3ee]">{earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span></p>
             </div>
           </div>
-          <div className="flex gap-2 lg:shrink-0">
+          <div className="flex flex-wrap gap-2 lg:shrink-0 lg:flex-nowrap">
             <Link to="/agents" className="agentic-primary">Manage Agent</Link>
             <Link to="/jobs/new" className="agentic-secondary">Post a Job</Link>
           </div>
@@ -454,16 +454,17 @@ export function AgenticJobWorkspacePage() {
     </div> : null}
 
     {/* ── Sticky summary bar, mirrors the persistent bottom job strip ── */}
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#050807]/95 px-4 py-3 backdrop-blur-xl lg:pl-[250px]">
-      <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-x-6 gap-y-2">
-        <span className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-white/50"><span className="h-2 w-2 animate-pulse rounded-full bg-[#22d3ee]" /> {job.gameId}</span>
-        <span className="text-[10px] text-white/30">Job {shortHash(job.id, 5)}</span>
-        <span className="text-[10px] text-white/30">Target {job.target.metric} {op(job.target.op)} {job.target.value}</span>
-        <span className="text-[10px] text-white/30">{job.budget.min}–{job.budget.max} USDC</span>
-        <div className="ml-auto"><Status status={job.status} /></div>
+    {/* Fixed-height, never-wrapping row: secondary chips fade in as room allows, so the bar (and its spacer below) stay a single, predictable height at every viewport. */}
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#050807]/95 backdrop-blur-xl lg:pl-[250px]">
+      <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-3 overflow-x-auto px-4 sm:gap-6 sm:px-6">
+        <span className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-wider text-white/50"><span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#22d3ee]" /> {job.gameId}</span>
+        <span className="hidden shrink-0 text-[10px] text-white/30 sm:inline">Job {shortHash(job.id, 5)}</span>
+        <span className="hidden shrink-0 text-[10px] text-white/30 md:inline">Target {job.target.metric} {op(job.target.op)} {job.target.value}</span>
+        <span className="hidden shrink-0 text-[10px] text-white/30 md:inline">{job.budget.min}–{job.budget.max} USDC</span>
+        <div className="ml-auto shrink-0"><Status status={job.status} /></div>
       </div>
     </div>
-    <div className="h-16" />
+    <div className="h-14" />
   </>;
 }
 
@@ -559,9 +560,9 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-[#22d3ee]/30 bg-black/40 shadow-[0_0_24px_rgba(34,211,238,0.15)]">
               <Bot className="h-7 w-7 text-[#22d3ee]" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5"><span className="font-tech text-lg font-bold text-white">{agent.name}</span><Hexagon className="h-3 w-3 fill-[#22d3ee] text-[#22d3ee]" /></div>
-              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/35">{agent.clan} · {agent.archetype} · {agent.evolutionStage}</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5"><span className="truncate font-tech text-lg font-bold text-white">{agent.name}</span><Hexagon className="h-3 w-3 shrink-0 fill-[#22d3ee] text-[#22d3ee]" /></div>
+              <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-white/35">{agent.clan} · {agent.archetype} · {agent.evolutionStage}</p>
             </div>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-4 border-t border-white/8 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 xl:grid-cols-4">
@@ -570,7 +571,7 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">Jobs</p><p className="mt-1 font-tech text-lg font-bold text-white">{jobsForAgent(jobs, agent.id).length}</p></div>
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">Earnings</p><p className="mt-1 font-tech text-lg font-bold text-[#22d3ee]">{earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span></p></div>
           </div>
-          <div className="flex gap-2 lg:shrink-0">
+          <div className="flex flex-wrap gap-2 lg:shrink-0 lg:flex-nowrap">
             <Link to="/jobs/new" className="agentic-primary">Post a Job</Link>
             <Link to="/reputation" className="agentic-secondary">View Reputation</Link>
           </div>
@@ -673,11 +674,11 @@ export function AgenticReputationPage() {
       <div className="space-y-5">
         {/* ── Featured agent hero ── */}
         <section className="agentic-surface flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-[#22d3ee]/30 bg-black/40"><Trophy className="h-7 w-7 text-[#22d3ee]" /></div>
-            <div>
-              <p className="font-tech text-lg font-bold text-white">{selected.name}</p>
-              <p className="mt-0.5 font-mono text-[10px] text-white/35">ERC-8004 #{identity.data.erc8004AgentId}</p>
+            <div className="min-w-0">
+              <p className="truncate font-tech text-lg font-bold text-white">{selected.name}</p>
+              <p className="mt-0.5 truncate font-mono text-[10px] text-white/35">ERC-8004 #{identity.data.erc8004AgentId}</p>
             </div>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-4 border-t border-white/8 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 lg:grid-cols-4">
@@ -781,7 +782,7 @@ function JobCard({ job, featured }: { job: A2AJob; featured?: boolean }) {
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#22d3ee]/20 bg-[#22d3ee]/8"><Bot className="h-4.5 w-4.5 text-[#22d3ee]" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className="font-tech text-[9px] font-bold uppercase tracking-[.18em] text-[#22d3ee]/70">{job.gameId}</span>
+            <span className="truncate font-tech text-[9px] font-bold uppercase tracking-[.18em] text-[#22d3ee]/70">{job.gameId}</span>
             <Status status={job.status} />
           </div>
         </div>
