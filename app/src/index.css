@@ -158,7 +158,29 @@
   }
 
   .agentic-surface {
-    @apply rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.045] to-black/20 shadow-[0_18px_50px_rgba(0,0,0,0.18)];
+    @apply rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.045] to-black/20 shadow-[0_18px_50px_rgba(0,0,0,0.18)];
+  }
+
+  .agentic-page {
+    animation: agentic-fade-in 280ms ease-out;
+  }
+
+  .agentic-scroll-x {
+    @apply flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none];
+  }
+  .agentic-scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes agentic-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* ── Kult auth modal — shared by LoginModal + Privy ─────────────────── */

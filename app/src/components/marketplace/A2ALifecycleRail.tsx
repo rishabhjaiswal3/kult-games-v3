@@ -70,7 +70,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
         </span>
       </div>
 
-      <ol className="flex flex-col gap-0 sm:flex-row sm:items-start sm:gap-1">
+      <ol className="flex flex-col gap-0 overflow-x-auto sm:flex-row sm:items-start sm:gap-1 md:overflow-visible">
         {LIFECYCLE_STAGES.map((stage, index) => {
           const done = index < current || (index === current && status === "SETTLED");
           const active = index === current && status !== "SETTLED";
@@ -78,7 +78,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
           const stageEvidence = evidence[stage];
 
           return (
-            <li key={stage} className="flex flex-1 flex-row items-start gap-2 sm:flex-col sm:items-stretch">
+            <li key={stage} className="flex min-w-0 flex-1 flex-row items-start gap-2 sm:min-w-[5.5rem] sm:flex-col sm:items-stretch md:min-w-0">
               {/* Connector + marker */}
               <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-1">
                 <StageIcon done={done} active={active} failed={stageFailed} inFlight={active && inFlight} />

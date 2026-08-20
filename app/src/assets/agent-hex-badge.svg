@@ -1,0 +1,35 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hexFill" x1="10" y1="6" x2="90" y2="94" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b2530"/>
+      <stop offset="1" stop-color="#020a0d"/>
+    </linearGradient>
+    <radialGradient id="hexGlow" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="50" cy="50" r="48" fill="url(#hexGlow)"/>
+
+  <path d="M50 4 L91 27 V73 L50 96 L9 73 V27 Z" fill="url(#hexFill)" stroke="#22d3ee" stroke-width="2"/>
+  <path d="M50 12 L84 31.5 V68.5 L50 88 L16 68.5 V31.5 Z" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.35"/>
+
+  <g stroke="#7dd3fc" stroke-width="1.6" stroke-linecap="round" opacity="0.9">
+    <path d="M50 50 L50 28"/>
+    <path d="M50 50 L69 39"/>
+    <path d="M50 50 L69 61"/>
+    <path d="M50 50 L50 72"/>
+    <path d="M50 50 L31 61"/>
+    <path d="M50 50 L31 39"/>
+  </g>
+  <g fill="#67e8f9">
+    <circle cx="50" cy="50" r="5" fill="#e0feff"/>
+    <circle cx="50" cy="28" r="3"/>
+    <circle cx="69" cy="39" r="3"/>
+    <circle cx="69" cy="61" r="3"/>
+    <circle cx="50" cy="72" r="3"/>
+    <circle cx="31" cy="61" r="3"/>
+    <circle cx="31" cy="39" r="3"/>
+  </g>
+</svg>
