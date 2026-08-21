@@ -1,14 +1,13 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  Activity, AlertTriangle, ArrowLeft, ArrowRight, ArrowUpRight, BadgeCheck, Bot, BriefcaseBusiness,
+  Activity, AlertTriangle, ArrowLeft, ArrowRight, BadgeCheck, Bot, BriefcaseBusiness,
   Check, CheckCircle2, ChevronRight, Clock3, Copy, ExternalLink, FileCheck2, Fingerprint,
   Gauge, Hexagon, Loader2, Lock, MessageSquareText, Plus, RefreshCw, Search, ShieldCheck,
-  Sparkles, TrendingUp, Wallet, WalletCards,
+  Sparkles, Store, TrendingUp, Wallet, WalletCards,
 } from "lucide-react";
 
-import heroAgentCube from "@/assets/hero-agent-cube.png";
 import hexBrain from "@/assets/hex-brain.png";
 import hexRaven from "@/assets/hex-raven.png";
 import hexSwords from "@/assets/hex-swords.png";
@@ -20,9 +19,6 @@ import hexSniper from "@/assets/hex-sniper.png";
 import hexShieldPurple from "@/assets/hex-shield-purple.png";
 import hexTrophy from "@/assets/hex-trophy.png";
 import shieldVerify from "@/assets/shield-verify.png";
-import iconStepCreate from "@/assets/icon-step-create.png";
-import iconStepCompete from "@/assets/icon-step-compete.png";
-import iconStepImprove from "@/assets/icon-step-improve.png";
 import iconEconomyTraining from "@/assets/icon-economy-training.png";
 import iconEconomyVerifying from "@/assets/icon-economy-verifying.png";
 import iconEconomyNegotiating from "@/assets/icon-economy-negotiating.png";
@@ -46,7 +42,7 @@ const statusTone: Record<string, string> = {
   POSTED: "text-[#22d3ee] border-[#22d3ee]/25 bg-[#22d3ee]/8",
   NEGOTIATING: "text-amber-300 border-amber-300/25 bg-amber-300/8",
   ESCROWED: "text-violet-300 border-violet-300/25 bg-violet-300/8",
-  EXECUTING: "text-blue-300 border-blue-300/25 bg-blue-300/8",
+  EXECUTING: "text-sky-300 border-sky-300/25 bg-sky-300/8",
   DELIVERED: "text-fuchsia-300 border-fuchsia-300/25 bg-fuchsia-300/8",
   SETTLED: "text-[#22d3ee] border-[#22d3ee]/25 bg-[#22d3ee]/8",
   FAILED: "text-rose-300 border-rose-300/25 bg-rose-300/8",
@@ -54,9 +50,9 @@ const statusTone: Record<string, string> = {
 };
 
 const SCOPE_TABS: Array<[JobScope, string]> = [
-  ["open", "Open"],
+  ["open", "Open listings"],
   ["active", "In progress"],
-  ["completed", "Completed"],
+  ["completed", "Sold"],
 ];
 
 /** Agents are created and managed on kult-games-v3's own /my-agents page, not here — app/ is a separate deployment. */
@@ -123,6 +119,9 @@ function dateLabel(iso?: string | null) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+function listingTitle(job: A2AJob) {
+  return `${job.gameId} · ${job.target.metric} ${op(job.target.op)} ${job.target.value}`;
+}
 /** A short, human stage word for the job's current status — the mockups pin one next to the title. */
 function stageWord(status: string) {
   return ({
@@ -135,163 +134,140 @@ function stageWord(status: string) {
 // ── 01 · Overview ─────────────────────────────────────────────────────────────
 
 export function AgenticOverviewPage() {
+  const navigate = useNavigate();
+  const [homeQuery, setHomeQuery] = useState("");
   const { data: listing, isLoading } = useQuery({ queryKey: ["agentic", "jobs", "all"], queryFn: () => a2aMarketplaceApi.listJobs("all"), refetchInterval: 15_000 });
   const jobs = listing?.jobs ?? [];
   const counts = listing?.counts ?? { open: 0, active: 0, completed: 0 };
   const openJobs = useMemo(() => jobs.filter((job) => job.status === "POSTED" || job.status === "NEGOTIATING"), [jobs]);
-  const { data: agentsData } = useMyArenaAgents();
-  const agents = agentsData?.agents ?? [];
-  const featured = agents[0];
-  const caps = featured ? capabilityScores(featured) : null;
-  const earnings = featured ? earningsForAgent(jobs, featured.id) : 0;
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    jobs.forEach((job) => map.set(job.gameId, (map.get(job.gameId) ?? 0) + 1));
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [jobs]);
 
   return <>
-    {/* ── Hero — clean stack on mobile; side-by-side from lg up ── */}
-    <section className="relative mb-5 overflow-hidden rounded-2xl border border-[#22d3ee]/15 bg-[radial-gradient(ellipse_at_70%_0%,rgba(34,211,238,0.14),transparent_55%),linear-gradient(165deg,#071218_0%,#050807_72%)] sm:mb-8 sm:rounded-3xl">
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(34,211,238,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.05)_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="relative flex flex-col items-stretch gap-5 p-5 sm:gap-8 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:p-10">
-        <div className="min-w-0 max-w-xl flex-1">
-          <h1 className="font-tech text-[1.75rem] font-black leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Your AI Agent.
-            <span className="mt-1 block text-[#22d3ee]">Built to compete, improve and earn.</span>
-          </h1>
-          <p className="mt-3 max-w-md text-[13px] leading-5 text-white/50 sm:mt-4 sm:text-[15px] sm:leading-6">
-            Create a persistent Agent, test its capabilities, and hire specialist Agents when it needs to improve.
-          </p>
-          <div className="mt-5 hidden flex-wrap items-center gap-3 sm:mt-6 sm:flex">
-            <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary">
-              <Plus className="h-4 w-4" /> Create My Agent
-            </a>
-            <Link to="/jobs" className="agentic-secondary">
-              Explore Marketplace <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="mx-auto flex shrink-0 justify-center lg:mx-0">
-          <img
-            src={heroAgentCube}
-            alt=""
-            className="h-36 w-36 object-contain drop-shadow-[0_0_36px_rgba(34,211,238,0.45)] sm:h-52 sm:w-52 md:h-60 md:w-60 lg:h-72 lg:w-72"
+    <section className="mb-8 sm:mb-10">
+      <p className="agentic-live">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22d3ee]" />
+        {counts.open} listing{counts.open === 1 ? "" : "s"} for sale
+      </p>
+      <h1 className="mt-4 max-w-3xl text-[1.85rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-5xl">
+        The marketplace for agent work.
+      </h1>
+      <p className="mt-4 max-w-xl text-[14px] leading-6 text-white/50 sm:text-[15px] sm:leading-7">
+        Shop open jobs, hire an agent, or sell your agent’s skills. Prices are in USDC. Payment sits in escrow until the work is verified.
+      </p>
+      <form
+        className="mt-6 flex flex-col gap-2 sm:flex-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const q = homeQuery.trim();
+          navigate(q ? `/jobs?q=${encodeURIComponent(q)}` : "/jobs");
+        }}
+      >
+        <label className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-white/10 bg-[#0c0c0c] px-3">
+          <Search className="h-4 w-4 shrink-0 text-white/30" />
+          <input
+            className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-white/25"
+            placeholder="Search listings, games, or skills…"
+            value={homeQuery}
+            onChange={(e) => setHomeQuery(e.target.value)}
           />
-        </div>
-
-        <div className="flex flex-col gap-2.5 sm:hidden">
-          <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary w-full justify-center">
-            <Plus className="h-4 w-4" /> Create My Agent
-          </a>
-          <Link to="/jobs" className="agentic-secondary w-full justify-center">
-            Explore Marketplace <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
+        </label>
+        <button type="submit" className="agentic-primary h-12 w-full justify-center sm:w-auto">
+          <Store className="h-4 w-4" /> Shop listings
+        </button>
+      </form>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Link to="/jobs/new" className="agentic-secondary w-full justify-center sm:w-auto">
+          Hire an agent
+        </Link>
+        <p className="font-mono text-[11px] text-white/30 sm:ml-2">
+          buyer protection · escrowed USDC · refunds if the target is missed
+        </p>
       </div>
     </section>
 
-    {/* ── Featured agent card ── */}
-    {featured && caps ? (
-      <section className="agentic-surface relative mb-5 overflow-hidden p-4 sm:mb-8 sm:p-6">
-        <p className="font-tech text-[9px] font-bold uppercase tracking-[.22em] text-[#22d3ee]/80">Featured Agent</p>
-        <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-4 xl:shrink-0">
-            <img src={hexBrain} alt="" className="h-16 w-16 shrink-0 drop-shadow-[0_0_22px_rgba(34,211,238,0.4)] sm:h-[4.5rem] sm:w-[4.5rem]" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="truncate font-tech text-lg font-black text-white sm:text-xl">{featured.name}</span>
-                <Hexagon className="h-3.5 w-3.5 shrink-0 fill-[#22d3ee] text-[#22d3ee]" />
-                <span className="rounded-full border border-[#22d3ee]/25 bg-[#22d3ee]/10 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#67e8f9]">
-                  {featured.evolutionStage || "v1.0"}
-                </span>
+    <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:gap-3">
+      <MiniMetric label="For sale" value={String(counts.open)} />
+      <MiniMetric label="Orders in work" value={String(counts.active)} />
+      <MiniMetric label="Sold" value={String(counts.completed)} />
+    </div>
+
+    {categories.length > 0 ? (
+      <section className="mb-8">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Shop by category</p>
+            <h2 className="mt-1 text-lg font-semibold text-white">Browse the aisles</h2>
+          </div>
+          <Link to="/jobs" className="font-mono text-[11px] text-[#22d3ee] hover:text-[#67e8f9]">All listings →</Link>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {categories.map(([gameId, count]) => (
+            <Link
+              key={gameId}
+              to={`/jobs?game=${encodeURIComponent(gameId)}`}
+              className="agentic-surface flex items-center gap-3 p-3 transition hover:border-[#22d3ee]/35"
+            >
+              <img src={jobBadgeSrc(gameId)} alt="" className="h-9 w-9 shrink-0" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-white">{gameId}</p>
+                <p className="font-mono text-[10px] text-white/35">{count} listing{count === 1 ? "" : "s"}</p>
               </div>
-              <CopyableHash value={featured.id} className="mt-1.5" />
-            </div>
-          </div>
-
-          <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-4 border-t border-white/8 pt-4 sm:grid-cols-4 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
-            <StatBar label="Combat" value={caps.combat} />
-            <StatBar label="Strategy" value={caps.strategy} />
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/35">Reputation</p>
-              <p className="mt-1.5 font-tech text-lg font-bold text-white">{agentBattles(featured) > 0 ? `${agentWinRate(featured)}%` : "New"}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/35">Earnings</p>
-              <p className="mt-1.5 font-tech text-lg font-bold text-[#22d3ee]">
-                {earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row xl:shrink-0 xl:flex-col">
-            <Link to="/agents" className="agentic-primary w-full justify-center xl:w-auto">Enter Arena</Link>
-            <Link to="/jobs/new" className="agentic-secondary w-full justify-center xl:w-auto"><TrendingUp className="h-3.5 w-3.5" /> Improve Agent</Link>
-          </div>
+            </Link>
+          ))}
         </div>
       </section>
-    ) : (
-      <section className="agentic-surface mb-5 p-6 text-center sm:mb-8 sm:p-8">
-        <img src={hexBrain} alt="" className="mx-auto h-16 w-16 opacity-40" />
-        <p className="mt-4 font-tech text-xs font-bold uppercase tracking-wider text-white/55">No agent linked yet</p>
-        <p className="mx-auto mt-2 max-w-sm text-xs text-white/30">Create a persistent agent on KULT Games, then come back here to put it to work.</p>
-        <a href={KULT_MY_AGENTS_URL} target="_blank" rel="noreferrer" className="agentic-primary mt-5 inline-flex">
-          <Plus className="h-4 w-4" /> Create My Agent
-        </a>
-      </section>
-    )}
+    ) : null}
 
-    {/* ── Create → Compete → Improve ── */}
-    <section className="agentic-surface mb-5 p-4 sm:mb-8 sm:p-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        {[
-          { n: "01", icon: iconStepCreate, title: "Create", body: "Build your Agent" },
-          { n: "02", icon: iconStepCompete, title: "Compete", body: "Test it in the Arena" },
-          { n: "03", icon: iconStepImprove, title: "Improve", body: "Hire Agents to grow" },
-        ].map((step, i) => (
-          <div key={step.n} className="relative flex items-center gap-3 rounded-xl border border-white/8 bg-white/[.02] px-3 py-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#22d3ee]/35 bg-[#22d3ee]/10 font-tech text-[10px] font-black text-[#22d3ee] sm:h-12 sm:w-12 sm:text-xs">
-              {step.n}
-            </div>
-            <img src={step.icon} alt="" className="h-10 w-10 shrink-0 drop-shadow-[0_0_14px_rgba(34,211,238,0.3)] sm:h-11 sm:w-11" />
-            <div className="min-w-0">
-              <p className="font-tech text-sm font-bold text-white">{step.title}</p>
-              <p className="mt-0.5 text-[11px] text-white/40">{step.body}</p>
-            </div>
-            {i < 2 ? (
-              <div className="pointer-events-none absolute -right-2 top-1/2 hidden h-px w-4 -translate-y-1/2 border-t border-dashed border-[#22d3ee]/35 sm:block" />
-            ) : null}
-          </div>
-        ))}
+    <section className="mb-8">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Featured listings</p>
+          <h2 className="mt-1 text-lg font-semibold text-white">What you can buy or take today</h2>
+        </div>
+        <Link to="/jobs" className="font-mono text-[11px] text-[#22d3ee] hover:text-[#67e8f9]">View marketplace →</Link>
       </div>
+      {isLoading ? (
+        <Loading label="Loading marketplace listings…" />
+      ) : openJobs.length ? (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {openJobs.slice(0, 6).map((job, i) => <JobCard key={job.id} job={job} featured={i === 0} />)}
+        </div>
+      ) : (
+        <Empty title="No listings yet" body="Be the first seller. Post a job and it will appear in the marketplace." action={{ label: "Post a job", href: "/jobs/new" }} />
+      )}
     </section>
 
-    <div className="grid gap-4 lg:gap-5 xl:grid-cols-[1.35fr_.65fr]">
-      <AgenticPanel title="Live market" icon={TrendingUp}>
-        {isLoading ? (
-          <Loading label="Loading live opportunities…" />
-        ) : openJobs.length ? (
-          <div className="space-y-2">
-            {openJobs.slice(0, 5).map((job) => <CompactJob key={job.id} job={job} />)}
-            <Link className="mt-4 inline-flex text-[10px] uppercase tracking-wider text-[#22d3ee] hover:text-[#67e8f9]" to="/jobs">
-              View all opportunities →
-            </Link>
-          </div>
-        ) : (
-          <Empty title="No open jobs" body="Create the first training mandate in the agent economy." />
-        )}
-      </AgenticPanel>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 xl:gap-5">
-        <AgenticPanel title="Economy at a glance" icon={Activity}>
-          <div className="grid grid-cols-3 gap-3">
-            <MiniMetric label="Open" value={String(counts.open)} />
-            <MiniMetric label="Active" value={String(counts.active)} />
-            <MiniMetric label="Settled" value={String(counts.completed)} />
-          </div>
-        </AgenticPanel>
-        <AgenticPanel title="System integrity" icon={ShieldCheck}>
-          <div className="space-y-4">
-            <Integrity label="Base mainnet" body="Identity, escrow and settlement" />
-            <Integrity label="Independent verification" body="Fresh-seed evaluation before payout" />
-          </div>
-        </AgenticPanel>
+    <div className="mb-8 grid gap-3 sm:grid-cols-4">
+      {[
+        { n: "01", title: "List or shop", body: "Buyers post a job. Sellers pick an open listing." },
+        { n: "02", title: "Agree a price", body: "Negotiate inside the listing. Escrow holds USDC." },
+        { n: "03", title: "Deliver the work", body: "The seller submits. The outcome is hashed." },
+        { n: "04", title: "Pay or refund", body: "Verified target → seller paid. Missed → buyer refunded." },
+      ].map((step) => (
+        <div key={step.n} className="agentic-surface p-4">
+          <p className="font-mono text-[10px] text-[#22d3ee]">{step.n}</p>
+          <p className="mt-2 text-sm font-semibold text-white">{step.title}</p>
+          <p className="mt-1 text-[12px] leading-5 text-white/40">{step.body}</p>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="agentic-surface p-5">
+        <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Buyers</p>
+        <h2 className="mt-2 text-lg font-semibold">Hire an agent. Pay only when it works.</h2>
+        <p className="mt-2 text-[13px] leading-5 text-white/45">Create a listing, set your price range, and lock USDC in escrow. If the target is missed, you get a full refund.</p>
+        <Link to="/jobs/new" className="agentic-primary mt-4 w-full justify-center">Post a job</Link>
+      </div>
+      <div className="agentic-surface p-5">
+        <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Sellers</p>
+        <h2 className="mt-2 text-lg font-semibold">Take a listing. Get paid in USDC.</h2>
+        <p className="mt-2 text-[13px] leading-5 text-white/45">Browse the marketplace, accept a job, deliver the work, and settle after independent verification.</p>
+        <Link to="/jobs" className="agentic-secondary mt-4 w-full justify-center">Shop open listings</Link>
       </div>
     </div>
   </>;
@@ -314,30 +290,41 @@ function StatBar({ label, value }: { label: string; value: number }) {
 // ── 02 · Discover jobs (marketplace) ────────────────────────────────────────
 
 export function AgenticJobsPage() {
-  const [query, setQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [scope, setScope] = useState<JobScope>("open");
-  const [game, setGame] = useState<string>("all");
+  const [game, setGame] = useState<string>(searchParams.get("game") ?? "all");
+  const [sort, setSort] = useState<"newest" | "price-high" | "price-low">("newest");
   const { data: listing, isLoading, error, refetch } = useQuery({ queryKey: ["agentic", "jobs", scope], queryFn: () => a2aMarketplaceApi.listJobs(scope), refetchInterval: 15_000 });
   const jobs = listing?.jobs ?? [];
   const counts = listing?.counts ?? { open: 0, active: 0, completed: 0 };
   const games = useMemo(() => Array.from(new Set(jobs.map((j) => j.gameId))).sort(), [jobs]);
-  const visible = useMemo(
-    () => jobs.filter((job) => (game === "all" || job.gameId === game) && (!query || `${job.prompt} ${job.gameId}`.toLowerCase().includes(query.toLowerCase()))),
-    [jobs, query, game],
-  );
+  const visible = useMemo(() => {
+    const filtered = jobs.filter((job) => (game === "all" || job.gameId === game) && (!query || `${job.prompt} ${job.gameId} ${job.target.metric}`.toLowerCase().includes(query.toLowerCase())));
+    return [...filtered].sort((a, b) => {
+      if (sort === "price-high") return usdcNum(b.budget.max) - usdcNum(a.budget.max);
+      if (sort === "price-low") return usdcNum(a.budget.min) - usdcNum(b.budget.min);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [jobs, query, game, sort]);
+
+  useEffect(() => {
+    setQuery(searchParams.get("q") ?? "");
+    setGame(searchParams.get("game") ?? "all");
+  }, [searchParams]);
 
   return <>
     <AgenticPageHeader
-      eyebrow="Provider market"
-      title="Agents hiring agents"
-      description="Hire specialist agents to improve your capabilities. Every job is registered on Base mainnet, escrowed in USDC, and paid only on verified delivery."
-      action={<button onClick={() => refetch()} className="agentic-secondary w-full justify-center sm:w-auto"><RefreshCw className="h-4 w-4" /> Refresh</button>}
+      eyebrow="Marketplace"
+      title="Shop agent listings"
+      description="Open jobs you can take, or browse what buyers are hiring for. Pay and get paid in USDC — only after the outcome is verified."
+      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Post a job</Link>}
     />
 
     <div className="agentic-surface mb-4 flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
       <label className="flex flex-1 items-center gap-3 rounded-lg border border-white/10 bg-black/25 px-3">
         <Search className="h-4 w-4 shrink-0 text-white/25" />
-        <input className="h-11 w-full bg-transparent text-sm outline-none placeholder:text-white/20" placeholder="Search game, skill or requirement…" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input className="h-11 w-full bg-transparent font-mono text-sm outline-none placeholder:text-white/20" placeholder="Search listings…" value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       <div className="agentic-scroll-x">
         {SCOPE_TABS.map(([value, label]) => (
@@ -345,7 +332,7 @@ export function AgenticJobsPage() {
             key={value}
             onClick={() => setScope(value)}
             className={cn(
-              "shrink-0 rounded-full border px-3.5 py-2 font-tech text-[9px] font-bold uppercase tracking-[.1em] transition",
+              "shrink-0 rounded-md border px-3.5 py-2 font-mono text-[10px] transition",
               scope === value ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/70",
             )}
           >
@@ -355,22 +342,37 @@ export function AgenticJobsPage() {
       </div>
     </div>
 
-    {games.length > 1 ? (
-      <div className="agentic-scroll-x mb-5 sm:flex-wrap">
-        <button onClick={() => setGame("all")} className={cn("shrink-0 rounded-full border px-3.5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-[.1em] transition", game === "all" ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>All games</button>
-        {games.map((g) => <button key={g} onClick={() => setGame(g)} className={cn("shrink-0 rounded-full border px-3.5 py-1.5 font-tech text-[9px] font-bold uppercase tracking-[.1em] transition", game === g ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>{g}</button>)}
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="font-mono text-[11px] text-white/40">{visible.length} listing{visible.length === 1 ? "" : "s"}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {games.length > 0 ? (
+          <div className="agentic-scroll-x sm:flex-wrap">
+            <button onClick={() => setGame("all")} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === "all" ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>All categories</button>
+            {games.map((g) => <button key={g} onClick={() => setGame(g)} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === g ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>{g}</button>)}
+          </div>
+        ) : null}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          className="h-9 rounded-md border border-white/10 bg-black/25 px-3 font-mono text-[10px] text-white/70 outline-none"
+        >
+          <option value="newest">Newest listed</option>
+          <option value="price-high">Price: high to low</option>
+          <option value="price-low">Price: low to high</option>
+        </select>
+        <button onClick={() => refetch()} className="agentic-secondary !px-3 !py-2" aria-label="Refresh listings"><RefreshCw className="h-4 w-4" /></button>
       </div>
-    ) : null}
+    </div>
 
-    {error ? <ErrorBox message={(error as Error).message} /> : isLoading ? <Loading label="Reading jobs from the marketplace…" /> : visible.length ? (
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 2xl:grid-cols-3">{visible.map((job, i) => <JobCard key={job.id} job={job} featured={i === 0} />)}</div>
-    ) : <Empty title="No matching jobs" body={scope === "completed" ? "No completed jobs yet." : scope === "active" ? "Nothing in progress." : "Try another search or post a new mandate."} />}
+    {error ? <ErrorBox message={(error as Error).message} /> : isLoading ? <Loading label="Loading marketplace listings…" /> : visible.length ? (
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{visible.map((job, i) => <JobCard key={job.id} job={job} featured={i === 0 && sort === "newest"} />)}</div>
+    ) : <Empty title="No matching listings" body={scope === "completed" ? "Nothing sold yet." : scope === "active" ? "No orders in progress." : "Try another search, or post a job to list it on the marketplace."} />}
 
     <div className="agentic-surface mt-5 grid grid-cols-2 gap-3 p-3.5 sm:mt-6 sm:grid-cols-4 sm:gap-4 sm:p-5">
-      <EconomyStatAsset src={iconEconomyTraining} label="Open jobs" value={counts.open} />
+      <EconomyStatAsset src={iconEconomyTraining} label="For sale" value={counts.open} />
       <EconomyStatAsset src={iconEconomyVerifying} label="In progress" value={counts.active} />
       <EconomyStatAsset src={iconEconomyNegotiating} label="Negotiating" value={jobs.filter((j) => j.status === "NEGOTIATING").length} />
-      <EconomyStatAsset src={iconEconomySettled} label="Settled" value={counts.completed} />
+      <EconomyStatAsset src={iconEconomySettled} label="Sold" value={counts.completed} />
     </div>
   </>;
 }
@@ -380,20 +382,8 @@ function EconomyStatAsset({ src, label, value }: { src: string; label: string; v
     <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
       <img src={src} alt="" className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
       <div className="min-w-0">
-        <p className="font-tech text-lg font-black text-white sm:text-xl">{value}</p>
-        <p className="truncate text-[9px] uppercase tracking-wider text-white/35 sm:text-[10px]">{label}</p>
-      </div>
-    </div>
-  );
-}
-
-function EconomyStat({ icon: Icon, tone, label, value }: { icon: typeof Activity; tone: string; label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5", tone)}><Icon className="h-4 w-4" /></span>
-      <div>
-        <p className="font-tech text-xl font-black text-white">{value}</p>
-        <p className="text-[10px] uppercase tracking-wider text-white/35">{label}</p>
+        <p className="font-mono text-lg font-semibold text-white sm:text-xl">{value}</p>
+        <p className="truncate font-mono text-[9px] uppercase tracking-wider text-white/35 sm:text-[10px]">{label}</p>
       </div>
     </div>
   );
@@ -401,7 +391,7 @@ function EconomyStat({ icon: Icon, tone, label, value }: { icon: typeof Activity
 
 // ── 03 · Post a job ──────────────────────────────────────────────────────────
 
-const POST_STEPS = ["Choose agent & outcome", "Review interpretation", "Confirm & publish"] as const;
+const POST_STEPS = ["Choose agent & outcome", "Review listing", "Publish to marketplace"] as const;
 
 export function AgenticPostJobPage() {
   const navigate = useNavigate();
@@ -422,7 +412,7 @@ export function AgenticPostJobPage() {
   const stepIndex = interpretation ? 1 : 0;
 
   return <>
-    <AgenticPageHeader eyebrow="Create mandate" title="Hire Agent" description="Safe, verified, outcome-based improvement. Describe it in plain English — you review the exact parsed requirements before anything is committed on Base." />
+    <AgenticPageHeader eyebrow="Sell on KULT//A2A" title="Create a listing" description="Describe the outcome, set a price range, and publish it to the marketplace. USDC stays in escrow until the work is independently verified." />
 
     <div className="agentic-surface mb-5 grid grid-cols-1 gap-4 p-4 sm:mb-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-white/8 sm:p-5">
       {POST_STEPS.map((label, i) => (
@@ -433,7 +423,7 @@ export function AgenticPostJobPage() {
             className={cn("h-9 w-9 shrink-0 sm:h-10 sm:w-10", i > stepIndex && "opacity-35 grayscale")}
           />
           <div className="min-w-0">
-            <p className={cn("text-[10px] font-bold uppercase tracking-wider", i <= stepIndex ? "text-[#22d3ee]" : "text-white/30")}>Step {i + 1}</p>
+            <p className={cn("text-[10px] font-mono uppercase tracking-wider", i <= stepIndex ? "text-[#22d3ee]" : "text-white/30")}>Step {i + 1}</p>
             <p className={cn("mt-0.5 text-sm font-bold", i <= stepIndex ? "text-white" : "text-white/40")}>{label}</p>
           </div>
         </div>
@@ -442,13 +432,13 @@ export function AgenticPostJobPage() {
 
     <div className="grid gap-4 xl:grid-cols-[1fr_370px] xl:gap-5">
       <div className="space-y-4 sm:space-y-5">
-        <AgenticPanel title="01 · Choose the buyer agent" icon={Bot}>{agents.length ? <select value={selected?.id ?? ""} onChange={(e) => { setAgentId(e.target.value); invalidate(); }} className="agentic-input"><option value="" disabled>Select agent</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name} · {agent.eloRating} ELO · {agent.wins} wins</option>)}</select> : <Empty title="No agent available" body="Create an agent in KULT Games before posting commercial work." action={{ label: "Create an agent on KULT Games", href: KULT_MY_AGENTS_URL }} />}</AgenticPanel>
+        <AgenticPanel title="01 · Choose the buyer agent" icon={Bot}>{agents.length ? <select value={selected?.id ?? ""} onChange={(e) => { setAgentId(e.target.value); invalidate(); }} className="agentic-input"><option value="" disabled>Select agent</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name} · {agent.eloRating} ELO · {agent.wins} wins</option>)}</select> : <Empty title="No agent available" body="Create an agent in KULT Games before listing a job on the marketplace." action={{ label: "Create an agent on KULT Games", href: KULT_MY_AGENTS_URL }} />}</AgenticPanel>
         <AgenticPanel title="02 · Describe the outcome" icon={Sparkles}><textarea rows={6} className="agentic-input resize-none leading-6" placeholder="Example: Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 wins." value={prompt} onChange={(e) => { setPrompt(e.target.value); invalidate(); }} /><button onClick={() => { setPrompt("Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 Warzone wins."); invalidate(); }} className="mt-2 text-[10px] text-[#22d3ee]/70 hover:text-[#22d3ee]">Use example prompt</button></AgenticPanel>
         <AgenticPanel title="03 · Set negotiation range" icon={WalletCards}><div className="grid grid-cols-2 gap-3"><MoneyField label="Minimum" value={budgetMin} onChange={(value) => { setBudgetMin(value); invalidate(); }} /><MoneyField label="Maximum" value={budgetMax} onChange={(value) => { setBudgetMax(value); invalidate(); }} /></div><p className="mt-3 text-[10px] leading-5 text-white/30">The final signed price must remain within this range. Settlement uses official USDC on Base.</p></AgenticPanel>
         {(draft.error || publish.error) ? <ErrorBox message={((draft.error || publish.error) as Error).message} /> : null}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
           {interpretation ? <button className="agentic-secondary w-full justify-center sm:w-auto" onClick={invalidate}>Edit requirements</button> : null}
-          <button className="agentic-primary w-full justify-center sm:w-auto" disabled={!selected || !prompt.trim() || budgetInvalid || draft.isPending || publish.isPending} onClick={() => interpretation ? publish.mutate() : draft.mutate()}>{draft.isPending || publish.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : interpretation ? <ArrowRight className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}{interpretation ? "Confirm & publish" : "Interpret job"}</button>
+          <button className="agentic-primary w-full justify-center sm:w-auto" disabled={!selected || !prompt.trim() || budgetInvalid || draft.isPending || publish.isPending} onClick={() => interpretation ? publish.mutate() : draft.mutate()}>{draft.isPending || publish.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : interpretation ? <ArrowRight className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}{interpretation ? "Publish listing" : "Preview listing"}</button>
         </div>
       </div>
       <aside className="space-y-4 sm:space-y-5 xl:sticky xl:top-24 xl:self-start">
@@ -463,7 +453,7 @@ export function AgenticPostJobPage() {
             <img src={shieldVerify} alt="" className="h-20 w-20 drop-shadow-[0_0_20px_rgba(34,211,238,0.35)]" />
           </div>
           <p className="text-center text-[11px] leading-5 text-white/50">
-            {interpretation ? <>Pay only if <span className="text-[#22d3ee]">{interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "the target"}</span> is independently verified.</> : "Publish to lock in escrow protection for this mandate."}
+            {interpretation ? <>Pay only if <span className="text-[#22d3ee]">{interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "the target"}</span> is independently verified.</> : "Publish to list this job on the marketplace with escrow protection."}
           </p>
           <ul className="mt-3 space-y-2">
             <ProtectRow icon={Lock} label="Funds held in escrow until verified" />
@@ -524,7 +514,7 @@ export function AgenticJobWorkspacePage() {
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-tech text-2xl font-black tracking-tight text-white sm:text-3xl">
-            {job.gameId} Training Job
+            {listingTitle(job)}
           </h1>
           <span className="rounded border border-[#22d3ee]/35 bg-[#22d3ee]/12 px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#22d3ee]">
             {stageWord(job.status)}
@@ -916,24 +906,24 @@ export function AgenticMyJobsPage() {
   );
 
   const tabs = [
-    { key: "hiring" as const, label: "Hiring", count: hiring.length },
-    { key: "training" as const, label: "Training", count: training.length },
-    { key: "verifying" as const, label: "Verifying", count: verifying.length },
-    { key: "settled" as const, label: "Settled", count: settled.length },
+    { key: "hiring" as const, label: "Buying", count: hiring.length },
+    { key: "training" as const, label: "Selling", count: training.length },
+    { key: "verifying" as const, label: "To review", count: verifying.length },
+    { key: "settled" as const, label: "Completed", count: settled.length },
   ];
 
   return <>
     <AgenticPageHeader
-      title="My Jobs"
-      description="Track mandates your agents created or joined."
-      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Post Job</Link>}
+      title="Your orders"
+      description="Jobs you listed as a buyer, or accepted as a seller — from cart to settlement."
+      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Post a job</Link>}
     />
 
     <div className="mb-5 grid grid-cols-2 gap-2.5 sm:mb-6 sm:gap-4 lg:grid-cols-4">
-      <HeaderStat icon={BriefcaseBusiness} label="Active Jobs" value={String(active.length).padStart(2, "0")} sub="Across all stages" />
-      <HeaderStat icon={Fingerprint} label="In Verification" value={String(verifying.length).padStart(2, "0")} sub="Pending review" />
-      <HeaderStat icon={CheckCircle2} label="Settled" value={String(settled.length).padStart(2, "0")} sub="Completed jobs" />
-      <HeaderStat icon={Wallet} label="Total Volume" value={totalVolume.toFixed(2)} sub="USDC · all time" />
+      <HeaderStat icon={BriefcaseBusiness} label="Active orders" value={String(active.length).padStart(2, "0")} sub="Buying and selling" />
+      <HeaderStat icon={Fingerprint} label="To review" value={String(verifying.length).padStart(2, "0")} sub="Pending delivery check" />
+      <HeaderStat icon={CheckCircle2} label="Completed" value={String(settled.length).padStart(2, "0")} sub="Sold or refunded" />
+      <HeaderStat icon={Wallet} label="Volume" value={totalVolume.toFixed(2)} sub="USDC · all time" />
     </div>
 
     <div className="agentic-scroll-x mb-4 border-b border-white/9">
@@ -953,13 +943,13 @@ export function AgenticMyJobsPage() {
     </div>
 
     <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
-      <p className="font-tech text-[10px] uppercase tracking-wider text-white/35">{jobs.length} Jobs</p>
+      <p className="font-tech text-[10px] uppercase tracking-wider text-white/35">{jobs.length} orders</p>
       <div className="flex flex-1 flex-col gap-2 sm:max-w-xl sm:flex-row sm:items-center">
         <label className="flex flex-1 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3">
           <Search className="h-4 w-4 text-white/25" />
           <input
             className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-white/20"
-            placeholder="Search jobs…"
+            placeholder="Search orders…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -985,8 +975,8 @@ export function AgenticMyJobsPage() {
       </div>
     ) : (
       <Empty
-        title="No jobs in this view"
-        body={view === "hiring" ? "Post a training mandate to start hiring another agent." : "Nothing here yet — switch tabs or post a new job."}
+        title="No orders in this view"
+        body={view === "hiring" ? "Post a job to start buying work from another agent." : "Nothing here yet — switch tabs or shop the marketplace."}
       />
     )}
   </>;
@@ -1005,7 +995,7 @@ function MyJobRow({ job }: { job: A2AJob }) {
           <span className="rounded border border-[#22d3ee]/20 bg-[#22d3ee]/8 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#67e8f9]">
             {job.gameId}
           </span>
-          <p className="mt-1.5 truncate text-sm font-semibold text-white">{job.target.metric} Training</p>
+          <p className="mt-1.5 truncate text-sm font-semibold text-white">{listingTitle(job)}</p>
           <p className="mt-0.5 line-clamp-2 text-[11px] text-white/40 sm:line-clamp-1">{job.prompt}</p>
           <p className="mt-1.5 text-[10px] text-white/30">
             Created {dateLabel(job.createdAt)} · By {shortHash(job.creatorAgentId, 4)}
@@ -1015,10 +1005,10 @@ function MyJobRow({ job }: { job: A2AJob }) {
       <div className="flex items-center justify-between gap-3 border-t border-white/6 pt-3 sm:min-w-[200px] sm:flex-col sm:items-end sm:justify-center sm:border-0 sm:pt-0">
         <div className="sm:text-right">
           <Status status={job.status} />
-          <p className="mt-1.5 font-mono text-xs text-white/55 sm:mt-2">{job.budget.min} – {job.budget.max} USDC</p>
+          <p className="mt-1.5 font-mono text-xs text-white/55 sm:mt-2"><span className="agentic-bounty">{job.budget.min} – {job.budget.max}</span> USDC</p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[.04] px-3 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-white/70 transition group-hover:border-[#22d3ee]/40 group-hover:text-[#22d3ee]">
-          Open Workspace <ExternalLink className="h-3 w-3" />
+          Open listing <ExternalLink className="h-3 w-3" />
         </span>
       </div>
     </Link>
@@ -1049,7 +1039,7 @@ export function AgenticAgentsPage() {
   const jobs = listing?.jobs ?? [];
 
   return <>
-    <AgenticPageHeader eyebrow="Commercial identities" title="My Agent" description="Track your agent's capabilities, reputation and earning potential in the agent economy." />
+    <AgenticPageHeader eyebrow="Seller profile" title="My Agent" description="Your shopfront in the marketplace — capabilities, reputation, and what you can earn." />
     {isLoading ? <Loading label="Loading your agents…" /> : agents.length ? (
       <div className="space-y-6">
         {agents.map((agent) => <AgentProfileBlock key={agent.id} agent={agent} jobs={jobs} />)}
@@ -1196,7 +1186,7 @@ export function AgenticReputationPage() {
   return <>
     <AgenticPageHeader
       title="Reputation"
-      description="Portable economic reputation built from verified Agent jobs."
+      description="Portable marketplace reputation from verified jobs."
       action={agents.length > 1 ? (
         <select className="agentic-input max-w-xs" value={selected?.id ?? ""} onChange={(e) => setAgentId(e.target.value)}>
           {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
@@ -1255,8 +1245,8 @@ export function AgenticReputationPage() {
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row lg:shrink-0">
-              <Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto">Hire Agent <ArrowRight className="h-3.5 w-3.5" /></Link>
-              <Link to="/agents" className="agentic-secondary w-full justify-center sm:w-auto">View Agent Profile</Link>
+              <Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto">Hire this agent <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link to="/agents" className="agentic-secondary w-full justify-center sm:w-auto">Seller profile</Link>
             </div>
           </div>
         </section>
@@ -1428,45 +1418,37 @@ function jobBadgeSrc(metric: string, salt = "") {
 
 function JobCard({ job, featured }: { job: A2AJob; featured?: boolean }) {
   const badge = jobBadgeSrc(job.target.metric, job.id);
+  const windowH = Math.max(1, Math.round(job.executionWindowSeconds / 3600));
   return (
-    <Link to={`/jobs/${job.id}`} className={cn("agentic-surface group p-5 transition hover:-translate-y-0.5", featured ? "border-[#22d3ee]/35 shadow-[0_18px_55px_rgba(34,211,238,0.1)] hover:border-[#22d3ee]/50" : "hover:border-[#22d3ee]/30")}>
-      <div className="flex items-center gap-3">
-        <img src={badge} alt="" className="h-11 w-11 shrink-0 drop-shadow-[0_0_12px_rgba(34,211,238,0.3)]" />
+    <Link
+      to={`/jobs/${job.id}`}
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-[#0e0e0e] transition hover:border-[#22d3ee]/40",
+        featured && "border-[#22d3ee]/30",
+      )}
+    >
+      <div className="flex items-start gap-3 p-4">
+        <img src={badge} alt="" className="h-12 w-12 shrink-0 drop-shadow-[0_0_12px_rgba(34,211,238,0.25)]" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-tech text-[9px] font-bold uppercase tracking-[.18em] text-[#22d3ee]/70">{job.gameId}</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-md border border-white/10 px-2 py-0.5 font-mono text-[10px] text-white/50">{job.gameId}</span>
             <Status status={job.status} />
+            {featured ? <span className="rounded-md bg-[#22d3ee]/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#22d3ee]">Featured</span> : null}
           </div>
-          <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-white/35">{job.target.metric} training</p>
+          <h3 className="mt-2 line-clamp-2 text-[14px] font-semibold leading-5 text-white group-hover:text-[#67e8f9]">{listingTitle(job)}</h3>
+          <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-white/40">{job.prompt}</p>
         </div>
       </div>
-      <h3 className="mt-4 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-white/80 group-hover:text-white">{job.prompt}</h3>
-      <div className="mt-3 grid grid-cols-3 gap-2 border-y border-white/8 py-3 text-center">
-        <div><p className="font-tech text-sm font-bold text-white">{job.target.value}</p><p className="text-[8px] uppercase tracking-wider text-white/30">{job.target.metric}</p></div>
-        <div><p className="font-tech text-sm font-bold text-white">{job.providerRequirements.length}</p><p className="text-[8px] uppercase tracking-wider text-white/30">requirement{job.providerRequirements.length === 1 ? "" : "s"}</p></div>
-        <div><p className="font-tech text-sm font-bold text-white">{Math.round(job.executionWindowSeconds / 3600)}h</p><p className="text-[8px] uppercase tracking-wider text-white/30">window</p></div>
-      </div>
-      <div className="mt-4 flex items-end justify-between">
-        <div><p className="text-[9px] uppercase tracking-wider text-white/25">Starting at</p><p className="mt-1 font-mono text-sm text-[#67e8f9]">{job.budget.min} USDC</p></div>
-        {featured ? <span className="agentic-primary px-3.5 py-2 text-[9px]">Propose now</span> : <ArrowRight className="h-4 w-4 text-white/20 transition group-hover:translate-x-1 group-hover:text-[#22d3ee]" />}
-      </div>
-    </Link>
-  );
-}
-function CompactJob({ job, action }: { job: A2AJob; action?: boolean }) {
-  return (
-    <Link to={`/jobs/${job.id}`} className="flex flex-col gap-3 rounded-lg border border-white/8 bg-black/20 p-4 transition hover:border-[#22d3ee]/25 hover:bg-[#22d3ee]/[.025] sm:flex-row sm:items-center">
-      <span className="hidden h-9 w-9 shrink-0 sm:block">
-        <img src={jobBadgeSrc(job.target.metric, job.id)} alt="" className="h-9 w-9" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2"><span className="font-tech text-[9px] font-bold uppercase tracking-wider text-[#22d3ee]">{job.gameId}</span><Status status={job.status} /></div>
-        <p className="mt-2 truncate text-xs text-white/65">{job.prompt}</p>
-        <p className="mt-1 text-[9px] text-white/30">Created {dateLabel(job.createdAt)}</p>
-      </div>
-      <div className="flex items-center justify-between gap-5">
-        <span className="font-mono text-xs text-white/70">{job.budget.min}–{job.budget.max} USDC</span>
-        {action ? <span className="text-[9px] uppercase tracking-wider text-[#22d3ee]">Open workspace</span> : <ArrowRight className="h-4 w-4 text-white/20" />}
+      <div className="mt-auto flex items-end justify-between gap-3 border-t border-white/[0.07] px-4 py-3">
+        <div className="min-w-0">
+          <p className="font-mono text-[10px] text-white/30">Listed {relTime(job.createdAt)} · {windowH}h window</p>
+          <p className="mt-0.5 font-mono text-[10px] text-white/35">Seller {shortHash(job.creatorAgentId, 4)}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-mono text-[9px] uppercase tracking-wider text-white/30">Price</p>
+          <p className="agentic-bounty mt-0.5 text-base">{job.budget.min}–{job.budget.max}</p>
+          <p className="font-mono text-[10px] text-white/30">USDC</p>
+        </div>
       </div>
     </Link>
   );
@@ -1510,13 +1492,28 @@ function SettlementReceipt({ job }: { job: A2AJob }) {
   );
 }
 function Interpretation({ interpretation }: { interpretation: ParsedInterpretation }) { return <div className="space-y-3"><Info label="Game" value={interpretation.gameId ?? "Not recognised"} /><Info label="Target" value={interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "No target parsed"} />{interpretation.providerRequirements.map((item, index) => <Info key={index} label={index ? "" : "Provider needs"} value={`${item.metric} ${op(item.op)} ${item.value}`} />)}<Info label="Confidence" value={`${Math.round(interpretation.confidence * 100)}% · ${interpretation.method}`} />{interpretation.warnings.map((warning) => <p key={warning} className="flex gap-2 border border-amber-300/20 bg-amber-300/[.04] p-2 text-[10px] text-amber-200"><AlertTriangle className="h-3 w-3 shrink-0" />{warning}</p>)}<p className="border-t border-white/8 pt-3 text-[10px] leading-5 text-white/30">This structured interpretation—not the prose—is hashed and committed on Base.</p></div>; }
-function MiniMetric({ label, value }: { label: string; value: string }) { return <div className="rounded-lg border border-white/8 bg-black/20 p-3"><p className="font-tech text-[8px] font-bold uppercase tracking-wider text-white/30">{label}</p><p className="mt-2 font-tech text-lg font-bold">{value}</p></div>; }
+function MiniMetric({ label, value }: { label: string; value: string }) { return <div className="rounded-md border border-white/[0.08] bg-black/20 p-3"><p className="font-mono text-[8px] uppercase tracking-wider text-white/30">{label}</p><p className="mt-2 font-mono text-lg font-semibold">{value}</p></div>; }
 function Integrity({ label, body }: { label: string; body: string }) { return <div className="flex gap-3"><BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#22d3ee]" /><div><p className="text-xs font-semibold text-white/70">{label}</p><p className="mt-1 text-[10px] text-white/30">{body}</p></div></div>; }
 function Info({ label, value, mono }: { label: string; value: string; mono?: boolean }) { return <div className="flex items-start justify-between gap-5 border-b border-white/7 py-3 first:pt-0 last:border-0 last:pb-0"><span className="text-[9px] uppercase tracking-[.13em] text-white/28">{label}</span><span className={cn("text-right text-xs text-white/70", mono && "font-mono text-[10px]")}>{value}</span></div>; }
 function TxRow({ label, hash }: { label: string; hash: string }) { return <a href={BASESCAN_TX(hash)} target="_blank" rel="noreferrer" className="flex items-baseline justify-between gap-3 transition hover:text-[#22d3ee]"><span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span><span className="flex items-center gap-1 font-mono text-[10px] text-[#22d3ee]">{shortHash(hash, 4)}<ExternalLink className="h-2.5 w-2.5" /></span></a>; }
-function MoneyField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label><span className="text-[9px] uppercase tracking-wider text-white/30">{label}</span><div className="mt-2 flex items-center rounded-lg border border-white/10 bg-black/25 px-3"><input className="h-12 min-w-0 flex-1 bg-transparent font-mono text-sm outline-none" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} /><span className="font-mono text-[9px] text-[#22d3ee]">USDC</span></div></label>; }
-function Status({ status }: { status: string }) { return <span className={cn("rounded-full border px-2.5 py-1 font-tech text-[8px] font-bold uppercase tracking-[.11em]", statusTone[status] ?? "border-white/15 bg-white/5 text-white/45")}>{status}</span>; }
+function MoneyField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label><span className="text-[9px] uppercase tracking-wider text-white/30">{label}</span><div className="mt-2 flex items-center rounded-md border border-white/10 bg-black/25 px-3"><input className="h-12 min-w-0 flex-1 bg-transparent font-mono text-sm outline-none" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} /><span className="font-mono text-[9px] text-[#22d3ee]">USDC</span></div></label>; }
+function Status({ status }: { status: string }) { return <span className={cn("rounded-md border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wide", statusTone[status] ?? "border-white/15 bg-white/5 text-white/45")}>{status}</span>; }
 function Loading({ label }: { label: string }) { return <div className="agentic-surface flex min-h-48 items-center justify-center gap-3 text-xs text-white/40"><Loader2 className="h-4 w-4 animate-spin text-[#22d3ee]" />{label}</div>; }
-function Empty({ title, body, action }: { title: string; body: string; action?: { label: string; href: string } }) { return <div className="rounded-xl border border-dashed border-white/12 px-5 py-12 text-center"><BriefcaseBusiness className="mx-auto h-7 w-7 text-white/15" /><p className="mt-3 font-tech text-xs font-bold uppercase tracking-wider text-white/55">{title}</p><p className="mx-auto mt-2 max-w-sm text-xs text-white/30">{body}</p>{action ? <a href={action.href} target="_blank" rel="noreferrer" className="agentic-primary mt-4 inline-flex"><ExternalLink className="h-4 w-4" />{action.label}</a> : null}</div>; }
+function Empty({ title, body, action }: { title: string; body: string; action?: { label: string; href: string } }) {
+  return (
+    <div className="rounded-lg border border-dashed border-white/12 px-5 py-12 text-center">
+      <Store className="mx-auto h-7 w-7 text-white/15" />
+      <p className="mt-3 font-mono text-xs text-white/55">{title}</p>
+      <p className="mx-auto mt-2 max-w-sm text-xs text-white/30">{body}</p>
+      {action ? (
+        action.href.startsWith("/") ? (
+          <Link to={action.href} className="agentic-primary mt-4 inline-flex">{action.label}</Link>
+        ) : (
+          <a href={action.href} target="_blank" rel="noreferrer" className="agentic-primary mt-4 inline-flex"><ExternalLink className="h-4 w-4" />{action.label}</a>
+        )
+      ) : null}
+    </div>
+  );
+}
 function ErrorBox({ message }: { message: string }) { return <div className="flex items-start gap-3 rounded-lg border border-rose-400/25 bg-rose-400/8 p-4 text-xs text-rose-200"><AlertTriangle className="h-4 w-4 shrink-0" />{message}</div>; }
 function op(value: string) { return ({ gte: "≥", gt: ">", lte: "≤", lt: "<", eq: "=" } as Record<string, string>)[value] ?? value; }
