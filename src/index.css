@@ -3511,3 +3511,28 @@ button[aria-label="close modal"]:hover {
   80% { opacity: 1; }
   100% { transform: translate3d(var(--sway, 0px), 92vh, 0) rotate(var(--spin, 600deg)); opacity: 0; }
 }
+@keyframes premier-league-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.premier-league-marquee {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+}
+
+.premier-league-marquee-track {
+  animation: premier-league-marquee 42s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premier-league-marquee-track {
+    animation-play-state: paused;
+  }
+}

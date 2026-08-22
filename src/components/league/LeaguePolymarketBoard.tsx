@@ -51,6 +51,8 @@ import { ArenaAgentMedia } from "./ArenaAgentMedia";
 import { FlagCircle, TeamFlagCircle, type CountryCode } from "./FlagHex";
 import { LeaguePanel } from "./LeaguePanel";
 import { PolymarketLogo } from "./PolymarketLogo";
+import premierLeagueLogo from "../../../Premier_League-Logo.wine 1.png";
+import premierLeagueStadiumTrophy from "@/assets/premier-league-stadium-trophy.png";
 
 const MARKETS = [
   {
@@ -347,8 +349,8 @@ export function LeaguePolymarketBoard() {
         <FeaturedEventCard category={category} />
       </div>
 
-      <div className="h-full lg:col-span-6">
-        <WorldCupOddsHero />
+      <div className="h-full lg:col-span-6 lg:h-[500px]">
+        <PremierLeagueOddsHero />
       </div>
       <NextMatchPanel markets={marketsForCategory(liveMarkets, category)} onSelect={jumpToQuestion} />
 
@@ -441,159 +443,75 @@ function PolymarketBoardSkeleton() {
 
 type BoardView = "market" | "pulse" | "analysis";
 
-const WORLD_CUP_FLAG_FALLBACK = [
-  "Argentina",
-  "Brazil",
-  "France",
-  "Germany",
-  "Portugal",
-  "Spain",
-  "England",
-];
+const PREMIER_LEAGUE_CLUBS = [
+  "Arsenal",
+  "Aston Villa",
+  "Bournemouth",
+  "Brentford",
+  "Brighton & Hove Albion",
+  "Chelsea",
+  "Coventry City",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Hull City",
+  "Ipswich Town",
+  "Leeds United",
+  "Liverpool",
+  "Manchester City",
+  "Manchester United",
+  "Newcastle United",
+  "Nottingham Forest",
+  "Sunderland",
+  "Tottenham Hotspur",
+] as const;
 
-function WorldCupOddsHero() {
-  const events = useFootballEvents();
-  const worldCupEvent = events.find(
-    (event) =>
-      /world cup/i.test(event.title) &&
-      event.outcomesDetail.filter((outcome) => flagUrlFor(outcome.label)).length >= 4,
-  );
-
-  const outcomes = useMemo(
-    () =>
-      worldCupEvent
-        ? worldCupEvent.outcomesDetail
-            .filter((outcome) => flagUrlFor(outcome.label))
-            .slice(0, 7)
-            .map((outcome, index) => ({
-              label: outcome.label,
-              yes: outcome.yes,
-              code: NAME_TO_CODE[outcome.label.toLowerCase()],
-              color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
-            }))
-        : WORLD_CUP_FLAG_FALLBACK.map((label, index) => ({
-            label,
-            yes: undefined,
-            code: NAME_TO_CODE[label.toLowerCase()],
-            color: OUTCOME_COLORS[index % OUTCOME_COLORS.length],
-          })),
-    [worldCupEvent],
-  );
-
-  // Double the items around the orbit so flags are packed closer together
-  const orbitItems = useMemo(() => [...outcomes, ...outcomes], [outcomes]);
-  const count = orbitItems.length;
-  const containerRef = useRef<HTMLDivElement>(null);
-  const angleRef = useRef(0);
-  const rafRef = useRef(0);
-  const [positions, setPositions] = useState<
-    { x: number; y: number; scale: number; z: number; rotate: number; opacity: number }[]
-  >(() => orbitItems.map(() => ({ x: 0, y: 0, scale: 1, z: 0, rotate: 0, opacity: 1 })));
-
-  useEffect(() => {
-    if (count === 0) return;
-
-    const SPEED = 0.004; // radians per frame (~0.23°/frame ≈ one full rotation ~27s at 60fps)
-    let prev = performance.now();
-
-    const tick = (now: number) => {
-      const dt = Math.min(now - prev, 50); // cap delta to avoid jumps
-      prev = now;
-      angleRef.current += SPEED * (dt / 16.667);
-
-      const el = containerRef.current;
-      const W = el?.clientWidth ?? 500;
-      const H = el?.clientHeight ?? 200;
-
-      // Wide semicircular arc: center sits below the visible area so only the
-      // top half of the ellipse (the arc) sweeps left → up → right.
-      const rx = W * 0.52;  // nearly full-width spread
-      const ry = H * 0.60;  // tall so the arc has a nice curve
-      const cx = W * 0.50;  // centered horizontally
-      const cy = H * 0.82;  // pushed down, only the top arc is visible
-
-      const next = orbitItems.map((_, i) => {
-        const theta = angleRef.current + (i / count) * Math.PI * 2;
-        const cosT = Math.cos(theta);
-        const sinT = Math.sin(theta);
-
-        const x = cx + rx * cosT;
-        const y = cy + ry * sinT;
-
-        // depth: -sinT → 1 at top of arc (visible), -1 at bottom (hidden)
-        const depth = -sinT;
-        // Only show the top semicircle (depth > 0); hide the bottom half completely
-        const visible = depth > -0.1;
-        const scale = 0.5 + 0.5 * Math.max(0, depth);       // 0.5 → 1.0
-        const opacity = visible ? 0.15 + 0.85 * Math.max(0, depth) : 0; // fully hidden at bottom
-        const rotate = cosT * -15; // gentle tilt following position on arc
-
-        return { x, y, scale, z: depth * 100, rotate, opacity };
-      });
-
-      setPositions(next);
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [count, orbitItems]);
-
-  if (outcomes.length === 0) {
-    return (
-      <section
-        className="relative h-full min-h-[260px] overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,#171f25,#11181d)] p-5 sm:min-h-[280px] sm:p-7 lg:min-h-[300px]"
-        aria-busy="true"
-        aria-label="Loading World Cup odds"
-      >
-        <div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center gap-4 sm:top-10">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton h-10 w-10 rounded-full sm:h-12 sm:w-12" style={{ opacity: 0.35 + i * 0.1 }} />
+function PremierLeagueOddsHero() {
+  return (
+    <section
+      className="relative h-full min-h-[280px] overflow-hidden rounded-2xl border border-[#6d3c96]/65 bg-[#090713] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_60px_rgba(0,0,0,0.32)] sm:min-h-[300px] sm:p-6 lg:min-h-[320px]"
+      aria-label="Live Premier League odds and predictions"
+    >
+      <img src={premierLeagueStadiumTrophy} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-contain object-right" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,4,13,0.97)_0%,rgba(7,5,16,0.88)_43%,rgba(7,5,16,0.15)_76%,rgba(6,4,14,0.12)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080813]/75 via-transparent to-[#080713]/25" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#00ff87]/70 to-transparent" />
+      <div className="pointer-events-none absolute left-5 top-5 z-20 grid h-14 w-14 place-items-center rounded-2xl border border-white/80 bg-white p-3 shadow-[0_12px_30px_rgba(0,0,0,0.38)] sm:left-7 sm:top-7 sm:h-16 sm:w-16 sm:p-3.5">
+        <img src={premierLeagueLogo} alt="Premier League" className="h-full w-full object-contain" />
+      </div>
+      <div className="premier-league-marquee pointer-events-none absolute left-24 right-5 top-5 z-20 overflow-hidden sm:left-28 sm:right-7 sm:top-7" aria-hidden="true">
+        <div className="premier-league-marquee-track flex w-max items-center gap-2 pr-2">
+          {[...PREMIER_LEAGUE_CLUBS, ...PREMIER_LEAGUE_CLUBS].map((club, index) => (
+            <PremierLeagueMarqueeCrest key={`${club}-${index}`} club={club} />
           ))}
         </div>
-        <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-end sm:min-h-[220px] lg:min-h-[240px]">
-          <div className="skeleton h-8 w-48 rounded sm:h-10 sm:w-64" />
-          <div className="skeleton mt-3 h-3 w-full max-w-sm rounded" />
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="relative h-full min-h-[260px] overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_18%_18%,rgba(125,151,255,0.14),transparent_36%),linear-gradient(180deg,#171f25,#11181d)] p-5 sm:min-h-[280px] sm:p-7 lg:min-h-[300px]">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" />
-
-      {/* 3D orbital carousel, flags orbit along an elliptical arc */}
-      <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {orbitItems.map((outcome, i) => {
-          const pos = positions[i];
-          if (!pos || pos.opacity < 0.08) return null;
-          return (
-            <OrbitalFlag
-              key={`${outcome.label}-${i}`}
-              outcome={outcome}
-              x={pos.x}
-              y={pos.y}
-              scale={pos.scale}
-              zIndex={Math.round(pos.z)}
-              rotate={pos.rotate}
-              opacity={pos.opacity}
-            />
-          );
-        })}
       </div>
-
-      <div className="relative z-10 flex h-full min-h-[200px] flex-col justify-end sm:min-h-[220px] lg:min-h-[240px]">
-        <h3 className="max-w-[420px] font-tech text-2xl font-black leading-tight text-white sm:text-4xl">
-          Football<br />Odds &amp; Prediction
+      <div className="relative z-10 flex h-full min-h-[240px] max-w-[62%] flex-col justify-center pt-20 sm:min-h-[252px] sm:pt-24 lg:min-h-[272px]">
+        <p className="mb-1 font-tech text-sm font-black uppercase tracking-[0.12em] text-white sm:text-base">Premier League</p>
+        <p className="mb-4 font-tech text-xs font-bold uppercase tracking-[0.18em] text-[#b47cff]">2026/27</p>
+        <h3 className="max-w-[410px] font-tech text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] text-white sm:text-5xl">
+          Odds &amp;<br />Predictions
         </h3>
-        <p className="mt-3 max-w-lg text-xs leading-relaxed text-white/45 sm:text-sm">
-          {worldCupEvent
-            ? "Percentages are pulled from the live Polymarket Football event."
-            : "Live Football odds are unavailable right now · participating nations shown."}
+        <p className="mt-4 font-tech text-lg font-black uppercase tracking-[0.08em] text-[#40f27c] sm:text-xl">Live now</p>
+        <p className="mt-2 max-w-xs text-xs leading-relaxed text-white/70 sm:text-sm">
+          Live markets and AI-powered predictions for every Premier League matchweek on Polymarket.
         </p>
       </div>
     </section>
+  );
+}
+
+function PremierLeagueMarqueeCrest({ club }: { club: (typeof PREMIER_LEAGUE_CLUBS)[number] }) {
+  const crest = teamCrestUrlFor(club);
+
+  return (
+    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/15 bg-[#0c0a16]/85 p-2 shadow-[0_10px_24px_rgba(0,0,0,0.38)] backdrop-blur sm:h-14 sm:w-14 sm:p-2.5">
+      {crest ? (
+        <img src={crest} alt="" className="h-full w-full object-contain" loading="eager" />
+      ) : (
+        <span className="font-tech text-[9px] font-black text-white">{club.slice(0, 3).toUpperCase()}</span>
+      )}
+    </div>
   );
 }
 
@@ -614,61 +532,6 @@ function PolymarketComplianceNotice({ source }: { source: MarketSource }) {
         <span className={`shrink-0 rounded-full border px-2 py-0.5 font-tech text-[9px] font-bold uppercase tracking-wider ${badge.className}`}>
           {badge.label}
         </span>
-      </div>
-    </div>
-  );
-}
-
-function OrbitalFlag({
-  outcome,
-  x,
-  y,
-  scale,
-  zIndex,
-  rotate,
-  opacity,
-}: {
-  outcome: {
-    label: string;
-    yes?: number;
-    icon?: string;
-    code?: CountryCode;
-    color: string;
-  };
-  x: number;
-  y: number;
-  scale: number;
-  zIndex: number;
-  rotate: number;
-  opacity: number;
-}) {
-  const flag = flagFor(outcome.label);
-  const crest = teamCrestUrlFor(outcome.label);
-
-  return (
-    <div
-      className="pointer-events-none absolute left-0 top-0 select-none"
-      style={{
-        transform: `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
-        zIndex,
-        opacity,
-        willChange: "transform, opacity",
-        transition: "none",
-      }}
-    >
-      <div className="grid h-9 w-12 place-items-center rounded-lg border border-white/12 bg-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.34)] backdrop-blur sm:h-10 sm:w-14">
-        {crest ? (
-          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
-        ) : outcome.code || flag ? (
-          <TeamFlagCircle teamName={outcome.label} className="h-full w-full rounded-lg border-0 bg-black/20" />
-        ) : outcome.icon ? (
-          <img src={outcome.icon} alt="" className="h-full w-full rounded-lg object-cover" />
-        ) : (
-          <span className="font-tech text-xs font-black uppercase text-white">{outcome.label.slice(0, 3)}</span>
-        )}
-      </div>
-      <div className="mt-4 text-center font-tech text-[11px] font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-xs">
-        {typeof outcome.yes === "number" ? `${outcome.yes}%` : outcome.label}
       </div>
     </div>
   );
@@ -1115,7 +978,7 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   if (matchMarkets.length === 0) return <TrendingMovers markets={markets} onSelect={onSelect} />;
 
   return (
-    <LeaguePanel fill={false} className="relative overflow-hidden border-emerald-400/20 p-3 lg:col-span-6">
+    <LeaguePanel fill className="relative flex min-h-0 flex-col overflow-hidden border-emerald-400/20 p-3 lg:col-span-6 lg:h-[500px] lg:max-h-[500px]">
       <div className="relative mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           {homeTeam && awayTeam ? (
@@ -1163,11 +1026,11 @@ function NextMatchPanel({ markets, onSelect }: { markets: LiveMarket[]; onSelect
         <span className="font-tech text-[9px] uppercase tracking-wider text-white/40">USDC</span>
       </div>
 
-      <div className="relative max-h-[240px] space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(52,211,153,0.5)_transparent] [scrollbar-width:thin]">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(52,211,153,0.5)_transparent] [scrollbar-width:thin]">
         {matchMarkets.map((market) => {
           const placedHere = placed?.id === market.id ? placed.side : null;
           return (
-            <div key={market.id} className="flex items-center gap-3 rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.07),transparent_55%),#070911] p-2.5">
+            <div key={market.id} className="flex min-h-[72px] flex-1 items-center gap-3 rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.07),transparent_55%),#070911] p-2">
               {/* Question + chance on the left, Polymarket-style */}
               <button type="button" onClick={() => onSelect(market.id)} className="min-w-0 flex-1 self-start pt-0.5 text-left" title="View full market card">
                 <p className="line-clamp-2 font-tech text-[13px] font-bold leading-snug text-white transition hover:text-emerald-200">{market.question}</p>
@@ -1231,7 +1094,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
   const movers = [...markets].sort((a, b) => Math.abs(b.session) - Math.abs(a.session));
 
   return (
-    <LeaguePanel fill={false} className="relative overflow-hidden border-cyan-400/20 p-3 lg:col-span-6">
+    <LeaguePanel fill className="relative flex min-h-0 flex-col overflow-hidden border-cyan-400/20 p-3 lg:col-span-6 lg:h-[500px] lg:max-h-[500px]">
       <div className="relative mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="font-mono text-sm font-bold uppercase tracking-[0.18em] text-white">Trending movers</h3>
@@ -1239,7 +1102,7 @@ function TrendingMovers({ markets, onSelect }: { markets: LiveMarket[]; onSelect
         </div>
         <MatchdayBadge label="Live market" />
       </div>
-      <div className="relative grid max-h-[220px] grid-cols-1 items-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 auto-rows-fr items-stretch gap-2 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-color:rgba(34,211,238,0.55)_transparent] [scrollbar-width:thin]">
         {movers.map((market) => {
           const sessionDir = market.session > 0 ? "up" : market.session < 0 ? "down" : "flat";
           return (
