@@ -1,4 +1,4 @@
-const DEFAULT_API_URL = "https://zerogpoolgame.onrender.com/api";
+const DEFAULT_API_URL = "https://zerogpoolgame-jhjr.onrender.com/api";
 
 function getBaseUrl(): string {
   const raw = import.meta.env.VITE_ZEROGPOOL_API_URL as string | undefined;
@@ -6,16 +6,16 @@ function getBaseUrl(): string {
 }
 
 /**
- * Mirrors zerogpool-frontend's `loginWithWallet` (src/lib/api.ts) — this is the same
- * `/auth/login` call the standalone Zero G Pool frontend fires on wallet connect, which
- * triggers the backend's on-chain `recordSession` write.
+ * Calls zerogpoolgame's `/player/auth/login`, which triggers the backend's on-chain
+ * `recordSession` write — the same effect zerogpool-frontend's `loginWithWallet`
+ * (src/lib/api.ts) has when it fires on wallet connect.
  */
 export async function recordZeroGPoolSessionStart(walletAddress: string): Promise<void> {
   const wallet = walletAddress?.trim();
   if (!wallet) return;
 
   try {
-    await fetch(`${getBaseUrl()}/auth/login`, {
+    await fetch(`${getBaseUrl()}/player/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress: wallet }),
