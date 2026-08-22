@@ -19,6 +19,26 @@ function normalizeWallet(wallet: string): string {
   return wallet.trim().toLowerCase();
 }
 
+/**
+ * Mirrors highway-hustle-frontend's `AuthSync` (src/routes/__root.tsx) — the same
+ * `/player/login` call the standalone Highway Hustle frontend fires on wallet connect,
+ * which triggers the backend's on-chain `recordSession` write.
+ */
+export async function recordHighwayHustleSessionStart(wallet: string): Promise<void> {
+  const identifier = normalizeWallet(wallet);
+  if (!identifier) return;
+
+  try {
+    await fetch(`${getBaseUrl()}/player/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ walletAddress: identifier }),
+    });
+  } catch (error) {
+    console.warn("[HighwayHustle] Failed to record session start", error);
+  }
+}
+
 export type HighwayMarketplaceAsset = {
   id: string;
   name: string;

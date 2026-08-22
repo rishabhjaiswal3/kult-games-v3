@@ -11,15 +11,23 @@ type CreateUnityInstance = (
   onProgress: (progress: number) => void,
 ) => Promise<UnityInstance>;
 
+type ZeroDashBridge = {
+  version: number;
+  reportGameEnd: (payload: unknown) => Promise<unknown>;
+  syncRun: (payload: unknown) => Promise<unknown>;
+};
+
 declare global {
   interface Window {
     createUnityInstance?: CreateUnityInstance;
+    zeroDashBridge?: ZeroDashBridge;
   }
 }
 
 type ZeroDashUnityPlayerProps = {
   buildUrl: string;
   jwt: string | null;
+  walletAddress?: string | null;
 };
 
 function normalizeBuildUrl(value: string): string {
@@ -29,7 +37,73 @@ function normalizeBuildUrl(value: string): string {
   return url.toString().replace(/\/+$/, "");
 }
 
-export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps) {
+const ZERODASH_BACKEND_URL = "https://zerodashbackend.onrender.com";
+
+/**
+ * Mirrors `installZeroDashUnityScoreBridge` from zerodashgame's `react-version`
+ * (src/components/GameCanvas.jsx) — the Unity build calls `window.zeroDashBridge.reportGameEnd`
+ * at game-end to POST `/player/game-sync`, which can trigger the backend's on-chain
+ * `recordSession` write on a new high score. Without this bridge installed, Unity's call
+ * throws (`window.zeroDashBridge` undefined) and the sync never happens.
+ */
+function installZeroDashUnityScoreBridge(walletAddress?: string | null) {
+  const report = async (raw: unknown) => {
+    const wallet =
+      (typeof raw === "object" && raw !== null && typeof (raw as Record<string, unknown>).wallet === "string"
+        ? ((raw as Record<string, unknown>).wallet as string)
+        : null) ||
+      walletAddress ||
+      localStorage.getItem("walletAddress");
+    if (!wallet || !/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+      console.warn("[ZeroDash] game-sync skipped — no wallet");
+      return { ok: false, reason: "no_wallet" };
+    }
+    let data: Record<string, unknown> = {};
+    if (typeof raw === "string") {
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        return { ok: false, reason: "invalid_json" };
+      }
+    } else if (typeof raw === "object" && raw !== null) {
+      data = raw as Record<string, unknown>;
+    }
+    const highScore = data?.highScore ?? data?.score ?? data?.bestScore;
+    const coins = data?.coins ?? data?.coin;
+    try {
+      const res = await fetch(`${ZERODASH_BACKEND_URL}/player/game-sync`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${wallet}`,
+        },
+        body: JSON.stringify({
+          highScore,
+          coins,
+          client: "unity-webgl",
+          ts: Date.now(),
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.warn("[ZeroDash] game-sync failed", res.status, body);
+        return { ok: false, status: res.status, body };
+      }
+      return { ok: true, body };
+    } catch (e) {
+      console.warn("[ZeroDash] game-sync error", (e as Error).message);
+      return { ok: false, reason: (e as Error).message };
+    }
+  };
+
+  window.zeroDashBridge = {
+    version: 2,
+    reportGameEnd: (payload: unknown) => report(payload),
+    syncRun: (payload: unknown) => report(payload),
+  };
+}
+
+export function ZeroDashUnityPlayer({ buildUrl, jwt, walletAddress }: ZeroDashUnityPlayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +164,8 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
         if (startupTimer) window.clearTimeout(startupTimer);
         setProgress(100);
 
+        installZeroDashUnityScoreBridge(walletAddress);
+
         if (jwt) {
           window.setTimeout(() => {
             if (disposed || !unityInstance) return;
@@ -118,9 +194,10 @@ export function ZeroDashUnityPlayer({ buildUrl, jwt }: ZeroDashUnityPlayerProps)
       disposed = true;
       if (startupTimer) window.clearTimeout(startupTimer);
       script.remove();
+      delete window.zeroDashBridge;
       if (unityInstance) void unityInstance.Quit().catch(() => undefined);
     };
-  }, [buildUrl, jwt]);
+  }, [buildUrl, jwt, walletAddress]);
 
   return (
     <div className="relative grid h-full w-full place-items-center overflow-hidden bg-black">

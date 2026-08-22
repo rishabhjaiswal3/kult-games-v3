@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download, Maximize2, Minimize2 } from "lucide-react";
 import { gamesApi } from "@/api/gamesApi";
+import { recordHighwayHustleSessionStart } from "@/api/highwayHustleApi";
+import { recordZeroGPoolSessionStart } from "@/api/zerogpoolApi";
 import { HighwayHustleModeModal } from "@/components/highway/HighwayHustleModeModal";
 import { StorageKeys } from "@/constants/storageKeys";
 import {
@@ -47,11 +49,24 @@ const GamePlay = () => {
     [game, id],
   );
   const isZeroDash = gameKey === "zerodash";
+  const isZeroGPool = gameKey === "zerogpool";
+
+  useEffect(() => {
+    if (isZeroGPool && walletAddress) {
+      recordZeroGPoolSessionStart(walletAddress);
+    }
+  }, [isZeroGPool, walletAddress]);
 
   const selectedMode = useMemo((): HighwayHustleModeConfig | null => {
     if (!modeParam) return null;
     return getHighwayModeByModeId(modeParam) ?? null;
   }, [modeParam]);
+
+  useEffect(() => {
+    if (isHighwayHustle && selectedMode && walletAddress) {
+      recordHighwayHustleSessionStart(walletAddress);
+    }
+  }, [isHighwayHustle, selectedMode, walletAddress]);
 
   const rawPlayUrl = useMemo(() => {
     if (selectedMode) return selectedMode.playUrl;
@@ -217,7 +232,7 @@ const GamePlay = () => {
       </div>
       <div className="h-full w-full" data-tour="game-play-iframe">
         {isZeroDash ? (
-          <ZeroDashUnityPlayer buildUrl={rawPlayUrl} jwt={token} />
+          <ZeroDashUnityPlayer buildUrl={rawPlayUrl} jwt={token} walletAddress={walletAddress} />
         ) : (
           <iframe
             src={playUrl}
