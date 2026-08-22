@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Globe2, LockKeyhole, Play, Share2, Shield, Star, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { recordZeroDashSessionStart } from "@/api/zerodashApi";
 import type { Game } from "@/types/api";
 import heroBanner from "@/assets/games/zeroDashGame/hero-banner.webp";
 import logo from "@/assets/games/zeroDashGame/logo.png";
@@ -23,9 +24,16 @@ function GameShot({ src, alt }: { src: string; alt: string }) {
 export function ZeroDashDetail({ game }: { game: Game }) {
   const [active, setActive] = useState(0);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, walletAddress } = useAuth();
   const gameId = game.identification ?? game.slug ?? "";
-  const play = () => navigate(isAuthenticated ? `/game/${game._id}/play` : "/?login=1");
+  const play = () => {
+    if (isAuthenticated) {
+      if (walletAddress) recordZeroDashSessionStart(walletAddress);
+      navigate(`/game/${game._id}/play`);
+    } else {
+      navigate("/?login=1");
+    }
+  };
 
   const share = async () => {
     const data = { title: "Zero Dash", text: "Check out Zero Dash on Kult Games", url: window.location.href };
