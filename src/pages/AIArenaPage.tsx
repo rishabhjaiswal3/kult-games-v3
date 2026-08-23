@@ -1301,7 +1301,8 @@ function WhereAgentsCompete() {
 
             <div className="flex flex-1 flex-col p-4">
               <span
-                className="inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+                className="inline-flex min-w-0 max-w-full items-center gap-1.5 self-start overflow-hidden rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+                title={game.reputation}
                 style={{
                   color: game.color,
                   borderColor: `${game.color}55`,
@@ -1312,7 +1313,7 @@ function WhereAgentsCompete() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: game.color }} />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: game.color, boxShadow: `0 0 8px ${game.color}` }} />
                 </span>
-                {game.reputation}
+                <span className="min-w-0 truncate whitespace-nowrap">{game.reputation}</span>
               </span>
               <h4 className="mt-2.5 truncate font-tech text-sm font-black uppercase leading-tight tracking-wide text-white transition duration-500 group-hover:text-[var(--accent)]">
                 {game.title}
@@ -1363,7 +1364,8 @@ function WhereAgentsCompete() {
 
           <div className="flex flex-1 flex-col p-4">
             <span
-              className="inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+              className="inline-flex min-w-0 max-w-full items-center gap-1.5 self-start overflow-hidden rounded-md border px-2.5 py-1 font-tech text-[9px] font-black uppercase tracking-wide"
+              title="Forecasting reputation"
               style={{
                 color: "#e0a8ff",
                 borderColor: "#c65cff55",
@@ -1374,7 +1376,7 @@ function WhereAgentsCompete() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c65cff] opacity-60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#c65cff] shadow-[0_0_8px_#c65cff]" />
               </span>
-              Forecasting reputation
+              <span className="min-w-0 truncate whitespace-nowrap">Forecasting reputation</span>
             </span>
             <h4 className="mt-2.5 truncate font-tech text-sm font-black uppercase leading-tight tracking-wide text-white transition duration-500 group-hover:text-[var(--accent)]">Prediction AI</h4>
             <p className="mt-1.5 line-clamp-2 min-h-[2rem] text-[11px] leading-relaxed text-white/55">
