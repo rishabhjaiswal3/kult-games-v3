@@ -29,6 +29,23 @@ const CoinbaseIcon = () => (
   </svg>
 );
 
+const MetaMaskIcon = () => (
+  <svg className="h-5 w-5" viewBox="0 0 32 32" aria-hidden>
+    <path fill="#E17726" d="m29 4-11.8 8.8 2.2-5.2L29 4Z" />
+    <path fill="#E27625" d="m3 4 11.7 8.9-2.1-5.3L3 4Zm21.8 20.2-3.1 4.7 6.6 1.8 1.9-6.4-5.4-.1Zm-23 .1 1.9 6.4 6.6-1.8-3.1-4.7-5.4.1Z" />
+    <path fill="#E27625" d="m10 16.2-1.9 2.9 6.5.3-.2-7L10 16.2Zm12 0-4.5-3.9-.2 7 6.5-.3-1.8-2.8Zm-11.7 12.7 3.9-1.9-3.4-2.6-.5 4.5Zm7.5-1.9 3.9 1.9-.5-4.5-3.4 2.6Z" />
+    <path fill="#D5BFB2" d="m21.7 28.9-3.9-1.9.3 2.5v1.1l3.6-1.7Zm-11.4 0 3.6 1.7v-1.1l.3-2.5-3.9 1.9Z" />
+    <path fill="#233447" d="m14 22.7-3.3-1 .2 1.5 3.1.2v-.7Zm4 0v.7l3.1-.2.2-1.5-3.3 1Z" />
+    <path fill="#CC6228" d="m10.3 28.9.5-4.7-3.6.1 3.1 4.6Zm10.9-4.7.5 4.7 3.1-4.6-3.6-.1Zm2.6-5.2-6.5.3.6 3.4.1 4.3 3.2-2.6 3.9-.1-1.3-5.3ZM6.9 24.3l3.9.1L14 27l.1-4.3.5-3.4-6.5-.3-1.2 5.3Z" />
+    <path fill="#E27525" d="m8.1 19 2.7 5.4-.1-2.7L8.1 19Zm13.2 2.7-.1 2.7 2.6-5.4-2.5 2.7ZM14.6 19l-.6 3.7.8 4.1.2-5.4-.4-2.4Zm2.7 0-.4 2.4.2 5.4.8-4.1-.6-3.7Z" />
+    <path fill="#F5841F" d="m17.9 22.7-.8 4.1.6.4 3.5-2.8.1-2.7-3.4 1Zm-7.2-1 .1 2.7 3.5 2.8.6-.4-.8-4.1-3.4-1Z" />
+    <path fill="#C0AC9D" d="m18.1 30.6v-1.1l-.3-2.3h-3.6l-.3 2.3v1.1l-3.6-1.7 1.3 1.1 2.6 1.8h3.6l2.6-1.8 1.3-1.1-3.6 1.7Z" />
+    <path fill="#763E1A" d="m17.8 27.2-.7-.4h-2.2l-.7.4-.3 2.3.3-.2h3.6l.3.2-.3-2.3Z" />
+    <path fill="#F5841F" d="m29.5 13.4 1-4.8L29 4l-11.2 8.3 4.3 3.7 6.1 1.8 1.3-1.5-.6-.4 1-.9-.8-.6 1-.8-.6-.2ZM1.5 8.6l1 4.8-.6.2 1 .8-.8.6 1 .9-.6.4 1.3 1.5L9.9 16l4.3-3.7L3 4 1.5 8.6Z" />
+    <path fill="#F5841F" d="m28.2 17.8-6.1-1.8 1.7 3-2.5 2.7 3.8-.1h5.6l-2.5-3.8ZM9.9 16l-6.1 1.8-2.5 3.8h5.6l3.8.1L8.1 19l1.8-3Z" />
+  </svg>
+);
+
 const OkxIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 32 32" aria-hidden>
     <rect width="32" height="32" rx="7" fill="#000" />
@@ -97,7 +114,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     setWalletFlowBusy(false);
     setRecoveryMode(true);
     setFinishingSignIn(false);
-    setAuthError(message ?? "Sign-in could not finish. Please try again with Coinbase or OKX wallet.");
+    setAuthError(message ?? "Sign-in could not finish. Please try again with MetaMask, Coinbase, or OKX Wallet.");
   };
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -311,6 +328,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   </div>
                 ) : (
                   <div className="kult-auth-stack kult-auth-stack--landing">
+                    <AuthMethodButton
+                      icon={<MetaMaskIcon />}
+                      label="MetaMask"
+                      onClick={() => handleWalletAuth("metamask")}
+                      disabled={loading || walletFlowBusy || !ready}
+                    />
                     <AuthMethodButton
                       icon={<CoinbaseIcon />}
                       label="Coinbase Wallet"
