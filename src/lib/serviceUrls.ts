@@ -31,3 +31,12 @@ export const CREATOR_STUDIO_BACKEND = trimTrailingSlash(
 export const AI_ARENA_GATEWAY_URL = trimTrailingSlash(
   import.meta.env.VITE_AI_ARENA_GATEWAY_URL ?? "https://aiarena-gateway.onrender.com"
 );
+
+/**
+ * 0G RoboWars backend — the 0G Storage / DA save + play-anchor service.
+ * A separate deployment from MAIN_BACKEND; it speaks its own JWT and its own
+ * `/save/*` routes. Leave the env var unset to disable 0G anchoring entirely.
+ */
+export const ROBOWARS_ZG_BACKEND = trimTrailingSlash(
+  import.meta.env.VITE_ROBOWARS_ZG_API_URL ?? ""
+);

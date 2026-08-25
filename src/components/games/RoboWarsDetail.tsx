@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight, Crown, Download, Globe2, LockKeyhole, Share2, Shield, Star, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { anchorPlaySession } from "@/api/zeroGAnchorApi";
 import { gameDownloadUrl } from "@/lib/gameDownload";
 import { triggerBrowserDownload } from "@/lib/triggerBrowserDownload";
 import type { Game } from "@/types/api";
@@ -29,7 +30,13 @@ export function RoboWarsDetail({ game }: { game: Game }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const gameId = game.identification ?? game.slug ?? "";
-  const download = () => triggerBrowserDownload(gameDownloadUrl(game));
+  const download = () => {
+    // Anchor the play session on 0G Storage. Fire-and-forget by design — the
+    // 0G write is an on-chain transaction and must never hold up the download,
+    // so we start it and immediately hand off to the browser.
+    void anchorPlaySession({ game: "robowars", event: "download", metadata: { gameId } });
+    triggerBrowserDownload(gameDownloadUrl(game));
+  };
 
   const share = async () => {
     const data = { title: "Robo Wars", text: "Check out Robo Wars on Kult Games", url: window.location.href };
