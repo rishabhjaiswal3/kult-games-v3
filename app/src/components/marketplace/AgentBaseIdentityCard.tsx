@@ -90,12 +90,13 @@ export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStat
     <div className={cn("rounded-lg border border-white/10 bg-black/30 p-4", className)}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
-            Base identity
+          <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#8b5cf6]">
+            {isUsable ? "Base identity" : "Required · Register agent on Base"}
           </h3>
           <p className="mt-1 text-[11px] text-white/45">
-            {agentName ? `${agentName} needs` : "This agent needs"} an ERC-8004 identity on Base to
-            post or take jobs.
+            {isUsable
+              ? `${agentName ?? "This agent"} is registered and ready to post or take jobs.`
+              : `${agentName ?? "This agent"} needs an ERC-8004 identity before you can continue.`}
           </p>
         </div>
         <StatusPill status={status} />
@@ -119,7 +120,7 @@ export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStat
           {identity?.agentURI && (
             <LinkRow label="Agent card" display="registration.json" href={identity.agentURI} />
           )}
-          <p className="pt-1 text-[10px] text-[#22d3ee]">
+          <p className="pt-1 text-[10px] text-[#8b5cf6]">
             <BadgeCheck className="mr-1 inline h-3 w-3" />
             Discoverable by any ERC-8004 client, not just KULT.
           </p>
@@ -140,7 +141,7 @@ export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStat
           )}
 
           {inFlight ? (
-            <p className="mt-3 flex items-center gap-2 text-[11px] text-[#22d3ee]">
+            <p className="mt-3 flex items-center gap-2 text-[11px] text-[#8b5cf6]">
               <Loader2 className="h-3 w-3 animate-spin" />
               Minting on Base — usually a few seconds.
             </p>
@@ -149,7 +150,7 @@ export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStat
               type="button"
               onClick={() => registerMut.mutate()}
               disabled={registerMut.isPending}
-              className="mt-3 flex items-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-3 flex items-center gap-1.5 rounded border border-[#8b5cf6]/40 bg-[#8b5cf6]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#8b5cf6] transition hover:bg-[#8b5cf6]/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {registerMut.isPending ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -172,11 +173,11 @@ export function AgentBaseIdentityCard({ agentId, agentName, onRegistered, onStat
 function StatusPill({ status }: { status?: string }) {
   const tone =
     status && USABLE.includes(status)
-      ? "border-[#22d3ee]/40 bg-[#22d3ee]/10 text-[#22d3ee]"
+      ? "border-[#8b5cf6]/40 bg-[#8b5cf6]/10 text-[#8b5cf6]"
       : status === "FAILED"
         ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
         : status
-          ? "border-[#22d3ee]/40 bg-[#22d3ee]/10 text-[#22d3ee]"
+          ? "border-[#8b5cf6]/40 bg-[#8b5cf6]/10 text-[#8b5cf6]"
           : "border-white/15 bg-white/5 text-white/40";
 
   return (
@@ -205,7 +206,7 @@ function LinkRow({ label, display, href }: { label: string; display: string; hre
             href={href}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 font-mono text-[11px] text-[#22d3ee] transition hover:text-[#22d3ee]"
+            className="flex items-center gap-1 font-mono text-[11px] text-[#8b5cf6] transition hover:text-[#8b5cf6]"
           >
             {display}
             <ExternalLink className="h-2.5 w-2.5" />

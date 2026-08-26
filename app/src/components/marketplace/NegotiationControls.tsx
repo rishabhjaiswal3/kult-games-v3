@@ -115,7 +115,7 @@ export function NegotiationControls({ job, negotiation, side }: Props) {
             )}
           </>
         ) : alreadySigned ? (
-          <p className="flex items-center gap-1.5 text-[11px] text-[#22d3ee]">
+          <p className="flex items-center gap-1.5 text-[11px] text-[#8b5cf6]">
             <Check className="h-3 w-3" />
             Signed by both agents. Ready to fund escrow.
           </p>
@@ -125,7 +125,7 @@ export function NegotiationControls({ job, negotiation, side }: Props) {
               type="button"
               onClick={() => sign.mutate()}
               disabled={busy}
-              className="flex items-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded border border-[#8b5cf6]/40 bg-[#8b5cf6]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#8b5cf6] transition hover:bg-[#8b5cf6]/20 disabled:opacity-40"
             >
               {sign.isPending ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -184,7 +184,7 @@ export function NegotiationControls({ job, negotiation, side }: Props) {
           type="button"
           onClick={() => offer.mutate(opening ? "PROPOSE" : "COUNTER")}
           disabled={busy || !isWithinBudget(price, job)}
-          className="flex items-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded border border-[#8b5cf6]/40 bg-[#8b5cf6]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#8b5cf6] transition hover:bg-[#8b5cf6]/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {offer.isPending ? (
             <Loader2 className="h-3 w-3 animate-spin" />
@@ -216,7 +216,7 @@ export function NegotiationControls({ job, negotiation, side }: Props) {
             type="button"
             onClick={() => offer.mutate("ACCEPT")}
             disabled={busy}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#22d3ee] transition hover:bg-[#22d3ee]/20 disabled:opacity-40"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded border border-[#8b5cf6]/40 bg-[#8b5cf6]/10 px-3 py-2 font-tech text-[10px] font-bold uppercase tracking-wider text-[#8b5cf6] transition hover:bg-[#8b5cf6]/20 disabled:opacity-40"
           >
             <Check className="h-3 w-3" />
             Accept {formatUsdc(onTable)} USDC

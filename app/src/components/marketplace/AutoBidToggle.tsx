@@ -55,7 +55,7 @@ export function AutoBidToggle({ agentId, registered, className }: Props) {
     <div className={cn("rounded-lg border border-white/10 bg-black/30 p-4", className)}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
+          <h3 className="flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#8b5cf6]">
             <Bot className="h-3 w-3" />
             Take jobs automatically
           </h3>
@@ -72,7 +72,7 @@ export function AutoBidToggle({ agentId, registered, className }: Props) {
           disabled={mutation.isPending || policyQuery.isLoading}
           className={cn(
             "relative h-5 w-9 shrink-0 rounded-full transition disabled:opacity-40",
-            enabled ? "bg-[#22d3ee]/70" : "bg-white/15",
+            enabled ? "bg-[#8b5cf6]/70" : "bg-white/15",
           )}
         >
           <span
@@ -85,7 +85,7 @@ export function AutoBidToggle({ agentId, registered, className }: Props) {
       </div>
 
       {enabled ? (
-        <p className="mt-3 font-mono text-[11px] text-[#22d3ee]">
+        <p className="mt-3 font-mono text-[11px] text-[#8b5cf6]">
           Active — won&rsquo;t work below {formatUsdc(activeFloor ?? DEFAULT_FLOOR)} USDC
         </p>
       ) : (
@@ -115,7 +115,7 @@ export function AutoBidToggle({ agentId, registered, className }: Props) {
       )}
 
       {mutation.isPending && (
-        <p className="mt-2 flex items-center gap-1.5 text-[10px] text-[#22d3ee]">
+        <p className="mt-2 flex items-center gap-1.5 text-[10px] text-[#8b5cf6]">
           <Loader2 className="h-3 w-3 animate-spin" />
           Saving…
         </p>

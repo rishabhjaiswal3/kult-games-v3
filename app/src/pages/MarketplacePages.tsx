@@ -18,11 +18,23 @@ import hexSkull from "@/assets/hex-skull.png";
 import hexSniper from "@/assets/hex-sniper.png";
 import hexShieldPurple from "@/assets/hex-shield-purple.png";
 import hexTrophy from "@/assets/hex-trophy.png";
-import shieldVerify from "@/assets/shield-verify.png";
+import shieldVerify from "@/assets/shield-verify.svg";
 import iconEconomyTraining from "@/assets/icon-economy-training.png";
 import iconEconomyVerifying from "@/assets/icon-economy-verifying.png";
 import iconEconomyNegotiating from "@/assets/icon-economy-negotiating.png";
 import iconEconomySettled from "@/assets/icon-economy-settled.png";
+import agentCapsule from "@/assets/agent-capsule.png";
+import agentDuel from "@/assets/agent-duel.png";
+import battleSwordsArt from "@/assets/battle-swords-transparent.png";
+import capabilityTargetArt from "@/assets/capability-target.png";
+import gameControllerArt from "@/assets/game-controller.png";
+import growthChartArt from "@/assets/growth-chart.png";
+import marketplaceCycleArt from "@/assets/marketplace-cycle.png";
+import reputationNetworkArt from "@/assets/reputation-network.png";
+import serviceCubeArt from "@/assets/service-cube.png";
+import sportsBallArt from "@/assets/sports-ball.png";
+import usdcCoinArt from "@/assets/usdc-coin.png";
+import verifiedJobArt from "@/assets/verified-job.png";
 import { AgenticPageHeader, AgenticPanel } from "@/layout/AppShell";
 import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
@@ -39,12 +51,12 @@ import {
 import type { AiArenaAgent } from "@/types/aiArenaGateway";
 
 const statusTone: Record<string, string> = {
-  POSTED: "text-[#22d3ee] border-[#22d3ee]/25 bg-[#22d3ee]/8",
+  POSTED: "text-[#8b5cf6] border-[#8b5cf6]/25 bg-[#8b5cf6]/8",
   NEGOTIATING: "text-amber-300 border-amber-300/25 bg-amber-300/8",
   ESCROWED: "text-violet-300 border-violet-300/25 bg-violet-300/8",
   EXECUTING: "text-sky-300 border-sky-300/25 bg-sky-300/8",
   DELIVERED: "text-fuchsia-300 border-fuchsia-300/25 bg-fuchsia-300/8",
-  SETTLED: "text-[#22d3ee] border-[#22d3ee]/25 bg-[#22d3ee]/8",
+  SETTLED: "text-[#8b5cf6] border-[#8b5cf6]/25 bg-[#8b5cf6]/8",
   FAILED: "text-rose-300 border-rose-300/25 bg-rose-300/8",
   REFUNDED: "text-white/55 border-white/15 bg-white/5",
 };
@@ -147,19 +159,28 @@ export function AgenticOverviewPage() {
   }, [jobs]);
 
   return <>
-    <section className="mb-8 sm:mb-10">
-      <p className="agentic-live">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22d3ee]" />
-        {counts.open} listing{counts.open === 1 ? "" : "s"} for sale
-      </p>
-      <h1 className="mt-4 max-w-3xl text-[1.85rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-5xl">
-        The marketplace for agent work.
+    <section className="agentic-hero mb-5 overflow-hidden px-1 py-5 sm:px-2 sm:py-7">
+      <div className="relative z-10 min-w-0 max-w-[760px] lg:max-w-[68%]">
+      <div className="agentic-hero-kicker">
+        <p className="agentic-live">
+          <Sparkles className="h-3.5 w-3.5" /> Agent commerce on Base
+        </p>
+        <img src={agentCapsule} alt="KULT agent" className="agentic-hero-mobile-art" />
+      </div>
+      <h1 className="mt-3 max-w-3xl font-tech text-[1.9rem] font-bold uppercase leading-[1.06] tracking-tight text-white sm:text-[2.35rem] lg:text-[2.65rem]">
+        The marketplace for <span className="agentic-gradient-text">verified agent work</span>
       </h1>
-      <p className="mt-4 max-w-xl text-[14px] leading-6 text-white/50 sm:text-[15px] sm:leading-7">
-        Shop open jobs, hire an agent, or sell your agent’s skills. Prices are in USDC. Payment sits in escrow until the work is verified.
+      <p className="agentic-hero-copy mt-3 max-w-xl text-[13px] leading-6 text-white/50 sm:text-sm">
+        <span className="sm:hidden">Hire verified agents, sell skills, and pay safely in USDC.</span>
+        <span className="hidden sm:inline">Shop open jobs, hire an agent, or sell your agent’s skills. Prices are in USDC. Payment sits in escrow until the work is verified.</span>
       </p>
+      <div className="agentic-hero-benefits mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[9px] uppercase tracking-wider text-white/45 sm:text-[10px]">
+        <span className="flex items-center gap-1.5"><Fingerprint className="h-3.5 w-3.5 text-violet-400" /> <span>Persistent identity</span></span>
+        <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-blue-400" /> <span>Secure escrow</span></span>
+        <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5 text-fuchsia-400" /> <span>Verified outcomes</span></span>
+      </div>
       <form
-        className="mt-6 flex flex-col gap-2 sm:flex-row"
+        className="mt-5 flex max-w-2xl flex-col gap-2 sm:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
           const q = homeQuery.trim();
@@ -169,13 +190,13 @@ export function AgenticOverviewPage() {
         <label className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-white/10 bg-[#0c0c0c] px-3">
           <Search className="h-4 w-4 shrink-0 text-white/30" />
           <input
-            className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-white/25"
+            className="h-11 w-full bg-transparent text-[13px] outline-none placeholder:text-white/25"
             placeholder="Search listings, games, or skills…"
             value={homeQuery}
             onChange={(e) => setHomeQuery(e.target.value)}
           />
         </label>
-        <button type="submit" className="agentic-primary h-12 w-full justify-center sm:w-auto">
+        <button type="submit" className="agentic-primary h-11 w-full justify-center sm:w-auto">
           <Store className="h-4 w-4" /> Shop listings
         </button>
       </form>
@@ -187,12 +208,63 @@ export function AgenticOverviewPage() {
           buyer protection · escrowed USDC · refunds if the target is missed
         </p>
       </div>
+      </div>
+      <div className="agentic-hero-art-wrap" aria-hidden>
+        <img src={agentCapsule} alt="" className="agentic-hero-art" />
+      </div>
     </section>
 
     <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:gap-3">
       <MiniMetric label="For sale" value={String(counts.open)} />
       <MiniMetric label="Orders in work" value={String(counts.active)} />
       <MiniMetric label="Sold" value={String(counts.completed)} />
+    </div>
+
+    <section className="mb-8">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[.18em] text-violet-400">KULT ecosystem services</p>
+          <h2 className="mt-1 text-lg font-semibold text-white">Hire agents and creators for verified outcomes</h2>
+        </div>
+        <Link to="/jobs" className="font-mono text-[11px] text-[#8b5cf6] hover:text-[#60a5fa]">View all services →</Link>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {[
+          { title: "Agent Training", meta: "Improve capability", art: battleSwordsArt, tone: "emerald" },
+          { title: "Capability Evaluation", meta: "Benchmark an agent", art: capabilityTargetArt, tone: "violet" },
+          { title: "KULT Create", meta: "Build playable work", art: gameControllerArt, tone: "blue" },
+          { title: "Sports Intelligence", meta: "Prediction & analysis", art: sportsBallArt, tone: "amber" },
+          { title: "Arena Duels", meta: "Compete for reputation", art: agentDuel, tone: "rose" },
+        ].map((service) => (
+          <Link key={service.title} to="/jobs" className={`agentic-service-card agentic-service-card--${service.tone}`}>
+            <div className="relative z-10">
+              <div className={`agentic-service-icon agentic-service-icon--${service.tone}`}>
+                <img src={service.art} alt="" />
+              </div>
+              <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
+              <h3 className="mt-1 text-sm font-semibold text-white">{service.title}</h3>
+              <p className="mt-1 text-[11px] text-white/40">{service.meta}</p>
+              <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+
+    <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+      {[
+        { label: "Active services", art: serviceCubeArt },
+        { label: "USDC payments", art: usdcCoinArt },
+        { label: "Marketplace economy", art: marketplaceCycleArt },
+        { label: "Verified delivery", art: verifiedJobArt },
+        { label: "Growth analytics", art: growthChartArt },
+        { label: "Reputation network", art: reputationNetworkArt },
+      ].map((item) => (
+        <div key={item.label} className="agentic-asset-chip">
+          <img src={item.art} alt="" />
+          <span>{item.label}</span>
+        </div>
+      ))}
     </div>
 
     {categories.length > 0 ? (
@@ -202,14 +274,14 @@ export function AgenticOverviewPage() {
             <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Shop by category</p>
             <h2 className="mt-1 text-lg font-semibold text-white">Browse the aisles</h2>
           </div>
-          <Link to="/jobs" className="font-mono text-[11px] text-[#22d3ee] hover:text-[#67e8f9]">All listings →</Link>
+          <Link to="/jobs" className="font-mono text-[11px] text-[#8b5cf6] hover:text-[#60a5fa]">All listings →</Link>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {categories.map(([gameId, count]) => (
             <Link
               key={gameId}
               to={`/jobs?game=${encodeURIComponent(gameId)}`}
-              className="agentic-surface flex items-center gap-3 p-3 transition hover:border-[#22d3ee]/35"
+              className="agentic-surface flex items-center gap-3 p-3 transition hover:border-[#8b5cf6]/35"
             >
               <img src={jobBadgeSrc(gameId)} alt="" className="h-9 w-9 shrink-0" />
               <div className="min-w-0">
@@ -228,7 +300,7 @@ export function AgenticOverviewPage() {
           <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Featured listings</p>
           <h2 className="mt-1 text-lg font-semibold text-white">What you can buy or take today</h2>
         </div>
-        <Link to="/jobs" className="font-mono text-[11px] text-[#22d3ee] hover:text-[#67e8f9]">View marketplace →</Link>
+        <Link to="/jobs" className="font-mono text-[11px] text-[#8b5cf6] hover:text-[#60a5fa]">View marketplace →</Link>
       </div>
       {isLoading ? (
         <Loading label="Loading marketplace listings…" />
@@ -249,7 +321,7 @@ export function AgenticOverviewPage() {
         { n: "04", title: "Pay or refund", body: "Verified target → seller paid. Missed → buyer refunded." },
       ].map((step) => (
         <div key={step.n} className="agentic-surface p-4">
-          <p className="font-mono text-[10px] text-[#22d3ee]">{step.n}</p>
+          <p className="font-mono text-[10px] text-[#8b5cf6]">{step.n}</p>
           <p className="mt-2 text-sm font-semibold text-white">{step.title}</p>
           <p className="mt-1 text-[12px] leading-5 text-white/40">{step.body}</p>
         </div>
@@ -281,7 +353,7 @@ function StatBar({ label, value }: { label: string; value: number }) {
         <span className="font-tech text-xs font-bold text-white">{value}<span className="text-white/30">/100</span></span>
       </div>
       <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
-        <div className="h-full rounded-full bg-gradient-to-r from-[#22d3ee] to-[#67e8f9]" style={{ width: `${value}%` }} />
+        <div className="h-full rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#60a5fa]" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
@@ -333,7 +405,7 @@ export function AgenticJobsPage() {
             onClick={() => setScope(value)}
             className={cn(
               "shrink-0 rounded-md border px-3.5 py-2 font-mono text-[10px] transition",
-              scope === value ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/70",
+              scope === value ? "border-[#8b5cf6]/50 bg-[#8b5cf6]/10 text-[#8b5cf6]" : "border-white/10 text-white/40 hover:border-white/20 hover:text-white/70",
             )}
           >
             {label}{counts[value] > 0 ? <span className="ml-1.5 opacity-50">{counts[value]}</span> : null}
@@ -347,8 +419,8 @@ export function AgenticJobsPage() {
       <div className="flex flex-wrap items-center gap-2">
         {games.length > 0 ? (
           <div className="agentic-scroll-x sm:flex-wrap">
-            <button onClick={() => setGame("all")} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === "all" ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>All categories</button>
-            {games.map((g) => <button key={g} onClick={() => setGame(g)} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === g ? "border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#22d3ee]" : "border-white/10 text-white/40 hover:text-white/70")}>{g}</button>)}
+            <button onClick={() => setGame("all")} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === "all" ? "border-[#8b5cf6]/50 bg-[#8b5cf6]/10 text-[#8b5cf6]" : "border-white/10 text-white/40 hover:text-white/70")}>All categories</button>
+            {games.map((g) => <button key={g} onClick={() => setGame(g)} className={cn("shrink-0 rounded-md border px-3 py-1.5 font-mono text-[10px] transition", game === g ? "border-[#8b5cf6]/50 bg-[#8b5cf6]/10 text-[#8b5cf6]" : "border-white/10 text-white/40 hover:text-white/70")}>{g}</button>)}
           </div>
         ) : null}
         <select
@@ -391,7 +463,7 @@ function EconomyStatAsset({ src, label, value }: { src: string; label: string; v
 
 // ── 03 · Post a job ──────────────────────────────────────────────────────────
 
-const POST_STEPS = ["Choose agent & outcome", "Review listing", "Publish to marketplace"] as const;
+const POST_STEPS = ["Choose agent & identity", "Review listing", "Publish to marketplace"] as const;
 
 export function AgenticPostJobPage() {
   const navigate = useNavigate();
@@ -414,16 +486,16 @@ export function AgenticPostJobPage() {
   return <>
     <AgenticPageHeader eyebrow="Sell on KULT//A2A" title="Create a listing" description="Describe the outcome, set a price range, and publish it to the marketplace. USDC stays in escrow until the work is independently verified." />
 
-    <div className="agentic-surface mb-5 grid grid-cols-1 gap-4 p-4 sm:mb-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-white/8 sm:p-5">
+    <div className="post-stepper agentic-surface mb-5 grid grid-cols-1 gap-4 p-4 sm:mb-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-amber-300/10 sm:p-5">
       {POST_STEPS.map((label, i) => (
-        <div key={label} className="flex items-start gap-3 px-1 sm:px-5">
+        <div key={label} className={cn("post-step flex items-start gap-3 px-1 sm:px-5", i <= stepIndex && "post-step--active")}>
           <img
             src={i === 0 ? hexTarget : i === 1 ? hexSwords : shieldVerify}
             alt=""
-            className={cn("h-9 w-9 shrink-0 sm:h-10 sm:w-10", i > stepIndex && "opacity-35 grayscale")}
+            className={cn("post-step-icon h-9 w-9 shrink-0 sm:h-10 sm:w-10", i > stepIndex && "opacity-30 grayscale")}
           />
           <div className="min-w-0">
-            <p className={cn("text-[10px] font-mono uppercase tracking-wider", i <= stepIndex ? "text-[#22d3ee]" : "text-white/30")}>Step {i + 1}</p>
+            <p className={cn("text-[10px] font-mono uppercase tracking-wider", i <= stepIndex ? "text-[#f6c453]" : "text-white/30")}>Step {i + 1}</p>
             <p className={cn("mt-0.5 text-sm font-bold", i <= stepIndex ? "text-white" : "text-white/40")}>{label}</p>
           </div>
         </div>
@@ -432,30 +504,28 @@ export function AgenticPostJobPage() {
 
     <div className="grid gap-4 xl:grid-cols-[1fr_370px] xl:gap-5">
       <div className="space-y-4 sm:space-y-5">
-        <AgenticPanel title="01 · Choose the buyer agent" icon={Bot}>{agents.length ? <select value={selected?.id ?? ""} onChange={(e) => { setAgentId(e.target.value); invalidate(); }} className="agentic-input"><option value="" disabled>Select agent</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name} · {agent.eloRating} ELO · {agent.wins} wins</option>)}</select> : <Empty title="No agent available" body="Create an agent in KULT Games before listing a job on the marketplace." action={{ label: "Create an agent on KULT Games", href: KULT_MY_AGENTS_URL }} />}</AgenticPanel>
-        <AgenticPanel title="02 · Describe the outcome" icon={Sparkles}><textarea rows={6} className="agentic-input resize-none leading-6" placeholder="Example: Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 wins." value={prompt} onChange={(e) => { setPrompt(e.target.value); invalidate(); }} /><button onClick={() => { setPrompt("Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 Warzone wins."); invalidate(); }} className="mt-2 text-[10px] text-[#22d3ee]/70 hover:text-[#22d3ee]">Use example prompt</button></AgenticPanel>
+        <AgenticPanel title="01 · Choose the buyer agent" icon={Bot}>{agents.length ? <select value={selected?.id ?? ""} onChange={(e) => { setAgentId(e.target.value); setIdentityReady(false); invalidate(); }} className="agentic-input"><option value="" disabled>Select agent</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name} · {agent.eloRating} ELO · {agent.wins} wins</option>)}</select> : <Empty title="No agent available" body="Create an agent in KULT Games before listing a job on the marketplace." action={{ label: "Create an agent on KULT Games", href: KULT_MY_AGENTS_URL }} />}</AgenticPanel>
+        {selected ? <AgentBaseIdentityCard className="border-[#8b5cf6]/25 bg-[#8b5cf6]/[0.035]" agentId={selected.id} agentName={selected.name} onRegistered={() => setIdentityReady(true)} onStatusChange={(status) => setIdentityReady(status === "REGISTERED" || status === "WALLET_LINKED")} /> : null}
+        <AgenticPanel title="02 · Describe the outcome" icon={Sparkles}><textarea rows={6} className="agentic-input resize-none leading-6" placeholder="Example: Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 wins." value={prompt} onChange={(e) => { setPrompt(e.target.value); invalidate(); }} /><button onClick={() => { setPrompt("Train my agent for Warzone Warrior to reach at least 70 combat skill. The trainer must have 90+ combat skill and 100 Warzone wins."); invalidate(); }} className="mt-2 text-[10px] text-[#8b5cf6]/70 hover:text-[#8b5cf6]">Use example prompt</button></AgenticPanel>
         <AgenticPanel title="03 · Set negotiation range" icon={WalletCards}><div className="grid grid-cols-2 gap-3"><MoneyField label="Minimum" value={budgetMin} onChange={(value) => { setBudgetMin(value); invalidate(); }} /><MoneyField label="Maximum" value={budgetMax} onChange={(value) => { setBudgetMax(value); invalidate(); }} /></div><p className="mt-3 text-[10px] leading-5 text-white/30">The final signed price must remain within this range. Settlement uses official USDC on Base.</p></AgenticPanel>
         {(draft.error || publish.error) ? <ErrorBox message={((draft.error || publish.error) as Error).message} /> : null}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
           {interpretation ? <button className="agentic-secondary w-full justify-center sm:w-auto" onClick={invalidate}>Edit requirements</button> : null}
-          <button className="agentic-primary w-full justify-center sm:w-auto" disabled={!selected || !prompt.trim() || budgetInvalid || draft.isPending || publish.isPending} onClick={() => interpretation ? publish.mutate() : draft.mutate()}>{draft.isPending || publish.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : interpretation ? <ArrowRight className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}{interpretation ? "Publish listing" : "Preview listing"}</button>
+          <button className="agentic-primary w-full justify-center sm:w-auto" disabled={!selected || !identityReady || !prompt.trim() || budgetInvalid || draft.isPending || publish.isPending} onClick={() => interpretation ? publish.mutate() : draft.mutate()}>{draft.isPending || publish.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : interpretation ? <ArrowRight className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}{!identityReady ? "Register on Base to continue" : interpretation ? "Publish listing" : "Preview listing"}</button>
         </div>
       </div>
       <aside className="space-y-4 sm:space-y-5 xl:sticky xl:top-24 xl:self-start">
-        {selected ? <>
-          <AgentBaseIdentityCard agentId={selected.id} agentName={selected.name} onRegistered={() => setIdentityReady(true)} onStatusChange={(status) => setIdentityReady(status === "REGISTERED" || status === "WALLET_LINKED")} />
-          <AutoBidToggle agentId={selected.id} registered={identityReady} />
-        </> : null}
-        <AgenticPanel title="Binding interpretation" icon={FileCheck2}>{interpretation ? <Interpretation interpretation={interpretation} /> : <div className="py-8 text-center"><Fingerprint className="mx-auto h-7 w-7 text-white/15" /><p className="mt-3 text-xs text-white/30">Your structured, hashable requirements will appear here.</p></div>}</AgenticPanel>
+        {selected ? <AutoBidToggle agentId={selected.id} registered={identityReady} /> : null}
+        <AgenticPanel title="Binding interpretation" icon={FileCheck2} className="binding-panel">{interpretation ? <Interpretation interpretation={interpretation} /> : <div className="binding-empty"><span className="binding-empty-icon"><Fingerprint className="h-5 w-5" /></span><div><p className="text-[11px] font-medium text-white/55">Preview your requirements</p><p className="mt-1 text-[10px] leading-4 text-white/30">A structured, hashable agreement appears after preview.</p></div></div>}</AgenticPanel>
         {/* ── Confirm & Protect — mirrors the escrow checklist panel ── */}
-        <AgenticPanel title="Confirm & Protect" icon={ShieldCheck}>
-          <div className="mb-4 flex justify-center">
-            <img src={shieldVerify} alt="" className="h-20 w-20 drop-shadow-[0_0_20px_rgba(34,211,238,0.35)]" />
+        <AgenticPanel title="Confirm & Protect" icon={ShieldCheck} className="protect-panel">
+          <div className="protect-intro">
+            <img src={shieldVerify} alt="" className="protect-art" />
+            <p className="text-[11px] leading-5 text-white/50">
+            {interpretation ? <>Pay only if <span className="text-[#8b5cf6]">{interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "the target"}</span> is independently verified.</> : "Publish to list this job on the marketplace with escrow protection."}
+            </p>
           </div>
-          <p className="text-center text-[11px] leading-5 text-white/50">
-            {interpretation ? <>Pay only if <span className="text-[#22d3ee]">{interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "the target"}</span> is independently verified.</> : "Publish to list this job on the marketplace with escrow protection."}
-          </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="protect-list mt-3 space-y-2">
             <ProtectRow icon={Lock} label="Funds held in escrow until verified" />
             <ProtectRow icon={Fingerprint} label="Outcome independently verified, not self-reported" />
             <ProtectRow icon={ArrowLeft} label="Refunded in full if the target is missed" />
@@ -467,7 +537,7 @@ export function AgenticPostJobPage() {
 }
 
 function ProtectRow({ icon: Icon, label }: { icon: typeof Lock; label: string }) {
-  return <li className="flex items-center gap-2 text-[11px] text-white/60"><Check className="h-3.5 w-3.5 shrink-0 text-[#22d3ee]" /><Icon className="h-3 w-3 shrink-0 text-white/30" />{label}</li>;
+  return <li className="flex items-center gap-2 text-[11px] text-white/60"><Check className="h-3.5 w-3.5 shrink-0 text-[#8b5cf6]" /><Icon className="h-3 w-3 shrink-0 text-white/30" />{label}</li>;
 }
 
 // ── 04 · Job workspace ───────────────────────────────────────────────────────
@@ -506,7 +576,7 @@ export function AgenticJobWorkspacePage() {
   const delta = currentMetric != null ? job.target.value - currentMetric : null;
 
   return <>
-    <Link to="/my-jobs" className="mb-4 inline-flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[.16em] text-[#22d3ee] hover:text-[#67e8f9]">
+    <Link to="/my-jobs" className="mb-4 inline-flex items-center gap-2 font-tech text-[10px] font-bold uppercase tracking-[.16em] text-[#8b5cf6] hover:text-[#60a5fa]">
       <ArrowLeft className="h-3.5 w-3.5" /> Active Job Workspace
     </Link>
 
@@ -516,7 +586,7 @@ export function AgenticJobWorkspacePage() {
           <h1 className="font-tech text-2xl font-black tracking-tight text-white sm:text-3xl">
             {listingTitle(job)}
           </h1>
-          <span className="rounded border border-[#22d3ee]/35 bg-[#22d3ee]/12 px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#22d3ee]">
+          <span className="rounded border border-[#8b5cf6]/35 bg-[#8b5cf6]/12 px-2 py-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#8b5cf6]">
             {stageWord(job.status)}
           </span>
         </div>
@@ -566,7 +636,7 @@ export function AgenticJobWorkspacePage() {
           onClick={() => setTab(item)}
           className={cn(
             "border-b-2 px-4 py-3 font-tech text-[9px] font-bold uppercase tracking-[.14em]",
-            tab === item ? "border-[#22d3ee] text-[#22d3ee]" : "border-transparent text-white/30 hover:text-white/60",
+            tab === item ? "border-[#8b5cf6] text-[#8b5cf6]" : "border-transparent text-white/30 hover:text-white/60",
           )}
         >
           {item}
@@ -599,14 +669,14 @@ export function AgenticJobWorkspacePage() {
                 badge={hexBrain}
               />
               <div className="flex flex-col items-center gap-2 px-2 text-center">
-                <ArrowRight className="h-6 w-6 rotate-90 text-[#22d3ee] drop-shadow-[0_0_12px_rgba(34,211,238,0.5)] sm:rotate-0" />
-                <div className="rounded-xl border border-[#22d3ee]/25 bg-[#22d3ee]/8 px-4 py-3">
-                  <p className="font-tech text-[8px] font-bold uppercase tracking-[.16em] text-[#22d3ee]/80">Target improvement</p>
+                <ArrowRight className="h-6 w-6 rotate-90 text-[#8b5cf6] drop-shadow-[0_0_12px_rgba(34,211,238,0.5)] sm:rotate-0" />
+                <div className="rounded-xl border border-[#8b5cf6]/25 bg-[#8b5cf6]/8 px-4 py-3">
+                  <p className="font-tech text-[8px] font-bold uppercase tracking-[.16em] text-[#8b5cf6]/80">Target improvement</p>
                   <p className="mt-1 font-tech text-sm font-black text-white">
                     {currentMetric != null ? `${currentMetric} → ${job.target.value}` : `${op(job.target.op)} ${job.target.value}`}
                   </p>
                   {delta != null ? (
-                    <p className="mt-0.5 text-[10px] text-[#67e8f9]">
+                    <p className="mt-0.5 text-[10px] text-[#60a5fa]">
                       {delta >= 0 ? `+${delta}` : delta} {job.target.metric}
                     </p>
                   ) : null}
@@ -653,7 +723,7 @@ export function AgenticJobWorkspacePage() {
                 { icon: ShieldCheck, label: "Verifiable" },
               ].map((item) => (
                 <div key={item.label} className="rounded-lg border border-white/8 bg-white/[.02] px-2 py-3">
-                  <item.icon className="mx-auto h-4 w-4 text-[#22d3ee]" />
+                  <item.icon className="mx-auto h-4 w-4 text-[#8b5cf6]" />
                   <p className="mt-1.5 font-tech text-[8px] font-bold uppercase tracking-wider text-white/45">{item.label}</p>
                 </div>
               ))}
@@ -700,7 +770,7 @@ export function AgenticJobWorkspacePage() {
           <Info label="Requirements hash" value={shortHash(job.requirementsHash, 8)} mono />
           <Info label="0G root hash" value={shortHash(job.requirementsRootHash, 8)} mono />
           <Info label="Recomputed" value={verification.valid ? "Valid — bytes match commitment" : "Invalid"} />
-          <a className="mt-4 inline-flex items-center gap-2 text-[10px] text-[#22d3ee]" href={a2aMarketplaceApi.requirementsDocumentUrl(job.id)} target="_blank" rel="noreferrer">
+          <a className="mt-4 inline-flex items-center gap-2 text-[10px] text-[#8b5cf6]" href={a2aMarketplaceApi.requirementsDocumentUrl(job.id)} target="_blank" rel="noreferrer">
             <ExternalLink className="h-3.5 w-3.5" /> Open canonical document
           </a>
         </AgenticPanel>
@@ -708,7 +778,7 @@ export function AgenticJobWorkspacePage() {
           <AgenticPanel title="Base record" icon={ShieldCheck}>
             <Info label="Chain state" value={onChain ? String(onChain.status ?? job.status) : job.status} />
             {job.postTxHash ? (
-              <a className="mt-4 inline-flex items-center gap-2 text-[10px] text-[#22d3ee]" href={BASESCAN_TX(job.postTxHash)} target="_blank" rel="noreferrer">
+              <a className="mt-4 inline-flex items-center gap-2 text-[10px] text-[#8b5cf6]" href={BASESCAN_TX(job.postTxHash)} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-3.5 w-3.5" /> View transaction {shortHash(job.postTxHash, 5)}
               </a>
             ) : (
@@ -733,7 +803,7 @@ export function AgenticJobWorkspacePage() {
     <div className="fixed inset-x-0 bottom-14 z-30 border-t border-white/10 bg-[#050807]/95 backdrop-blur-xl lg:bottom-0 lg:pl-[250px]">
       <div className="mx-auto flex h-12 max-w-[1500px] items-center gap-2 overflow-x-auto px-3 sm:h-14 sm:gap-5 sm:px-6">
         <span className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-wider text-white/50">
-          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#22d3ee]" /> Live
+          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#8b5cf6]" /> Live
         </span>
         <span className="hidden shrink-0 text-[10px] text-white/40 sm:inline">{job.gameId}</span>
         <span className="hidden shrink-0 text-[10px] text-white/30 md:inline">Job {shortHash(job.id, 5)}</span>
@@ -777,7 +847,7 @@ function CapabilityParty({
             <span className="font-tech font-bold text-white">{score}</span>
           </div>
           <div className="mt-1 h-1 overflow-hidden rounded-full bg-white/8">
-            <div className="h-full rounded-full bg-[#22d3ee]" style={{ width: `${Math.min(100, score)}%` }} />
+            <div className="h-full rounded-full bg-[#8b5cf6]" style={{ width: `${Math.min(100, score)}%` }} />
           </div>
         </div>
       ) : null}
@@ -802,7 +872,7 @@ function TrainingProgressCard({ job, stage }: { job: A2AJob; stage: number }) {
               {item.done ? (
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               ) : item.active ? (
-                <Loader2 className="h-4 w-4 animate-spin text-[#22d3ee]" />
+                <Loader2 className="h-4 w-4 animate-spin text-[#8b5cf6]" />
               ) : (
                 <Clock3 className="h-4 w-4 text-white/25" />
               )}
@@ -820,7 +890,7 @@ function TrainingProgressCard({ job, stage }: { job: A2AJob; stage: number }) {
           <span>{progress}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/8">
-          <div className="h-full rounded-full bg-gradient-to-r from-[#22d3ee] to-[#67e8f9]" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#60a5fa]" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </AgenticPanel>
@@ -863,7 +933,7 @@ function CopyableHash({ value, className }: { value: string; className?: string 
           window.setTimeout(() => setCopied(false), 1200);
         });
       }}
-      className={cn("inline-flex items-center gap-1.5 font-mono text-[11px] text-white/45 transition hover:text-[#22d3ee]", className)}
+      className={cn("inline-flex items-center gap-1.5 font-mono text-[11px] text-white/45 transition hover:text-[#8b5cf6]", className)}
       title={value}
     >
       {shortHash(value, 4)}
@@ -933,7 +1003,7 @@ export function AgenticMyJobsPage() {
           onClick={() => setView(tab.key)}
           className={cn(
             "shrink-0 px-3 py-3 font-tech text-[10px] font-bold uppercase tracking-[.14em] transition sm:px-4",
-            view === tab.key ? "border-b-2 border-[#22d3ee] text-[#22d3ee]" : "text-white/30 hover:text-white/60",
+            view === tab.key ? "border-b-2 border-[#8b5cf6] text-[#8b5cf6]" : "text-white/30 hover:text-white/60",
           )}
         >
           {tab.label}
@@ -987,12 +1057,12 @@ function MyJobRow({ job }: { job: A2AJob }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="group flex flex-col gap-3 px-3.5 py-3.5 transition hover:bg-[#22d3ee]/[.03] sm:flex-row sm:items-center sm:gap-5 sm:px-5 sm:py-4"
+      className="group flex flex-col gap-3 px-3.5 py-3.5 transition hover:bg-[#8b5cf6]/[.03] sm:flex-row sm:items-center sm:gap-5 sm:px-5 sm:py-4"
     >
       <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
         <img src={badge} alt="" className="h-11 w-11 shrink-0 drop-shadow-[0_0_12px_rgba(34,211,238,0.25)] sm:h-12 sm:w-12" />
         <div className="min-w-0 flex-1">
-          <span className="rounded border border-[#22d3ee]/20 bg-[#22d3ee]/8 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#67e8f9]">
+          <span className="rounded border border-[#8b5cf6]/20 bg-[#8b5cf6]/8 px-1.5 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#60a5fa]">
             {job.gameId}
           </span>
           <p className="mt-1.5 truncate text-sm font-semibold text-white">{listingTitle(job)}</p>
@@ -1007,7 +1077,7 @@ function MyJobRow({ job }: { job: A2AJob }) {
           <Status status={job.status} />
           <p className="mt-1.5 font-mono text-xs text-white/55 sm:mt-2"><span className="agentic-bounty">{job.budget.min} – {job.budget.max}</span> USDC</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[.04] px-3 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-white/70 transition group-hover:border-[#22d3ee]/40 group-hover:text-[#22d3ee]">
+        <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[.04] px-3 py-2 font-tech text-[9px] font-bold uppercase tracking-wider text-white/70 transition group-hover:border-[#8b5cf6]/40 group-hover:text-[#8b5cf6]">
           Open listing <ExternalLink className="h-3 w-3" />
         </span>
       </div>
@@ -1020,8 +1090,8 @@ function HeaderStat({ icon: Icon, label, value, sub }: { icon: typeof Activity; 
     <div className="agentic-surface p-3 sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <p className="font-tech text-[8px] font-bold uppercase tracking-[.12em] text-white/35 sm:text-[9px]">{label}</p>
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#22d3ee]/10 sm:h-8 sm:w-8 sm:rounded-xl">
-          <Icon className="h-3.5 w-3.5 text-[#22d3ee]" />
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#8b5cf6]/10 sm:h-8 sm:w-8 sm:rounded-xl">
+          <Icon className="h-3.5 w-3.5 text-[#8b5cf6]" />
         </span>
       </div>
       <p className="mt-2 font-tech text-xl font-black text-white sm:mt-3 sm:text-2xl">{value}</p>
@@ -1067,7 +1137,7 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
           <div className="flex items-center gap-4 lg:shrink-0">
             <img src={hexBrain} alt="" className="h-16 w-16 shrink-0 drop-shadow-[0_0_18px_rgba(34,211,238,0.35)]" />
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5"><span className="truncate font-tech text-lg font-bold text-white">{agent.name}</span><Hexagon className="h-3 w-3 shrink-0 fill-[#22d3ee] text-[#22d3ee]" /></div>
+              <div className="flex items-center gap-1.5"><span className="truncate font-tech text-lg font-bold text-white">{agent.name}</span><Hexagon className="h-3 w-3 shrink-0 fill-[#8b5cf6] text-[#8b5cf6]" /></div>
               <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-white/35">{agent.clan} · {agent.archetype} · {agent.evolutionStage}</p>
             </div>
           </div>
@@ -1075,7 +1145,7 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">ELO</p><p className="mt-1 font-tech text-lg font-bold text-white">{agent.eloRating ?? 0}</p></div>
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">Win rate</p><p className="mt-1 font-tech text-lg font-bold text-white">{agentWinRate(agent)}%</p></div>
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">Jobs</p><p className="mt-1 font-tech text-lg font-bold text-white">{jobsForAgent(jobs, agent.id).length}</p></div>
-            <div><p className="text-[10px] uppercase tracking-wider text-white/35">Earnings</p><p className="mt-1 font-tech text-lg font-bold text-[#22d3ee]">{earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span></p></div>
+            <div><p className="text-[10px] uppercase tracking-wider text-white/35">Earnings</p><p className="mt-1 font-tech text-lg font-bold text-[#8b5cf6]">{earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span></p></div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:shrink-0 lg:flex-nowrap">
             <Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto">Post a Job</Link>
@@ -1206,14 +1276,14 @@ export function AgenticReputationPage() {
       <div className="space-y-5">
         {/* ── Featured agent hero ── */}
         <section className="agentic-surface overflow-hidden p-5 sm:p-6">
-          <p className="font-tech text-[9px] font-bold uppercase tracking-[.22em] text-[#22d3ee]/80">Featured Agent</p>
+          <p className="font-tech text-[9px] font-bold uppercase tracking-[.22em] text-[#8b5cf6]/80">Featured Agent</p>
           <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-center">
             <div className="flex min-w-0 items-center gap-4">
               <img src={hexBrain} alt="" className="h-[4.5rem] w-[4.5rem] shrink-0 drop-shadow-[0_0_22px_rgba(34,211,238,0.4)]" />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="truncate font-tech text-xl font-black text-white">{selected.name}</span>
-                  <span className="rounded-full border border-[#22d3ee]/25 bg-[#22d3ee]/10 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#67e8f9]">
+                  <span className="rounded-full border border-[#8b5cf6]/25 bg-[#8b5cf6]/10 px-2 py-0.5 font-tech text-[8px] font-bold uppercase tracking-wider text-[#60a5fa]">
                     ERC-8004 #{identity.data.erc8004AgentId}
                   </span>
                 </div>
@@ -1223,7 +1293,7 @@ export function AgenticReputationPage() {
             <div className="grid flex-1 grid-cols-2 gap-4 border-t border-white/8 pt-4 sm:grid-cols-3 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 xl:grid-cols-5">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-white/35">Total Earnings</p>
-                <p className="mt-1 font-tech text-base font-bold text-[#22d3ee]">{earnings.toFixed(2)} USDC</p>
+                <p className="mt-1 font-tech text-base font-bold text-[#8b5cf6]">{earnings.toFixed(2)} USDC</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-white/35">Success Rate</p>
@@ -1266,7 +1336,7 @@ export function AgenticReputationPage() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-tech text-[8px] font-bold uppercase tracking-wider text-[#22d3ee]/80">{job.gameId}</span>
+                        <span className="font-tech text-[8px] font-bold uppercase tracking-wider text-[#8b5cf6]/80">{job.gameId}</span>
                         <span className="text-[9px] text-white/30">{relTime(job.settledAt ?? job.createdAt)}</span>
                       </div>
                       <p className="mt-1 text-xs font-semibold text-white/85">
@@ -1310,7 +1380,7 @@ export function AgenticReputationPage() {
               <Integrity label="Portable across markets" body="Reputation travels with the agent, readable by any ERC-8004 client." />
               <Integrity label="Earn trust, earn more" body="Higher reputation unlocks better mandates and more repeat buyers." />
             </div>
-            <Link to="/jobs" className="mt-5 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#22d3ee] hover:text-[#67e8f9]">
+            <Link to="/jobs" className="mt-5 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#8b5cf6] hover:text-[#60a5fa]">
               How reputation is calculated <ChevronRight className="h-3 w-3" />
             </Link>
           </AgenticPanel>
@@ -1339,7 +1409,7 @@ export function AgenticReputationPage() {
                       </td>
                       <td className="py-3 text-white/60">{row.jobs}</td>
                       <td className="py-3 text-white/60">{row.successRate}%</td>
-                      <td className="py-3 font-mono text-[#22d3ee]">{row.earned.toFixed(2)} USDC</td>
+                      <td className="py-3 font-mono text-[#8b5cf6]">{row.earned.toFixed(2)} USDC</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1362,7 +1432,7 @@ function ScoreRow({ label, value, max, suffix = "" }: { label: string; value?: n
         <span className="font-mono text-white/80">{value != null ? `${value}${suffix}` : "—"}{value != null && !suffix ? `/${max}` : ""}</span>
       </div>
       <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/8">
-        <div className="h-full rounded-full bg-[#22d3ee]" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-[#8b5cf6]" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -1383,7 +1453,7 @@ function ScoreGauge({ value1000, raw }: { value1000: number | null; raw: number 
           cy="80"
           r={r}
           fill="none"
-          stroke="#22d3ee"
+          stroke="#8b5cf6"
           strokeWidth="12"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${c - dash}`}
@@ -1391,7 +1461,7 @@ function ScoreGauge({ value1000, raw }: { value1000: number | null; raw: number 
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className="font-tech text-4xl font-black text-white">{value1000 != null ? value1000 : "—"}</span>
-        <span className="mt-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#22d3ee]">{label}</span>
+        <span className="mt-1 font-tech text-[9px] font-bold uppercase tracking-wider text-[#8b5cf6]">{label}</span>
         <span className="mt-0.5 text-[9px] text-white/30">{raw != null ? `Avg ${raw.toFixed(1)} · out of 1000` : "Out of 1000"}</span>
       </div>
     </div>
@@ -1423,8 +1493,8 @@ function JobCard({ job, featured }: { job: A2AJob; featured?: boolean }) {
     <Link
       to={`/jobs/${job.id}`}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-[#0e0e0e] transition hover:border-[#22d3ee]/40",
-        featured && "border-[#22d3ee]/30",
+        "group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-[#0e0e0e] transition hover:border-[#8b5cf6]/40",
+        featured && "border-[#8b5cf6]/30",
       )}
     >
       <div className="flex items-start gap-3 p-4">
@@ -1433,9 +1503,9 @@ function JobCard({ job, featured }: { job: A2AJob; featured?: boolean }) {
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="rounded-md border border-white/10 px-2 py-0.5 font-mono text-[10px] text-white/50">{job.gameId}</span>
             <Status status={job.status} />
-            {featured ? <span className="rounded-md bg-[#22d3ee]/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#22d3ee]">Featured</span> : null}
+            {featured ? <span className="rounded-md bg-[#8b5cf6]/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8b5cf6]">Featured</span> : null}
           </div>
-          <h3 className="mt-2 line-clamp-2 text-[14px] font-semibold leading-5 text-white group-hover:text-[#67e8f9]">{listingTitle(job)}</h3>
+          <h3 className="mt-2 line-clamp-2 text-[14px] font-semibold leading-5 text-white group-hover:text-[#60a5fa]">{listingTitle(job)}</h3>
           <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-white/40">{job.prompt}</p>
         </div>
       </div>
@@ -1457,11 +1527,11 @@ function NegotiationCard({ job, room, side }: { job: A2AJob; room: Negotiation; 
   return <AgenticPanel title={`Negotiation · ${shortHash(room.id, 5)}`} icon={MessageSquareText}>
     <div className="mb-4 flex items-center justify-between"><Status status={room.state} /><span className="font-mono text-[10px] text-white/35">{room.turn ? `${room.turn} to move` : "Closed"}</span></div>
     {!room.verification.valid ? <p className="mb-3 border border-rose-400/30 bg-rose-400/8 px-3 py-2 text-[10px] text-rose-300">Transcript failed chain verification — messages may have been altered.</p> : null}
-    <ol className="space-y-2">{room.messages.map((message) => <li key={message.seq} className={cn("max-w-[85%] border p-3", message.role === "CREATOR" ? "ml-auto border-[#22d3ee]/15 bg-[#22d3ee]/[.04]" : "border-white/9 bg-white/[.025]")}><div className="flex items-center justify-between gap-3"><span className="font-mono text-[8px] uppercase tracking-wider text-white/30">{message.role} · {message.kind}</span>{message.price ? <span className="font-mono text-xs text-[#22d3ee]">{message.price.display} USDC</span> : null}</div>{message.note ? <p className="mt-2 text-xs text-white/60">{message.note}</p> : null}<p className="mt-2 font-mono text-[8px] text-white/20">signed {shortHash(message.signature, 5)}</p></li>)}</ol>
+    <ol className="space-y-2">{room.messages.map((message) => <li key={message.seq} className={cn("max-w-[85%] border p-3", message.role === "CREATOR" ? "ml-auto border-[#8b5cf6]/15 bg-[#8b5cf6]/[.04]" : "border-white/9 bg-white/[.025]")}><div className="flex items-center justify-between gap-3"><span className="font-mono text-[8px] uppercase tracking-wider text-white/30">{message.role} · {message.kind}</span>{message.price ? <span className="font-mono text-xs text-[#8b5cf6]">{message.price.display} USDC</span> : null}</div>{message.note ? <p className="mt-2 text-xs text-white/60">{message.note}</p> : null}<p className="mt-2 font-mono text-[8px] text-white/20">signed {shortHash(message.signature, 5)}</p></li>)}</ol>
     <NegotiationControls job={job} negotiation={room} side={side} />
   </AgenticPanel>;
 }
-function ExecutionPanel({ job }: { job: A2AJob }) { const stage = stageIndexForStatus(job.status); const items = [{ label: "Escrow funded", done: stage >= 3 }, { label: "Training execution", done: stage >= 4 }, { label: "Model delivered", done: stage >= 5 }, { label: "Independent verification", done: stage >= 6 }, { label: "USDC settlement", done: job.status === "SETTLED" }]; return <AgenticPanel title="Execution telemetry" icon={Activity}><div className="grid gap-3 md:grid-cols-5">{items.map((item, index) => <div key={item.label} className={cn("border p-4", item.done ? "border-[#22d3ee]/20 bg-[#22d3ee]/[.04]" : "border-white/8 bg-black/20")}><div className={cn("flex h-7 w-7 items-center justify-center border", item.done ? "border-[#22d3ee]/30 text-[#22d3ee]" : "border-white/10 text-white/20")}>{item.done ? <Check className="h-4 w-4" /> : <Clock3 className="h-4 w-4" />}</div><p className="mt-4 text-xs text-white/60">{item.label}</p><p className="mt-1 font-mono text-[8px] uppercase tracking-wider text-white/25">{item.done ? "Completed" : index === Math.min(stage, 4) ? "Current stage" : "Waiting"}</p></div>)}</div><p className="mt-4 text-[10px] leading-5 text-white/30">Live episode and score telemetry appears here when the execution service advances the job to training. No simulated progress is shown.</p></AgenticPanel>; }
+function ExecutionPanel({ job }: { job: A2AJob }) { const stage = stageIndexForStatus(job.status); const items = [{ label: "Escrow funded", done: stage >= 3 }, { label: "Training execution", done: stage >= 4 }, { label: "Model delivered", done: stage >= 5 }, { label: "Independent verification", done: stage >= 6 }, { label: "USDC settlement", done: job.status === "SETTLED" }]; return <AgenticPanel title="Execution telemetry" icon={Activity}><div className="grid gap-3 md:grid-cols-5">{items.map((item, index) => <div key={item.label} className={cn("border p-4", item.done ? "border-[#8b5cf6]/20 bg-[#8b5cf6]/[.04]" : "border-white/8 bg-black/20")}><div className={cn("flex h-7 w-7 items-center justify-center border", item.done ? "border-[#8b5cf6]/30 text-[#8b5cf6]" : "border-white/10 text-white/20")}>{item.done ? <Check className="h-4 w-4" /> : <Clock3 className="h-4 w-4" />}</div><p className="mt-4 text-xs text-white/60">{item.label}</p><p className="mt-1 font-mono text-[8px] uppercase tracking-wider text-white/25">{item.done ? "Completed" : index === Math.min(stage, 4) ? "Current stage" : "Waiting"}</p></div>)}</div><p className="mt-4 text-[10px] leading-5 text-white/30">Live episode and score telemetry appears here when the execution service advances the job to training. No simulated progress is shown.</p></AgenticPanel>; }
 /**
  * What actually happened to the money. Shown only once a verdict exists — until
  * then there is nothing truthful to say. A rejected verdict (refund) is shown
@@ -1473,9 +1543,9 @@ function SettlementReceipt({ job }: { job: A2AJob }) {
   const { accepted } = job.verdict;
   const measured = job.verifiedValue;
   return (
-    <section className={cn("rounded-xl border p-4", accepted ? "border-[#22d3ee]/40 bg-[#22d3ee]/5" : "border-amber-500/40 bg-amber-500/5")}>
+    <section className={cn("rounded-xl border p-4", accepted ? "border-[#8b5cf6]/40 bg-[#8b5cf6]/5" : "border-amber-500/40 bg-amber-500/5")}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className={cn("flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em]", accepted ? "text-[#22d3ee]" : "text-amber-300")}>
+        <h3 className={cn("flex items-center gap-1.5 font-tech text-[10px] font-bold uppercase tracking-[0.2em]", accepted ? "text-[#8b5cf6]" : "text-amber-300")}>
           {accepted ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
           {accepted ? "Settled — trainer paid" : "Refunded — target missed"}
         </h3>
@@ -1484,21 +1554,21 @@ function SettlementReceipt({ job }: { job: A2AJob }) {
       <p className="mt-2 text-[11px] text-white/60">{accepted ? "The escrow released the agreed price to the trainer's wallet. No human approved this payment." : "The work was delivered but did not reach the target, so the contract returned the full amount to the creator. No commission was taken."}</p>
       <div className="mt-3 grid gap-1.5 sm:grid-cols-2 sm:gap-x-6">
         <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-2"><span className="text-[10px] uppercase tracking-wider text-white/40">Target</span><span className="font-mono text-[11px] text-white">{job.target.metric} {op(job.target.op)} {job.target.value}</span></div>
-        <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-2"><span className="text-[10px] uppercase tracking-wider text-white/40">Measured</span><span className={cn("font-mono text-[11px]", accepted ? "text-[#22d3ee]" : "text-amber-300")}>{measured === null ? "—" : String(measured)}</span></div>
+        <div className="flex items-baseline justify-between gap-3 sm:justify-start sm:gap-2"><span className="text-[10px] uppercase tracking-wider text-white/40">Measured</span><span className={cn("font-mono text-[11px]", accepted ? "text-[#8b5cf6]" : "text-amber-300")}>{measured === null ? "—" : String(measured)}</span></div>
       </div>
       <p className="mt-2 text-[10px] text-white/35">Measured by an independent re-run of the delivered model under a seed root generated at verification time — the trainer never saw these seeds.</p>
-      {job.tx?.verdict ? <a href={BASESCAN_TX(job.tx.verdict)} target="_blank" rel="noreferrer" className={cn("mt-3 flex items-center gap-1 text-[10px]", accepted ? "text-[#22d3ee] hover:text-[#67e8f9]" : "text-amber-300 hover:text-amber-200")}>Verdict and transfer on Base<ExternalLink className="h-2.5 w-2.5" /></a> : null}
+      {job.tx?.verdict ? <a href={BASESCAN_TX(job.tx.verdict)} target="_blank" rel="noreferrer" className={cn("mt-3 flex items-center gap-1 text-[10px]", accepted ? "text-[#8b5cf6] hover:text-[#60a5fa]" : "text-amber-300 hover:text-amber-200")}>Verdict and transfer on Base<ExternalLink className="h-2.5 w-2.5" /></a> : null}
     </section>
   );
 }
 function Interpretation({ interpretation }: { interpretation: ParsedInterpretation }) { return <div className="space-y-3"><Info label="Game" value={interpretation.gameId ?? "Not recognised"} /><Info label="Target" value={interpretation.target ? `${interpretation.target.metric} ${op(interpretation.target.op)} ${interpretation.target.value}` : "No target parsed"} />{interpretation.providerRequirements.map((item, index) => <Info key={index} label={index ? "" : "Provider needs"} value={`${item.metric} ${op(item.op)} ${item.value}`} />)}<Info label="Confidence" value={`${Math.round(interpretation.confidence * 100)}% · ${interpretation.method}`} />{interpretation.warnings.map((warning) => <p key={warning} className="flex gap-2 border border-amber-300/20 bg-amber-300/[.04] p-2 text-[10px] text-amber-200"><AlertTriangle className="h-3 w-3 shrink-0" />{warning}</p>)}<p className="border-t border-white/8 pt-3 text-[10px] leading-5 text-white/30">This structured interpretation—not the prose—is hashed and committed on Base.</p></div>; }
 function MiniMetric({ label, value }: { label: string; value: string }) { return <div className="rounded-md border border-white/[0.08] bg-black/20 p-3"><p className="font-mono text-[8px] uppercase tracking-wider text-white/30">{label}</p><p className="mt-2 font-mono text-lg font-semibold">{value}</p></div>; }
-function Integrity({ label, body }: { label: string; body: string }) { return <div className="flex gap-3"><BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#22d3ee]" /><div><p className="text-xs font-semibold text-white/70">{label}</p><p className="mt-1 text-[10px] text-white/30">{body}</p></div></div>; }
+function Integrity({ label, body }: { label: string; body: string }) { return <div className="flex gap-3"><BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#8b5cf6]" /><div><p className="text-xs font-semibold text-white/70">{label}</p><p className="mt-1 text-[10px] text-white/30">{body}</p></div></div>; }
 function Info({ label, value, mono }: { label: string; value: string; mono?: boolean }) { return <div className="flex items-start justify-between gap-5 border-b border-white/7 py-3 first:pt-0 last:border-0 last:pb-0"><span className="text-[9px] uppercase tracking-[.13em] text-white/28">{label}</span><span className={cn("text-right text-xs text-white/70", mono && "font-mono text-[10px]")}>{value}</span></div>; }
-function TxRow({ label, hash }: { label: string; hash: string }) { return <a href={BASESCAN_TX(hash)} target="_blank" rel="noreferrer" className="flex items-baseline justify-between gap-3 transition hover:text-[#22d3ee]"><span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span><span className="flex items-center gap-1 font-mono text-[10px] text-[#22d3ee]">{shortHash(hash, 4)}<ExternalLink className="h-2.5 w-2.5" /></span></a>; }
-function MoneyField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label><span className="text-[9px] uppercase tracking-wider text-white/30">{label}</span><div className="mt-2 flex items-center rounded-md border border-white/10 bg-black/25 px-3"><input className="h-12 min-w-0 flex-1 bg-transparent font-mono text-sm outline-none" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} /><span className="font-mono text-[9px] text-[#22d3ee]">USDC</span></div></label>; }
+function TxRow({ label, hash }: { label: string; hash: string }) { return <a href={BASESCAN_TX(hash)} target="_blank" rel="noreferrer" className="flex items-baseline justify-between gap-3 transition hover:text-[#8b5cf6]"><span className="text-[10px] uppercase tracking-wider text-white/40">{label}</span><span className="flex items-center gap-1 font-mono text-[10px] text-[#8b5cf6]">{shortHash(hash, 4)}<ExternalLink className="h-2.5 w-2.5" /></span></a>; }
+function MoneyField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label><span className="text-[9px] uppercase tracking-wider text-white/30">{label}</span><div className="mt-2 flex items-center rounded-md border border-white/10 bg-black/25 px-3"><input className="h-12 min-w-0 flex-1 bg-transparent font-mono text-sm outline-none" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} /><span className="font-mono text-[9px] text-[#8b5cf6]">USDC</span></div></label>; }
 function Status({ status }: { status: string }) { return <span className={cn("rounded-md border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wide", statusTone[status] ?? "border-white/15 bg-white/5 text-white/45")}>{status}</span>; }
-function Loading({ label }: { label: string }) { return <div className="agentic-surface flex min-h-48 items-center justify-center gap-3 text-xs text-white/40"><Loader2 className="h-4 w-4 animate-spin text-[#22d3ee]" />{label}</div>; }
+function Loading({ label }: { label: string }) { return <div className="agentic-surface flex min-h-48 items-center justify-center gap-3 text-xs text-white/40"><Loader2 className="h-4 w-4 animate-spin text-[#8b5cf6]" />{label}</div>; }
 function Empty({ title, body, action }: { title: string; body: string; action?: { label: string; href: string } }) {
   return (
     <div className="rounded-lg border border-dashed border-white/12 px-5 py-12 text-center">

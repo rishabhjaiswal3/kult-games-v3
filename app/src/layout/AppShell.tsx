@@ -39,8 +39,8 @@ export function AppShell() {
   };
 
   return (
-    <div className="agentic-shell min-h-dvh bg-[#090909] text-[#ececec]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.06),transparent_42%)]" />
+    <div className="agentic-shell min-h-dvh bg-[#050409] text-[#ececec]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(124,58,237,0.09),transparent_42%)]" />
 
       {mobileOpen ? (
         <button
@@ -53,13 +53,13 @@ export function AppShell() {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(280px,86vw)] flex-col border-r border-white/[0.07] bg-[#0b0b0b] transition-transform duration-200 lg:w-[236px] lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(280px,86vw)] flex-col border-r border-violet-500/[0.13] bg-[#07060b] transition-transform duration-200 lg:w-[236px] lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-5 sm:h-16">
           <Link to="/" onClick={() => setMobileOpen(false)} className="font-mono text-[13px] font-semibold tracking-tight">
-            KULT<span className="text-[#22d3ee]">//A2A</span>
+            KULT<span className="text-[#8b5cf6]">//A2A</span>
           </Link>
           <button type="button" onClick={() => setMobileOpen(false)} className="rounded p-1.5 text-white/50 hover:bg-white/5 lg:hidden">
             <X className="h-5 w-5" />
@@ -76,7 +76,7 @@ export function AppShell() {
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2.5 font-mono text-[12px] transition",
                       isActive
-                        ? "bg-white/[0.06] text-[#22d3ee]"
+                        ? "border border-violet-500/20 bg-violet-500/[0.10] text-violet-300 shadow-[0_0_24px_rgba(124,58,237,0.10)]"
                         : "text-white/50 hover:bg-white/[0.03] hover:text-white/85",
                     )}
                   >
@@ -92,14 +92,14 @@ export function AppShell() {
         <div className="border-t border-white/[0.07] p-4">
           <div className="rounded-md border border-white/[0.08] bg-white/[0.02] p-3">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#22d3ee]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6]" />
               <p className="font-mono text-[9px] uppercase tracking-[.18em] text-white/40">Base · USDC</p>
             </div>
             {isAuthenticated && walletAddress ? (
               <button
                 type="button"
                 onClick={() => void navigator.clipboard.writeText(walletAddress)}
-                className="mt-2 flex w-full items-center gap-1.5 whitespace-nowrap font-mono text-[11px] text-white/70 transition hover:text-[#22d3ee]"
+                className="mt-2 flex w-full items-center gap-1.5 whitespace-nowrap font-mono text-[11px] text-white/70 transition hover:text-[#8b5cf6]"
                 title={walletAddress}
               >
                 {shortWallet}
@@ -124,12 +124,12 @@ export function AppShell() {
       </aside>
 
       <div className="relative lg:pl-[236px]">
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-white/[0.07] bg-[#090909]/92 px-3 backdrop-blur-xl sm:h-16 sm:gap-3 sm:px-6">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-violet-500/[0.10] bg-[#050409]/92 px-3 backdrop-blur-xl sm:h-16 sm:gap-3 sm:px-6">
           <button type="button" onClick={() => setMobileOpen(true)} className="rounded p-2 text-white/60 hover:bg-white/5 lg:hidden">
             <Menu className="h-5 w-5" />
           </button>
           <Link to="/" className="font-mono text-[13px] font-semibold tracking-tight lg:hidden">
-            KULT<span className="text-[#22d3ee]">//A2A</span>
+            KULT<span className="text-[#8b5cf6]">//A2A</span>
           </Link>
           <a href="https://app.kult.games" className="hidden items-center gap-2 px-1 font-mono text-[10px] text-white/30 hover:text-white/70 xl:flex">
             <ArrowLeft className="h-3.5 w-3.5" /> kult.games
@@ -144,12 +144,12 @@ export function AppShell() {
             />
           </form>
           <p className="agentic-live ml-2 hidden xl:inline-flex">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#22d3ee]" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#8b5cf6]" />
             live marketplace
           </p>
           <div className="ml-auto" />
           <div className="hidden items-center gap-2 rounded-md border border-white/10 px-3 py-1.5 lg:flex">
-            <BadgeDollarSign className="h-3.5 w-3.5 text-[#22d3ee]" />
+            <BadgeDollarSign className="h-3.5 w-3.5 text-[#8b5cf6]" />
             <span className="font-mono text-[10px] text-white/60">USDC</span>
           </div>
           <Link to="/jobs/new" className="agentic-primary !px-3 !py-2" aria-label="Post a job">
@@ -161,7 +161,7 @@ export function AppShell() {
               type="button"
               onClick={() => (isAuthenticated ? setAccountOpen((v) => !v) : login())}
               disabled={isLoading}
-              className="flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-md border border-white/10 px-2.5 py-2 font-mono text-[10px] text-white/60 transition hover:border-[#22d3ee]/40 hover:text-white disabled:opacity-50 sm:max-w-none sm:px-3"
+              className="flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-md border border-white/10 px-2.5 py-2 font-mono text-[10px] text-white/60 transition hover:border-[#8b5cf6]/40 hover:text-white disabled:opacity-50 sm:max-w-none sm:px-3"
             >
               <span className="truncate">
                 {isLoading ? "…" : isAuthenticated && shortWallet ? shortWallet : "Connect"}
@@ -190,7 +190,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.07] bg-[#0b0b0b]/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-violet-500/[0.12] bg-[#07060b]/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex h-14 max-w-lg items-stretch justify-between">
           {mobileLinks.map((item) => (
             <NavLink key={item.to} end={item.end} to={item.to} className="min-w-0 flex-1">
@@ -198,7 +198,7 @@ export function AppShell() {
                 <span
                   className={cn(
                     "flex h-full flex-col items-center justify-center gap-0.5 px-1 font-mono text-[8px] uppercase tracking-wider transition",
-                    isActive ? "text-[#22d3ee]" : "text-white/35",
+                    isActive ? "text-[#8b5cf6]" : "text-white/35",
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -227,7 +227,7 @@ export function AgenticPageHeader({
   return (
     <header className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0 flex-1">
-        {eyebrow ? <p className="font-mono text-[10px] uppercase tracking-[.18em] text-[#22d3ee]/80">{eyebrow}</p> : null}
+        {eyebrow ? <p className="font-mono text-[10px] uppercase tracking-[.18em] text-[#8b5cf6]/80">{eyebrow}</p> : null}
         <h1 className={cn("text-[1.65rem] font-semibold tracking-tight text-white sm:text-3xl", eyebrow ? "mt-2" : "")}>
           {title}
         </h1>
@@ -252,7 +252,7 @@ export function AgenticPanel({
   return (
     <section className={cn("agentic-surface overflow-hidden", className)}>
       <div className="flex items-center gap-2 border-b border-white/[0.07] px-4 py-3">
-        <Icon className="h-3.5 w-3.5 text-[#22d3ee]" />
+        <Icon className="h-3.5 w-3.5 text-[#8b5cf6]" />
         <h2 className="font-mono text-[11px] text-white/70">{title}</h2>
       </div>
       <div className="p-4 sm:p-5">{children}</div>

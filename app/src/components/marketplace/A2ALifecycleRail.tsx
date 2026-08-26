@@ -57,13 +57,13 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
   return (
     <div className={cn("rounded-lg border border-white/10 bg-black/30 p-4", className)}>
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#22d3ee]">
+        <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#8b5cf6]">
           Economic lifecycle
         </h3>
         <span
           className={cn(
             "font-tech text-[10px] uppercase tracking-wider",
-            failed ? "text-rose-400" : status === "SETTLED" ? "text-[#22d3ee]" : "text-blue-300",
+            failed ? "text-rose-400" : status === "SETTLED" ? "text-[#8b5cf6]" : "text-blue-300",
           )}
         >
           {status}
@@ -86,7 +86,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                   <span
                     className={cn(
                       "hidden h-px flex-1 sm:block",
-                      done ? "bg-[#22d3ee]/50" : "bg-white/10",
+                      done ? "bg-[#8b5cf6]/50" : "bg-white/10",
                     )}
                   />
                 )}
@@ -99,9 +99,9 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                     stageFailed
                       ? "text-rose-400"
                       : done
-                        ? "text-[#22d3ee]"
+                        ? "text-[#8b5cf6]"
                         : active
-                          ? "text-[#22d3ee]"
+                          ? "text-[#8b5cf6]"
                           : "text-white/40",
                   )}
                 >
@@ -116,7 +116,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                     href={BASESCAN_TX(stageEvidence.txHash)}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 font-mono text-[10px] text-[#22d3ee] transition hover:text-[#22d3ee]"
+                    className="mt-1 inline-flex items-center gap-1 font-mono text-[10px] text-[#8b5cf6] transition hover:text-[#8b5cf6]"
                   >
                     {shortHash(stageEvidence.txHash, 4)}
                     <ExternalLink className="h-2.5 w-2.5" />
@@ -159,8 +159,8 @@ function StageIcon({
   const base = "h-4 w-4 shrink-0";
 
   if (failed) return <XCircle className={cn(base, "text-rose-400")} />;
-  if (inFlight) return <Loader2 className={cn(base, "animate-spin text-[#22d3ee]")} />;
-  if (done) return <CheckCircle2 className={cn(base, "text-[#22d3ee]")} />;
-  if (active) return <Circle className={cn(base, "animate-pulse text-[#22d3ee]")} />;
+  if (inFlight) return <Loader2 className={cn(base, "animate-spin text-[#8b5cf6]")} />;
+  if (done) return <CheckCircle2 className={cn(base, "text-[#8b5cf6]")} />;
+  if (active) return <Circle className={cn(base, "animate-pulse text-[#8b5cf6]")} />;
   return <Circle className={cn(base, "text-white/20")} />;
 }
