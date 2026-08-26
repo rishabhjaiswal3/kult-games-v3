@@ -11,6 +11,7 @@ import {
   tryExchangePrivyTokenForAiArenaToken,
 } from "@/lib/aiArenaAuth";
 import { clearUserSessionCache } from "@/lib/sessionCleanup";
+import { readStoredReferralCode, clearStoredReferralCode } from "@/lib/referral";
 import { buildSiweMessage, fetchSiweNonce } from "@/lib/siwe";
 import {
   clearUserLoginIntent,
@@ -391,8 +392,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "Wallet signature",
         );
 
+        const referralCode = readStoredReferralCode();
         authLog("SIWE signature obtained — calling POST /player/login");
-        const res = await playerApi.login(address, message, signature);
+        const res = await playerApi.login(address, message, signature, referralCode ? { referralCode } : undefined);
 
         // A 200 with no parsable token is the failure mode that looks like success:
         // nothing lands in localStorage, so the session cannot survive a reload.
@@ -401,6 +403,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "Login response did not contain a usable token — check the /player/login payload shape",
           );
         }
+
+        if (referralCode) clearStoredReferralCode();
 
         authLog("login succeeded — Kult session stored", {
           token: tokenFingerprint(localStorage.getItem(TOKEN_KEY)),

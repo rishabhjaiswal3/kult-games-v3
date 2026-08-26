@@ -3,6 +3,7 @@ import { AccessProvider, useAccess } from "@/contexts/AccessContext";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { hasUserLoginIntent, getUserLoginMethod, requestOpenLoginModal } from "@/lib/loginModalBus";
+import { captureReferralCodeFromUrl } from "@/lib/referral";
 import { PageRouteFallback } from "@/components/PageRouteFallback";
 import { RouteChunkErrorBoundary } from "@/components/RouteChunkErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -234,14 +235,20 @@ const PostHogProviderConfig = ({ children }: { children: React.ReactNode }) => {
   </>
 }
 
-const App = () => (
-  <PostHogProviderConfig> 
+const App = () => {
+  useEffect(() => {
+    captureReferralCodeFromUrl();
+  }, []);
+
+  return (
+    <PostHogProviderConfig>
       <QueryClientProvider client={queryClient}>
         <AccessProvider>
           <BrowserApp />
         </AccessProvider>
       </QueryClientProvider>
-  </PostHogProviderConfig>
-);
+    </PostHogProviderConfig>
+  );
+};
 
 export default App;

@@ -34,6 +34,8 @@ export const StorageKeys = {
     productTourState: "kult_product_tour_state",
     /** Daily reward days marked claimed locally (temporary optimistic UI). */
     dailyRewardOptimisticClaims: "kult_daily_reward_optimistic_claims",
+    /** Referral code captured from `?referral=` on arrival, sent with the next login. */
+    referralCode: "kult_referral_code",
   },
   session: {
     /** KULT AI chat session id (used for server-side memory). */
