@@ -393,8 +393,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
 
         const referralCode = readStoredReferralCode();
-        authLog("SIWE signature obtained — calling POST /player/login");
+        authLog("SIWE signature obtained — calling POST /player/login", {
+          referralCode: referralCode ?? null,
+          willSendReferralCode: Boolean(referralCode),
+        });
         const res = await playerApi.login(address, message, signature, referralCode ? { referralCode } : undefined);
+        authLog("POST /player/login responded", {
+          hasToken: Boolean(res.token),
+          player: res.player?._id || null,
+        });
 
         // A 200 with no parsable token is the failure mode that looks like success:
         // nothing lands in localStorage, so the session cannot survive a reload.
