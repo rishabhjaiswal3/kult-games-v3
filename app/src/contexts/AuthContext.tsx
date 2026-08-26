@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { TOKEN_KEY, WALLET_KEY } from "@/constants/storageKeys";
 import { useAccess } from "@/contexts/AccessContext";
@@ -14,6 +14,7 @@ import {
   clearUserLoginIntent,
   getUserLoginMethod,
   hasUserLoginIntent,
+  markUserLoginIntent,
   requestOpenLoginModal,
 } from "@/lib/loginModalBus";
 import {
@@ -22,6 +23,7 @@ import {
   resolvePrivyWalletAddress,
 } from "@/lib/privyWallet";
 import { authLog, shortAddress } from "@/lib/authLog";
+import { buildPrivyWalletList } from "@/lib/privyWalletList";
 
 // ── Context type ──────────────────────────────────────────────────────────────
 
@@ -53,6 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { clearAccess } = useAccess();
 
   const [isLoading, setIsLoading] = useState(false);
+  const { login: privyLogin } = useLogin({
+    onError: (error) => {
+      setIsLoading(false);
+      console.warn("[Auth] Wallet login failed:", error);
+    },
+  });
 
   const loginMethod = getUserLoginMethod();
   const walletPreference =
@@ -171,8 +179,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [ready, authenticated, walletPreference, resolvedAddress]);
 
   const beginLogin = useCallback(() => {
-    requestOpenLoginModal();
-  }, []);
+    // Privy already supplies the wallet chooser. Opening our own chooser first
+    // produced two stacked/sequential modals for a single Connect action.
+    markUserLoginIntent("wallet");
+    setIsLoading(true);
+    privyLogin({
+      loginMethods: ["wallet"],
+      walletChainType: "ethereum-only",
+      walletList: buildPrivyWalletList(),
+    });
+  }, [privyLogin]);
 
   const handleLogout = async () => {
     clearLocalAuthState({ clearAccessCode: true, clearQueryCache: true });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAiArenaAccessToken } from "@/lib/aiArenaAuth";
+import { AI_ARENA_SESSION_READY_EVENT, getAiArenaAccessToken } from "@/lib/aiArenaAuth";
 
 /** True only after Kult login + AI Arena JWT exchange (Privy → `/v1/auth/privy`). */
 export function useAiArenaGatewaySession() {
@@ -17,6 +17,9 @@ export function useAiArenaGatewaySession() {
       return;
     }
 
+    const handleSessionReady = () => setReady(true);
+    window.addEventListener(AI_ARENA_SESSION_READY_EVENT, handleSessionReady);
+
     const deadline = Date.now() + 12_000;
     const id = window.setInterval(() => {
       if (getAiArenaAccessToken()) {
@@ -28,7 +31,10 @@ export function useAiArenaGatewaySession() {
       }
     }, 400);
 
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener(AI_ARENA_SESSION_READY_EVENT, handleSessionReady);
+    };
   }, [isAuthenticated, authLoading]);
 
   return { isAiArenaReady: isAuthenticated && ready };

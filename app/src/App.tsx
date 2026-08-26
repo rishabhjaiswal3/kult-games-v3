@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthenticatedAppProviders from "@/providers/AuthenticatedAppProviders";
 import { AccessProvider } from "@/contexts/AccessContext";
-import { LoginModalHost } from "@/components/LoginModalHost";
 import { AppShell } from "@/layout/AppShell";
 import {
   AgenticOverviewPage,
@@ -31,7 +30,6 @@ function App() {
       <AccessProvider>
         <AuthenticatedAppProviders>
           <BrowserRouter>
-            <LoginModalHost />
             <Routes>
               <Route element={<AppShell />}>
                 <Route path="/" element={<AgenticOverviewPage />} />

@@ -17,6 +17,8 @@ type AiArenaRefreshResponse = {
   expiresIn: number;
 };
 
+export const AI_ARENA_SESSION_READY_EVENT = "kult:ai-arena-session-ready";
+
 function safeLocalStorageGet(key: string): string | null {
   if (typeof localStorage === "undefined") return null;
   return localStorage.getItem(key);
@@ -51,6 +53,9 @@ function persistPrivyExchange(data: AiArenaPrivyAuthResponse) {
   safeLocalStorageSet(StorageKeys.local.aiArenaUserId, data.userId);
   if (data.custodialSolanaAddress) {
     safeLocalStorageSet(StorageKeys.local.aiArenaCustodialSolanaAddress, data.custodialSolanaAddress);
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AI_ARENA_SESSION_READY_EVENT));
   }
 }
 
