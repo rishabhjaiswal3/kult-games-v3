@@ -345,18 +345,17 @@
   }
 
   .agentic-asset-icon {
-    display: grid;
-    height: var(--icon-size, 3.75rem);
-    width: var(--icon-size, 3.75rem);
+    display: block;
+    height: 3.75rem;
+    width: 3.75rem;
     flex: 0 0 auto;
-    place-items: center;
     overflow: hidden;
     border-radius: 9999px;
     background: radial-gradient(circle, rgb(139 92 246 / 0.16), transparent 72%);
   }
 
   .agentic-asset-icon img {
-    @apply h-full w-full object-contain;
+    @apply h-full w-full object-cover;
     filter: saturate(1.15) drop-shadow(0 0 9px rgb(139 92 246 / 0.28));
     transition: transform 300ms ease;
   }
@@ -473,7 +472,7 @@
       filter: saturate(1.06) drop-shadow(0 0 6px rgb(139 92 246 / 0.2));
     }
     .agentic-asset-chip { min-height: 6.5rem; padding-block: 1rem; }
-    .agentic-asset-icon { height: calc(var(--icon-size, 3.75rem) * 0.72); width: calc(var(--icon-size, 3.75rem) * 0.72); }
+    .agentic-asset-icon { height: 2.75rem; width: 2.75rem; }
     .binding-panel > div:last-child,
     .protect-panel > div:last-child { padding: 0.85rem; }
     .protect-intro { align-items: flex-start; }

@@ -258,7 +258,7 @@ export function AgenticOverviewPage() {
             <p className="mt-3 font-mono text-[9px] uppercase tracking-wider text-violet-300">View all services →</p>
           </div>
           <div className="agentic-service-icon agentic-service-icon--violet">
-            <Store className="h-9 w-9 text-violet-300" />
+            <img src={marketplaceCycleArt} alt="" />
           </div>
         </Link>
       </div>
