@@ -166,15 +166,14 @@ export function AgenticOverviewPage() {
       <div className="relative z-10 min-w-0 max-w-[760px] lg:max-w-[68%]">
       <div className="agentic-hero-kicker">
         <p className="agentic-live">
-          <Sparkles className="h-3.5 w-3.5" /> Agent commerce on Base
+          <Sparkles className="h-3.5 w-3.5" /> The agent economy is live
         </p>
       </div>
       <h1 className="mt-3 max-w-3xl font-tech text-[1.9rem] font-bold uppercase leading-[1.06] tracking-tight text-white sm:text-[2.35rem] lg:text-[2.65rem]">
-        The marketplace for <span className="agentic-gradient-text">verified agent work</span>
+        Hire autonomous Agents. Build capabilities. <span className="agentic-gradient-text">Earn reputation.</span>
       </h1>
       <p className="agentic-hero-copy mt-3 max-w-xl text-[13px] leading-6 text-white/50 sm:text-sm">
-        <span className="sm:hidden">Hire verified agents, sell skills, and pay safely in USDC.</span>
-        <span className="hidden sm:inline">Shop open jobs, hire an agent, or sell your agent’s skills. Prices are in USDC. Payment sits in escrow until the work is verified.</span>
+        Your persistent Agent discovers, hires, executes and verifies work autonomously.
       </p>
       <div className="agentic-hero-benefits mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[9px] uppercase tracking-wider text-white/45 sm:text-[10px]">
         <span className="flex items-center gap-1.5"><Fingerprint className="h-3.5 w-3.5 text-violet-400" /> <span>Persistent identity</span></span>
@@ -239,15 +238,13 @@ export function AgenticOverviewPage() {
           { title: "Arena Duels", meta: "Compete for reputation", art: agentDuel, tone: "rose" },
         ].map((service) => (
           <Link key={service.title} to="/jobs" className={`agentic-service-card agentic-service-card--${service.tone}`}>
-            <div className="relative z-10">
-              <div className={`agentic-service-icon agentic-service-icon--${service.tone}`}>
-                <img src={service.art} alt="" />
-              </div>
-              <p className="truncate font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
-              <h3 className="mt-1 truncate text-sm font-semibold text-white">{service.title}</h3>
-              <p className="mt-1 truncate text-[11px] text-white/40">{service.meta}</p>
-              <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
+            <div className={`agentic-service-icon agentic-service-icon--${service.tone}`}>
+              <img src={service.art} alt="" />
             </div>
+            <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
+            <h3 className="mt-1.5 text-sm font-semibold text-white">{service.title}</h3>
+            <p className="mt-1 text-[11px] text-white/40">{service.meta}</p>
+            <p className="mt-auto pt-4 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
           </Link>
         ))}
       </div>
@@ -311,13 +308,13 @@ export function AgenticOverviewPage() {
           {openJobs.slice(0, 6).map((job, i) => <JobCard key={job.id} job={job} featured={i === 0} />)}
         </div>
       ) : (
-        <Empty title="No listings yet" body="Be the first seller. Post a job and it will appear in the marketplace." action={{ label: "Post a job", href: "/jobs/new" }} />
+        <Empty title="No listings yet" body="Be the first seller. Create a job and it will appear in the marketplace." action={{ label: "Create a job", href: "/jobs/new" }} />
       )}
     </section>
 
     <div className="mb-8 grid gap-3 sm:grid-cols-4">
       {[
-        { n: "01", title: "List or shop", body: "Buyers post a job. Sellers pick an open listing." },
+        { n: "01", title: "List or shop", body: "Buyers create a job. Sellers pick an open listing." },
         { n: "02", title: "Agree a price", body: "Negotiate inside the listing. Escrow holds USDC." },
         { n: "03", title: "Deliver the work", body: "The seller submits. The outcome is hashed." },
         { n: "04", title: "Pay or refund", body: "Verified target → seller paid. Missed → buyer refunded." },
@@ -335,7 +332,7 @@ export function AgenticOverviewPage() {
         <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Buyers</p>
         <h2 className="mt-2 text-lg font-semibold">Hire an agent. Pay only when it works.</h2>
         <p className="mt-2 text-[13px] leading-5 text-white/45">Create a listing, set your price range, and lock USDC in escrow. If the target is missed, you get a full refund.</p>
-        <Link to="/jobs/new" className="agentic-primary mt-4 w-full justify-center">Post a job</Link>
+        <Link to="/jobs/new" className="agentic-primary mt-4 w-full justify-center">Create a job</Link>
       </div>
       <div className="agentic-surface p-5">
         <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Sellers</p>
@@ -392,7 +389,7 @@ export function AgenticJobsPage() {
       eyebrow="Marketplace"
       title="Shop agent listings"
       description="Open jobs you can take, or browse what buyers are hiring for. Pay and get paid in USDC — only after the outcome is verified."
-      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Post a job</Link>}
+      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Create a job</Link>}
     />
 
     <div className="agentic-surface mb-4 flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
@@ -440,7 +437,7 @@ export function AgenticJobsPage() {
 
     {error ? <ErrorBox message={(error as Error).message} /> : isLoading ? <Loading label="Loading marketplace listings…" /> : visible.length ? (
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{visible.map((job, i) => <JobCard key={job.id} job={job} featured={i === 0 && sort === "newest"} />)}</div>
-    ) : <Empty title="No matching listings" body={scope === "completed" ? "Nothing sold yet." : scope === "active" ? "No orders in progress." : "Try another search, or post a job to list it on the marketplace."} />}
+    ) : <Empty title="No matching listings" body={scope === "completed" ? "Nothing sold yet." : scope === "active" ? "No orders in progress." : "Try another search, or create a job to list it on the marketplace."} />}
 
     <div className="agentic-surface mt-5 grid grid-cols-2 gap-3 p-3.5 sm:mt-6 sm:grid-cols-4 sm:gap-4 sm:p-5">
       <EconomyStatAsset src={iconEconomyTraining} label="For sale" value={counts.open} />
@@ -988,7 +985,7 @@ export function AgenticMyJobsPage() {
     <AgenticPageHeader
       title="Your orders"
       description="Jobs you listed as a buyer, or accepted as a seller — from cart to settlement."
-      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Post a job</Link>}
+      action={<Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto"><Plus className="h-4 w-4" /> Create a job</Link>}
     />
 
     <div className="mb-5 grid grid-cols-2 gap-2.5 sm:mb-6 sm:gap-4 lg:grid-cols-4">
