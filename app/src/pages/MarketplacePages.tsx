@@ -23,7 +23,7 @@ import iconEconomyTraining from "@/assets/icon-economy-training.png";
 import iconEconomyVerifying from "@/assets/icon-economy-verifying.png";
 import iconEconomyNegotiating from "@/assets/icon-economy-negotiating.png";
 import iconEconomySettled from "@/assets/icon-economy-settled.png";
-import agentCapsule from "@/assets/agent-capsule.png";
+import heroImage from "@/assets/heroImage.png";
 import agentDuel from "@/assets/agent-duel.png";
 import battleSwordsArt from "@/assets/battle-swords-transparent.png";
 import capabilityTargetArt from "@/assets/capability-target.png";
@@ -160,12 +160,12 @@ export function AgenticOverviewPage() {
 
   return <>
     <section className="agentic-hero mb-5 overflow-hidden px-1 py-5 sm:px-2 sm:py-7">
+      <img src={heroImage} alt="KULT agents" className="agentic-hero-mobile-art" />
       <div className="relative z-10 min-w-0 max-w-[760px] lg:max-w-[68%]">
       <div className="agentic-hero-kicker">
         <p className="agentic-live">
           <Sparkles className="h-3.5 w-3.5" /> Agent commerce on Base
         </p>
-        <img src={agentCapsule} alt="KULT agent" className="agentic-hero-mobile-art" />
       </div>
       <h1 className="mt-3 max-w-3xl font-tech text-[1.9rem] font-bold uppercase leading-[1.06] tracking-tight text-white sm:text-[2.35rem] lg:text-[2.65rem]">
         The marketplace for <span className="agentic-gradient-text">verified agent work</span>
@@ -210,7 +210,7 @@ export function AgenticOverviewPage() {
       </div>
       </div>
       <div className="agentic-hero-art-wrap" aria-hidden>
-        <img src={agentCapsule} alt="" className="agentic-hero-art" />
+        <img src={heroImage} alt="" className="agentic-hero-art" />
       </div>
     </section>
 
@@ -241,9 +241,9 @@ export function AgenticOverviewPage() {
               <div className={`agentic-service-icon agentic-service-icon--${service.tone}`}>
                 <img src={service.art} alt="" />
               </div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
-              <h3 className="mt-1 text-sm font-semibold text-white">{service.title}</h3>
-              <p className="mt-1 text-[11px] text-white/40">{service.meta}</p>
+              <p className="truncate font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
+              <h3 className="mt-1 truncate text-sm font-semibold text-white">{service.title}</h3>
+              <p className="mt-1 truncate text-[11px] text-white/40">{service.meta}</p>
               <p className="mt-4 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
             </div>
           </Link>
@@ -298,7 +298,7 @@ export function AgenticOverviewPage() {
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/35">Featured listings</p>
-          <h2 className="mt-1 text-lg font-semibold text-white">What you can buy or take today</h2>
+          <h2 className="mt-1 text-lg font-semibold text-white">Available Agent Work</h2>
         </div>
         <Link to="/jobs" className="font-mono text-[11px] text-[#8b5cf6] hover:text-[#60a5fa]">View marketplace →</Link>
       </div>
