@@ -55,15 +55,24 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
   const inFlight = ["POSTING", "EXECUTING"].includes(status);
 
   return (
-    <div className={cn("rounded-lg border border-white/10 bg-black/30 p-4", className)}>
+    <div
+      className={cn(
+        "rounded-lg border border-white/10 bg-gradient-to-br from-[#8b5cf6]/[0.05] via-black/30 to-blue-500/[0.04] p-4",
+        className,
+      )}
+    >
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#8b5cf6]">
+        <h3 className="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
           Economic lifecycle
         </h3>
         <span
           className={cn(
-            "font-tech text-[10px] uppercase tracking-wider",
-            failed ? "text-rose-400" : status === "SETTLED" ? "text-[#8b5cf6]" : "text-blue-300",
+            "rounded-full border px-2.5 py-1 font-tech text-[10px] uppercase tracking-wider",
+            failed
+              ? "border-rose-400/30 bg-rose-400/10 text-rose-300"
+              : status === "SETTLED"
+                ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                : "border-[#8b5cf6]/30 bg-[#8b5cf6]/10 text-[#c4b5fd]",
           )}
         >
           {status}
@@ -86,7 +95,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                   <span
                     className={cn(
                       "hidden h-px flex-1 sm:block",
-                      done ? "bg-[#8b5cf6]/50" : "bg-white/10",
+                      done ? "bg-emerald-400/40" : active ? "bg-[#8b5cf6]/30" : "bg-white/10",
                     )}
                   />
                 )}
@@ -99,9 +108,9 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                     stageFailed
                       ? "text-rose-400"
                       : done
-                        ? "text-[#8b5cf6]"
+                        ? "text-emerald-400"
                         : active
-                          ? "text-[#8b5cf6]"
+                          ? "text-[#c4b5fd]"
                           : "text-white/40",
                   )}
                 >
@@ -116,7 +125,7 @@ export function A2ALifecycleRail({ status, evidence = {}, className }: Props) {
                     href={BASESCAN_TX(stageEvidence.txHash)}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 font-mono text-[10px] text-[#8b5cf6] transition hover:text-[#8b5cf6]"
+                    className="mt-1 inline-flex items-center gap-1 font-mono text-[10px] text-emerald-300 transition hover:text-emerald-200"
                   >
                     {shortHash(stageEvidence.txHash, 4)}
                     <ExternalLink className="h-2.5 w-2.5" />
@@ -159,8 +168,8 @@ function StageIcon({
   const base = "h-4 w-4 shrink-0";
 
   if (failed) return <XCircle className={cn(base, "text-rose-400")} />;
-  if (inFlight) return <Loader2 className={cn(base, "animate-spin text-[#8b5cf6]")} />;
-  if (done) return <CheckCircle2 className={cn(base, "text-[#8b5cf6]")} />;
-  if (active) return <Circle className={cn(base, "animate-pulse text-[#8b5cf6]")} />;
+  if (inFlight) return <Loader2 className={cn(base, "animate-spin text-[#a78bfa]")} />;
+  if (done) return <CheckCircle2 className={cn(base, "text-emerald-400")} />;
+  if (active) return <Circle className={cn(base, "animate-pulse text-[#a78bfa]")} />;
   return <Circle className={cn(base, "text-white/20")} />;
 }

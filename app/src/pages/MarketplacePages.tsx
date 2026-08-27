@@ -35,6 +35,8 @@ import serviceCubeArt from "@/assets/service-cube.png";
 import sportsBallArt from "@/assets/sports-ball.png";
 import usdcCoinArt from "@/assets/usdc-coin.png";
 import verifiedJobArt from "@/assets/verified-job.png";
+import warzoneWarriorLogo from "@/assets/warzone-warrior.png";
+import highwayHustleLogo from "@/assets/highway-hustle.png";
 import { AgenticPageHeader, AgenticPanel } from "@/layout/AppShell";
 import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
@@ -283,7 +285,7 @@ export function AgenticOverviewPage() {
               to={`/jobs?game=${encodeURIComponent(gameId)}`}
               className="agentic-surface flex items-center gap-3 p-3 transition hover:border-[#8b5cf6]/35"
             >
-              <img src={jobBadgeSrc(gameId)} alt="" className="h-9 w-9 shrink-0" />
+              <img src={gameBadgeSrc(gameId)} alt="" className="h-9 w-9 shrink-0" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-white">{gameId}</p>
                 <p className="font-mono text-[10px] text-white/35">{count} listing{count === 1 ? "" : "s"}</p>
@@ -1053,7 +1055,7 @@ export function AgenticMyJobsPage() {
 }
 
 function MyJobRow({ job }: { job: A2AJob }) {
-  const badge = jobBadgeSrc(job.target.metric, job.id);
+  const badge = gameBadgeSrc(job.gameId, job.target.metric, job.id);
   return (
     <Link
       to={`/jobs/${job.id}`}
@@ -1403,7 +1405,7 @@ export function AgenticReputationPage() {
                     <tr key={row.gameId} className="border-t border-white/7">
                       <td className="py-3">
                         <div className="flex items-center gap-2">
-                          <img src={jobBadgeSrc(row.gameId)} alt="" className="h-7 w-7" />
+                          <img src={gameBadgeSrc(row.gameId)} alt="" className="h-7 w-7" />
                           <span className="font-semibold text-white/80">{row.gameId}</span>
                         </div>
                       </td>
@@ -1470,6 +1472,15 @@ function ScoreGauge({ value1000, raw }: { value1000: number | null; raw: number 
 
 // ── Shared building blocks ───────────────────────────────────────────────────
 
+const GAME_LOGOS: Record<string, string> = {
+  warzone: warzoneWarriorLogo,
+  "highway-hustle": highwayHustleLogo,
+};
+
+function gameBadgeSrc(gameId: string, metric = "", salt = "") {
+  return GAME_LOGOS[gameId.toLowerCase()] ?? jobBadgeSrc(metric || gameId, salt);
+}
+
 function jobBadgeSrc(metric: string, salt = "") {
   const key = `${metric} ${salt}`.toLowerCase();
   if (key.includes("combat") || key.includes("aggression") || key.includes("warrior") || key.includes("precision")) return hexHelmet;
@@ -1487,7 +1498,7 @@ function jobBadgeSrc(metric: string, salt = "") {
 }
 
 function JobCard({ job, featured }: { job: A2AJob; featured?: boolean }) {
-  const badge = jobBadgeSrc(job.target.metric, job.id);
+  const badge = gameBadgeSrc(job.gameId, job.target.metric, job.id);
   const windowH = Math.max(1, Math.round(job.executionWindowSeconds / 3600));
   return (
     <Link
