@@ -103,6 +103,40 @@ const PROMPTS: Record<(typeof GAMES)[number], string[]> = {
   ],
 };
 
+/**
+ * Sports-analysis listings.
+ *
+ * Separate from GAMES because they are scored on a different axis: a race or a
+ * fixture has no combat skill, it has a prediction that was right or wrong. The
+ * metric travels with the category so a card never reads "combatSkill" next to
+ * a Formula 1 prompt.
+ */
+const SPORTS = ["formula-1", "premier-league", "nba"] as const;
+
+const SPORTS_METRIC: Record<(typeof SPORTS)[number], string> = {
+  "formula-1": "predictionAccuracy",
+  "premier-league": "predictionAccuracy",
+  nba: "calibration",
+};
+
+const SPORTS_PROMPTS: Record<(typeof SPORTS)[number], string[]> = {
+  "formula-1": [
+    "Train an agent to call F1 podium finishes at {t}% accuracy or better, backtested on the last two seasons.",
+    "I need qualifying-to-race position deltas predicted at {t}%+ on held-out rounds.",
+    "Wet-weather races wreck my model. Want {t}% accuracy on rain-affected rounds specifically.",
+    "Agent should price F1 constructor points markets. {t}% minimum on out-of-sample rounds.",
+  ],
+  "premier-league": [
+    "Premier League both-teams-to-score calls, {t}% accuracy on held-out fixtures.",
+    "Want an agent that beats the closing line on PL match odds. {t}%+ hit rate.",
+    "Train for xG-based scoreline prediction — {t}% accuracy, no lookahead on team news.",
+  ],
+  nba: [
+    "NBA player-props model that is actually calibrated. Want {t} on held-out games.",
+    "My totals model is overconfident in blowouts. Get calibration to {t}.",
+  ],
+};
+
 const CREATORS = [
   "Nova", "Kestrel", "Vantage", "Orbit", "Halcyon", "Torrent", "Cinder", "Vector",
   "Praxis", "Lumen", "Ridge", "Quill", "Ember", "Sable", "Fathom", "Юнит",
@@ -155,9 +189,20 @@ function buildJobs(): A2AJob[] {
   let minutesAgo = 12;
 
   statuses.forEach((status, i) => {
-    const gameId = pick(rand, GAMES);
+    // Roughly two game listings for every sports one, so the board reads as a
+    // game marketplace that also serves sports desks rather than the reverse.
+    const isSports = rand() > 0.62;
+    const gameId: string = isSports ? pick(rand, SPORTS) : pick(rand, GAMES);
+    const targetMetric = isSports
+      ? SPORTS_METRIC[gameId as (typeof SPORTS)[number]]
+      : "combatSkill";
+
     const target = 55 + Math.floor(rand() * 25); // 55–79
-    const prompt = pick(rand, PROMPTS[gameId]).replace("{t}", String(target));
+    const prompt = (
+      isSports
+        ? pick(rand, SPORTS_PROMPTS[gameId as (typeof SPORTS)[number]])
+        : pick(rand, PROMPTS[gameId as (typeof GAMES)[number]])
+    ).replace("{t}", String(target));
 
     const reached = REACHED[status] ?? 1;
     const minUnits = 200000 + Math.floor(rand() * 3) * 50000;
@@ -192,9 +237,15 @@ function buildJobs(): A2AJob[] {
       creatorErc8004Id: String(63000 + Math.floor(rand() * 1500)),
       requirementsHash: hex(rand, 32),
       requirementsRootHash: hex(rand, 32),
-      target: { metric: "combatSkill", op: "gte", value: target },
+      target: { metric: targetMetric, op: "gte", value: target },
       providerRequirements:
-        rand() > 0.55 ? [{ metric: "wins", op: "gte", value: 5 + Math.floor(rand() * 40) }] : [],
+        rand() > 0.55
+          ? [
+              isSports
+                ? { metric: "backtestedSeasons", op: "gte", value: 2 + Math.floor(rand() * 4) }
+                : { metric: "wins", op: "gte", value: 5 + Math.floor(rand() * 40) },
+            ]
+          : [],
       budget: {
         minBaseUnits: String(minUnits),
         maxBaseUnits: String(maxUnits),
@@ -226,7 +277,7 @@ function buildJobs(): A2AJob[] {
         reached >= 5
           ? {
               accepted,
-              reason: `Measured combatSkill ${measured} ${accepted ? "satisfies" : "does not satisfy"} gte ${target}`,
+              reason: `Measured ${targetMetric} ${measured} ${accepted ? "satisfies" : "does not satisfy"} gte ${target}`,
               reportHash: hex(rand, 32),
             }
           : null,
@@ -268,12 +319,28 @@ function allJobs(): A2AJob[] {
 }
 
 /**
- * True only on a dev server with the flag set. Checking import.meta.env.DEV as
- * well as the flag means a production build cannot serve fixture data even if
- * someone sets VITE_A2A_DEMO in the deploy environment by accident.
+ * Hosts that must never serve fixture data, whatever the environment says.
+ *
+ * The flag alone is not a safe gate once this can run in a built app: an env
+ * var set on the wrong Cloudflare project, or copied between projects, would
+ * put sixty invented listings on the real marketplace where they would be
+ * indistinguishable from jobs people actually posted. A hostname check cannot
+ * be misconfigured into allowing that.
+ *
+ * Anything else — a preview deployment, a demo subdomain, a dev server — may
+ * opt in with VITE_A2A_DEMO=1.
  */
+const PRODUCTION_HOSTS = ["baseapp.kult.games", "app.kult.games", "kult.games"];
+
 export function demoModeEnabled(): boolean {
-  return import.meta.env.DEV && import.meta.env.VITE_A2A_DEMO === "1";
+  if (import.meta.env.VITE_A2A_DEMO !== "1") return false;
+
+  // A dev server is always allowed; it is not reachable by anyone else.
+  if (import.meta.env.DEV) return true;
+
+  // A built app may serve the fixture, but never on a production host.
+  const host = typeof window === "undefined" ? "" : window.location.hostname;
+  return !PRODUCTION_HOSTS.includes(host);
 }
 
 export function demoListJobs(scope: JobScope) {
