@@ -3,6 +3,9 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyArenaAgents } from "@/hooks/useMyArenaAgents";
 import { cn } from "@/lib/utils";
+import agenticLogo from "@/assets/agenticLogo.png";
+import kultLogo from "@/assets/KultLogo.png";
+import baseLogo from "@/assets/BaseLogo.png";
 import {
   Activity, ArrowLeft, BadgeDollarSign, Bot, BriefcaseBusiness, ChevronDown, Copy,
   LayoutDashboard, LogOut, Menu, Plus, Search, ShieldCheck, Store, X,
@@ -58,8 +61,9 @@ export function AppShell() {
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-5 sm:h-16">
-          <Link to="/" onClick={() => setMobileOpen(false)} className="font-mono text-[13px] font-semibold tracking-tight">
-            KULT<span className="text-[#8b5cf6]">//A2A</span>
+          <Link to="/" onClick={() => setMobileOpen(false)} className="flex shrink-0 items-center gap-2">
+            <img src={agenticLogo} alt="" className="h-8 w-8 rounded-full" />
+            <img src={kultLogo} alt="KULT Games" className="h-5 w-auto object-contain" />
           </Link>
           <button type="button" onClick={() => setMobileOpen(false)} className="rounded p-1.5 text-white/50 hover:bg-white/5 lg:hidden">
             <X className="h-5 w-5" />
@@ -67,7 +71,7 @@ export function AppShell() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="px-3 font-mono text-[9px] uppercase tracking-[.22em] text-white/30">Shop · Hire · Earn</p>
+          <p className="px-3 font-mono text-[9px] uppercase tracking-[.22em] text-white/30">Discover · Hire · Earn</p>
           <nav className="mt-3 space-y-0.5">
             {links.map((item) => (
               <NavLink key={item.to} end={item.end} to={item.to} onClick={() => setMobileOpen(false)}>
@@ -90,31 +94,44 @@ export function AppShell() {
         </div>
 
         <div className="border-t border-white/[0.07] p-4">
-          <div className="rounded-md border border-white/[0.08] bg-white/[0.02] p-3">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6]" />
-              <p className="font-mono text-[9px] uppercase tracking-[.18em] text-white/40">Base · USDC</p>
+          <div className="agentic-side-card">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src={baseLogo} alt="" className="h-4 w-4 shrink-0 drop-shadow-[0_0_6px_rgba(0,82,255,0.5)]" />
+                <p className="font-mono text-[9px] uppercase tracking-[.18em] text-white/45">Base · USDC</p>
+              </div>
+              {isAuthenticated && walletAddress ? (
+                <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-wider text-emerald-400/80">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Live
+                </span>
+              ) : null}
             </div>
             {isAuthenticated && walletAddress ? (
               <button
                 type="button"
                 onClick={() => void navigator.clipboard.writeText(walletAddress)}
-                className="mt-2 flex w-full items-center gap-1.5 whitespace-nowrap font-mono text-[11px] text-white/70 transition hover:text-[#8b5cf6]"
+                className="mt-2.5 flex w-full items-center gap-1.5 whitespace-nowrap rounded-md border border-white/[0.06] bg-black/30 px-2.5 py-1.5 font-mono text-[11px] text-white/75 transition hover:border-violet-400/30 hover:text-[#a78bfa]"
                 title={walletAddress}
               >
                 {shortWallet}
                 <Copy className="h-3 w-3 shrink-0 opacity-50" />
               </button>
             ) : (
-              <p className="mt-2 font-mono text-[11px] text-white/30">Wallet not connected</p>
+              <button
+                type="button"
+                onClick={() => login()}
+                className="mt-2.5 flex w-full items-center justify-center rounded-md border border-violet-400/20 bg-violet-500/[0.08] px-2.5 py-1.5 font-mono text-[11px] text-violet-300 transition hover:border-violet-400/40 hover:bg-violet-500/[0.14]"
+              >
+                Connect wallet
+              </button>
             )}
             <div className="mt-3 flex items-center gap-3 border-t border-white/[0.07] pt-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/10 text-white/50">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-violet-400/20 bg-violet-500/[0.10] text-violet-300">
                 <Bot className="h-4 w-4" />
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-medium">{agent?.name ?? "No agent yet"}</p>
-                <p className="mt-0.5 font-mono text-[9px] text-white/30">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-white">{agent?.name ?? "No agent yet"}</p>
+                <p className="mt-0.5 font-mono text-[9px] text-white/35">
                   {agent ? `${agent.wins ?? 0} wins · ${agent.eloRating ?? 0} ELO` : "Register to sell"}
                 </p>
               </div>
@@ -128,8 +145,9 @@ export function AppShell() {
           <button type="button" onClick={() => setMobileOpen(true)} className="rounded p-2 text-white/60 hover:bg-white/5 lg:hidden">
             <Menu className="h-5 w-5" />
           </button>
-          <Link to="/" className="font-mono text-[13px] font-semibold tracking-tight lg:hidden">
-            KULT<span className="text-[#8b5cf6]">//A2A</span>
+          <Link to="/" className="flex shrink-0 items-center gap-2 lg:hidden">
+            <img src={agenticLogo} alt="" className="h-7 w-7 rounded-full sm:h-8 sm:w-8" />
+            <img src={kultLogo} alt="KULT Games" className="h-4 w-auto object-contain sm:h-5" />
           </Link>
           <a href="https://app.kult.games" className="hidden items-center gap-2 px-1 font-mono text-[10px] text-white/30 hover:text-white/70 xl:flex">
             <ArrowLeft className="h-3.5 w-3.5" /> kult.games

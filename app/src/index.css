@@ -163,6 +163,18 @@
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.018);
   }
 
+  .agentic-side-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.85rem;
+    border: 1px solid rgb(139 92 246 / 0.14);
+    background:
+      radial-gradient(circle at 15% 0%, rgb(139 92 246 / 0.10), transparent 55%),
+      #0a0910;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03), 0 8px 24px rgb(0 0 0 / 0.22);
+    padding: 0.9rem;
+  }
+
   .agentic-bounty {
     @apply font-mono font-semibold tabular-nums text-[#8b5cf6];
   }
@@ -329,16 +341,38 @@
   }
 
   .agentic-asset-chip {
-    @apply flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-violet-400/[0.10] bg-[#08070d] px-3 py-2 font-mono text-[9px] uppercase tracking-wider text-white/45;
+    @apply flex min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-violet-400/[0.12] bg-[#08070d] px-3 py-5 text-center transition duration-300 hover:-translate-y-0.5 hover:border-violet-400/30;
   }
 
-  .agentic-asset-chip {
-    @apply py-2.5;
+  .agentic-asset-icon {
+    display: grid;
+    height: 3.75rem;
+    width: 3.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgb(139 92 246 / 0.16), transparent 72%);
   }
 
-  .agentic-asset-chip img {
-    @apply h-11 w-11 shrink-0 object-contain;
+  .agentic-asset-icon img {
+    @apply h-full w-full object-contain;
     filter: saturate(1.15) drop-shadow(0 0 9px rgb(139 92 246 / 0.28));
+    transition: transform 300ms ease;
+  }
+
+  .agentic-asset-chip:hover .agentic-asset-icon img {
+    transform: scale(1.06);
+  }
+
+  .agentic-asset-label {
+    max-width: 8rem;
+    font-family: theme("fontFamily.mono");
+    font-size: 9px;
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.5);
   }
 
   @media (max-width: 767px) {
@@ -438,8 +472,8 @@
       image-rendering: -webkit-optimize-contrast;
       filter: saturate(1.06) drop-shadow(0 0 6px rgb(139 92 246 / 0.2));
     }
-    .agentic-asset-chip { min-height: 3.75rem; }
-    .agentic-asset-chip img { height: 2.5rem; width: 2.5rem; }
+    .agentic-asset-chip { min-height: 6.5rem; padding-block: 1rem; }
+    .agentic-asset-icon { height: 3.25rem; width: 3.25rem; }
     .binding-panel > div:last-child,
     .protect-panel > div:last-child { padding: 0.85rem; }
     .protect-intro { align-items: flex-start; }
@@ -911,7 +945,7 @@
   background: transparent !important;
 }
 
-#privy-dialog img[src*="kult-logo"] {
+#privy-dialog img[src*="KultLogo" i] {
   height: 56px !important;
   width: auto !important;
   max-width: 160px !important;
@@ -921,7 +955,7 @@
   display: block !important;
 }
 
-#privy-dialog img[src*="kult-logo"] ~ img[src*="kult-logo"] {
+#privy-dialog img[src*="KultLogo" i] ~ img[src*="KultLogo" i] {
   display: none !important;
 }
 

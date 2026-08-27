@@ -252,16 +252,18 @@ export function AgenticOverviewPage() {
 
     <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
       {[
-        { label: "Active services", art: serviceCubeArt },
-        { label: "USDC payments", art: usdcCoinArt },
-        { label: "Marketplace economy", art: marketplaceCycleArt },
-        { label: "Verified delivery", art: verifiedJobArt },
-        { label: "Growth analytics", art: growthChartArt },
-        { label: "Reputation network", art: reputationNetworkArt },
+        { label: "Active services", art: serviceCubeArt, scale: 1 },
+        { label: "USDC payments", art: usdcCoinArt, scale: 1 },
+        { label: "Marketplace economy", art: marketplaceCycleArt, scale: 1.15 },
+        { label: "Verified delivery", art: verifiedJobArt, scale: 1.05 },
+        { label: "Growth analytics", art: growthChartArt, scale: 1.3 },
+        { label: "Reputation network", art: reputationNetworkArt, scale: 1.05 },
       ].map((item) => (
         <div key={item.label} className="agentic-asset-chip">
-          <img src={item.art} alt="" />
-          <span>{item.label}</span>
+          <span className="agentic-asset-icon">
+            <img src={item.art} alt="" style={{ transform: `scale(${item.scale})` }} />
+          </span>
+          <span className="agentic-asset-label">{item.label}</span>
         </div>
       ))}
     </div>

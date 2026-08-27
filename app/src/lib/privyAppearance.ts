@@ -1,4 +1,4 @@
-import kultLogo from "@/assets/kult-logo.png";
+import kultLogo from "@/assets/KultLogo.png";
 
 /** Shared copy, LoginModal header + Privy landingHeader */
 export const KULT_LOGIN_LANDING_HEADER = "Sign in to continue";
