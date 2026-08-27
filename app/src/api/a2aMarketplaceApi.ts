@@ -223,16 +223,25 @@ export const a2aMarketplaceApi = {
    * progress and settled history were both invisible.
    */
   async listJobs(scope: JobScope = "open", gameId?: string): Promise<JobListing> {
-    if (demoModeEnabled()) return demoListJobs(scope);
+    // Fetched even in demo mode, because the fixture is merged behind the real
+    // board rather than replacing it — the jobs that actually ran carry real
+    // transactions and must stay visible.
+    const real = await client()
+      .get("/v1/marketplace/jobs", { params: { scope, ...(gameId ? { gameId } : {}) } })
+      .then(({ data }) => ({
+        jobs: (data?.jobs ?? []) as A2AJob[],
+        scope: (data?.scope ?? scope) as JobScope,
+        counts: data?.counts ?? { open: 0, active: 0, completed: 0 },
+      }))
+      .catch((err: unknown) => {
+        // In demo mode an unreachable API must not empty the board; otherwise
+        // the caller still needs to see the failure.
+        if (!demoModeEnabled()) throw err;
+        return null;
+      });
 
-    const { data } = await client().get("/v1/marketplace/jobs", {
-      params: { scope, ...(gameId ? { gameId } : {}) },
-    });
-    return {
-      jobs: data?.jobs ?? [],
-      scope: data?.scope ?? scope,
-      counts: data?.counts ?? { open: 0, active: 0, completed: 0 },
-    };
+    if (demoModeEnabled()) return demoListJobs(scope, real);
+    return real as JobListing;
   },
 
   /** Job record, hash verification, and the chain's independent view. */

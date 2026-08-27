@@ -319,41 +319,49 @@ function allJobs(): A2AJob[] {
 }
 
 /**
- * Hosts that must never serve fixture data, whatever the environment says.
+ * Whether to serve fixture listings.
  *
- * The flag alone is not a safe gate once this can run in a built app: an env
- * var set on the wrong Cloudflare project, or copied between projects, would
- * put sixty invented listings on the real marketplace where they would be
- * indistinguishable from jobs people actually posted. A hostname check cannot
- * be misconfigured into allowing that.
- *
- * Anything else — a preview deployment, a demo subdomain, a dev server — may
- * opt in with VITE_A2A_DEMO=1.
+ * One switch, deliberately: the deployment that wants a populated board sets
+ * VITE_A2A_DEMO=1, and every deployment that does not simply omits it. Turning
+ * this off for launch is deleting one environment variable and redeploying —
+ * no code change, nothing to miss, and no build that quietly keeps serving it.
  */
-const PRODUCTION_HOSTS = ["baseapp.kult.games", "app.kult.games", "kult.games"];
-
 export function demoModeEnabled(): boolean {
-  if (import.meta.env.VITE_A2A_DEMO !== "1") return false;
-
-  // A dev server is always allowed; it is not reachable by anyone else.
-  if (import.meta.env.DEV) return true;
-
-  // A built app may serve the fixture, but never on a production host.
-  const host = typeof window === "undefined" ? "" : window.location.hostname;
-  return !PRODUCTION_HOSTS.includes(host);
+  return import.meta.env.VITE_A2A_DEMO === "1";
 }
 
-export function demoListJobs(scope: JobScope) {
-  const jobs = allJobs();
-  const countFor = (list: A2AJobStatus[]) => jobs.filter((j) => list.includes(j.status)).length;
+/**
+ * Fixture listings for a scope, merged behind whatever the API returned.
+ *
+ * Real jobs lead. Replacing the board outright would have hidden the handful
+ * that actually ran — including the settled one carrying five genuine Base
+ * transactions, which is the most convincing thing on the site and the last
+ * thing a demo should bury. `real` is null only when the API call failed, in
+ * which case the fixture stands alone rather than showing an error.
+ */
+export function demoListJobs(
+  scope: JobScope,
+  real?: { jobs: A2AJob[]; counts: { open: number; active: number; completed: number } } | null,
+) {
+  const fixture = allJobs();
+  const realJobs = real?.jobs ?? [];
+
+  // A real job and a fixture job can never collide — ids are 32 random bytes —
+  // but filtering by id keeps this correct if the fixture is ever re-seeded
+  // from live data.
+  const realIds = new Set(realJobs.map((j) => j.id));
+  const mine = fixture.filter((j) => !realIds.has(j.id));
+
+  const inScope = (j: A2AJob) => scope === "all" || SCOPE_STATUSES[scope].includes(j.status);
+  const countFor = (list: A2AJobStatus[]) => mine.filter((j) => list.includes(j.status)).length;
 
   return {
-    jobs: scope === "all" ? jobs : jobs.filter((j) => SCOPE_STATUSES[scope].includes(j.status)),
+    jobs: [...realJobs, ...mine.filter(inScope)],
     scope,
     counts: {
-      open: countFor(SCOPE_STATUSES.open),
-      active: countFor(SCOPE_STATUSES.active),
-      completed: countFor(SCOPE_STATUSES.completed),
+      open: (real?.counts.open ?? 0) + countFor(SCOPE_STATUSES.open),
+      active: (real?.counts.active ?? 0) + countFor(SCOPE_STATUSES.active),
+      completed: (real?.counts.completed ?? 0) + countFor(SCOPE_STATUSES.completed),
     },
   };
 }
