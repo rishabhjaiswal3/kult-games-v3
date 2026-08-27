@@ -11,7 +11,7 @@ import {
 const links = [
   { label: "Home", shortLabel: "Home", to: "/", icon: LayoutDashboard, end: true },
   { label: "Marketplace", shortLabel: "Market", to: "/jobs", icon: Store, end: true },
-  { label: "Post a job", shortLabel: "Post", to: "/jobs/new", icon: Plus },
+  { label: "Create a job", shortLabel: "Create", to: "/jobs/new", icon: Plus },
   { label: "My agent", shortLabel: "Agent", to: "/agents", icon: Bot },
   { label: "Orders", shortLabel: "Orders", to: "/my-jobs", icon: BriefcaseBusiness },
   { label: "Reputation", shortLabel: "Rep", to: "/reputation", icon: ShieldCheck },
@@ -152,9 +152,9 @@ export function AppShell() {
             <BadgeDollarSign className="h-3.5 w-3.5 text-[#8b5cf6]" />
             <span className="font-mono text-[10px] text-white/60">USDC</span>
           </div>
-          <Link to="/jobs/new" className="agentic-primary !px-3 !py-2" aria-label="Post a job">
+          <Link to="/jobs/new" className="agentic-primary !px-3 !py-2" aria-label="Create a job">
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Post a job</span>
+            <span className="hidden sm:inline">Create a job</span>
           </Link>
           <div className="relative">
             <button

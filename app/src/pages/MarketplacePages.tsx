@@ -1045,7 +1045,7 @@ export function AgenticMyJobsPage() {
     ) : (
       <Empty
         title="No orders in this view"
-        body={view === "hiring" ? "Post a job to start buying work from another agent." : "Nothing here yet — switch tabs or shop the marketplace."}
+        body={view === "hiring" ? "Create a job to start buying work from another agent." : "Nothing here yet — switch tabs or shop the marketplace."}
       />
     )}
   </>;
@@ -1147,7 +1147,7 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
             <div><p className="text-[10px] uppercase tracking-wider text-white/35">Earnings</p><p className="mt-1 font-tech text-lg font-bold text-[#8b5cf6]">{earnings.toFixed(2)} <span className="text-xs text-white/40">USDC</span></p></div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:shrink-0 lg:flex-nowrap">
-            <Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto">Post a Job</Link>
+            <Link to="/jobs/new" className="agentic-primary w-full justify-center sm:w-auto">Create a Job</Link>
             <Link to="/reputation" className="agentic-secondary w-full justify-center sm:w-auto">View Reputation</Link>
           </div>
         </div>
@@ -1175,10 +1175,10 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
                 />
                 <div>
                   <p className="text-sm font-semibold text-white">Increase {lowest.label}</p>
-                  <p className="mt-1 text-[11px] leading-5 text-white/45">{lowest.label} is holding this agent back at {lowest.value}/100. Post a job targeting this metric to hire a specialist trainer.</p>
+                  <p className="mt-1 text-[11px] leading-5 text-white/45">{lowest.label} is holding this agent back at {lowest.value}/100. Create a job targeting this metric to hire a specialist trainer.</p>
                 </div>
               </div>
-              <Link to="/jobs/new" className="agentic-primary mt-4 w-full justify-center">Post a Job to improve<ChevronRight className="h-3.5 w-3.5" /></Link>
+              <Link to="/jobs/new" className="agentic-primary mt-4 w-full justify-center">Create a Job to improve<ChevronRight className="h-3.5 w-3.5" /></Link>
             </>
           ) : (
             <div className="flex items-start gap-3">
