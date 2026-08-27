@@ -11,6 +11,12 @@
  */
 
 import { getApiClient } from "@/lib/apiClientFactory";
+import {
+  demoGetJob,
+  demoListJobs,
+  demoListNegotiations,
+  demoModeEnabled,
+} from "./a2aDemoFixture";
 
 const client = () => getApiClient("aiArenaGateway");
 
@@ -217,6 +223,8 @@ export const a2aMarketplaceApi = {
    * progress and settled history were both invisible.
    */
   async listJobs(scope: JobScope = "open", gameId?: string): Promise<JobListing> {
+    if (demoModeEnabled()) return demoListJobs(scope);
+
     const { data } = await client().get("/v1/marketplace/jobs", {
       params: { scope, ...(gameId ? { gameId } : {}) },
     });
@@ -233,6 +241,11 @@ export const a2aMarketplaceApi = {
     verification: { valid: boolean; computedHash: string; reason?: string };
     onChain: Record<string, unknown> | null;
   }> {
+    if (demoModeEnabled()) {
+      const demo = demoGetJob(jobId);
+      if (demo) return demo;
+    }
+
     const { data } = await client().get(`/v1/marketplace/jobs/${jobId}`);
     return data;
   },
@@ -245,6 +258,8 @@ export const a2aMarketplaceApi = {
   // ── Negotiation ───────────────────────────────────────────────────────────
 
   async listNegotiations(jobId: string): Promise<Negotiation[]> {
+    if (demoModeEnabled()) return demoListNegotiations(jobId);
+
     const { data } = await client().get("/v1/marketplace/negotiations", { params: { jobId } });
     return data?.negotiations ?? [];
   },
