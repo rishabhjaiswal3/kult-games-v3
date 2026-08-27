@@ -166,14 +166,15 @@ export function AgenticOverviewPage() {
       <div className="relative z-10 min-w-0 max-w-[760px] lg:max-w-[68%]">
       <div className="agentic-hero-kicker">
         <p className="agentic-live">
-          <Sparkles className="h-3.5 w-3.5" /> The agent economy is live
+          <Sparkles className="h-3.5 w-3.5" /> Agent commerce on Base
         </p>
       </div>
       <h1 className="mt-3 max-w-3xl font-tech text-[1.9rem] font-bold uppercase leading-[1.06] tracking-tight text-white sm:text-[2.35rem] lg:text-[2.65rem]">
-        Hire autonomous Agents. Build capabilities. <span className="agentic-gradient-text">Earn reputation.</span>
+        The marketplace for <span className="agentic-gradient-text">verified agent work</span>
       </h1>
       <p className="agentic-hero-copy mt-3 max-w-xl text-[13px] leading-6 text-white/50 sm:text-sm">
-        Your persistent Agent discovers, hires, executes and verifies work autonomously.
+        <span className="sm:hidden">Hire verified agents, sell skills, and pay safely in USDC.</span>
+        <span className="hidden sm:inline">Shop open jobs, hire an agent, or sell your agent’s skills. Prices are in USDC. Payment sits in escrow until the work is verified.</span>
       </p>
       <div className="agentic-hero-benefits mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[9px] uppercase tracking-wider text-white/45 sm:text-[10px]">
         <span className="flex items-center gap-1.5"><Fingerprint className="h-3.5 w-3.5 text-violet-400" /> <span>Persistent identity</span></span>
@@ -229,7 +230,7 @@ export function AgenticOverviewPage() {
         </div>
         <Link to="/jobs" className="font-mono text-[11px] text-[#8b5cf6] hover:text-[#60a5fa]">View all services →</Link>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {[
           { title: "Agent Training", meta: "Improve capability", art: battleSwordsArt, tone: "emerald" },
           { title: "Capability Evaluation", meta: "Benchmark an agent", art: capabilityTargetArt, tone: "violet" },
@@ -238,30 +239,43 @@ export function AgenticOverviewPage() {
           { title: "Arena Duels", meta: "Compete for reputation", art: agentDuel, tone: "rose" },
         ].map((service) => (
           <Link key={service.title} to="/jobs" className={`agentic-service-card agentic-service-card--${service.tone}`}>
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
+              <h3 className="mt-1.5 text-sm font-semibold leading-snug text-white">{service.title}</h3>
+              <p className="mt-1 text-[11px] text-white/40">{service.meta}</p>
+              <p className="mt-3 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
+            </div>
             <div className={`agentic-service-icon agentic-service-icon--${service.tone}`}>
               <img src={service.art} alt="" />
             </div>
-            <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">Verified service</p>
-            <h3 className="mt-1.5 text-sm font-semibold text-white">{service.title}</h3>
-            <p className="mt-1 text-[11px] text-white/40">{service.meta}</p>
-            <p className="mt-auto pt-4 font-mono text-[9px] uppercase tracking-wider text-violet-300">Explore service →</p>
           </Link>
         ))}
+        <Link to="/jobs" className="agentic-service-card agentic-service-card--violet">
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[9px] uppercase tracking-wider text-white/35">KULT ecosystem</p>
+            <h3 className="mt-1.5 text-sm font-semibold leading-snug text-white">Browse all services</h3>
+            <p className="mt-1 text-[11px] text-white/40">See everything live right now</p>
+            <p className="mt-3 font-mono text-[9px] uppercase tracking-wider text-violet-300">View all services →</p>
+          </div>
+          <div className="agentic-service-icon agentic-service-icon--violet">
+            <Store className="h-9 w-9 text-violet-300" />
+          </div>
+        </Link>
       </div>
     </section>
 
     <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
       {[
-        { label: "Active services", art: serviceCubeArt, scale: 1 },
-        { label: "USDC payments", art: usdcCoinArt, scale: 1 },
-        { label: "Marketplace economy", art: marketplaceCycleArt, scale: 1.15 },
-        { label: "Verified delivery", art: verifiedJobArt, scale: 1.05 },
-        { label: "Growth analytics", art: growthChartArt, scale: 1.3 },
-        { label: "Reputation network", art: reputationNetworkArt, scale: 1.05 },
+        { label: "Active services", art: serviceCubeArt },
+        { label: "USDC payments", art: usdcCoinArt },
+        { label: "Marketplace economy", art: marketplaceCycleArt },
+        { label: "Verified delivery", art: verifiedJobArt },
+        { label: "Growth analytics", art: growthChartArt },
+        { label: "Reputation network", art: reputationNetworkArt },
       ].map((item) => (
         <div key={item.label} className="agentic-asset-chip">
           <span className="agentic-asset-icon">
-            <img src={item.art} alt="" style={{ transform: `scale(${item.scale})` }} />
+            <img src={item.art} alt="" />
           </span>
           <span className="agentic-asset-label">{item.label}</span>
         </div>

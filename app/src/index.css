@@ -249,23 +249,23 @@
   }
 
   .agentic-service-card {
-    @apply relative flex min-h-[200px] flex-col items-center overflow-hidden rounded-xl border border-violet-400/[0.12] bg-[#09080e] p-4 text-center transition duration-300 hover:-translate-y-1 hover:border-violet-400/40 hover:shadow-[0_12px_32px_rgb(139_92_246_/_0.14)];
+    @apply relative flex min-h-[150px] items-center gap-3 overflow-hidden rounded-xl border border-violet-400/[0.12] bg-[#09080e] p-4 transition duration-300 hover:-translate-y-1 hover:border-violet-400/40 hover:shadow-[0_12px_32px_rgb(139_92_246_/_0.14)];
   }
 
   .agentic-service-icon {
     position: relative;
     display: grid;
-    height: 6rem;
-    width: 6rem;
-    margin-bottom: 0.5rem;
+    height: 4.75rem;
+    width: 4.75rem;
+    flex: 0 0 auto;
     place-items: center;
     border-radius: 9999px;
     opacity: 1;
   }
 
   .agentic-service-icon img {
-    height: 5.25rem;
-    width: 5.25rem;
+    height: 4rem;
+    width: 4rem;
     object-fit: contain;
     image-rendering: -webkit-optimize-contrast;
     filter: saturate(1.08) drop-shadow(0 0 10px rgb(139 92 246 / 0.22));
@@ -346,8 +346,8 @@
 
   .agentic-asset-icon {
     display: grid;
-    height: 3.75rem;
-    width: 3.75rem;
+    height: var(--icon-size, 3.75rem);
+    width: var(--icon-size, 3.75rem);
     flex: 0 0 auto;
     place-items: center;
     overflow: hidden;
@@ -464,16 +464,16 @@
     .agentic-hero .agentic-secondary { min-height: 2.7rem; }
     .agentic-hero form + div { margin-top: 0.55rem; }
     .agentic-hero form + div p { display: none; }
-    .agentic-service-card { min-height: 186px; padding: 1.1rem 0.85rem; }
-    .agentic-service-icon { height: 5rem; width: 5rem; opacity: 1; }
+    .agentic-service-card { min-height: 128px; padding: 0.85rem; gap: 0.65rem; }
+    .agentic-service-icon { height: 3.5rem; width: 3.5rem; opacity: 1; }
     .agentic-service-icon img {
-      height: 4.5rem;
-      width: 4.5rem;
+      height: 2.9rem;
+      width: 2.9rem;
       image-rendering: -webkit-optimize-contrast;
       filter: saturate(1.06) drop-shadow(0 0 6px rgb(139 92 246 / 0.2));
     }
     .agentic-asset-chip { min-height: 6.5rem; padding-block: 1rem; }
-    .agentic-asset-icon { height: 3.25rem; width: 3.25rem; }
+    .agentic-asset-icon { height: calc(var(--icon-size, 3.75rem) * 0.72); width: calc(var(--icon-size, 3.75rem) * 0.72); }
     .binding-panel > div:last-child,
     .protect-panel > div:last-child { padding: 0.85rem; }
     .protect-intro { align-items: flex-start; }
