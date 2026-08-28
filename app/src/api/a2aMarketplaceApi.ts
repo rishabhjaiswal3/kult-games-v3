@@ -267,7 +267,10 @@ export const a2aMarketplaceApi = {
   // ── Negotiation ───────────────────────────────────────────────────────────
 
   async listNegotiations(jobId: string): Promise<Negotiation[]> {
-    if (demoModeEnabled()) return demoListNegotiations(jobId);
+    if (demoModeEnabled()) {
+      const demo = demoListNegotiations(jobId);
+      if (demo) return demo;
+    }
 
     const { data } = await client().get("/v1/marketplace/negotiations", { params: { jobId } });
     return data?.negotiations ?? [];

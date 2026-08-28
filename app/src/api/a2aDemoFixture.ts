@@ -377,9 +377,10 @@ export function demoListJobs(
  * Signatures are random bytes. They are displayed as evidence that a signature
  * exists, never verified by the UI, and the fixture never reaches a signer.
  */
-export function demoListNegotiations(jobId: string): Negotiation[] {
+export function demoListNegotiations(jobId: string): Negotiation[] | null {
   const job = allJobs().find((j) => j.id === jobId);
-  if (!job || !job.agreedPrice) return [];
+  if (!job) return null; // not a fixture job — let the caller fall through to the real API
+  if (!job.agreedPrice) return [];
 
   const rand = mulberry32(Number.parseInt(job.id.slice(2, 10), 16));
   const agreed = job.agreedPrice;

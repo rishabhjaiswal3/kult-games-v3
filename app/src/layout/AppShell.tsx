@@ -14,7 +14,7 @@ import {
 const links = [
   { label: "Home", shortLabel: "Home", to: "/", icon: LayoutDashboard, end: true },
   { label: "Marketplace", shortLabel: "Market", to: "/jobs", icon: Store, end: true },
-  { label: "Create a job", shortLabel: "Create", to: "/jobs/new", icon: Plus },
+  { label: "Post a job", shortLabel: "Post", to: "/jobs/new", icon: Plus },
   { label: "My agent", shortLabel: "Agent", to: "/agents", icon: Bot },
   { label: "Orders", shortLabel: "Orders", to: "/my-jobs", icon: BriefcaseBusiness },
   { label: "Reputation", shortLabel: "Rep", to: "/reputation", icon: ShieldCheck },
@@ -132,7 +132,7 @@ export function AppShell() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium text-white">{agent?.name ?? "No agent yet"}</p>
                 <p className="mt-0.5 font-mono text-[9px] text-white/35">
-                  {agent ? `${agent.wins ?? 0} wins · ${agent.eloRating ?? 0} ELO` : "Register to sell"}
+                  {agent ? `${agent.wins ?? 0} wins · ${agent.eloRating ?? 0} ELO` : "Register to earn"}
                 </p>
               </div>
             </div>
@@ -152,15 +152,17 @@ export function AppShell() {
           <a href="https://app.kult.games" className="hidden items-center gap-2 px-1 font-mono text-[10px] text-white/30 hover:text-white/70 xl:flex">
             <ArrowLeft className="h-3.5 w-3.5" /> kult.games
           </a>
-          <form onSubmit={goSearch} className="ml-1 hidden min-w-0 flex-1 items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 md:flex lg:max-w-md">
-            <Search className="h-3.5 w-3.5 shrink-0 text-white/30" />
-            <input
-              value={headerQuery}
-              onChange={(e) => setHeaderQuery(e.target.value)}
-              placeholder="Search the marketplace…"
-              className="h-9 w-full bg-transparent font-mono text-[12px] outline-none placeholder:text-white/25"
-            />
-          </form>
+          {location.pathname !== "/jobs" ? (
+            <form onSubmit={goSearch} className="ml-1 hidden min-w-0 flex-1 items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 md:flex lg:max-w-md">
+              <Search className="h-3.5 w-3.5 shrink-0 text-white/30" />
+              <input
+                value={headerQuery}
+                onChange={(e) => setHeaderQuery(e.target.value)}
+                placeholder="Search the marketplace…"
+                className="h-9 w-full bg-transparent font-mono text-[12px] outline-none placeholder:text-white/25"
+              />
+            </form>
+          ) : <div className="ml-1 flex-1" />}
           <p className="agentic-live ml-2 hidden xl:inline-flex">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#8b5cf6]" />
             live marketplace
@@ -170,9 +172,9 @@ export function AppShell() {
             <BadgeDollarSign className="h-3.5 w-3.5 text-[#8b5cf6]" />
             <span className="font-mono text-[10px] text-white/60">USDC</span>
           </div>
-          <Link to="/jobs/new" className="agentic-primary !px-3 !py-2" aria-label="Create a job">
+          <Link to="/jobs/new" className="agentic-primary !px-3 !py-2" aria-label="Post a job">
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Create a job</span>
+            <span className="hidden sm:inline">Post a job</span>
           </Link>
           <div className="relative">
             <button
