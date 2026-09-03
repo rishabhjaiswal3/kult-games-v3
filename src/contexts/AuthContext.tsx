@@ -18,6 +18,7 @@ import {
   getUserLoginMethod,
   hasUserLoginIntent,
   requestOpenLoginModal,
+  subscribeSessionExpired,
 } from "@/lib/loginModalBus";
 import { getAllowedChainFromEnv } from "@/lib/chain";
 import { ensureWalletOnAllowedChain } from "@/lib/ensureWalletChain";
@@ -183,6 +184,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       staleLogoutInFlightRef.current = false;
     }
   }, [clearLocalAuthState, privyLogout]);
+
+  // The backend rejected our token as expired or invalid on an authenticated request
+  // (interceptor already dropped it from storage) — tear down the rest of the session
+  // and prompt the user to sign in again instead of leaving stale "logged in" state.
+  useEffect(() => {
+    return subscribeSessionExpired(() => {
+      void resetStalePrivySession("server rejected token as expired or invalid");
+      requestOpenLoginModal({
+        mode: "recover",
+        message: "Your session has expired. Please sign in again.",
+      });
+    });
+  }, [resetStalePrivySession]);
 
   const fetchProfile = useCallback(async () => {
     try {

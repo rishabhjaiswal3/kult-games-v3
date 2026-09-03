@@ -1,4 +1,6 @@
 const LOGIN_OPEN_EVENT = "kult-open-login";
+/** Fired when the backend rejects the stored Kult JWT (expired or invalid) on an authenticated request. */
+const SESSION_EXPIRED_EVENT = "kult-session-expired";
 
 export type LoginModalOpenRequest = {
   mode?: "default" | "recover" | "finishing";
@@ -86,4 +88,16 @@ export function subscribeOpenLoginModal(
   };
   window.addEventListener(LOGIN_OPEN_EVENT, handleOpen);
   return () => window.removeEventListener(LOGIN_OPEN_EVENT, handleOpen);
+}
+
+/** Notifies listeners (AuthContext) that the API layer has just cleared a token the server rejected as expired/invalid. */
+export function dispatchSessionExpired() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+}
+
+export function subscribeSessionExpired(listener: () => void) {
+  if (typeof window === "undefined") return () => undefined;
+  window.addEventListener(SESSION_EXPIRED_EVENT, listener);
+  return () => window.removeEventListener(SESSION_EXPIRED_EVENT, listener);
 }

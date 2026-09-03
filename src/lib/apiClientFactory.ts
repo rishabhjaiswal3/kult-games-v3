@@ -6,6 +6,7 @@ import {
   getAiArenaAccessToken,
   refreshAiArenaAccessToken,
 } from "@/lib/aiArenaAuth";
+import { dispatchSessionExpired } from "@/lib/loginModalBus";
 
 export type ApiServiceId = "main" | "aiArenaGateway";
 
@@ -256,14 +257,23 @@ function attachX402AutoPay(client: AxiosInstance) {
 /**
  * Only the main backend uses shared session storage for login; clearing tokens on 401
  * matches existing player/games behavior. Other services get their own client without this.
+ *
+ * The account's JWT (see kult-browser-backend-v2) expires after a fixed 2-day window, so this
+ * fires routinely as sessions age out, not just for tampered/invalid tokens. Beyond clearing
+ * storage, it notifies AuthContext (via dispatchSessionExpired) so React state — and every
+ * screen reading it — actually reflects the logout instead of going stale until reload.
  */
 function attachMainSessionOn401(client: AxiosInstance) {
   client.interceptors.response.use(
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
+        const hadSession = !!localStorage.getItem(TOKEN_KEY);
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(WALLET_KEY);
+        if (hadSession) {
+          dispatchSessionExpired();
+        }
       }
       return Promise.reject(error);
     }
