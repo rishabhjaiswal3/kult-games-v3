@@ -8,7 +8,7 @@ const highwayGame: Game = {
   name: { en: "Highway Hustle, One Way" },
   category: "Racing",
   metadata: {
-    play_url: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",
+    play_url: "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/8/index.html",
     highway_mode: "one-way",
   },
 };
@@ -22,7 +22,7 @@ describe("buildGameIframeUrl", () => {
 
   it("appends highway mode and wallet for hustle builds", () => {
     const url = buildGameIframeUrl(
-      "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/7/index.html",
+      "https://pub-0025cff360c44334b8cc47c146e9c55c.r2.dev/OneWay/8/index.html",
       {
         token: "jwt-abc",
         walletAddress: "0xabc",
