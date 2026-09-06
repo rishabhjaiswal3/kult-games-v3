@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download, Maximize2, Minimize2 } from "lucide-react";
@@ -51,10 +51,12 @@ const GamePlay = () => {
   const isZeroDash = gameKey === "zerodash";
   const isZeroGPool = gameKey === "zerogpool";
 
+  const recordedZeroGPoolWalletRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isZeroGPool && walletAddress) {
-      recordZeroGPoolSessionStart(walletAddress);
-    }
+    if (!isZeroGPool || !walletAddress) return;
+    if (recordedZeroGPoolWalletRef.current === walletAddress) return;
+    recordedZeroGPoolWalletRef.current = walletAddress;
+    recordZeroGPoolSessionStart(walletAddress);
   }, [isZeroGPool, walletAddress]);
 
   const selectedMode = useMemo((): HighwayHustleModeConfig | null => {
