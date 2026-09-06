@@ -29,5 +29,5 @@ export const CREATOR_STUDIO_BACKEND = trimTrailingSlash(
 
 /** AI Arena gateway from 0g-aiarena frontend spec. */
 export const AI_ARENA_GATEWAY_URL = trimTrailingSlash(
-  import.meta.env.VITE_AI_ARENA_GATEWAY_URL ?? "https://aiarena-gateway.onrender.com"
+  import.meta.env.VITE_AI_ARENA_GATEWAY_URL ?? "https://aiarena-gateway.kult.games"
 );
