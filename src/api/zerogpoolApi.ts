@@ -1,4 +1,4 @@
-const DEFAULT_API_URL = "https://zerogpoolgame-jhjr.onrender.com/api";
+const DEFAULT_API_URL = "https://api-zerogpool.kult.games/api";
 
 function getBaseUrl(): string {
   const raw = import.meta.env.VITE_ZEROGPOOL_API_URL as string | undefined;
