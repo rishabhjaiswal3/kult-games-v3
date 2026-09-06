@@ -122,11 +122,14 @@ function attachApiAnalytics(client: AxiosInstance, service: ApiServiceId) {
   );
 }
 
-function attachAuthHeader(client: AxiosInstance) {
+function attachAuthHeader(client: AxiosInstance, service: ApiServiceId) {
   client.interceptors.request.use(
     (config) => {
-      const isAiArenaRequest =
-        typeof config.baseURL === "string" && config.baseURL.includes("aiarena-gateway.onrender.com");
+      // Keyed off the service the client was built for, never the URL. The gateway
+      // moved from *.onrender.com to a custom domain and the old hostname check
+      // silently stopped matching, so every AI Arena request went out carrying the
+      // Kult player token instead of the Arena JWT and 401'd.
+      const isAiArenaRequest = service === "aiArenaGateway";
 
       if (isAiArenaRequest) {
         const arenaToken = getAiArenaAccessToken();
@@ -278,7 +281,7 @@ function buildClient(service: ApiServiceId): AxiosInstance {
     },
   });
 
-  attachAuthHeader(instance);
+  attachAuthHeader(instance, service);
 
   if (service === "main") {
     attachMainSessionOn401(instance);
