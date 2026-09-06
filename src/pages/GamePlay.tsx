@@ -23,7 +23,7 @@ import type { AppShellOutletContext } from "@/layout/AppShell";
 
 const GAME_IFRAME_URL_OVERRIDES: Record<string, string> = {
   ...GAME_FRONTEND_URL_OVERRIDES,
-  zerogpool: "https://pub-c57fda34f99145fc8d97b0a6b6faa237.r2.dev/v9/Game/index.html",
+  zerogpool: "https://pub-c57fda34f99145fc8d97b0a6b6faa237.r2.dev/v10/Game/index.html",
 };
 
 const GamePlay = () => {
