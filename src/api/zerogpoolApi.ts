@@ -6,7 +6,7 @@ function getBaseUrl(): string {
 }
 
 /**
- * Calls zerogpoolgame's `/player/auth/login`, which triggers the backend's on-chain
+ * Calls zerogpoolgame's `/auth/login`, which triggers the backend's on-chain
  * `recordSession` write — the same effect zerogpool-frontend's `loginWithWallet`
  * (src/lib/api.ts) has when it fires on wallet connect.
  */
@@ -15,7 +15,7 @@ export async function recordZeroGPoolSessionStart(walletAddress: string): Promis
   if (!wallet) return;
 
   try {
-    await fetch(`${getBaseUrl()}/player/auth/login`, {
+    await fetch(`${getBaseUrl()}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress: wallet }),
