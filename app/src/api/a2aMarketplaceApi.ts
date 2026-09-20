@@ -22,6 +22,17 @@ const client = () => getApiClient("aiArenaGateway");
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+export type AgentEarnings = {
+  agentId: string;
+  /** The agent's own wallet, where the escrow pays it. */
+  wallet: string;
+  /** The owner's login wallet, where a withdrawal sends the money. */
+  ownerWallet: string | null;
+  balanceBaseUnits: string;
+  display: string;
+  withdrawable: boolean;
+};
+
 /** What GOAT asks the buyer to sign so their payment binds to this job. */
 export type GoatCalldataSignRequest = {
   domain: { name: string; version: string; chainId: number; verifyingContract: string };
@@ -392,6 +403,28 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
+
+  // ── Agent earnings ────────────────────────────────────────────────────────
+
+  /** What this agent's own wallet holds, and where a withdrawal would send it. */
+  async getAgentEarnings(agentId: string): Promise<AgentEarnings> {
+    const { data } = await client().get(`/v1/marketplace/agents/${agentId}/earnings`);
+    return data;
+  },
+
+  /**
+   * Move the agent's whole balance to its owner's wallet.
+   *
+   * No destination travels with this call: the backend resolves it from the
+   * owner on record and puts it inside the signature the agent produces.
+   */
+  async withdrawAgentEarnings(agentId: string): Promise<{
+    txHash: string; explorer: string; from: string; to: string;
+    amountBaseUnits: string; display: string;
+  }> {
+    const { data } = await client().post(`/v1/marketplace/agents/${agentId}/earnings/withdraw`, {});
+    return data;
+  },
 
   // ── Funding through GOAT Flow ─────────────────────────────────────────────
 

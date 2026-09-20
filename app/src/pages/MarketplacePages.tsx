@@ -34,6 +34,7 @@ import warzoneWarriorLogo from "@/assets/warzone-warrior.png";
 import highwayHustleLogo from "@/assets/highway-hustle.png";
 import { AgenticPageHeader, AgenticPanel } from "@/layout/AppShell";
 import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
+import { AgentEarningsCard } from "@/components/marketplace/AgentEarningsCard";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
 import { FundEscrowPanel } from "@/components/marketplace/FundEscrowPanel";
 import { GoatFlowPanel } from "@/components/marketplace/GoatFlowPanel";
@@ -122,10 +123,17 @@ function usdcNum(display?: string | null) {
   const n = Number.parseFloat(display ?? "");
   return Number.isFinite(n) ? n : 0;
 }
+/**
+ * Marketplace commission, taken on settlement. The escrow locks the rate per
+ * job at funding time and is the authority; this mirrors it so the dashboard
+ * can show what the agent was actually paid instead of the gross price.
+ */
+const COMMISSION_BPS = 1000;
+
 function earningsForAgent(jobs: A2AJob[], agentId: string) {
   return jobs
     .filter((j) => j.providerAgentId === agentId && j.status === "SETTLED" && j.verdict?.accepted && j.agreedPrice)
-    .reduce((sum, j) => sum + usdcNum(j.agreedPrice?.display), 0);
+    .reduce((sum, j) => sum + usdcNum(j.agreedPrice?.display) * (1 - COMMISSION_BPS / 10_000), 0);
 }
 function outcomesForAgent(jobs: A2AJob[], agentId: string) {
   return jobs
@@ -1247,6 +1255,7 @@ function AgentProfileBlock({ agent, jobs }: { agent: AiArenaAgent; jobs: A2AJob[
       {/* ── Commercial readiness ── */}
       <div className="grid gap-5 lg:grid-cols-2">
         <AgentBaseIdentityCard agentId={agent.id} agentName={agent.name} onRegistered={() => setRegistered(true)} onStatusChange={(status) => setRegistered(status === "REGISTERED" || status === "WALLET_LINKED")} />
+        <AgentEarningsCard agentId={agent.id} />
         <AutoBidToggle agentId={agent.id} registered={registered} />
       </div>
     </div>
