@@ -36,6 +36,7 @@ import { AgenticPageHeader, AgenticPanel } from "@/layout/AppShell";
 import { AgentBaseIdentityCard } from "@/components/marketplace/AgentBaseIdentityCard";
 import { A2ALifecycleRail } from "@/components/marketplace/A2ALifecycleRail";
 import { FundEscrowPanel } from "@/components/marketplace/FundEscrowPanel";
+import { GoatFlowPanel } from "@/components/marketplace/GoatFlowPanel";
 import { NegotiationControls } from "@/components/marketplace/NegotiationControls";
 import { ProposeOnJobPanel } from "@/components/marketplace/ProposeOnJobPanel";
 import { AutoBidToggle } from "@/components/marketplace/AutoBidToggle";
@@ -724,6 +725,7 @@ export function AgenticJobWorkspacePage() {
 
           <TrainingProgressCard job={job} stage={stage} />
           <FundEscrowPanel job={job} isCreator={isCreator} />
+          <GoatFlowPanel job={job} isCreator={isCreator} />
           <SettlementReceipt job={job} />
         </div>
 

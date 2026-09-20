@@ -22,6 +22,38 @@ const client = () => getApiClient("aiArenaGateway");
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+/** What GOAT asks the buyer to sign so their payment binds to this job. */
+export type GoatCalldataSignRequest = {
+  domain: { name: string; version: string; chainId: number; verifyingContract: string };
+  types: Record<string, Array<{ name: string; type: string }>>;
+  primaryType: string;
+  message: {
+    token: string; owner: string; payer: string; amount: string;
+    orderId: string; calldataNonce: string; deadline: string; calldataHash: string;
+  };
+};
+
+export type GoatOrder = {
+  orderId: string;
+  /** Every GOAT flow settles as a plain ERC-20 transfer to payToAddress. */
+  flow: string;
+  payToAddress: string;
+  /** The chain the buyer pays from, which may differ from the receiver's chain. */
+  payChainId: number;
+  tokenContract: string;
+  amountWei: string;
+  expiresAt: number;
+  calldataSignRequest: GoatCalldataSignRequest;
+};
+
+export type GoatOrderStatus = {
+  order: { orderId: string; status: string; txHash?: string | null };
+  /** ESCROWED or later means GOAT's payment reached the job. */
+  jobStatus: string;
+  /** USDC the receiver holds for this buyer and has not committed to a job. */
+  heldCreditBaseUnits: string | null;
+};
+
 export type A2AJobStatus =
   | "DRAFT" | "POSTING" | "POSTED" | "NEGOTIATING" | "ESCROWED"
   | "EXECUTING" | "DELIVERED" | "SETTLED" | "REFUNDED"
@@ -360,6 +392,32 @@ export const a2aMarketplaceApi = {
     return data;
   },
 
+
+  // ── Funding through GOAT Flow ─────────────────────────────────────────────
+
+  /**
+   * Open a GOAT Flow order for this job.
+   *
+   * The returned signing request has already been checked server-side against
+   * this job: our receiver, this buyer, the agreed price and the calldata we
+   * built. A request that did not match is refused there rather than shown
+   * here, because a wallet popup full of typed data cannot be read by a human.
+   */
+  async createGoatOrder(jobId: string, payChainId?: number): Promise<GoatOrder> {
+    const { data } = await client().post(`/v1/marketplace/jobs/${jobId}/goat/orders`, { payChainId });
+    return data;
+  },
+
+  /** Hand the buyer's calldata signature back to GOAT, through our backend. */
+  async submitGoatSignature(jobId: string, orderId: string, signature: string): Promise<void> {
+    await client().post(`/v1/marketplace/jobs/${jobId}/goat/orders/${orderId}/signature`, { signature });
+  },
+
+  /** Order state, plus whether the payment has been bound to the job yet. */
+  async getGoatOrder(jobId: string, orderId: string): Promise<GoatOrderStatus> {
+    const { data } = await client().get(`/v1/marketplace/jobs/${jobId}/goat/orders/${orderId}`);
+    return data;
+  },
 
   // ── Discovery ─────────────────────────────────────────────────────────────
 
