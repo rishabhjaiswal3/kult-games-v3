@@ -36,6 +36,12 @@ import {
 /** Off-chain statuses from which a job can still be funded. */
 const FUNDABLE_STATUSES = ["POSTED", "NEGOTIATING"];
 
+/**
+ * GOAT's smallest order, in USDC base units. Their API rejects anything below
+ * it, so a cheap job has to be paid directly.
+ */
+const GOAT_MINIMUM_BASE_UNITS = 100000;
+
 /** Job statuses that mean the money already reached the escrow. */
 const FUNDED_STATUSES = ["ESCROWED", "EXECUTING", "DELIVERED", "SETTLED"];
 
@@ -194,6 +200,7 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
   if (!FUNDABLE_STATUSES.includes(job.status) && !payTxHash && !bound) return null;
 
   const amount = order ? formatUnits(BigInt(order.amountWei), 6) : job.agreedPrice?.display;
+  const belowMinimum = !order && Number(job.agreedPrice?.baseUnits ?? 0) < GOAT_MINIMUM_BASE_UNITS;
   const held = statusQuery.data?.heldCreditBaseUnits;
   const unboundCredit = !!held && held !== "0" && !bound;
   const wrongPayChain = !!order && order.payChainId !== base.id;
@@ -225,7 +232,12 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
         and verification are identical to paying directly.
       </p>
 
-      {!order ? (
+      {belowMinimum ? (
+        <Warning>
+          GOAT Flow needs at least 0.10 USDC per payment, and this job is {job.agreedPrice?.display} USDC.
+          Use Fund escrow above, or agree a higher price.
+        </Warning>
+      ) : !order ? (
         <>
           <button
             type="button"
