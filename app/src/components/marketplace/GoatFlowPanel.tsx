@@ -83,6 +83,40 @@ type Props = {
   isCreator: boolean;
 };
 
+/**
+ * A payment in flight, remembered across reloads.
+ *
+ * Without this the order lives only in component state, so a refresh puts the
+ * panel back to its starting position and quietly offers to pay a second time
+ * for a job already paid for. The money is real and GOAT settles minutes later,
+ * so the browser has to remember what was sent.
+ *
+ * Per-browser rather than server-side, which is enough to stop the mistake that
+ * matters; the job's on-chain status remains the authority on whether the
+ * payment arrived.
+ */
+type PendingPayment = { orderId: string; payTxHash: string | null; at: number };
+
+const pendingKey = (jobId: string) => `kult.goat.pending.${jobId}`;
+
+function readPending(jobId: string): PendingPayment | null {
+  try {
+    const raw = localStorage.getItem(pendingKey(jobId));
+    return raw ? (JSON.parse(raw) as PendingPayment) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePending(jobId: string, pending: PendingPayment | null) {
+  try {
+    if (pending) localStorage.setItem(pendingKey(jobId), JSON.stringify(pending));
+    else localStorage.removeItem(pendingKey(jobId));
+  } catch {
+    // A browser that refuses storage still works; it just forgets on reload.
+  }
+}
+
 export function GoatFlowPanel({ job, isCreator }: Props) {
   const queryClient = useQueryClient();
   const { wallets } = useWallets();
@@ -90,6 +124,7 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
   const [order, setOrder] = useState<GoatOrder | null>(null);
   const [signed, setSigned] = useState(false);
   const [payTxHash, setPayTxHash] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingPayment | null>(() => readPending(job.id));
 
   /**
    * The agreed price. job.agreedPrice is only populated after funding, so the
@@ -104,11 +139,16 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
     retry: false,
   });
 
-  /** Poll once a payment is in flight, until the job is funded. */
+  /**
+   * Poll once a payment is in flight, until the job is funded. Keyed off the
+   * remembered order as well as this session's, so a reload keeps watching a
+   * payment made before it.
+   */
+  const watchedOrderId = order?.orderId ?? pending?.orderId ?? null;
   const statusQuery = useQuery({
-    queryKey: ["a2a", "goat-order", job.id, order?.orderId],
-    queryFn: () => a2aMarketplaceApi.getGoatOrder(job.id, order!.orderId),
-    enabled: !!order && !!payTxHash && !FUNDED_STATUSES.includes(job.status),
+    queryKey: ["a2a", "goat-order", job.id, watchedOrderId],
+    queryFn: () => a2aMarketplaceApi.getGoatOrder(job.id, watchedOrderId!),
+    enabled: !!watchedOrderId && (!!payTxHash || !!pending?.payTxHash) && !FUNDED_STATUSES.includes(job.status),
     refetchInterval: 5000,
     retry: false,
   });
@@ -126,6 +166,15 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
     }
   }, [queryClient, job.id, jobIsFunded, settledStatus]);
 
+  // Once the money is in the escrow the payment is no longer in flight, so stop
+  // remembering it and let the panel offer a payment again on a future job.
+  useEffect(() => {
+    if (jobIsFunded || FUNDED_STATUSES.includes(settledStatus)) {
+      writePending(job.id, null);
+      setPending(null);
+    }
+  }, [job.id, jobIsFunded, settledStatus]);
+
   function walletFor(address: string) {
     const wallet = wallets.find((w) => w.address.toLowerCase() === address.toLowerCase()) ?? wallets[0];
     if (!wallet) throw new Error("No wallet connected");
@@ -138,6 +187,9 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
       setOrder(created);
       setSigned(false);
       setPayTxHash(null);
+      const remembered = { orderId: created.orderId, payTxHash: null, at: Date.now() };
+      writePending(job.id, remembered);
+      setPending(remembered);
     },
   });
 
@@ -206,11 +258,17 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
         args: [order.payToAddress as `0x${string}`, BigInt(order.amountWei)],
       });
     },
-    onSuccess: (hash) => setPayTxHash(hash),
+    onSuccess: (hash) => {
+      setPayTxHash(hash);
+      const remembered = { orderId: order!.orderId, payTxHash: hash, at: Date.now() };
+      writePending(job.id, remembered);
+      setPending(remembered);
+    },
   });
 
   if (!isCreator) return null;
-  if (!FUNDABLE_STATUSES.includes(job.status) && !payTxHash && !bound) return null;
+  const sentTxHash = payTxHash ?? pending?.payTxHash ?? null;
+  if (!FUNDABLE_STATUSES.includes(job.status) && !sentTxHash && !bound) return null;
 
   const priceBaseUnits = order ? order.amountWei : priceQuery.data?.amount.baseUnits;
   const amount = priceBaseUnits ? formatUnits(BigInt(priceBaseUnits), 6) : undefined;
@@ -232,7 +290,7 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
         <p className="mt-1 text-[11px] text-white/60">
           GOAT settled the payment and the USDC is locked in the escrow for this job.
         </p>
-        {payTxHash ? <TxLink hash={payTxHash} label="Your payment" /> : null}
+        {sentTxHash ? <TxLink hash={sentTxHash} label="Your payment" /> : null}
       </section>
     );
   }
@@ -253,6 +311,32 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
           GOAT Flow needs at least 0.10 USDC per payment, and this job is {amount} USDC. Use Fund
           escrow above, or agree a higher price.
         </Warning>
+      ) : sentTxHash ? (
+        <>
+          <p className="mt-3 flex items-center gap-1.5 text-[11px] text-white/50">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Payment sent, waiting for GOAT to settle
+            {statusQuery.data ? ` — order ${statusQuery.data.order.status.toLowerCase()}` : ""}
+          </p>
+          <TxLink hash={sentTxHash} label="Your payment" />
+          <p className="mt-2 text-[10px] text-white/35">
+            Do not pay again. GOAT settles this into the escrow; the job updates itself when it
+            lands, and this page can be closed.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              writePending(job.id, null);
+              setPending(null);
+              setOrder(null);
+              setSigned(false);
+              setPayTxHash(null);
+            }}
+            className="mt-2 text-[10px] uppercase tracking-wider text-white/30 underline hover:text-white/60"
+          >
+            Forget this payment and start again
+          </button>
+        </>
       ) : !order ? (
         <>
           <button
