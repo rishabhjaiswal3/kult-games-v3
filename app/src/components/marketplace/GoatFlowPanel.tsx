@@ -91,6 +91,19 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
   const [signed, setSigned] = useState(false);
   const [payTxHash, setPayTxHash] = useState<string | null>(null);
 
+  /**
+   * The agreed price. job.agreedPrice is only populated after funding, so the
+   * live figure comes from the same funding request the direct panel uses —
+   * same query key, so the two share one fetch.
+   */
+  const priceQuery = useQuery({
+    queryKey: ["a2a", "funding-request", job.id],
+    queryFn: () => a2aMarketplaceApi.getFundingRequest(job.id),
+    enabled: isCreator && FUNDABLE_STATUSES.includes(job.status),
+    staleTime: 0,
+    retry: false,
+  });
+
   /** Poll once a payment is in flight, until the job is funded. */
   const statusQuery = useQuery({
     queryKey: ["a2a", "goat-order", job.id, order?.orderId],
@@ -199,8 +212,11 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
   if (!isCreator) return null;
   if (!FUNDABLE_STATUSES.includes(job.status) && !payTxHash && !bound) return null;
 
-  const amount = order ? formatUnits(BigInt(order.amountWei), 6) : job.agreedPrice?.display;
-  const belowMinimum = !order && Number(job.agreedPrice?.baseUnits ?? 0) < GOAT_MINIMUM_BASE_UNITS;
+  const priceBaseUnits = order ? order.amountWei : priceQuery.data?.amount.baseUnits;
+  const amount = priceBaseUnits ? formatUnits(BigInt(priceBaseUnits), 6) : undefined;
+  // Only claim a job is too small once the price is actually known; otherwise
+  // let the service answer, since it checks the same limit.
+  const belowMinimum = !!priceBaseUnits && BigInt(priceBaseUnits) < BigInt(GOAT_MINIMUM_BASE_UNITS);
   const held = statusQuery.data?.heldCreditBaseUnits;
   const unboundCredit = !!held && held !== "0" && !bound;
   const wrongPayChain = !!order && order.payChainId !== base.id;
@@ -234,19 +250,23 @@ export function GoatFlowPanel({ job, isCreator }: Props) {
 
       {belowMinimum ? (
         <Warning>
-          GOAT Flow needs at least 0.10 USDC per payment, and this job is {job.agreedPrice?.display} USDC.
-          Use Fund escrow above, or agree a higher price.
+          GOAT Flow needs at least 0.10 USDC per payment, and this job is {amount} USDC. Use Fund
+          escrow above, or agree a higher price.
         </Warning>
       ) : !order ? (
         <>
           <button
             type="button"
             onClick={() => openOrder.mutate()}
-            disabled={openOrder.isPending}
+            disabled={openOrder.isPending || !priceBaseUnits}
             className="mt-3 flex w-full items-center justify-center gap-1.5 rounded border border-[#f59e0b]/40 bg-[#f59e0b]/10 px-4 py-2.5 font-tech text-[10px] font-bold uppercase tracking-wider text-[#f59e0b] transition hover:bg-[#f59e0b]/20 disabled:opacity-40"
           >
-            {openOrder.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />}
-            Pay {amount ?? ""} USDC with GOAT Flow
+            {openOrder.isPending || !priceBaseUnits ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Wallet className="h-3 w-3" />
+            )}
+            {priceBaseUnits ? `Pay ${amount} USDC with GOAT Flow` : "Reading the agreed price…"}
           </button>
           <p className="mt-2 text-[10px] text-white/35">
             You pay the gas for this transfer, so this wallet needs a little ETH.
